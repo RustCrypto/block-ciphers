@@ -4,7 +4,7 @@ extern crate block_cipher_trait;
 extern crate generic_array;
 
 use byte_tools::{read_u32v_be, write_u32_be};
-use block_cipher_trait::{Block, BlockCipher};
+use block_cipher_trait::{Block, BlockCipher, BlockCipherVarKey};
 use generic_array::typenum::U8;
 
 mod consts;
@@ -93,13 +93,6 @@ impl Blowfish {
 impl BlockCipher for Blowfish {
     type BlockSize = U8;
 
-    fn new(key: &[u8]) -> Blowfish {
-        assert!(4 <= key.len() && key.len() <= 56);
-        let mut blowfish = Blowfish::init_state();
-        blowfish.expand_key(key);
-        blowfish
-    }
-
     fn encrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
         let mut block = [0u32, 0u32];
         read_u32v_be(&mut block, input);
@@ -117,6 +110,14 @@ impl BlockCipher for Blowfish {
     }
 }
 
+impl BlockCipherVarKey for Blowfish {
+    fn new(key: &[u8]) -> Blowfish {
+        assert!(4 <= key.len() && key.len() <= 56);
+        let mut blowfish = Blowfish::init_state();
+        blowfish.expand_key(key);
+        blowfish
+    }
+}
 
 /// Bcrypt extension of blowfish
 #[cfg(feature = "bcrypt")]
