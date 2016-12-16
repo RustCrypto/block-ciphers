@@ -1,0 +1,13 @@
+language: rust
+rust:
+  - stable
+  - beta
+  - nightly
+matrix:
+  allow_failures:
+    - rust: nightly
+env:
+  - TEST_DIR=blowfish
+  - TEST_DIR=utils/block-cipher-trait
+script: cd $TEST_DIR && cargo build --verbose && cargo test --verbose
+

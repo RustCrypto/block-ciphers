@@ -15,4 +15,4 @@ Rust-Crypto is dual licensed under the MIT and Apache 2.0 licenses, the same
 licenses as the Rust compiler.
 
 ## Supported algorithms
-
+* [Blowfish](https://en.wikipedia.org/wiki/Blowfish_(cipher))

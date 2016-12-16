@@ -1,0 +1,20 @@
+[package]
+name = "blowfish"
+version = "0.1.0"
+authors = ["The Rust-Crypto Project Developers"]
+license = "MIT/Apache-2.0"
+description = "Blowfish block cipher"
+documentation = "https://docs.rs/blowfish"
+repository = "https://github.com/RustCrypto/block-ciphers"
+keywords = ["crypto", "blowfish", "block-cipher"]
+
+[dependencies]
+generic-array = "0.5"
+byte-tools = "0.1"
+block-cipher-trait = "0.1"
+
+[features]
+bcrypt = []
+
+[dev-dependencies]
+crypto-tests = "^0.2.2"
