@@ -1,5 +1,5 @@
 # rust-crypto's block ciphers [![Build Status](https://travis-ci.org/RustCrypto/block-ciphers.svg?branch=master)](https://travis-ci.org/RustCrypto/block-ciphers)
-Collection of nlock cipher algorithms written in pure Rust. This is the part
+Collection of block cipher algorithms written in pure Rust. This is the part
 of the rust-crypto project.
 
 ## Contributions
