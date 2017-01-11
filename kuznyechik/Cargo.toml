@@ -1,0 +1,16 @@
+[package]
+name = "kuznyechik"
+version = "0.1.0"
+authors = ["The Rust-Crypto Project Developers"]
+license = "MIT/Apache-2.0"
+description = "Kuznyechik (GOST R 34.12-2015) block cipher"
+documentation = "https://docs.rs/kuznyechik"
+repository = "https://github.com/RustCrypto/block-ciphers"
+keywords = ["crypto", "magma", "gost", "block-cipher"]
+
+[dependencies]
+generic-array = "0.6"
+block-cipher-trait = "0.3"
+
+[dev-dependencies]
+crypto-tests = "0.3"
