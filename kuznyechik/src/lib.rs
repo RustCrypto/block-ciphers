@@ -12,20 +12,18 @@ pub struct Kuznyechik {
     keys: [[u8; 16]; 10]
 }
 
-fn gf_mul(mut x: u8, mut y: u8) -> u8 {
-    let mut z = 0u8;
-    while y != 0 {
-        if y & 1 == 1 {
-           z ^= x;
-        }
-        if x & 0x80 != 0 {
-            x = (x << 1) ^ 0xC3;
-        } else {
-            x <<= 1;
-        }
-        y >>= 1;
+fn gf_mul(msg: u8, i: usize) -> u8 {
+    match i {
+        0 | 7 | 9 => msg,
+        4 | 12 => consts::GF[0][msg as usize],
+        2 | 14 => consts::GF[1][msg as usize],
+        3 | 13 => consts::GF[2][msg as usize],
+        1 | 15 => consts::GF[3][msg as usize],
+        6 | 10 => consts::GF[4][msg as usize],
+        5 | 11 => consts::GF[5][msg as usize],
+        8 => consts::GF[6][msg as usize],
+        _ => unreachable!(),
     }
-    z
 }
 
 fn x(a: &mut Block<U16>, b: &[u8; 16]) {
@@ -41,27 +39,28 @@ fn lsx(msg: &mut Block<U16>, key: &[u8; 16]) {
         msg[i] = consts::P[msg[i] as usize];
     }
     // l
-    for _ in 0..16 {
-        let mut x = msg[0];
+    for j in 0..16 {
+        let mut x = msg[j];
         for i in 1..16 {
-            msg[i-1] = msg[i];
-            x ^= gf_mul(msg[i], consts::L[i]);
+            let k = (i+j) & 0xf;
+            x ^= gf_mul(msg[k], i);
         }
-        msg[15] = x;
+        msg[j] = x;
     }
 }
 
 fn lsx_inv(msg: &mut Block<U16>, key: &[u8; 16]) {
     x(msg, key);
     // l_inv
-    for _ in 0..16 {
-        let mut x = msg[15];
-        for i in (1..16).rev() {
-            msg[i] = msg[i-1];
-            x ^= gf_mul(msg[i], consts::L[i]);
+    for j in (0..16).rev() {
+        let mut x = msg[j];
+        for i in 1..16 {
+            let k = (i+j) & 0xf;
+            x ^= gf_mul(msg[k], i);
         }
-        msg[0] = x;
+        msg[j] = x;
     }
+
     // s_inv
     for i in 0..16 {
         msg[i] = consts::P_INV[msg[i] as usize];
@@ -75,13 +74,13 @@ fn x2(a: &mut [u8; 16], b: &[u8; 16]) {
 }
 
 fn l2(msg: &mut [u8; 16]) {
-    for _ in 0..16 {
-        let mut x = msg[0];
+    for j in 0..16 {
+        let mut x = msg[j];
         for i in 1..16 {
-            msg[i-1] = msg[i];
-            x ^= gf_mul(msg[i], consts::L[i]);
+            let k = (i+j) & 0xf;
+            x ^= gf_mul(msg[k], i);
         }
-        msg[15] = x;
+        msg[j] = x;
     }
 }
 
@@ -168,5 +167,45 @@ impl BlockCipherFixKey for Kuznyechik {
         let mut cipher = Kuznyechik{keys: Default::default()};
         cipher.expand_key(key);
         cipher
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use consts;
+    use super::gf_mul;
+
+    #[test]
+    fn test_subst_tables() {
+        for i in 0..256 {
+            assert_eq!(consts::P_INV[consts::P[i] as usize], i as u8);
+        }
+    }
+
+    fn direct_gf_mul(mut x: u8, mut y: u8) -> u8 {
+        let mut z = 0u8;
+        while y != 0 {
+            if y & 1 == 1 {
+               z ^= x;
+            }
+            if x & 0x80 != 0 {
+                x = (x << 1) ^ 0xC3;
+            } else {
+                x <<= 1;
+            }
+            y >>= 1;
+        }
+        z
+    }
+
+    #[test]
+    fn test_gf_table() {
+        for i in 0..16 {
+            for j in 0..256 {
+                let a = direct_gf_mul(j as u8, consts::L[i]);
+                let b = gf_mul(j as u8, i);
+                assert_eq!(a, b);
+            }
+        }
     }
 }

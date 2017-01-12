@@ -14,11 +14,13 @@ use generic_array::GenericArray;
 pub fn encrypt(bh: &mut Bencher) {
     let key = Default::default();
     let state = kuznyechik::Kuznyechik::new(&key);
-    let input = &[1u8; 16];
+
+    let data = [1u8; 16];
+    let input = GenericArray::from_slice(&data);
     let mut output = GenericArray::default();
 
     bh.iter(|| {
-        state.encrypt_block(GenericArray::from_slice(input), &mut output);
+        state.encrypt_block(input, &mut output);
     });
     bh.bytes = 16u64;
 }
