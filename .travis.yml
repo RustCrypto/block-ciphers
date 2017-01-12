@@ -8,6 +8,8 @@ matrix:
     - rust: nightly
 env:
   - TEST_DIR=blowfish
+  - TEST_DIR=magma
+  - TEST_DIR=kuznyechik
   - TEST_DIR=utils/block-cipher-trait
 script: cd $TEST_DIR && cargo build --verbose && cargo test --verbose
 
