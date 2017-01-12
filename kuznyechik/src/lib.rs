@@ -3,7 +3,6 @@ extern crate block_cipher_trait;
 extern crate generic_array;
 
 mod consts;
-mod expand_key;
 
 use block_cipher_trait::{Block, BlockCipher, BlockCipherFixKey};
 use generic_array::typenum::{U16, U32};
@@ -13,13 +12,13 @@ pub struct Kuznyechik {
     keys: [[u8; 16]; 10]
 }
 
-fn x(a: &mut Block<U16>, b: &[u8; 16]) {
+fn x(a: &mut [u8; 16], b: &[u8; 16]) {
     for i in 0..16 {
         a[i] ^= b[i];
     }
 }
 
-fn l_step(msg: &mut Block<U16>, i: usize) {
+fn l_step(msg: &mut [u8; 16], i: usize) {
     let mut x = msg[i];
     x ^= consts::GF[3][msg[(1+i) & 0xf] as usize];
     x ^= consts::GF[1][msg[(2+i) & 0xf] as usize];
@@ -39,7 +38,8 @@ fn l_step(msg: &mut Block<U16>, i: usize) {
     msg[i] = x;
 }
 
-fn lsx(msg: &mut Block<U16>, key: &[u8; 16]) {
+#[inline(always)]
+fn lsx(msg: &mut [u8; 16], key: &[u8; 16]) {
     x(msg, key);
     // s
     for i in 0..16 {
@@ -51,7 +51,7 @@ fn lsx(msg: &mut Block<U16>, key: &[u8; 16]) {
     }
 }
 
-fn lsx_inv(msg: &mut Block<U16>, key: &[u8; 16]) {
+fn lsx_inv(msg: &mut [u8; 16], key: &[u8; 16]) {
     x(msg, key);
     // l_inv
     for i in (0..16).rev() {
@@ -62,6 +62,28 @@ fn lsx_inv(msg: &mut Block<U16>, key: &[u8; 16]) {
         msg[i] = consts::P_INV[msg[i] as usize];
     }
 }
+
+fn get_c(n: usize) -> [u8; 16] {
+    let mut v = [0u8; 16];
+    v[0] = n as u8;
+    for i in 0..16 {
+        l_step(&mut v, i);
+    }
+    v
+}
+
+fn f(k1: &mut [u8; 16], k2: &mut [u8; 16], n: usize) {
+    for i in 0..4 {
+        let mut k1_cpy = k1.clone();
+        lsx(&mut k1_cpy, &get_c(8*n+2*i+1));
+        x(k2, &k1_cpy);
+
+        let mut k2_cpy = k2.clone();
+        lsx(&mut k2_cpy, &get_c(8*n+2*i+2));
+        x(k1, &k2_cpy);        
+    }
+}
+
 
 impl Kuznyechik {
     fn expand_key(&mut self, key: &Block<U32>) {
@@ -75,20 +97,20 @@ impl Kuznyechik {
         self.keys[1] = k2;
 
         for i in 1..5 {
-            expand_key::f(&mut k1, &mut k2, i-1);
+            f(&mut k1, &mut k2, i-1);
             self.keys[2*i] = k1;
             self.keys[2*i+1] = k2;
         }
     }
 
-    fn encrypt(&self, msg: &mut Block<U16>) {
+    fn encrypt(&self, msg: &mut [u8; 16]) {
         for k in &self.keys[..9] {
             lsx(msg, k);
         }
         x(msg, &self.keys[9])
     }
 
-    fn decrypt(&self, msg: &mut Block<U16>) {
+    fn decrypt(&self, msg: &mut [u8; 16]) {
         for k in self.keys[1..].iter().rev() {
             lsx_inv(msg, k);
         }
@@ -100,12 +122,14 @@ impl BlockCipher for Kuznyechik {
     type BlockSize = U16;
 
     fn encrypt_block(&self, input: &Block<U16>, output: &mut Block<U16>) {
-        output.clone_from_slice(&input);
+        let output: &mut [u8; 16] = unsafe { core::mem::transmute(output) };
+        output.copy_from_slice(input);
         self.encrypt(output);
     }
 
     fn decrypt_block(&self, input: &Block<U16>, output: &mut Block<U16>) {
-        output.clone_from_slice(&input);
+        let output: &mut [u8; 16] = unsafe { core::mem::transmute(output) };
+        output.copy_from_slice(input);
         self.decrypt(output);
     }
 }
