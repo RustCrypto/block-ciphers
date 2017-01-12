@@ -15,4 +15,8 @@ Rust-Crypto is dual licensed under the MIT and Apache 2.0 licenses, the same
 licenses as the Rust compiler.
 
 ## Supported algorithms
-* [Blowfish](https://en.wikipedia.org/wiki/Blowfish_(cipher))
+| Name     | Alt name   | Crates.io  | Documentation  |
+| ------------- |:-------------:| :-----:| :-----:|
+| [Blowfish](https://en.wikipedia.org/wiki/Blowfish_(cipher)) |   | [![crates.io](https://img.shields.io/crates/v/blowfish.svg)](https://crates.io/crates/blowfish) | [![Documentation](https://docs.rs/blowfish/badge.svg)](https://docs.rs/blowfish) |
+| [Magma](https://en.wikipedia.org/wiki/GOST_(block_cipher)) | GOST 28147-89 and GOST R 34.12-2015 | [![crates.io](https://img.shields.io/crates/v/magma.svg)](https://crates.io/crates/magma) | [![Documentation](https://docs.rs/magma/badge.svg)](https://docs.rs/magma) |
+| [Kuznyechik](https://en.wikipedia.org/wiki/Kuznyechik) |  GOST R 34.12-2015  | [![crates.io](https://img.shields.io/crates/v/kuznyechik.svg)](https://crates.io/crates/kuznyechik) | [![Documentation](https://docs.rs/kuznyechik/badge.svg)](https://docs.rs/kuznyechik) |
