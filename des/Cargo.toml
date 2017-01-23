@@ -1,0 +1,16 @@
+[package]
+name = "des"
+version = "0.1.0"
+authors = ["The Rust-Crypto Project Developers"]
+license = "MIT/Apache-2.0"
+description = "DES block cipher"
+documentation = "https://docs.rs/des"
+repository = "https://github.com/RustCrypto/block-ciphers"
+keywords = ["crypto", "des", "block-cipher"]
+
+[dev-dependencies]
+crypto-tests = "0.2"
+
+[dependencies]
+generic-array = "0.5"
+block-cipher-trait = "0.2"
