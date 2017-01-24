@@ -4,8 +4,8 @@ extern crate generic_array;
 mod consts;
 
 use block_cipher_trait::{Block, BlockCipher, BlockCipherFixKey};
-use generic_array::GenericArray;
-use generic_array::typenum::U8;
+use generic_array::{ArrayLength, GenericArray};
+use generic_array::typenum::{Cmp, Compare, Less, Same, U8, U65};
 
 use consts::SBOXES;
 
@@ -14,10 +14,8 @@ struct Des {
 }
 
 impl Des {
-    fn apply_sboxes(
-        &self,
-        input: u64,
-    ) -> u64 {
+    /// Applies all eight sboxes to the input
+    fn apply_sboxes(&self, input: u64) -> u64 {
         let mut output: u64 = 0;
         for i in 0..8 {
             let sbox = SBOXES[i];
@@ -28,7 +26,17 @@ impl Des {
         output
     }
 
-    fn apply_pbox(&self) {
+    /// Applies the given pbox to the input
+    fn apply_pbox<N>(&self, input: u64, pbox: GenericArray<u8, N>) -> u64
+        where N: ArrayLength<u8> + Cmp<U65>,
+              Compare<N, U65>: Same<Less>,
+    {
+        let len = N::to_usize();
+        let mut output = 0;
+        for i in 0..len {
+            output |= ((1 << pbox[i]) & input) << i;
+        }
+        output
     }
 }
 
