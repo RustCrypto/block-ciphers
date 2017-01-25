@@ -6,12 +6,13 @@ mod consts;
 
 use block_cipher_trait::{Block, BlockCipher, BlockCipherFixKey};
 use generic_array::{ArrayLength, GenericArray};
-use generic_array::typenum::{Cmp, Compare, Less, Same, U8, U64, U65};
+use generic_array::typenum::{Cmp, Compare, Less, Same, U8, U32, U48, U64, U65};
 
-use consts::{INITIAL_PBOX, FINAL_PBOX, SBOXES};
+use consts::{EXPANSION_PBOX, INITIAL_PBOX, FINAL_PBOX, ROUND_PBOX, SBOXES};
 
 #[derive(Copy, Clone)]
 struct Des {
+    key: u64,
 }
 
 impl Des {
@@ -23,7 +24,18 @@ impl Des {
     }
 
     fn f(&self, input: u32) -> u32 {
-        0
+        let mut val = self.apply_pbox::<U48>(
+            input as u64,
+            GenericArray::from_slice(&EXPANSION_PBOX),
+        );
+        val ^= self.key;
+        val = self.apply_sboxes(val);
+        self.apply_pbox::<U32>(
+            val,
+            GenericArray::from_slice(&ROUND_PBOX),
+        );
+
+        val as u32
     }
 
     /// Applies all eight sboxes to the input

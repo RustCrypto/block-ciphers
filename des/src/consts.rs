@@ -21,7 +21,7 @@ pub const FINAL_PBOX: [u8; 64] = [
     33, 1, 41, 9, 49, 17, 57, 25,
 ];
 
-pub const EXPANSION_BOX: [u8; 48] = [
+pub const EXPANSION_PBOX: [u8; 48] = [
     31,  0,  1,  2,  3,  4,  3,  4,
      5,  6,  7,  8,  7,  8,  9, 10,
     11, 12, 11, 12, 13, 14, 15, 16,
