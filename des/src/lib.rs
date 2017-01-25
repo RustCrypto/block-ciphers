@@ -1,10 +1,12 @@
+#![no_std]
+
 extern crate block_cipher_trait;
 extern crate byte_tools;
 extern crate generic_array;
 
 mod consts;
 
-use block_cipher_trait::{Block, BlockCipher, BlockCipherFixKey};
+pub use block_cipher_trait::{Block, BlockCipher, BlockCipherFixKey};
 use generic_array::{ArrayLength, GenericArray};
 use generic_array::typenum::{
     Cmp, Compare, Less, Same,
@@ -19,11 +21,43 @@ use consts::{
 };
 
 #[derive(Copy, Clone)]
-struct Des {
+pub struct Des {
     key: u64,
 }
 
 impl Des {
+    fn get_keys(&self) -> [u64; 16] {
+        let mut keys: [u64; 16] = [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ];
+        let key = self.apply_pbox::<U56>(
+            self.key,
+            GenericArray::from_slice(&PC1),
+        );
+
+        // The most significant bit is bit zero, and there are only 56 bits in
+        // the key after applying PC1, so we need to remove the eight least
+        // significant bits from the key.
+        let key = key >> 8;
+
+        let mut c = key >> 28;
+        let mut d = key & 0x0FFFFFFF;
+        for i in 0..16 {
+            c = self.rotate(c, SHIFTS[i]);
+            d = self.rotate(d, SHIFTS[i]);
+
+            keys[i] = self.apply_pbox::<U48>(
+                ((c << 28) | d) << 8,
+                GenericArray::from_slice(&PC2),
+            );
+            // // Keys are 48 bits starting from the most significant bit, so we
+            // // need to remove the 16 least significant bits from the key.
+            // keys[i] >>= 16;
+        }
+
+        keys
+    }
+
     fn do_rounds(&self, input: u64, keys: [u64; 16]) -> u64 {
         let mut data = self.apply_pbox::<U64>(
             input,
@@ -32,39 +66,24 @@ impl Des {
         for key in keys.iter() {
             data = self.round(data, *key);
         }
+        let l = data >> 32;
+        let r = data & 0x0FFFFFFF;
+        data = r << 32 | l;
         data = self.apply_pbox::<U64>(
             data,
             GenericArray::from_slice(&FINAL_PBOX),
         );
-
         data
     }
 
-    fn get_keys(&self) -> [u64; 16] {
-        let mut keys: [u64; 16] = [
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        ];
-        let mut key = self.apply_pbox::<U56>(
-            self.key,
-            GenericArray::from_slice(&PC1),
-        );
-
-        for i in 0..16 {
-            key = self.get_next_round_key(key, i);
-            keys[i] = key;
-        }
-
-        keys
-    }
-
     fn round(&self, input: u64, key: u64) -> u64 {
-        let l = input & 0xFFFFFFFF;
-        let r = input >> 32;
+        let l = (input >> 32) << 32;
+        let r = (input & 0xFFFFFFFF) << 32;
 
-        ((self.f(r as u32, key) as u64 ^ l) << 32) & r
+        r | ((self.f(r, key) ^ l) >> 32)
     }
 
-    fn f(&self, input: u32, key: u64) -> u32 {
+    fn f(&self, input: u64, key: u64) -> u64 {
         let mut val = self.apply_pbox::<U48>(
             input as u64,
             GenericArray::from_slice(&EXPANSION_PBOX),
@@ -74,9 +93,7 @@ impl Des {
         self.apply_pbox::<U32>(
             val,
             GenericArray::from_slice(&ROUND_PBOX),
-        );
-
-        val as u32
+        )
     }
 
     /// Applies all eight sboxes to the input
@@ -84,10 +101,9 @@ impl Des {
         let mut output: u64 = 0;
         for i in 0..8 {
             let sbox = SBOXES[i];
-            let val = (input >> (i * 6)) & 0x3F;
-            output |= (sbox[val as usize] as u64) << (i * 6);
+            let val = (input >> (58 - (i * 6))) & 0x3F;
+            output |= (sbox[val as usize] as u64) << (60 - (i * 4));
         }
-
         output
     }
 
@@ -99,16 +115,10 @@ impl Des {
         let len = N::to_usize();
         let mut output = 0;
         for i in 0..len {
-            output |= ((1 << pbox[i]) & input) << i;
+            let mask = 1 << (63 - pbox[i]);
+            output |= if mask & input != 0 { 1 << (63 - i) } else { 0 };
         }
         output
-    }
-
-    fn get_next_round_key(&self, key: u64, round: usize) -> u64 {
-        let c = self.rotate(key & 0x0FFFFFFF, SHIFTS[round]);
-        let d = self.rotate(key >> 28, SHIFTS[round]);
-
-        self.apply_pbox::<U48>((d << 28) & c, GenericArray::from_slice(&PC2))
     }
 
     /// Performs a left rotate on a 28 bit number
@@ -116,7 +126,7 @@ impl Des {
         let top_bits = val >> (28 - shift);
         val <<= shift;
 
-        val & top_bits & 0x0FFFFFFF
+        (val | top_bits) & 0x0FFFFFFF
     }
 }
 
