@@ -97,6 +97,8 @@ impl BlockCipherFixKey for Des {
     type KeySize = U8;
 
     fn new(key: &GenericArray<u8, U8>) -> Self {
-        unimplemented!()
+        let mut key_val = [0];
+        byte_tools::read_u64v_be(&mut key_val, key);
+        Des { key: key_val[0] }
     }
 }
