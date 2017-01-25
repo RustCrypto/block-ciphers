@@ -19,7 +19,7 @@ fn test() {
     );
 
     let d = Des::new(&key);
-    let mut output = GenericArray::from_slice(&[0; 8]);
+    let mut output = GenericArray::new();
     d.encrypt_block(&input, &mut output);
     assert_eq!(output, expected);
 }

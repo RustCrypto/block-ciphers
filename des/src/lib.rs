@@ -46,13 +46,12 @@ impl Des {
             c = self.rotate(c, SHIFTS[i]);
             d = self.rotate(d, SHIFTS[i]);
 
+            // We need the `<< 8` because the most significant bit is bit zero,
+            // so we need to shift our 56 bit value 8 bits to the left.
             keys[i] = self.apply_pbox::<U48>(
                 ((c << 28) | d) << 8,
                 GenericArray::from_slice(&PC2),
             );
-            // // Keys are 48 bits starting from the most significant bit, so we
-            // // need to remove the 16 least significant bits from the key.
-            // keys[i] >>= 16;
         }
 
         keys
