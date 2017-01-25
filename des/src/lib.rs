@@ -1,19 +1,31 @@
 extern crate block_cipher_trait;
+extern crate byte_tools;
 extern crate generic_array;
 
 mod consts;
 
 use block_cipher_trait::{Block, BlockCipher, BlockCipherFixKey};
 use generic_array::{ArrayLength, GenericArray};
-use generic_array::typenum::{Cmp, Compare, Less, Same, U8, U65};
+use generic_array::typenum::{Cmp, Compare, Less, Same, U8, U64, U65};
 
-use consts::SBOXES;
+use consts::{INITIAL_PBOX, FINAL_PBOX, SBOXES};
 
 #[derive(Copy, Clone)]
 struct Des {
 }
 
 impl Des {
+    fn round(&self, input: u64) -> u64 {
+        let l = input & 0xFFFFFFFF;
+        let r = input >> 32;
+
+        ((self.f(r as u32) as u64 ^ l) << 32) & r
+    }
+
+    fn f(&self, input: u32) -> u32 {
+        0
+    }
+
     /// Applies all eight sboxes to the input
     fn apply_sboxes(&self, input: u64) -> u64 {
         let mut output: u64 = 0;
@@ -44,7 +56,24 @@ impl BlockCipher for Des {
     type BlockSize = U8;
 
     fn encrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
+        let rounds = 16;
+        // TODO: Better way to initialize this
+        let mut data = [0];
+        byte_tools::read_u64v_be(&mut data, input);
+        let mut data = data[0];
 
+        data = self.apply_pbox::<U64>(
+            data,
+            GenericArray::from_slice(&INITIAL_PBOX),
+        );
+        for _ in 0..rounds {
+            data = self.round(data);
+        }
+        data = self.apply_pbox::<U64>(
+            data,
+            GenericArray::from_slice(&FINAL_PBOX),
+        );
+        byte_tools::write_u64_be(output, data);
     }
 
     fn decrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
