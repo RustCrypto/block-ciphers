@@ -6,9 +6,17 @@ mod consts;
 
 use block_cipher_trait::{Block, BlockCipher, BlockCipherFixKey};
 use generic_array::{ArrayLength, GenericArray};
-use generic_array::typenum::{Cmp, Compare, Less, Same, U8, U32, U48, U64, U65};
+use generic_array::typenum::{
+    Cmp, Compare, Less, Same,
+    U8, U32, U48, U56, U64, U65,
+};
 
-use consts::{EXPANSION_PBOX, INITIAL_PBOX, FINAL_PBOX, ROUND_PBOX, SBOXES};
+use consts::{
+    EXPANSION_PBOX,
+    INITIAL_PBOX, FINAL_PBOX,
+    PC1, PC2,
+    ROUND_PBOX, SBOXES, SHIFTS,
+};
 
 #[derive(Copy, Clone)]
 struct Des {
@@ -16,19 +24,52 @@ struct Des {
 }
 
 impl Des {
-    fn round(&self, input: u64) -> u64 {
+    fn do_rounds(&self, input: u64, keys: [u64; 16]) -> u64 {
+        let mut data = self.apply_pbox::<U64>(
+            input,
+            GenericArray::from_slice(&INITIAL_PBOX),
+        );
+        for key in keys.iter() {
+            data = self.round(data, *key);
+        }
+        data = self.apply_pbox::<U64>(
+            data,
+            GenericArray::from_slice(&FINAL_PBOX),
+        );
+
+        data
+    }
+
+    fn get_keys(&self) -> [u64; 16] {
+        let mut keys: [u64; 16] = [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ];
+        let mut key = self.apply_pbox::<U56>(
+            self.key,
+            GenericArray::from_slice(&PC1),
+        );
+
+        for i in 0..16 {
+            key = self.get_next_round_key(key, i);
+            keys[i] = key;
+        }
+
+        keys
+    }
+
+    fn round(&self, input: u64, key: u64) -> u64 {
         let l = input & 0xFFFFFFFF;
         let r = input >> 32;
 
-        ((self.f(r as u32) as u64 ^ l) << 32) & r
+        ((self.f(r as u32, key) as u64 ^ l) << 32) & r
     }
 
-    fn f(&self, input: u32) -> u32 {
+    fn f(&self, input: u32, key: u64) -> u32 {
         let mut val = self.apply_pbox::<U48>(
             input as u64,
             GenericArray::from_slice(&EXPANSION_PBOX),
         );
-        val ^= self.key;
+        val ^= key;
         val = self.apply_sboxes(val);
         self.apply_pbox::<U32>(
             val,
@@ -62,34 +103,45 @@ impl Des {
         }
         output
     }
+
+    fn get_next_round_key(&self, key: u64, round: usize) -> u64 {
+        let c = self.rotate(key & 0x0FFFFFFF, SHIFTS[round]);
+        let d = self.rotate(key >> 28, SHIFTS[round]);
+
+        self.apply_pbox::<U48>((d << 28) & c, GenericArray::from_slice(&PC2))
+    }
+
+    /// Performs a left rotate on a 28 bit number
+    fn rotate(&self, mut val: u64, shift: u8) -> u64 {
+        let top_bits = val >> (28 - shift);
+        val <<= shift;
+
+        val & top_bits & 0x0FFFFFFF
+    }
 }
 
 impl BlockCipher for Des {
     type BlockSize = U8;
 
     fn encrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
-        let rounds = 16;
-        // TODO: Better way to initialize this
+        // TODO: Better way to initialize this?
         let mut data = [0];
         byte_tools::read_u64v_be(&mut data, input);
-        let mut data = data[0];
 
-        data = self.apply_pbox::<U64>(
-            data,
-            GenericArray::from_slice(&INITIAL_PBOX),
-        );
-        for _ in 0..rounds {
-            data = self.round(data);
-        }
-        data = self.apply_pbox::<U64>(
-            data,
-            GenericArray::from_slice(&FINAL_PBOX),
-        );
-        byte_tools::write_u64_be(output, data);
+        let keys = self.get_keys();
+        let res = self.do_rounds(data[0], keys);
+        byte_tools::write_u64_be(output, res);
     }
 
     fn decrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
-        unimplemented!()
+        // TODO: Better way to initialize this?
+        let mut data = [0];
+        byte_tools::read_u64v_be(&mut data, input);
+
+        let mut keys = self.get_keys();
+        keys.reverse();
+        let res = self.do_rounds(data[0], keys);
+        byte_tools::write_u64_be(output, res);
     }
 }
 

@@ -36,6 +36,27 @@ pub const ROUND_PBOX: [u8; 32] = [
     18, 12, 29,  5, 21, 10,  3, 24,
 ];
 
+pub const SHIFTS: [u8; 16] = [ 1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1 ];
+
+pub const PC1: [u8; 56] = [
+    49, 42, 35, 28, 21, 14,  7,  0,
+    50, 43, 36, 29, 22, 15,  8,  1,
+    51, 44, 37, 30, 23, 16,  9,  2,
+    52, 45, 38, 31, 55, 48, 41, 34,
+    27, 20, 13,  6, 54, 47, 40, 33,
+    26, 19, 12,  5, 53, 46, 39, 32,
+    25, 18, 11,  4, 24, 17, 10,  3,
+];
+
+pub const PC2: [u8; 48] = [
+    13, 16, 10, 23,  0,  4,  2, 27,
+    14,  5, 20,  9, 22, 18, 11,  3,
+    25,  7, 15,  6, 26, 19, 12,  1,
+    40, 51, 30, 36, 46, 54, 29, 39,
+    50, 44, 32, 47, 43, 48, 38, 55,
+    33, 52, 45, 41, 49, 35, 28, 31,
+];
+
 // These boxes are not the same ones that appear in the literature. Normally,
 // the first and the last bits of the six input bits are used to choose the row
 // and the middle four bits are used to choose the column. These sboxes are
