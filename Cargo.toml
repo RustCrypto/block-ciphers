@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "blowfish",
+    "kuznyechik",
+    "magma",
+]
