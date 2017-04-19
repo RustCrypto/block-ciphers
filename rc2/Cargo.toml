@@ -1,0 +1,7 @@
+[package]
+name = "rc2"
+version = "0.1.0"
+authors = ["Trojan295 <trojan295@gmail.com>"]
+
+[dependencies]
+block-cipher-trait = "0.2"
