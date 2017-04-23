@@ -1,7 +1,17 @@
 [package]
 name = "rc2"
 version = "0.1.0"
-authors = ["Trojan295 <trojan295@gmail.com>"]
+authors = ["The Rust-Crypto Project Developers"]
+license = "MIT/Apache-2.0"
+description = "RC2 block cipher"
+documentation = "https://docs.rs/rc2"
+repository = "https://github.com/RustCrypto/block-ciphers"
+keywords = ["crypto", "rc2", "block-cipher"]
 
 [dependencies]
+generic-array = "0.5"
 block-cipher-trait = "0.2"
+byte-tools = "0.1"
+
+[dev-dependencies]
+crypto-tests = "^0.2.4"
