@@ -15,10 +15,16 @@ pub struct RC2 {
 }
 
 impl RC2 {
-    fn expand_key(key: &[u8]) -> [u16; 64] {
+    pub fn new_with_effective_key_length(key: &[u8], eff_key_len: usize) -> RC2 {
+        RC2 {
+            exp_key: RC2::expand_key(key, eff_key_len)
+        }
+    }
+
+    fn expand_key(key: &[u8], t1: usize) -> [u16; 64] {
         let key_len = key.len() as usize;
 
-        let t1: usize = key_len<<3;
+        //let t1: usize = key_len<<3;
         let t8: usize = (t1+7)>>3;
 
         let tm: usize = (255 % ((2 as u32).pow((8+t1-8*t8) as u32))) as usize;
@@ -161,7 +167,7 @@ impl RC2 {
 impl BlockCipherVarKey for RC2 {
     fn new(key: &[u8]) -> RC2 {
         RC2 {
-            exp_key: RC2::expand_key(key)
+            exp_key: RC2::expand_key(key, key.len()*8)
         }
     }
 }
