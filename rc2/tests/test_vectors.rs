@@ -6,7 +6,7 @@ pub struct RC2CipherTest {
     pub output: &'static [u8],
 }
 
-pub static RC2_EFF_KEY_LEN_TESTS: &[RC2CipherTest] = &[
+pub static RC2_EFF_KEY_LEN_TESTS: &'static [RC2CipherTest] = &[
     RC2CipherTest {
         key: &[0x88],
         eff_key_length: 64,
