@@ -33,9 +33,7 @@ impl RC2 {
         let tm: usize = (255 % ((2 as u32).pow((8+t1-8*t8) as u32))) as usize;
 
         let mut key_buffer: [u8; 128] = [0; 128];
-        for i in 0..key_len {
-            key_buffer[i] = key[i];
-        }
+        key_buffer[..key_len].copy_from_slice(&key[..key_len]);
 
         for i in key_len..128 {
             let pos: u32 = (key_buffer[i-1] as u32 + key_buffer[i-key_len] as u32) & 0xff;
