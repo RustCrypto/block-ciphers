@@ -3,4 +3,5 @@ members = [
     "blowfish",
     "kuznyechik",
     "magma",
+    "rc2",
 ]
