@@ -1,0 +1,17 @@
+[package]
+name = "twofish"
+version = "0.1.0"
+authors = ["The Rust-Crypto Project Developers"]
+license = "MIT/Apache-2.0"
+description = "Twofish block cipher"
+documentation = "https://docs.rs/twofish"
+repository = "https://github.com/RustCrypto/block-ciphers"
+keywords = ["crypto", "twofish", "block-cipher"]
+
+[dependencies]
+generic-array = "0.5"
+byte-tools = "0.1"
+block-cipher-trait = "0.2"
+
+[dev-dependencies]
+crypto-tests = "0.3"
