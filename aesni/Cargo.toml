@@ -7,3 +7,5 @@ description = "AES (Rijndael) block cipher implemented using AES-NI"
 documentation = "https://docs.rs/aesni"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "aes", "rijndael", "block-cipher"]
+
+[workspace]
