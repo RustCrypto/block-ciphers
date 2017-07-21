@@ -1,0 +1,9 @@
+[package]
+name = "aesni"
+version = "0.1.0"
+authors = ["RustCrypto Developers"]
+license = "MIT/Apache-2.0"
+description = "AES (Rijndael) block cipher implemented using AES-NI"
+documentation = "https://docs.rs/aesni"
+repository = "https://github.com/RustCrypto/block-ciphers"
+keywords = ["crypto", "aes", "rijndael", "block-cipher"]
