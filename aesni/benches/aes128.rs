@@ -4,53 +4,49 @@ extern crate aesni;
 extern crate test;
 
 #[bench]
-pub fn encrypt(bh: &mut test::Bencher) {
-    let key = Default::default();
-    let cipher = aesni::Aes128::new(&key);
+pub fn aes128_encrypt(bh: &mut test::Bencher) {
+    let cipher = aesni::Aes128::new(&Default::default());
     let mut input = Default::default();
 
     bh.iter(|| {
         cipher.encrypt(&mut input);
-        test::black_box(input);
+        test::black_box(&input);
     });
     bh.bytes = input.len() as u64;
 }
 
 #[bench]
-pub fn decrypt(bh: &mut test::Bencher) {
-    let key = Default::default();
-    let cipher = aesni::Aes128::new(&key);
+pub fn aes128_decrypt(bh: &mut test::Bencher) {
+    let cipher = aesni::Aes128::new(&Default::default());
     let mut input = Default::default();
 
     bh.iter(|| {
         cipher.decrypt(&mut input);
-        test::black_box(input);
+        test::black_box(&input);
     });
     bh.bytes = input.len() as u64;
 }
 
 #[bench]
-pub fn encrypt8(bh: &mut test::Bencher) {
-    let key = Default::default();
-    let cipher = aesni::Aes128::new(&key);
+pub fn aes128_encrypt8(bh: &mut test::Bencher) {
+    let cipher = aesni::Aes128::new(&Default::default());
     let mut input = [0u8; 16*8];
 
     bh.iter(|| {
         cipher.encrypt8(&mut input);
-        test::black_box(input);
+        test::black_box(&input);
     });
     bh.bytes = input.len() as u64;
 }
 
 #[bench]
-pub fn decrypt8(bh: &mut test::Bencher) {
-    let key = Default::default();
-    let cipher = aesni::Aes128::new(&key);
+pub fn aes128_decrypt8(bh: &mut test::Bencher) {
+    let cipher = aesni::Aes128::new(&Default::default());
     let mut input = [0u8; 16*8];
 
     bh.iter(|| {
         cipher.decrypt8(&mut input);
-        test::black_box(input);
+        test::black_box(&input);
     });
     bh.bytes = input.len() as u64;
 }

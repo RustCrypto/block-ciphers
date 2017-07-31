@@ -1,4 +1,5 @@
 use core::mem::transmute;
+use core::ptr::{read_unaligned, write_unaligned};
 use super::u64x2;
 
 mod expand;
@@ -18,13 +19,12 @@ impl Aes256 {
 
     #[inline]
     pub fn encrypt(&self, block: &mut [u8; 16]) {
-        assert!((block.as_ptr() as usize) % 16 == 0, "unaligned input");
         let keys = self.encrypt_keys;
         unsafe {
-            let mut data: &mut u64x2 = transmute(block);
+            let mut data: u64x2 = transmute(read_unaligned(block));
 
             asm!(include_str!("encrypt.asm")
-                : "+{xmm0}"(*data)
+                : "+{xmm0}"(data)
                 :
                     "{xmm1}"(keys[0]), "{xmm2}"(keys[1]), "{xmm3}"(keys[2]),
                     "{xmm4}"(keys[3]), "{xmm5}"(keys[4]), "{xmm6}"(keys[5]),
@@ -34,18 +34,19 @@ impl Aes256 {
                 :
                 : "intel", "alignstack"
             );
+
+            write_unaligned(block, transmute(data));
         }
     }
 
     #[inline]
     pub fn decrypt(&self, block: &mut [u8; 16]) {
-        assert!((block.as_ptr() as usize) % 16 == 0, "unaligned input");
         let keys = self.decrypt_keys;
         unsafe {
-            let mut data: &mut u64x2 = transmute(block);
+            let mut data: u64x2 = transmute(read_unaligned(block));
 
             asm!(include_str!("decrypt.asm")
-                : "+{xmm0}"(*data)
+                : "+{xmm0}"(data)
                 :
                     "{xmm1}"(keys[14]), "{xmm2}"(keys[13]), "{xmm3}"(keys[12]),
                     "{xmm4}"(keys[11]), "{xmm5}"(keys[10]), "{xmm6}"(keys[9]),
@@ -55,15 +56,16 @@ impl Aes256 {
                 :
                 : "intel", "alignstack"
             );
+
+            write_unaligned(block, transmute(data));
         }
     }
 
     #[inline]
     pub fn encrypt8(&self, blocks: &mut [u8; 8*16]) {
-        assert!((blocks.as_ptr() as usize) % 16 == 0, "unaligned input");
         let keys = self.encrypt_keys;
         unsafe {
-            let mut data: &mut [u64x2; 8] = transmute(blocks);
+            let mut data: [u64x2; 8] = transmute(read_unaligned(blocks));
 
             asm!(include_str!("encrypt8_1.asm")
                 :
@@ -90,15 +92,16 @@ impl Aes256 {
                 :
                 : "intel", "alignstack"
             );
+
+            write_unaligned(blocks, transmute(data));
         }
     }
 
     #[inline]
     pub fn decrypt8(&self, blocks: &mut [u8; 8*16]) {
-        assert!((blocks.as_ptr() as usize) % 16 == 0, "unaligned input");
         let keys = self.decrypt_keys;
         unsafe {
-            let mut data: &mut [u64x2; 8] = transmute(blocks);
+            let mut data: [u64x2; 8] = transmute(read_unaligned(blocks));
 
             asm!(include_str!("decrypt8_1.asm")
                 :
@@ -125,6 +128,8 @@ impl Aes256 {
                 :
                 : "intel", "alignstack"
             );
+
+            write_unaligned(blocks, transmute(data));
         }
     }
 }

@@ -1,4 +1,4 @@
-#![cfg(target_arch = "x86_64")]
+#![cfg(any(target_arch = "x86_64", target_arch = "x86"))]
 #![no_std]
 #![feature(repr_simd)]
 #![feature(asm)]
@@ -16,10 +16,7 @@ pub use aes256::Aes256;
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 struct u64x2(u64, u64);
 
-
-// One round of AES key schedule. Due to the limitations of inline assembly
-// it's a bit more heavy on I-cache compared to code in the Intel AES-NI
-// whitepaper (p. 24):
+// Intel AES-NI whitepaper:
 //
 // https://software.intel.com/sites/default/files/article/165683/aes-wp-2012-09-22-v01.pdf
 //
