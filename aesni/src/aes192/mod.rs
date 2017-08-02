@@ -1,6 +1,4 @@
-use core::mem::transmute;
-use core::ptr::{read_unaligned, write_unaligned};
-use super::u64x2;
+use u64x2::u64x2;
 
 mod expand;
 
@@ -20,9 +18,8 @@ impl Aes192 {
     #[inline]
     pub fn encrypt(&self, block: &mut [u8; 16]) {
         let keys = self.encrypt_keys;
+        let mut data = u64x2::read(block);
         unsafe {
-            let mut data: u64x2 = transmute(read_unaligned(block));
-
             asm!(include_str!("encrypt.asm")
                 : "+{xmm0}"(data)
                 :
@@ -34,17 +31,15 @@ impl Aes192 {
                 :
                 : "intel", "alignstack"
             );
-
-            write_unaligned(block, transmute(data));
         }
+        data.write(block);
     }
 
     #[inline]
     pub fn decrypt(&self, block: &mut [u8; 16]) {
         let keys = self.decrypt_keys;
+        let mut data = u64x2::read(block);
         unsafe {
-            let mut data: u64x2 = transmute(read_unaligned(block));
-
             asm!(include_str!("decrypt.asm")
                 : "+{xmm0}"(data)
                 :
@@ -56,17 +51,15 @@ impl Aes192 {
                 :
                 : "intel", "alignstack"
             );
-
-            write_unaligned(block, transmute(data));
         }
+        data.write(block);
     }
 
     #[inline]
     pub fn encrypt8(&self, blocks: &mut [u8; 8*16]) {
         let keys = self.encrypt_keys;
+        let mut data = u64x2::read8(blocks);
         unsafe {
-            let mut data: [u64x2; 8] = transmute(read_unaligned(blocks));
-
             asm!(include_str!("encrypt8_1.asm")
                 :
                     "+{xmm0}"(data[0]), "+{xmm1}"(data[1]), "+{xmm2}"(data[2]),
@@ -91,17 +84,15 @@ impl Aes192 {
                 :
                 : "intel", "alignstack"
             );
-
-            write_unaligned(blocks, transmute(data));
         }
+        u64x2::write8(data, blocks);
     }
 
     #[inline]
     pub fn decrypt8(&self, blocks: &mut [u8; 8*16]) {
         let keys = self.decrypt_keys;
+        let mut data = u64x2::read8(blocks);
         unsafe {
-            let mut data: [u64x2; 8] = transmute(read_unaligned(blocks));
-
             asm!(include_str!("decrypt8_1.asm")
                 :
                     "+{xmm0}"(data[0]), "+{xmm1}"(data[1]), "+{xmm2}"(data[2]),
@@ -126,9 +117,8 @@ impl Aes192 {
                 :
                 : "intel", "alignstack"
             );
-
-            write_unaligned(blocks, transmute(data));
         }
+        u64x2::write8(data, blocks);
     }
 }
 

@@ -1,5 +1,4 @@
-use core::mem::transmute;
-use super::u64x2;
+use u64x2::u64x2;
 
 macro_rules! expand_round {
     ($round:expr, $enc_keys:ident, $dec_keys:ident, $pos:expr) => {
@@ -42,15 +41,12 @@ macro_rules! expand_round {
 
 #[inline(always)]
 pub(super) fn expand(key: &[u8; 16]) -> ([u64x2; 11], [u64x2; 11]) {
-    let key = *key;
     let mut enc_keys = [u64x2(0, 0); 11];
     let mut dec_keys = [u64x2(0, 0); 11];
+    enc_keys[0] = u64x2::read(key);
+    dec_keys[0] = enc_keys[0];
 
     unsafe {
-        // Here we use the fact that all x86 and x86_64 CPUs are little-endian
-        enc_keys[0] = transmute(key);
-        dec_keys[0] = enc_keys[0];
-
         expand_round!("0x01", enc_keys, dec_keys, 1);
         expand_round!("0x02", enc_keys, dec_keys, 2);
         expand_round!("0x04", enc_keys, dec_keys, 3);

@@ -6,15 +6,12 @@
 mod aes128;
 mod aes192;
 mod aes256;
+mod u64x2;
 
 pub use aes128::Aes128;
 pub use aes192::Aes192;
 pub use aes256::Aes256;
 
-#[allow(non_camel_case_types)]
-#[repr(simd)]
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-struct u64x2(u64, u64);
 
 // Intel AES-NI whitepaper:
 //
