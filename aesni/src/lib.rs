@@ -5,6 +5,9 @@
 //! appropriate hardware or using AES-NI detection and appropriate software
 //! fallback.
 //!
+//! Additionally this crate currently requires nigthly Rust compiler due to the
+//! usage of unstable `asm` and `simd` features.
+//!
 //! # Usage example
 //! ```
 //! let key = [0u8; 16];
