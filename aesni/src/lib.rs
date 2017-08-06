@@ -1,9 +1,10 @@
 //! AES block cipher implementation using AES-NI instruction set.
 //!
-//! This crate does not implement any software fallback and does not check CPUID,
-//! so if you are using this crate make sure you are running software on
-//! appropriate hardware or using AES-NI detection and appropriate software
-//! fallback.
+//! This crate does not implement any software fallback and does not
+//! automatically check CPUID, so if you are using this crate make sure to run
+//! software on appropriate hardware or to check AES-NI availability using
+//! `check_aesni()` function with appropriate software fallback in case of
+//! its unavailability.
 //!
 //! Additionally this crate currently requires nigthly Rust compiler due to the
 //! usage of unstable `asm` and `simd` features.
@@ -42,3 +43,20 @@ mod u64x2;
 pub use aes128::Aes128;
 pub use aes192::Aes192;
 pub use aes256::Aes256;
+
+/// Check if CPU has AES-NI using CPUID instruction.
+///
+/// It returns `true` if CPU has the instruction set, `false` otherwise.
+#[inline]
+pub fn check_aesni() -> bool {
+    let ecx: u32;
+    unsafe {
+        asm!("cpuid"
+            : "={ecx}"(ecx)
+            : "{eax}"(1)
+            : "edx", "ebx"
+            : "intel"
+        );
+        (ecx & (1<<25)) != 0
+    }
+}
