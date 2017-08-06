@@ -2,6 +2,7 @@ use u64x2::u64x2;
 
 mod expand;
 
+/// AES-128 block cipher instance
 #[derive(Copy, Clone, Debug)]
 pub struct Aes128 {
     encrypt_keys: [u64x2; 11],
@@ -9,12 +10,14 @@ pub struct Aes128 {
 }
 
 impl Aes128 {
+    /// Create new AES-128 instance with given key
     #[inline]
     pub fn new(key: &[u8; 16]) -> Self {
         let (encrypt_keys, decrypt_keys) = expand::expand(key);
         Aes128 { encrypt_keys: encrypt_keys, decrypt_keys: decrypt_keys }
     }
 
+    /// Encrypt in-place one 128 bit block
     #[inline]
     pub fn encrypt(&self, block: &mut [u8; 16]) {
         let keys = self.encrypt_keys;
@@ -34,6 +37,7 @@ impl Aes128 {
         data.write(block);
     }
 
+    /// Decrypt in-place one 128 bit block
     #[inline]
     pub fn decrypt(&self, block: &mut [u8; 16]) {
         let keys = self.decrypt_keys;
@@ -53,6 +57,8 @@ impl Aes128 {
         data.write(block);
     }
 
+    /// Encrypt in-place eight 128 bit blocks (1024 bits in total) using
+    /// instruction-level parallelism
     #[inline]
     pub fn encrypt8(&self, blocks: &mut [u8; 8*16]) {
         let keys = self.encrypt_keys;
@@ -84,6 +90,8 @@ impl Aes128 {
         u64x2::write8(data, blocks);
     }
 
+    /// Decrypt in-place eight 128 bit blocks (1024 bits in total) using
+    /// instruction-level parallelism
     #[inline]
     pub fn decrypt8(&self, blocks: &mut [u8; 8*16]) {
         assert!((blocks.as_ptr() as usize) % 16 == 0, "unaligned input");
