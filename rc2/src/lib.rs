@@ -6,7 +6,8 @@ extern crate block_cipher_trait;
 extern crate generic_array;
 extern crate byte_tools;
 
-use block_cipher_trait::{Block, BlockCipher, BlockCipherVarKey};
+use block_cipher_trait::{BlockCipher, BlockCipherVarKey, InvalidKeyLength};
+use generic_array::GenericArray;
 use generic_array::typenum::U8;
 
 mod consts;
@@ -104,7 +105,7 @@ impl RC2 {
         r[0] = r[0].wrapping_sub(self.exp_key[(r[3] & 63) as usize]);
     }
 
-    fn encrypt(&self, block: &Block<U8>, output: &mut Block<U8>) {
+    fn encrypt(&self, block: &mut GenericArray<u8, U8>) {
         let mut r: [u16; 4] = [
             ((block[1] as u16) << 8) + (block[0] as u16),
             ((block[3] as u16) << 8) + (block[2] as u16),
@@ -121,17 +122,17 @@ impl RC2 {
             }
         }
 
-        output[0] = (r[0] & 0xff) as u8;
-        output[1] = (r[0] >> 8) as u8;
-        output[2] = (r[1] & 0xff) as u8;
-        output[3] = (r[1] >> 8) as u8;
-        output[4] = (r[2] & 0xff) as u8;
-        output[5] = (r[2] >> 8) as u8;
-        output[6] = (r[3] & 0xff) as u8;
-        output[7] = (r[3] >> 8) as u8;
+        block[0] = (r[0] & 0xff) as u8;
+        block[1] = (r[0] >> 8) as u8;
+        block[2] = (r[1] & 0xff) as u8;
+        block[3] = (r[1] >> 8) as u8;
+        block[4] = (r[2] & 0xff) as u8;
+        block[5] = (r[2] >> 8) as u8;
+        block[6] = (r[3] & 0xff) as u8;
+        block[7] = (r[3] >> 8) as u8;
     }
 
-    fn decrypt(&self, block: &Block<U8>, output: &mut Block<U8>) {
+    fn decrypt(&self, block: &mut GenericArray<u8, U8>) {
         let mut r: [u16; 4] = [
             ((block[1] as u16) << 8) + (block[0] as u16),
             ((block[3] as u16) << 8) + (block[2] as u16),
@@ -148,31 +149,35 @@ impl RC2 {
             }
         }
 
-        output[0] = r[0] as u8;
-        output[1] = (r[0] >> 8) as u8;
-        output[2] = r[1] as u8;
-        output[3] = (r[1] >> 8) as u8;
-        output[4] = r[2] as u8;
-        output[5] = (r[2] >> 8) as u8;
-        output[6] = r[3] as u8;
-        output[7] = (r[3] >> 8) as u8;
+        block[0] = r[0] as u8;
+        block[1] = (r[0] >> 8) as u8;
+        block[2] = r[1] as u8;
+        block[3] = (r[1] >> 8) as u8;
+        block[4] = r[2] as u8;
+        block[5] = (r[2] >> 8) as u8;
+        block[6] = r[3] as u8;
+        block[7] = (r[3] >> 8) as u8;
     }
 }
 
 impl BlockCipherVarKey for RC2 {
-    fn new(key: &[u8]) -> RC2 {
-        RC2::new_with_eff_key_len(key, key.len()*8)
+    fn new(key: &[u8]) -> Result<RC2, InvalidKeyLength> {
+        if key.len() < 1 || key.len() > 128 {
+            Err(InvalidKeyLength)
+        } else {
+            Ok(RC2::new_with_eff_key_len(key, key.len()*8))
+        }
     }
 }
 
 impl BlockCipher for RC2 {
     type BlockSize = U8;
 
-    fn encrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
-        self.encrypt(input, output);
+    fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
+        self.encrypt(block);
     }
 
-    fn decrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
-        self.decrypt(input, output);
+    fn decrypt_block(&self, block: &mut GenericArray<u8, U8>) {
+        self.decrypt(block);
     }
 }

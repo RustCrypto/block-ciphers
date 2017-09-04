@@ -3,8 +3,9 @@ extern crate byte_tools;
 extern crate block_cipher_trait;
 extern crate generic_array;
 
-use byte_tools::{read_u32v_be, write_u32_be};
-use block_cipher_trait::{Block, BlockCipher, BlockCipherVarKey};
+use byte_tools::{read_u32_be, write_u32_be};
+use block_cipher_trait::{Block, BlockCipher, BlockCipherVarKey,
+    InvalidKeyLength};
 use generic_array::typenum::U8;
 
 mod consts;
@@ -93,29 +94,33 @@ impl Blowfish {
 impl BlockCipher for Blowfish {
     type BlockSize = U8;
 
-    fn encrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
-        let mut block = [0u32, 0u32];
-        read_u32v_be(&mut block, input);
-        let (l, r) = self.encrypt(block[0], block[1]);
-        write_u32_be(&mut output[0..4], l);
-        write_u32_be(&mut output[4..8], r);
+    #[inline]
+    fn encrypt_block(&self, block: &mut Block<U8>) {
+        let l = read_u32_be(&block[..4]);
+        let r = read_u32_be(&block[4..]);
+        let (l, r) = self.encrypt(l, r);
+        write_u32_be(&mut block[..4], l);
+        write_u32_be(&mut block[4..], r);
     }
 
-    fn decrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
-        let mut block = [0u32, 0u32];
-        read_u32v_be(&mut block, input);
-        let (l, r) = self.decrypt(block[0], block[1]);
-        write_u32_be(&mut output[0..4], l);
-        write_u32_be(&mut output[4..8], r);
+    #[inline]
+    fn decrypt_block(&self, block: &mut Block<U8>) {
+        let l = read_u32_be(&block[..4]);
+        let r = read_u32_be(&block[4..]);
+        let (l, r) = self.decrypt(l, r);
+        write_u32_be(&mut block[..4], l);
+        write_u32_be(&mut block[4..], r);
     }
 }
 
 impl BlockCipherVarKey for Blowfish {
-    fn new(key: &[u8]) -> Blowfish {
-        assert!(4 <= key.len() && key.len() <= 56);
+    fn new(key: &[u8]) -> Result<Blowfish, InvalidKeyLength> {
+        if key.len() < 4 || key.len() > 56 {
+            return Err(InvalidKeyLength);
+        }
         let mut blowfish = Blowfish::init_state();
         blowfish.expand_key(key);
-        blowfish
+        Ok(blowfish)
     }
 }
 

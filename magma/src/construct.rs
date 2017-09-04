@@ -10,12 +10,14 @@ macro_rules! constuct_cipher {
         impl<'a> BlockCipher for $name<'a> {
             type BlockSize = U8;
 
-            fn encrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
-                self.c.encrypt_block(input, output);
+            #[inline]
+            fn encrypt_block(&self, block: &mut Block<U8>) {
+                self.c.encrypt_block(block);
             }
 
-            fn decrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
-                self.c.decrypt_block(input, output);
+            #[inline]
+            fn decrypt_block(&self, block: &mut Block<U8>) {
+                self.c.decrypt_block(block);
             }
         }
 

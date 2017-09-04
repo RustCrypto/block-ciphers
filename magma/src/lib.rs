@@ -43,8 +43,9 @@ impl<'a> Gost89<'a> {
         self.apply_sbox(a.wrapping_add(k)).rotate_left(11)
     }
 
-    fn encrypt(&self, input: &Block<U8>, output: &mut Block<U8>) {
-        let mut v = (read_u32_le(&input[0..4]), read_u32_le(&input[4..8]));
+    #[inline]
+    fn encrypt(&self, block: &mut Block<U8>) {
+        let mut v = (read_u32_le(&block[0..4]), read_u32_le(&block[4..8]));
 
         for _ in 0..3 {
             for i in (0..8).rev() {
@@ -54,12 +55,13 @@ impl<'a> Gost89<'a> {
         for i in 0..8 {
             v = (v.1 ^ self.g(v.0, self.key[i]), v.0);
         }
-        write_u32_le(&mut output[0..4], v.1);
-        write_u32_le(&mut output[4..8], v.0);
+        write_u32_le(&mut block[0..4], v.1);
+        write_u32_le(&mut block[4..8], v.0);
     }
 
-    fn decrypt(&self, input: &Block<U8>, output: &mut Block<U8>) {
-        let mut v = (read_u32_le(&input[0..4]), read_u32_le(&input[4..8]));
+    #[inline]
+    fn decrypt(&self, block: &mut Block<U8>) {
+        let mut v = (read_u32_le(&block[0..4]), read_u32_le(&block[4..8]));
 
         for i in (0..8).rev() {
             v = (v.1 ^ self.g(v.0, self.key[i]), v.0);
@@ -70,20 +72,22 @@ impl<'a> Gost89<'a> {
                 v = (v.1 ^ self.g(v.0, self.key[i]), v.0);
             }
         }
-        write_u32_le(&mut output[0..4], v.1);
-        write_u32_le(&mut output[4..8], v.0);
+        write_u32_le(&mut block[0..4], v.1);
+        write_u32_le(&mut block[4..8], v.0);
     }
 }
 
 impl<'a> BlockCipher for Gost89<'a> {
     type BlockSize = U8;
 
-    fn encrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
-        self.encrypt(input, output);
+    #[inline]
+    fn encrypt_block(&self, block: &mut Block<U8>) {
+        self.encrypt(block);
     }
 
-    fn decrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
-        self.decrypt(input, output);
+    #[inline]
+    fn decrypt_block(&self, block: &mut Block<U8>) {
+        self.decrypt(block);
     }
 }
 

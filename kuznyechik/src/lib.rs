@@ -121,16 +121,16 @@ impl Kuznyechik {
 impl BlockCipher for Kuznyechik {
     type BlockSize = U16;
 
-    fn encrypt_block(&self, input: &Block<U16>, output: &mut Block<U16>) {
-        let output: &mut [u8; 16] = unsafe { core::mem::transmute(output) };
-        output.copy_from_slice(input);
-        self.encrypt(output);
+    #[inline]
+    fn encrypt_block(&self, block: &mut Block<U16>) {
+        let block: &mut [u8; 16] = unsafe { core::mem::transmute(block) };
+        self.encrypt(block);
     }
 
-    fn decrypt_block(&self, input: &Block<U16>, output: &mut Block<U16>) {
-        let output: &mut [u8; 16] = unsafe { core::mem::transmute(output) };
-        output.copy_from_slice(input);
-        self.decrypt(output);
+    #[inline]
+    fn decrypt_block(&self, block: &mut Block<U16>) {
+        let block: &mut [u8; 16] = unsafe { core::mem::transmute(block) };
+        self.decrypt(block);
     }
 }
 
