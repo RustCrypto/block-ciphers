@@ -12,7 +12,7 @@ pub struct Aes256 {
 impl Aes256 {
     /// Create new AES-256 instance with given key
     #[inline]
-    pub fn new(key: &[u8; 32]) -> Self {
+    pub fn init(key: &[u8; 32]) -> Self {
         let (encrypt_keys, decrypt_keys) = expand::expand(key);
         Aes256 { encrypt_keys: encrypt_keys, decrypt_keys: decrypt_keys }
     }

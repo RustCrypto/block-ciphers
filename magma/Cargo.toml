@@ -1,17 +1,21 @@
 [package]
 name = "magma"
 version = "0.2.0"
-authors = ["The Rust-Crypto Project Developers"]
+authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
 description = "Magma (GOST 28147-89 and GOST R 34.12-2015) block cipher"
 documentation = "https://docs.rs/magma"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "magma", "gost", "block-cipher"]
+categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = "0.8"
 byte-tools = "0.2"
-block-cipher-trait = "0.4.0-gamma"
+block-cipher-trait = "0.4"
 
 [dev-dependencies]
-crypto-tests = "^0.5.4"
+crypto-tests = "^0.5.5"
+
+[badges]
+travis-ci = { repository = "RustCrypto/block-ciphers" }

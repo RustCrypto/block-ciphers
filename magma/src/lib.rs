@@ -8,11 +8,13 @@ mod sboxes_exp;
 mod construct;
 
 use byte_tools::{read_u32v_le, read_u32_le, write_u32_le};
-use block_cipher_trait::{Block, BlockCipher, BlockCipherFixKey};
+use block_cipher_trait::{BlockCipher, NewFixKey};
 use generic_array::GenericArray;
 use generic_array::typenum::{U8, U32};
 
 use sboxes_exp::*;
+
+type Block = GenericArray<u8, U8>;
 
 #[derive(Clone,Copy)]
 pub struct Gost89<'a> {
@@ -44,7 +46,7 @@ impl<'a> Gost89<'a> {
     }
 
     #[inline]
-    fn encrypt(&self, block: &mut Block<U8>) {
+    fn encrypt(&self, block: &mut Block) {
         let mut v = (read_u32_le(&block[0..4]), read_u32_le(&block[4..8]));
 
         for _ in 0..3 {
@@ -60,7 +62,7 @@ impl<'a> Gost89<'a> {
     }
 
     #[inline]
-    fn decrypt(&self, block: &mut Block<U8>) {
+    fn decrypt(&self, block: &mut Block) {
         let mut v = (read_u32_le(&block[0..4]), read_u32_le(&block[4..8]));
 
         for i in (0..8).rev() {
@@ -81,12 +83,12 @@ impl<'a> BlockCipher for Gost89<'a> {
     type BlockSize = U8;
 
     #[inline]
-    fn encrypt_block(&self, block: &mut Block<U8>) {
+    fn encrypt_block(&self, block: &mut Block) {
         self.encrypt(block);
     }
 
     #[inline]
-    fn decrypt_block(&self, block: &mut Block<U8>) {
+    fn decrypt_block(&self, block: &mut Block) {
         self.decrypt(block);
     }
 }

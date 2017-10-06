@@ -2,10 +2,13 @@
 extern crate block_cipher_trait;
 extern crate generic_array;
 
+use block_cipher_trait::{BlockCipher, NewFixKey};
+use generic_array::GenericArray;
+use generic_array::typenum::{U16, U32};
+
 mod consts;
 
-use block_cipher_trait::{Block, BlockCipher, BlockCipherFixKey};
-use generic_array::typenum::{U16, U32};
+type Block = GenericArray<u8, U16>;
 
 #[derive(Clone,Copy)]
 pub struct Kuznyechik {
@@ -86,7 +89,7 @@ fn f(k1: &mut [u8; 16], k2: &mut [u8; 16], n: usize) {
 
 
 impl Kuznyechik {
-    fn expand_key(&mut self, key: &Block<U32>) {
+    fn expand_key(&mut self, key: &GenericArray<u8, U32>) {
         let mut k1 = [0u8; 16];
         let mut k2 = [0u8; 16];
 
@@ -122,22 +125,22 @@ impl BlockCipher for Kuznyechik {
     type BlockSize = U16;
 
     #[inline]
-    fn encrypt_block(&self, block: &mut Block<U16>) {
+    fn encrypt_block(&self, block: &mut Block) {
         let block: &mut [u8; 16] = unsafe { core::mem::transmute(block) };
         self.encrypt(block);
     }
 
     #[inline]
-    fn decrypt_block(&self, block: &mut Block<U16>) {
+    fn decrypt_block(&self, block: &mut Block) {
         let block: &mut [u8; 16] = unsafe { core::mem::transmute(block) };
         self.decrypt(block);
     }
 }
 
-impl BlockCipherFixKey for Kuznyechik {
+impl NewFixKey for Kuznyechik {
     type KeySize = U32;
 
-    fn new(key: &Block<U32>) -> Self {
+    fn new(key: &GenericArray<u8, U32>) -> Self {
         let mut cipher = Kuznyechik{keys: Default::default()};
         cipher.expand_key(key);
         cipher

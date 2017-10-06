@@ -12,7 +12,7 @@ pub struct Aes192 {
 impl Aes192 {
     /// Create new AES-192 instance with given key
     #[inline]
-    pub fn new(key: &[u8; 24]) -> Self {
+    pub fn init(key: &[u8; 24]) -> Self {
         let (encrypt_keys, decrypt_keys) = expand::expand(key);
         Aes192 { encrypt_keys: encrypt_keys, decrypt_keys: decrypt_keys }
     }
