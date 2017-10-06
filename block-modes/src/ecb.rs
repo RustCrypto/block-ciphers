@@ -1,5 +1,5 @@
-use super::BlockCipher;
-use traits::{BlockMode, Padding};
+use block_cipher_trait::BlockCipher;
+use traits::BlockMode;
 
 pub struct Ecb<C: BlockCipher> {
     cipher: C
@@ -11,12 +11,12 @@ impl<C: BlockCipher> Ecb<C> {
     }
 }
 
-impl<C, P> BlockMode<C, P> for Ecb<C> where C: BlockCipher, P: Padding {
+impl<C: BlockCipher> BlockMode<C> for Ecb<C> {
     fn encrypt_nopad(&mut self, buffer: &mut [u8]) {
-        self.cipher.encrypt_blocks(buffer);
+        self.cipher.encrypt_blocks(buffer).unwrap();
     }
 
     fn decrypt_nopad(&mut self, buffer: &mut [u8]) {
-        self.cipher.decrypt_blocks(buffer);
+        self.cipher.decrypt_blocks(buffer).unwrap();
     }
 }

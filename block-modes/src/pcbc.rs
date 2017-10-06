@@ -1,7 +1,7 @@
 use generic_array::GenericArray;
 use generic_array::typenum::Unsigned;
-use super::BlockCipher;
-use traits::{BlockMode, Padding};
+use block_cipher_trait::BlockCipher;
+use traits::BlockMode;
 use tools::xor;
 
 pub struct Pcbc<C: BlockCipher>{
@@ -15,7 +15,7 @@ impl<C: BlockCipher> Pcbc<C> {
     }
 }
 
-impl<C, P> BlockMode<C, P> for Pcbc<C> where C: BlockCipher, P: Padding {
+impl<C: BlockCipher> BlockMode<C> for Pcbc<C> {
     fn encrypt_nopad(&mut self, buffer: &mut [u8]) {
         let bs = C::BlockSize::to_usize();
         assert_eq!(buffer.len() % bs, 0);

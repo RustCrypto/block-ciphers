@@ -1,22 +1,21 @@
 use generic_array::GenericArray;
 use generic_array::typenum::Unsigned;
-use super::BlockCipher;
-use traits::{BlockMode, Padding};
+use block_cipher_trait::BlockCipher;
+use traits::{BlockMode, BlockModeIv};
 use tools::xor;
 
-// difficulty with par_decrypt
 pub struct Cbc<C: BlockCipher>{
     cipher: C,
     iv: GenericArray<u8, C::BlockSize>,
 }
 
-impl<C: BlockCipher> Cbc<C> {
-    pub fn new(cipher: C, iv: GenericArray<u8, C::BlockSize>) -> Self {
-        Self { cipher, iv }
+impl<C: BlockCipher> BlockModeIv<C> for Cbc<C> {
+    fn new(cipher: C, iv: &GenericArray<u8, C::BlockSize>) -> Self {
+        Self { cipher, iv: iv.clone() }
     }
 }
 
-impl<C, P> BlockMode<C, P> for Cbc<C> where C: BlockCipher, P: Padding {
+impl<C: BlockCipher> BlockMode<C> for Cbc<C> {
     fn encrypt_nopad(&mut self, buffer: &mut [u8]) {
         let bs = C::BlockSize::to_usize();
         assert_eq!(buffer.len() % bs, 0);
