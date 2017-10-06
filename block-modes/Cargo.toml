@@ -1,0 +1,14 @@
+[package]
+name = "block-modes"
+version = "0.1.0"
+authors = ["RustCrypto Developers"]
+license = "MIT/Apache-2.0"
+description = "Block cipher modes of operation"
+documentation = "https://docs.rs/block-modes"
+repository = "https://github.com/RustCrypto/block-ciphers"
+keywords = ["crypto", "block-cipher", "ciphers"]
+
+[dependencies]
+generic-array = "0.8"
+
+[workspace]

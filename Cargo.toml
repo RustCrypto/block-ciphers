@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "blowfish",
+    "block-modes",
     "kuznyechik",
     "magma",
     "rc2",
