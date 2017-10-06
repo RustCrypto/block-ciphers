@@ -1,11 +1,22 @@
 [package]
 name = "aesni"
-version = "0.1.4"
+version = "0.2.0"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
 description = "AES (Rijndael) block ciphers implementation using AES-NI"
 documentation = "https://docs.rs/aesni"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "aes", "rijndael", "block-cipher"]
+categories = ["cryptography", "no-std"]
+
+[dependencies]
+block-cipher-trait = { version = "0.5", optional = true }
+
+[features]
+default = ["impl_traits"]
+impl_traits = ["block-cipher-trait"]
 
 [workspace]
+
+[patch.crates-io]
+block-cipher-trait = { path = '../../traits/block-cipher-trait' }

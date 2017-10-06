@@ -44,7 +44,7 @@ fn aes128() {
         ],
     ];
 
-    let cipher = aesni::Aes128::new(&key);
+    let cipher = aesni::Aes128::init(&key);
 
     for (p, c) in plaintext.iter().zip(ciphertext.iter()) {
         let mut pc = p.clone();
@@ -121,7 +121,7 @@ fn aes192() {
         ],
     ];
 
-    let cipher = aesni::Aes192::new(&key);
+    let cipher = aesni::Aes192::init(&key);
 
     for (p, c) in plaintext.iter().zip(ciphertext.iter()) {
         let mut pc = p.clone();
@@ -199,7 +199,7 @@ fn aes256() {
         ],
     ];
 
-    let cipher = aesni::Aes256::new(&key);
+    let cipher = aesni::Aes256::init(&key);
 
     for (p, c) in plaintext.iter().zip(ciphertext.iter()) {
         let mut pc = p.clone();

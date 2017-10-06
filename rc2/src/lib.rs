@@ -6,7 +6,7 @@ extern crate block_cipher_trait;
 extern crate generic_array;
 extern crate byte_tools;
 
-use block_cipher_trait::{BlockCipher, BlockCipherVarKey, InvalidKeyLength};
+use block_cipher_trait::{BlockCipher, NewVarKey, InvalidKeyLength};
 use generic_array::GenericArray;
 use generic_array::typenum::U8;
 
@@ -160,7 +160,7 @@ impl RC2 {
     }
 }
 
-impl BlockCipherVarKey for RC2 {
+impl NewVarKey for RC2 {
     fn new(key: &[u8]) -> Result<RC2, InvalidKeyLength> {
         if key.len() < 1 || key.len() > 128 {
             Err(InvalidKeyLength)

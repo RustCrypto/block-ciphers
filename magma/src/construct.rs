@@ -11,17 +11,17 @@ macro_rules! constuct_cipher {
             type BlockSize = U8;
 
             #[inline]
-            fn encrypt_block(&self, block: &mut Block<U8>) {
+            fn encrypt_block(&self, block: &mut Block) {
                 self.c.encrypt_block(block);
             }
 
             #[inline]
-            fn decrypt_block(&self, block: &mut Block<U8>) {
+            fn decrypt_block(&self, block: &mut Block) {
                 self.c.decrypt_block(block);
             }
         }
 
-        impl<'a> BlockCipherFixKey for $name<'a> {
+        impl<'a> NewFixKey for $name<'a> {
             type KeySize = U32;
 
             fn new(key: &GenericArray<u8, U32>) -> Self {

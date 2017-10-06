@@ -4,11 +4,13 @@ extern crate block_cipher_trait;
 extern crate generic_array;
 
 use byte_tools::{read_u32_be, write_u32_be};
-use block_cipher_trait::{Block, BlockCipher, BlockCipherVarKey,
-    InvalidKeyLength};
+use block_cipher_trait::{BlockCipher, NewVarKey, InvalidKeyLength};
 use generic_array::typenum::U8;
+use generic_array::GenericArray;
 
 mod consts;
+
+type Block = GenericArray<u8, U8>;
 
 #[derive(Clone,Copy)]
 pub struct Blowfish {
@@ -95,7 +97,7 @@ impl BlockCipher for Blowfish {
     type BlockSize = U8;
 
     #[inline]
-    fn encrypt_block(&self, block: &mut Block<U8>) {
+    fn encrypt_block(&self, block: &mut Block) {
         let l = read_u32_be(&block[..4]);
         let r = read_u32_be(&block[4..]);
         let (l, r) = self.encrypt(l, r);
@@ -104,7 +106,7 @@ impl BlockCipher for Blowfish {
     }
 
     #[inline]
-    fn decrypt_block(&self, block: &mut Block<U8>) {
+    fn decrypt_block(&self, block: &mut Block) {
         let l = read_u32_be(&block[..4]);
         let r = read_u32_be(&block[4..]);
         let (l, r) = self.decrypt(l, r);
@@ -113,7 +115,7 @@ impl BlockCipher for Blowfish {
     }
 }
 
-impl BlockCipherVarKey for Blowfish {
+impl NewVarKey for Blowfish {
     fn new(key: &[u8]) -> Result<Blowfish, InvalidKeyLength> {
         if key.len() < 4 || key.len() > 56 {
             return Err(InvalidKeyLength);

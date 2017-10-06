@@ -3,7 +3,7 @@ extern crate block_cipher_trait;
 extern crate byte_tools;
 extern crate generic_array;
 
-use block_cipher_trait::{BlockCipher, BlockCipherVarKey, InvalidKeyLength};
+use block_cipher_trait::{BlockCipher, NewVarKey, InvalidKeyLength};
 use generic_array::GenericArray;
 use generic_array::typenum::U16;
 use byte_tools::{read_u32_le, read_u32v_le, write_u32_le, write_u32v_le};
@@ -215,7 +215,7 @@ impl BlockCipher for Twofish {
     }
 }
 
-impl BlockCipherVarKey for Twofish {
+impl NewVarKey for Twofish {
     fn new(key: &[u8]) -> Result<Twofish, InvalidKeyLength> {
         let n = key.len();
         if n != 16 && n != 24 && n != 32 {
