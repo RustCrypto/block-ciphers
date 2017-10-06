@@ -5,7 +5,7 @@ extern crate test;
 
 #[bench]
 pub fn aes128_encrypt(bh: &mut test::Bencher) {
-    let cipher = aesni::Aes128::new(&Default::default());
+    let cipher = aesni::Aes128::init(&Default::default());
     let mut input = Default::default();
 
     bh.iter(|| {
@@ -17,7 +17,7 @@ pub fn aes128_encrypt(bh: &mut test::Bencher) {
 
 #[bench]
 pub fn aes128_decrypt(bh: &mut test::Bencher) {
-    let cipher = aesni::Aes128::new(&Default::default());
+    let cipher = aesni::Aes128::init(&Default::default());
     let mut input = Default::default();
 
     bh.iter(|| {
@@ -29,7 +29,7 @@ pub fn aes128_decrypt(bh: &mut test::Bencher) {
 
 #[bench]
 pub fn aes128_encrypt8(bh: &mut test::Bencher) {
-    let cipher = aesni::Aes128::new(&Default::default());
+    let cipher = aesni::Aes128::init(&Default::default());
     let mut input = [0u8; 16*8];
 
     bh.iter(|| {
@@ -41,7 +41,7 @@ pub fn aes128_encrypt8(bh: &mut test::Bencher) {
 
 #[bench]
 pub fn aes128_decrypt8(bh: &mut test::Bencher) {
-    let cipher = aesni::Aes128::new(&Default::default());
+    let cipher = aesni::Aes128::init(&Default::default());
     let mut input = [0u8; 16*8];
 
     bh.iter(|| {

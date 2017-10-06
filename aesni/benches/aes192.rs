@@ -6,7 +6,7 @@ extern crate test;
 #[bench]
 pub fn encrypt(bh: &mut test::Bencher) {
     let key = Default::default();
-    let cipher = aesni::Aes192::new(&key);
+    let cipher = aesni::Aes192::init(&key);
     let mut input = Default::default();
 
     bh.iter(|| {
@@ -19,7 +19,7 @@ pub fn encrypt(bh: &mut test::Bencher) {
 #[bench]
 pub fn decrypt(bh: &mut test::Bencher) {
     let key = Default::default();
-    let cipher = aesni::Aes192::new(&key);
+    let cipher = aesni::Aes192::init(&key);
     let mut input = Default::default();
 
     bh.iter(|| {
@@ -32,7 +32,7 @@ pub fn decrypt(bh: &mut test::Bencher) {
 #[bench]
 pub fn encrypt8(bh: &mut test::Bencher) {
     let key = Default::default();
-    let cipher = aesni::Aes192::new(&key);
+    let cipher = aesni::Aes192::init(&key);
     let mut input = [0u8; 16*8];
 
     bh.iter(|| {
@@ -45,7 +45,7 @@ pub fn encrypt8(bh: &mut test::Bencher) {
 #[bench]
 pub fn decrypt8(bh: &mut test::Bencher) {
     let key = Default::default();
-    let cipher = aesni::Aes192::new(&key);
+    let cipher = aesni::Aes192::init(&key);
     let mut input = [0u8; 16*8];
 
     bh.iter(|| {

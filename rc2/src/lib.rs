@@ -4,7 +4,6 @@
  #![no_std]
 extern crate block_cipher_trait;
 extern crate generic_array;
-extern crate byte_tools;
 
 use block_cipher_trait::{BlockCipher, NewVarKey, InvalidKeyLength};
 use generic_array::GenericArray;

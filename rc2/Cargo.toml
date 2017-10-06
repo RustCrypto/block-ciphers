@@ -11,11 +11,10 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 generic-array = "0.8"
-byte-tools = "0.2"
-block-cipher-trait = "0.4"
+block-cipher-trait = "0.5"
 
 [dev-dependencies]
-crypto-tests = "^0.5.5"
+crypto-tests = "0.6"
 
 [badges]
 travis-ci = { repository = "RustCrypto/block-ciphers" }

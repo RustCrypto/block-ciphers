@@ -83,7 +83,7 @@ fn f(k1: &mut [u8; 16], k2: &mut [u8; 16], n: usize) {
 
         let mut k2_cpy = k2.clone();
         lsx(&mut k2_cpy, &get_c(8*n+2*i+2));
-        x(k1, &k2_cpy);        
+        x(k1, &k2_cpy);
     }
 }
 

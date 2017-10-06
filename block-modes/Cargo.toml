@@ -11,4 +11,3 @@ keywords = ["crypto", "block-cipher", "ciphers"]
 [dependencies]
 generic-array = "0.8"
 
-[workspace]

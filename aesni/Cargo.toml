@@ -19,4 +19,5 @@ impl_traits = ["block-cipher-trait"]
 [workspace]
 
 [patch.crates-io]
-block-cipher-trait = { path = '../../traits/block-cipher-trait' }
+block-cipher-trait = { git = "https://github.com/RustCrypto/traits" }
+crypto-tests = { git = "https://github.com/RustCrypto/utils" }
