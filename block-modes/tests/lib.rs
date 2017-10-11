@@ -1,3 +1,6 @@
+//! Test vectors are from NIST "Recommendation for Block Cipher Modes of
+//! Operation":
+//! http://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf
 extern crate aesni;
 extern crate block_modes;
 extern crate generic_array;
