@@ -49,7 +49,7 @@ mod u64x2;
 #[cfg(feature="impl_traits")]
 mod impl_traits;
 
-pub use aes128::Aes128;
+pub use aes128::{Aes128, CtrAes128};
 pub use aes192::Aes192;
 pub use aes256::Aes256;
 

@@ -231,3 +231,31 @@ fn aes256() {
     assert_eq!(&p8c[..], &c8[..]);
     assert_eq!(&c8c[..], &p8[..]);
 }
+
+#[test]
+fn ctr_aes128() {
+    let key = include_bytes!("data/ctr-aes128.key.bin");
+    let iv = include_bytes!("data/ctr-aes128.iv.bin");
+    let plaintext = include_bytes!("data/ctr-aes128.plaintext.bin");
+    let ciphertext = include_bytes!("data/ctr-aes128.ciphertext.bin");
+
+    //let iv = GenericArray::from_slice(iv);
+
+    let mut mode = aesni::CtrAes128::new(key, iv);
+    let mut pt = plaintext.to_vec();
+    mode.xor(&mut pt);
+    assert_eq!(pt, &ciphertext[..]);
+
+    let mut mode = aesni::CtrAes128::new(key, iv);
+    let mut ct = ciphertext.to_vec();
+    mode.xor(&mut ct);
+    assert_eq!(ct, &plaintext[..]);
+
+
+    let mut mode = aesni::CtrAes128::new(key, iv);
+    let mut pt = plaintext.to_vec();
+    for chunk in pt.chunks_mut(1) {
+        mode.xor(chunk);
+    }
+    assert_eq!(pt, &ciphertext[..]);
+}
