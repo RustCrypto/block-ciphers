@@ -2,7 +2,7 @@ use u64x2::u64x2;
 
 mod expand;
 
-/// AES-192 block cipher instance
+/// AES-192 block cipher
 #[derive(Copy, Clone, Debug)]
 pub struct Aes192 {
     encrypt_keys: [u64x2; 13],

@@ -20,7 +20,8 @@ fn xor_block8(buf: &mut [u8], ctr: [u64x2; 8]) {
 }
 
 macro_rules! impl_ctr {
-    ($name:ident, $cipher:ty, $key_size:expr) => {
+    ($name:ident, $cipher:ty, $key_size:expr, $doc:expr) => {
+        #[doc=$doc]
         pub struct $name {
             ctr: u64x2,
             cipher: $cipher,
@@ -123,6 +124,6 @@ macro_rules! impl_ctr {
     }
 }
 
-impl_ctr!(CtrAes128, Aes128, 16);
-impl_ctr!(CtrAes192, Aes192, 24);
-impl_ctr!(CtrAes256, Aes256, 32);
+impl_ctr!(CtrAes128, Aes128, 16, "AES128 in CTR mode");
+impl_ctr!(CtrAes192, Aes192, 24, "AES192 in CTR mode");
+impl_ctr!(CtrAes256, Aes256, 32, "AES256 in CTR mode");

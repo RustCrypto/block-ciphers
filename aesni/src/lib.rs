@@ -39,6 +39,7 @@
 #![no_std]
 #![feature(repr_simd)]
 #![feature(asm)]
+
 #[cfg(feature="impl_traits")]
 extern crate block_cipher_trait;
 
