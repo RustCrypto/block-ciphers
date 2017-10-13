@@ -54,3 +54,15 @@ pub fn decrypt8(bh: &mut test::Bencher) {
     bh.bytes = input.len() as u64;
     test::black_box(input);
 }
+
+#[bench]
+pub fn ctr_aes256(bh: &mut test::Bencher) {
+    let mut cipher = aesni::CtrAes256::new(&[0; 32], &[0; 16]);
+    let mut input = [0u8; 10000];
+
+    bh.iter(|| {
+        cipher.xor(&mut input);
+        test::black_box(&input);
+    });
+    bh.bytes = input.len() as u64;
+}

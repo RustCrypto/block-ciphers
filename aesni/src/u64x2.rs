@@ -70,7 +70,7 @@ impl u64x2 {
             :"+x"(*self)
             :"x"(u64x2(0, 1))
             :
-            :"intel"
+            :"intel", "alignstack"
           );
         }
     }
@@ -84,7 +84,7 @@ impl u64x2 {
             :"+x"(val)
             :"x"(BSWAP_EPI_64)
             :
-            :"intel"
+            :"intel", "alignstack"
           );
         }
         val

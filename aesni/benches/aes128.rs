@@ -54,7 +54,8 @@ pub fn aes128_decrypt8(bh: &mut test::Bencher) {
 #[bench]
 pub fn ctr_aes128(bh: &mut test::Bencher) {
     let mut cipher = aesni::CtrAes128::new(&[0; 16], &[0; 16]);
-    let mut input = [0u8; 128*100];
+    let mut input = [0u8; 10000];
+
 
     bh.iter(|| {
         cipher.xor(&mut input);

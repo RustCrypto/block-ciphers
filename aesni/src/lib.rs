@@ -48,10 +48,12 @@ mod aes256;
 mod u64x2;
 #[cfg(feature="impl_traits")]
 mod impl_traits;
+mod ctr;
 
-pub use aes128::{Aes128, CtrAes128};
+pub use aes128::Aes128;
 pub use aes192::Aes192;
 pub use aes256::Aes256;
+pub use ctr::{CtrAes128, CtrAes192, CtrAes256};
 
 /// Check if CPU has AES-NI using CPUID instruction.
 ///
