@@ -9,7 +9,7 @@ repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "block-cipher", "ciphers"]
 
 [dependencies]
-generic-array = "0.8"
+generic-array = "0.9"
 block-cipher-trait = "0.5"
 
 [dev-dependencies]
