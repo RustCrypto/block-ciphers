@@ -1,6 +1,6 @@
 use block_cipher_trait::{BlockCipher, NewFixKey, NewVarKey, InvalidKeyLength};
-use generic_array::GenericArray;
-use generic_array::typenum::Unsigned;
+use block_cipher_trait::generic_array::GenericArray;
+use block_cipher_trait::generic_array::typenum::Unsigned;
 
 type Array<N> = GenericArray<u8, N>;
 

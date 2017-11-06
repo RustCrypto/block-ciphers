@@ -1,12 +1,11 @@
 #![no_std]
 extern crate byte_tools;
 extern crate block_cipher_trait;
-extern crate generic_array;
 
 use byte_tools::{read_u32_be, write_u32_be};
 use block_cipher_trait::{BlockCipher, NewVarKey, InvalidKeyLength};
-use generic_array::typenum::U8;
-use generic_array::GenericArray;
+use block_cipher_trait::generic_array::typenum::U8;
+use block_cipher_trait::generic_array::GenericArray;
 
 mod consts;
 

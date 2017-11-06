@@ -3,11 +3,10 @@
 //! [1]: https://en.wikipedia.org/wiki/RC2
  #![no_std]
 extern crate block_cipher_trait;
-extern crate generic_array;
 
 use block_cipher_trait::{BlockCipher, NewVarKey, InvalidKeyLength};
-use generic_array::GenericArray;
-use generic_array::typenum::U8;
+use block_cipher_trait::generic_array::GenericArray;
+use block_cipher_trait::generic_array::typenum::U8;
 
 mod consts;
 use consts::PI_TABLE;

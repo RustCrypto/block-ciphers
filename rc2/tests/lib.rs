@@ -6,9 +6,8 @@ extern crate rc2;
 use crypto_tests::block_cipher::{BlockCipherTest, encrypt_decrypt};
 
 extern crate block_cipher_trait;
-extern crate generic_array;
 
-use generic_array::GenericArray;
+use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::BlockCipher;
 
 #[test]

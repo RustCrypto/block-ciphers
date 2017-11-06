@@ -1,7 +1,6 @@
 #![no_std]
 extern crate byte_tools;
 extern crate block_cipher_trait;
-extern crate generic_array;
 
 mod sboxes_exp;
 #[macro_use]
@@ -9,8 +8,8 @@ mod construct;
 
 use byte_tools::{read_u32v_le, read_u32_le, write_u32_le};
 use block_cipher_trait::{BlockCipher, NewFixKey};
-use generic_array::GenericArray;
-use generic_array::typenum::{U8, U32};
+use block_cipher_trait::generic_array::GenericArray;
+use block_cipher_trait::generic_array::typenum::{U8, U32};
 
 use sboxes_exp::*;
 

@@ -3,10 +3,9 @@
 //! http://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf
 extern crate aesni;
 extern crate block_modes;
-extern crate generic_array;
 extern crate block_cipher_trait;
 
-use generic_array::GenericArray;
+use block_cipher_trait::generic_array::GenericArray;
 use block_modes::traits::{BlockMode, BlockModeVarKey};
 use block_modes::{Ctr128, Ofb, Cfb, Cbc};
 use aesni::Aes128;

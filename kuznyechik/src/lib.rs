@@ -1,10 +1,9 @@
 #![no_std]
 extern crate block_cipher_trait;
-extern crate generic_array;
 
 use block_cipher_trait::{BlockCipher, NewFixKey};
-use generic_array::GenericArray;
-use generic_array::typenum::{U16, U32};
+use block_cipher_trait::generic_array::GenericArray;
+use block_cipher_trait::generic_array::typenum::{U16, U32};
 
 mod consts;
 
