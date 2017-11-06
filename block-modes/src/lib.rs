@@ -1,6 +1,5 @@
 //! This crate defines a simple trait used to define block ciphers
 #![no_std]
-extern crate generic_array;
 extern crate block_cipher_trait;
 
 pub mod traits;

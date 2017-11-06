@@ -1,10 +1,9 @@
 #![no_std]
 extern crate twofish;
 extern crate block_cipher_trait;
-extern crate generic_array;
 
 use block_cipher_trait::{BlockCipher, NewVarKey};
-use generic_array::GenericArray;
+use block_cipher_trait::generic_array::GenericArray;
 use twofish::Twofish;
 
 #[test]

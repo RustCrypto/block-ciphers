@@ -1,5 +1,5 @@
-use generic_array::GenericArray;
-use generic_array::typenum::{Unsigned, U8, U16};
+use block_cipher_trait::generic_array::GenericArray;
+use block_cipher_trait::generic_array::typenum::{Unsigned, U8, U16};
 use block_cipher_trait::BlockCipher;
 use traits::{BlockMode, BlockModeIv};
 use tools::xor;
