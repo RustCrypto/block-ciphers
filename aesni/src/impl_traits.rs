@@ -1,22 +1,23 @@
 use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::generic_array::typenum::{U16, U24, U32, Unsigned};
-use block_cipher_trait::{BlockCipher, NewFixKey, InvalidBufLength};
+use block_cipher_trait::generic_array::typenum::{U8, U16, U24, U32};
+use block_cipher_trait::{BlockCipher, NewFixKey};
 use core::mem;
 
 use super::{Aes128, Aes192, Aes256};
 
 type Block128 = GenericArray<u8, U16>;
+type Block128x8 = GenericArray<GenericArray<u8, U16>, U8>;
 
 #[inline(always)]
-fn as_block_mut(val: &mut [u8]) -> &mut [u8; 16] {
+fn as_block_mut(val: &mut Block128) -> &mut [u8; 16] {
     assert_eq!(val.len(), 16);
-    unsafe { &mut *(val.as_mut_ptr() as *mut [u8; 16]) }
+    unsafe { mem::transmute(val) }
 }
 
 #[inline(always)]
-fn as_block8_mut(val: &mut [u8]) -> &mut [u8; 16*8] {
+fn as_block8_mut(val: &mut Block128x8) -> &mut [u8; 16*8] {
     assert_eq!(val.len(), 16*8);
-    unsafe{ &mut *(val.as_mut_ptr() as *mut [u8; 16*8]) }
+    unsafe { mem::transmute(val) }
 }
 
 macro_rules! impl_trait {
@@ -32,53 +33,26 @@ macro_rules! impl_trait {
 
         impl BlockCipher for $cipher {
             type BlockSize = U16;
+            type ParBlocks = U8;
 
             #[inline]
             fn encrypt_block(&self, block: &mut Block128) {
-                self.encrypt(as_block_mut(block.as_mut_slice()))
+                self.encrypt(as_block_mut(block))
             }
 
             #[inline]
             fn decrypt_block(&self, block: &mut Block128) {
-                self.decrypt(as_block_mut(block.as_mut_slice()))
+                self.decrypt(as_block_mut(block))
             }
 
             #[inline]
-            fn encrypt_blocks(&self, mut buf: &mut [u8])
-                -> Result<(), InvalidBufLength>
-            {
-                let bs = Self::BlockSize::to_usize();
-                if buf.len() % bs != 0 { return Err(InvalidBufLength); }
-
-                while buf.len() >= 8*bs {
-                    let (chunk, r) = {buf}.split_at_mut(8*bs);
-                    buf = r;
-                    self.encrypt8(as_block8_mut(chunk));
-                }
-
-                for block in buf.chunks_mut(bs) {
-                    self.encrypt(as_block_mut(block));
-                }
-                Ok(())
+            fn encrypt_blocks(&self, blocks: &mut Block128x8) {
+                self.encrypt8(as_block8_mut(blocks))
             }
 
             #[inline]
-            fn decrypt_blocks(&self, mut buf: &mut [u8])
-                -> Result<(), InvalidBufLength>
-            {
-                let bs = Self::BlockSize::to_usize();
-                if buf.len() % bs != 0 { return Err(InvalidBufLength); }
-
-                while buf.len() >= 8*bs {
-                    let (chunk, r) = {buf}.split_at_mut(8*bs);
-                    buf = r;
-                    self.decrypt8(as_block8_mut(chunk));
-                }
-
-                for block in buf.chunks_mut(bs) {
-                    self.decrypt(as_block_mut(block));
-                }
-                Ok(())
+            fn decrypt_blocks(&self, blocks: &mut Block128x8) {
+                self.decrypt8(as_block8_mut(blocks))
             }
         }
     }
