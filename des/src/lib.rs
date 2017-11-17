@@ -1,20 +1,26 @@
 #![no_std]
-extern crate block_cipher_trait;
+pub extern crate block_cipher_trait as traits;
 extern crate byte_tools;
-extern crate generic_array;
 
 mod consts;
 
-pub use block_cipher_trait::{Block, BlockCipher, BlockCipherFixKey};
+use traits::{BlockCipher, NewFixKey};
 use byte_tools::{read_u64_be, write_u64_be};
-use generic_array::GenericArray;
-use generic_array::typenum::U8;
+use traits::generic_array::GenericArray;
+use traits::generic_array::typenum::{U1, U8, U24};
 
 use consts::{SBOXES, SHIFTS};
 
 #[derive(Copy, Clone)]
 pub struct Des {
     keys: [u64; 16],
+}
+
+#[derive(Copy, Clone)]
+pub struct Tdes {
+    d1: Des,
+    d2: Des,
+    d3: Des,
 }
 
 /// Swap bits in `a` using a delta swap
@@ -43,12 +49,18 @@ fn pc2(key: u64) -> u64 {
     let b2 = (key & 0x0008020010080000) << 1;
     let b3 = key & 0x0002200000000000;
     let b4 = (key & 0x0000000000100020) << 19;
-    let b5 = (key.rotate_left(54) & 0x0005312400000011).wrapping_mul(0x0000000094200201) & 0xea40100880000000;
-    let b6 = (key.rotate_left(7) & 0x0022110000012001).wrapping_mul(0x0001000000610006) & 0x1185004400000000;
-    let b7 = (key.rotate_left(6) & 0x0000520040200002).wrapping_mul(0x00000080000000c1) & 0x0028811000200000;
-    let b8 = (key & 0x01000004c0011100).wrapping_mul(0x0000000000004284) & 0x0400082244400000;
-    let b9 = (key.rotate_left(60) & 0x0000000000820280).wrapping_mul(0x0000000000089001) & 0x0000000110880000;
-    let b10 = (key.rotate_left(49) & 0x0000000000024084).wrapping_mul(0x0000000002040005) & 0x000000000a030000;
+    let b5 = (key.rotate_left(54) & 0x0005312400000011)
+        .wrapping_mul(0x0000000094200201) & 0xea40100880000000;
+    let b6 = (key.rotate_left(7) & 0x0022110000012001)
+        .wrapping_mul(0x0001000000610006) & 0x1185004400000000;
+    let b7 = (key.rotate_left(6) & 0x0000520040200002)
+        .wrapping_mul(0x00000080000000c1) & 0x0028811000200000;
+    let b8 = (key & 0x01000004c0011100)
+        .wrapping_mul(0x0000000000004284) & 0x0400082244400000;
+    let b9 = (key.rotate_left(60) & 0x0000000000820280)
+        .wrapping_mul(0x0000000000089001) & 0x0000000110880000;
+    let b10 = (key.rotate_left(49) & 0x0000000000024084)
+        .wrapping_mul(0x0000000002040005) & 0x000000000a030000;
     b1 | b2 | b3 | b4 | b5 | b6 | b7 | b8 | b9 | b10
 }
 
@@ -137,8 +149,8 @@ fn rotate(mut val: u64, shift: u8) -> u64 {
 }
 
 fn round(input: u64, key: u64) -> u64 {
-    let l = (input >> 32) << 32;
-    let r = (input & 0xFFFFFFFF) << 32;
+    let l = input & (0xFFFF_FFFF << 32);
+    let r = input << 32;
 
     r | ((f(r, key) ^ l) >> 32)
 }
@@ -162,44 +174,80 @@ fn apply_sboxes(input: u64) -> u64 {
 }
 
 impl Des {
-    fn encrypt(&self, input: u64) -> u64 {
-        let mut data = ip(input);
+    fn encrypt(&self, mut data: u64) -> u64 {
+        data = ip(data);
         for key in self.keys.iter() {
             data = round(data, *key);
         }
-        fp((data & 0x0FFFFFFF) << 32 | (data >> 32))
+        fp((data << 32) | (data >> 32))
     }
 
-    fn decrypt(&self, input: u64) -> u64 {
-        let mut data = ip(input);
+    fn decrypt(&self, mut data: u64) -> u64 {
+        data = ip(data);
         for key in self.keys.iter().rev() {
             data = round(data, *key);
         }
-        fp((data & 0x0FFFFFFF) << 32 | (data >> 32))
+        fp((data << 32) | (data >> 32))
     }
 }
 
 impl BlockCipher for Des {
     type BlockSize = U8;
+    type ParBlocks = U1;
 
-    fn encrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
-        let block = read_u64_be(input);
-        let res = self.encrypt(block);
-        write_u64_be(output, res);
+    fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
+        let data = read_u64_be(block);
+        write_u64_be(block, self.encrypt(data));
     }
 
-    fn decrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
-        let block = read_u64_be(input);
-        let res = self.decrypt(block);
-        write_u64_be(output, res);
+    fn decrypt_block(&self, block: &mut GenericArray<u8, U8>) {
+        let data = read_u64_be(block);
+        write_u64_be(block, self.decrypt(data));
     }
 }
 
-impl BlockCipherFixKey for Des {
+impl NewFixKey for Des {
     type KeySize = U8;
 
     fn new(key: &GenericArray<u8, U8>) -> Self {
         let block = read_u64_be(key);
         Des{keys: gen_keys(block)}
+    }
+}
+
+
+impl BlockCipher for Tdes {
+    type BlockSize = U8;
+    type ParBlocks = U1;
+
+    fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
+        let mut data = read_u64_be(block);
+
+        data = self.d1.encrypt(data);
+        data = self.d2.encrypt(data);
+        data = self.d3.encrypt(data);
+
+        write_u64_be(block, data);
+    }
+
+    fn decrypt_block(&self, block: &mut GenericArray<u8, U8>) {
+        let mut data = read_u64_be(block);
+
+        data = self.d3.decrypt(data);
+        data = self.d2.decrypt(data);
+        data = self.d1.decrypt(data);
+
+        write_u64_be(block, data);
+    }
+}
+
+impl NewFixKey for Tdes {
+    type KeySize = U24;
+
+    fn new(key: &GenericArray<u8, U24>) -> Self {
+        let d1 = Des { keys: gen_keys(read_u64_be(&key[0..8])) };
+        let d2 = Des { keys: gen_keys(read_u64_be(&key[8..16])) };
+        let d3 = Des { keys: gen_keys(read_u64_be(&key[16..24])) };
+        Tdes { d1, d2, d3 }
     }
 }
