@@ -2,6 +2,7 @@
 members = [
     "blowfish",
     "block-modes",
+    "des",
     "kuznyechik",
     "magma",
     "rc2",

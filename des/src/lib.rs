@@ -210,8 +210,7 @@ impl NewFixKey for Des {
     type KeySize = U8;
 
     fn new(key: &GenericArray<u8, U8>) -> Self {
-        let block = read_u64_be(key);
-        Des{keys: gen_keys(block)}
+        Des { keys: gen_keys(read_u64_be(key)) }
     }
 }
 
