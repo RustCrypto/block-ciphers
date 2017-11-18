@@ -41,6 +41,15 @@ macro_rules! impl_ctr {
                 }
             }
 
+            pub fn new_from_cipher(cipher: $cipher, nonce: &[u8; BLOCK_SIZE]) -> Self {
+                let ctr = u64x2::read(nonce).swap_bytes();
+                Self{
+                    ctr, cipher,
+                    leftover_cursor: BLOCK_SIZE,
+                    leftover_buf: [0u8; BLOCK_SIZE]
+                }
+            }
+
             #[inline]
             pub fn xor(&mut self, mut buf: &mut [u8]) {
                 // process leftover bytes from the last call if any
