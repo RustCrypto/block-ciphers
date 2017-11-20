@@ -16,7 +16,7 @@ fn as_block_mut(val: &mut Block128) -> &mut [u8; 16] {
 
 #[inline(always)]
 fn as_block8_mut(val: &mut Block128x8) -> &mut [u8; 16*8] {
-    assert_eq!(val.len(), 16*8);
+    assert_eq!(mem::size_of_val(val), 16*8);
     unsafe { mem::transmute(val) }
 }
 
