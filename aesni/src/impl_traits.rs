@@ -1,6 +1,6 @@
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U8, U16, U24, U32};
-use block_cipher_trait::{BlockCipher, NewFixKey};
+use block_cipher_trait::BlockCipher;
 use core::mem;
 
 use super::{Aes128, Aes192, Aes256};
@@ -22,18 +22,15 @@ fn as_block8_mut(val: &mut Block128x8) -> &mut [u8; 16*8] {
 
 macro_rules! impl_trait {
     ($cipher:ty, $key_size:ty) => {
-        impl NewFixKey for $cipher {
+        impl BlockCipher for $cipher {
             type KeySize = $key_size;
+            type BlockSize = U16;
+            type ParBlocks = U8;
 
             #[inline]
             fn new(key: &GenericArray<u8, $key_size>) -> Self {
                 Self::init(unsafe { mem::transmute(key) })
             }
-        }
-
-        impl BlockCipher for $cipher {
-            type BlockSize = U16;
-            type ParBlocks = U8;
 
             #[inline]
             fn encrypt_block(&self, block: &mut Block128) {
