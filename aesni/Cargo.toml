@@ -16,6 +16,3 @@ block-cipher-trait = "0.5"
 block-cipher-trait = { version = "0.5", features = ["dev"] }
 
 [workspace]
-
-[patch.crates-io]
-block-cipher-trait = { git = "https://github.com/RustCrypto/traits", branch="new_versiion" }
