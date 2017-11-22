@@ -8,26 +8,25 @@ macro_rules! constuct_cipher {
         }
 
         impl<'a> BlockCipher for $name<'a> {
+            type KeySize = U32;
             type BlockSize = U8;
+            type ParBlocks = U1;
+
+            fn new(key: &GenericArray<u8, U32>) -> Self {
+                let mut c = Gost89 { sbox: &$sbox, key: Default::default() };
+                read_u32v_le(&mut c.key, key);
+                Self { c }
+            }
 
             #[inline]
             fn encrypt_block(&self, block: &mut Block) {
-                self.c.encrypt_block(block);
+                self.c.encrypt(block);
             }
 
             #[inline]
             fn decrypt_block(&self, block: &mut Block) {
-                self.c.decrypt_block(block);
+                self.c.decrypt(block);
             }
         }
-
-        impl<'a> NewFixKey for $name<'a> {
-            type KeySize = U32;
-
-            fn new(key: &GenericArray<u8, U32>) -> Self {
-                $name{c: Gost89::new(key, &$sbox)}
-            }
-        }
-
     }
 }

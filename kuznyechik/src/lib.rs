@@ -1,9 +1,9 @@
 #![no_std]
 extern crate block_cipher_trait;
 
-use block_cipher_trait::{BlockCipher, NewFixKey};
+use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::generic_array::typenum::{U16, U32};
+use block_cipher_trait::generic_array::typenum::{U1, U16, U32};
 
 mod consts;
 
@@ -121,7 +121,15 @@ impl Kuznyechik {
 }
 
 impl BlockCipher for Kuznyechik {
+    type KeySize = U32;
     type BlockSize = U16;
+    type ParBlocks = U1;
+
+    fn new(key: &GenericArray<u8, U32>) -> Self {
+        let mut cipher = Self { keys: Default::default() };
+        cipher.expand_key(key);
+        cipher
+    }
 
     #[inline]
     fn encrypt_block(&self, block: &mut Block) {
@@ -133,15 +141,5 @@ impl BlockCipher for Kuznyechik {
     fn decrypt_block(&self, block: &mut Block) {
         let block: &mut [u8; 16] = unsafe { core::mem::transmute(block) };
         self.decrypt(block);
-    }
-}
-
-impl NewFixKey for Kuznyechik {
-    type KeySize = U32;
-
-    fn new(key: &GenericArray<u8, U32>) -> Self {
-        let mut cipher = Kuznyechik{keys: Default::default()};
-        cipher.expand_key(key);
-        cipher
     }
 }

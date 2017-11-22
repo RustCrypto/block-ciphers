@@ -4,9 +4,9 @@
  #![no_std]
 extern crate block_cipher_trait;
 
-use block_cipher_trait::{BlockCipher, NewVarKey, InvalidKeyLength};
+use block_cipher_trait::{BlockCipher, InvalidKeyLength};
 use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::generic_array::typenum::U8;
+use block_cipher_trait::generic_array::typenum::{U1, U8, U32};
 
 mod consts;
 use consts::PI_TABLE;
@@ -158,18 +158,22 @@ impl RC2 {
     }
 }
 
-impl NewVarKey for RC2 {
-    fn new(key: &[u8]) -> Result<RC2, InvalidKeyLength> {
+impl BlockCipher for RC2 {
+    type KeySize = U32;
+    type BlockSize = U8;
+    type ParBlocks = U1;
+
+    fn new(key: &GenericArray<u8, U32>) -> Self {
+        Self::new_varkey(key).unwrap()
+    }
+
+    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
         if key.len() < 1 || key.len() > 128 {
             Err(InvalidKeyLength)
         } else {
-            Ok(RC2::new_with_eff_key_len(key, key.len()*8))
+            Ok(Self::new_with_eff_key_len(key, key.len()*8))
         }
     }
-}
-
-impl BlockCipher for RC2 {
-    type BlockSize = U8;
 
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         self.encrypt(block);

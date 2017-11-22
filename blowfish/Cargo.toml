@@ -16,8 +16,5 @@ block-cipher-trait = "0.5"
 [features]
 bcrypt = []
 
-[dev-dependencies]
-crypto-tests = "0.6"
-
 [badges]
 travis-ci = { repository = "RustCrypto/block-ciphers" }

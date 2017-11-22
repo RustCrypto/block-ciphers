@@ -2,9 +2,9 @@
 extern crate block_cipher_trait;
 extern crate byte_tools;
 
-use block_cipher_trait::{BlockCipher, NewVarKey, InvalidKeyLength};
+use block_cipher_trait::{BlockCipher, InvalidKeyLength};
 use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::generic_array::typenum::U16;
+use block_cipher_trait::generic_array::typenum::{U1, U16, U32};
 use byte_tools::{read_u32_le, read_u32v_le, write_u32_le, write_u32v_le};
 
 mod consts;
@@ -148,7 +148,27 @@ impl Twofish {
 }
 
 impl BlockCipher for Twofish {
+    type KeySize = U32;
     type BlockSize = U16;
+    type ParBlocks = U1;
+
+    fn new(key: &GenericArray<u8, U32>) -> Self {
+        Self::new_varkey(key).unwrap()
+    }
+
+    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+        let n = key.len();
+        if n != 16 && n != 24 && n != 32 {
+            return Err(InvalidKeyLength);
+        }
+        let mut twofish = Self {
+            s: [0u8; 16],
+            k: [0u32; 40],
+            start: 0,
+        };
+        twofish.key_schedule(key);
+        Ok(twofish)
+    }
 
     fn encrypt_block(&self, block: &mut Block) {
         let mut p = [0u32; 4];
@@ -211,22 +231,6 @@ impl BlockCipher for Twofish {
         }
 
         write_u32v_le(block, &c[..]);
-    }
-}
-
-impl NewVarKey for Twofish {
-    fn new(key: &[u8]) -> Result<Twofish, InvalidKeyLength> {
-        let n = key.len();
-        if n != 16 && n != 24 && n != 32 {
-            return Err(InvalidKeyLength);
-        }
-        let mut twofish = Twofish {
-            s: [0u8; 16],
-            k: [0u32; 40],
-            start: 0,
-        };
-        twofish.key_schedule(key);
-        Ok(twofish)
     }
 }
 
