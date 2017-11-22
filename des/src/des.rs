@@ -1,7 +1,7 @@
 use traits::BlockCipher;
 use byte_tools::{read_u64_be, write_u64_be};
 use traits::generic_array::GenericArray;
-use traits::generic_array::typenum::{U1, U8, U16, U24};
+use traits::generic_array::typenum::{U1, U8};
 
 use consts::{SBOXES, SHIFTS};
 
