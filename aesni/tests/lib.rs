@@ -1,6 +1,7 @@
 //! Test vectors are from NESSIE:
 //! https://www.cosic.esat.kuleuven.be/nessie/testvectors/
 #![no_std]
+#![cfg(any(target_arch = "x86_64", target_arch = "x86"))]
 extern crate aesni;
 #[macro_use]
 extern crate block_cipher_trait;
