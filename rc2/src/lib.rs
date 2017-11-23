@@ -4,7 +4,8 @@
  #![no_std]
 extern crate block_cipher_trait;
 
-use block_cipher_trait::{BlockCipher, InvalidKeyLength};
+pub use block_cipher_trait::BlockCipher;
+use block_cipher_trait::InvalidKeyLength;
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U1, U8, U32};
 
@@ -12,15 +13,15 @@ mod consts;
 use consts::PI_TABLE;
 
 /// A structure that represents the block cipher initialized with a key
-pub struct RC2 {
+pub struct Rc2 {
     exp_key: [u16; 64],
 }
 
-impl RC2 {
+impl Rc2 {
     /// Create a cipher with the specified effective key length
-    pub fn new_with_eff_key_len(key: &[u8], eff_key_len: usize) -> RC2 {
-        RC2 {
-            exp_key: RC2::expand_key(key, eff_key_len)
+    pub fn new_with_eff_key_len(key: &[u8], eff_key_len: usize) -> Self {
+        Self {
+            exp_key: Rc2::expand_key(key, eff_key_len)
         }
     }
 
@@ -158,7 +159,7 @@ impl RC2 {
     }
 }
 
-impl BlockCipher for RC2 {
+impl BlockCipher for Rc2 {
     type KeySize = U32;
     type BlockSize = U8;
     type ParBlocks = U1;
