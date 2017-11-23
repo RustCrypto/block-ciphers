@@ -8,3 +8,4 @@ mod tdes;
 
 pub use des::Des;
 pub use tdes::{TdesEde3, TdesEee3, TdesEde2, TdesEee2};
+pub use traits::BlockCipher;
