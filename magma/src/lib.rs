@@ -7,7 +7,7 @@ mod sboxes_exp;
 mod construct;
 
 use byte_tools::{read_u32v_le, read_u32_le, write_u32_le};
-use block_cipher_trait::BlockCipher;
+pub use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U1, U8, U32};
 
