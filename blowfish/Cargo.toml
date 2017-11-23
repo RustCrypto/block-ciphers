@@ -13,6 +13,9 @@ categories = ["cryptography", "no-std"]
 byte-tools = "0.2"
 block-cipher-trait = "0.5"
 
+[dev-dependencies]
+block-cipher-trait = { version = "0.5", features = ["dev"] }
+
 [features]
 bcrypt = []
 
