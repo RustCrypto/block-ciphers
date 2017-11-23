@@ -1,7 +1,7 @@
 #![no_std]
 extern crate block_cipher_trait;
 
-use block_cipher_trait::BlockCipher;
+pub use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U1, U16, U32};
 
