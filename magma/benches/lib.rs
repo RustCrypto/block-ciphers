@@ -1,7 +1,7 @@
 #![no_std]
 #![feature(test)]
 #[macro_use]
-extern crate crypto_tests;
+extern crate block_cipher_trait;
 extern crate magma;
 
-bench_block_cipher!(magma::Magma, 32);
+bench!(magma::Magma, 32);

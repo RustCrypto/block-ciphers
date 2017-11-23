@@ -1,7 +1,7 @@
 #![no_std]
 #![feature(test)]
 #[macro_use]
-extern crate crypto_tests;
+extern crate block_cipher_trait;
 extern crate blowfish;
 
-bench_block_cipher!(blowfish::Blowfish, 16);
+bench!(blowfish::Blowfish, 16);

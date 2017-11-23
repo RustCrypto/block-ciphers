@@ -1,8 +1,7 @@
 #![no_std]
 #![feature(test)]
-
 #[macro_use]
 extern crate block_cipher_trait;
 extern crate des;
 
-bench_block_cipher!(des::Tdes, 24);
+bench!(des::TdesEde3, 24);
