@@ -4,6 +4,10 @@ rust:
   - beta
   - nightly
 matrix:
+  include:
+    - rust: nightly
+      script: cd aesni && cargo test --verbose
   allow_failures:
     - rust: nightly
-script: cargo test --verbose --all
+script:
+    - cargo test --verbose --all
