@@ -2,7 +2,7 @@
 extern crate twofish;
 extern crate block_cipher_trait;
 
-use block_cipher_trait::{BlockCipher, NewVarKey};
+use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::GenericArray;
 use twofish::Twofish;
 
@@ -13,7 +13,7 @@ fn encrypt_ecb128() {
     let mut cipher;
 
     for i in 1..50 {
-        let twofish = Twofish::new(&key).unwrap();
+        let twofish = Twofish::new_varkey(&key).unwrap();
 
         let mut buf = plain.clone();
         twofish.encrypt_block(&mut buf);
@@ -62,7 +62,7 @@ fn encrypt_ecb192() {
     let mut cipher;
 
     for i in 1..50 {
-        let twofish = Twofish::new(&key).unwrap();
+        let twofish = Twofish::new_varkey(&key).unwrap();
 
         let mut buf = plain.clone();
         twofish.encrypt_block(&mut buf);
@@ -113,7 +113,7 @@ fn encrypt_ecb256() {
     let mut cipher;
 
     for i in 1..50 {
-        let twofish = Twofish::new(&key).unwrap();
+        let twofish = Twofish::new_varkey(&key).unwrap();
 
         let mut buf = plain.clone();
         twofish.encrypt_block(&mut buf);
