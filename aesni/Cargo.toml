@@ -11,11 +11,9 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 block-cipher-trait = "0.5"
+opaque-debug = "0.1"
 
 [dev-dependencies]
 block-cipher-trait = { version = "0.5", features = ["dev"] }
 
 [workspace]
-
-[patch.crates-io]
-block-cipher-trait = { git = "https://github.com/RustCrypto/traits", branch="new_versiion" }

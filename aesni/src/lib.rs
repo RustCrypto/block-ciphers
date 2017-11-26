@@ -40,6 +40,8 @@
 #![feature(repr_simd)]
 #![feature(asm)]
 extern crate block_cipher_trait;
+#[macro_use]
+extern crate opaque_debug;
 
 mod aes128;
 mod aes192;

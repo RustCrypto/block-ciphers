@@ -1,4 +1,4 @@
-use core::mem;
+use core::{mem, fmt};
 
 use u64x2::u64x2;
 use super::{Aes128, Aes192, Aes256};
@@ -22,6 +22,7 @@ fn xor_block8(buf: &mut [u8], ctr: [u64x2; 8]) {
 macro_rules! impl_ctr {
     ($name:ident, $cipher:ty, $key_size:expr, $doc:expr) => {
         #[doc=$doc]
+        #[derive(Clone)]
         pub struct $name {
             ctr: u64x2,
             cipher: $cipher,
@@ -121,6 +122,8 @@ macro_rules! impl_ctr {
                 block8
             }
         }
+
+        impl_opaque_debug!($name);
     }
 }
 

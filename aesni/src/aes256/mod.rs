@@ -3,7 +3,7 @@ use u64x2::u64x2;
 mod expand;
 
 /// AES-256 block cipher
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 pub struct Aes256 {
     encrypt_keys: [u64x2; 15],
     decrypt_keys: [u64x2; 15],

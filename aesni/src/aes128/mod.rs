@@ -4,7 +4,7 @@ use core::mem;
 mod expand;
 
 /// AES-128 block cipher
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 pub struct Aes128 {
     encrypt_keys: [u64x2; 11],
     decrypt_keys: [u64x2; 11],

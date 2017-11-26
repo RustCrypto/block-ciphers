@@ -1,7 +1,7 @@
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U8, U16, U24, U32};
 use block_cipher_trait::BlockCipher;
-use core::mem;
+use core::{mem, fmt};
 
 use super::{Aes128, Aes192, Aes256};
 
@@ -52,6 +52,8 @@ macro_rules! impl_trait {
                 self.decrypt8(as_block8_mut(blocks))
             }
         }
+
+        impl_opaque_debug!($cipher);
     }
 }
 
