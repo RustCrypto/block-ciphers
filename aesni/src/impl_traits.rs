@@ -20,7 +20,7 @@ fn as_block8_mut(val: &mut Block128x8) -> &mut [u8; 16*8] {
     unsafe { mem::transmute(val) }
 }
 
-macro_rules! impl_trait {
+macro_rules! impl_traits {
     ($cipher:ty, $key_size:ty) => {
         impl BlockCipher for $cipher {
             type KeySize = $key_size;
@@ -57,6 +57,6 @@ macro_rules! impl_trait {
     }
 }
 
-impl_trait!(Aes128, U16);
-impl_trait!(Aes192, U24);
-impl_trait!(Aes256, U32);
+impl_traits!(Aes128, U16);
+impl_traits!(Aes192, U24);
+impl_traits!(Aes256, U32);

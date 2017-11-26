@@ -13,14 +13,14 @@ pub struct Aes128 {
 impl Aes128 {
     /// Create new AES-192 instance with given key
     #[inline]
-    pub fn init(key: &[u8; 16]) -> Self {
+    pub(crate) fn init(key: &[u8; 16]) -> Self {
         let (encrypt_keys, decrypt_keys) = expand::expand(key);
         Aes128 { encrypt_keys: encrypt_keys, decrypt_keys: decrypt_keys }
     }
 
     /// Encrypt in-place one 128 bit block
     #[inline]
-    pub fn encrypt(&self, block: &mut [u8; 16]) {
+    pub(crate) fn encrypt(&self, block: &mut [u8; 16]) {
         let mut data = u64x2::read(block);
         self.encrypt_u64x2(&mut data);
         data.write(block);
@@ -28,7 +28,7 @@ impl Aes128 {
 
     /// Decrypt in-place one 128 bit block
     #[inline]
-    pub fn decrypt(&self, block: &mut [u8; 16]) {
+    pub(crate) fn decrypt(&self, block: &mut [u8; 16]) {
         let block: &mut [u8; 16] = unsafe { mem::transmute(block) };
         let keys = self.decrypt_keys;
         let mut data = u64x2::read(block);
@@ -50,7 +50,7 @@ impl Aes128 {
     /// Encrypt in-place eight 128 bit blocks (1024 bits in total) using
     /// instruction-level parallelism
     #[inline]
-    pub fn encrypt8(&self, blocks: &mut [u8; 8*16]) {
+    pub(crate) fn encrypt8(&self, blocks: &mut [u8; 8*16]) {
         let mut data = u64x2::read8(blocks);
         self.encrypt_u64x2_8(&mut data);
         u64x2::write8(data, blocks);
@@ -59,7 +59,7 @@ impl Aes128 {
     /// Decrypt in-place eight 128 bit blocks (1024 bits in total) using
     /// instruction-level parallelism
     #[inline]
-    pub fn decrypt8(&self, blocks: &mut [u8; 8*16]) {
+    pub(crate) fn decrypt8(&self, blocks: &mut [u8; 8*16]) {
         let keys = self.decrypt_keys;
         let mut data = u64x2::read8(blocks);
         unsafe {
