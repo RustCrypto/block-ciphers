@@ -1,7 +1,9 @@
-use traits::BlockCipher;
+use super::BlockCipher;
 use byte_tools::{read_u64_be, write_u64_be};
-use traits::generic_array::GenericArray;
-use traits::generic_array::typenum::{U1, U8};
+use generic_array::GenericArray;
+use generic_array::typenum::{U1, U8};
+
+use core::fmt;
 
 use consts::{SBOXES, SHIFTS};
 
@@ -197,3 +199,5 @@ impl BlockCipher for Des {
         write_u64_be(block, self.decrypt(data));
     }
 }
+
+impl_opaque_debug!(Des);

@@ -12,6 +12,7 @@ categories = ["cryptography", "no-std"]
 [dependencies]
 byte-tools = "0.2"
 block-cipher-trait = "0.5"
+opaque-debug = "0.1"
 
 [badges]
 travis-ci = { repository = "RustCrypto/block-ciphers" }

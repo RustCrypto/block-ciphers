@@ -8,6 +8,3 @@ members = [
     "rc2",
     "twofish"
 ]
-
-[patch.crates-io]
-block-cipher-trait = { git = "https://github.com/RustCrypto/traits", branch="new_versiion" }

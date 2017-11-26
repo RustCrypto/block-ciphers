@@ -2,12 +2,16 @@
 //!
 //! [1]: https://en.wikipedia.org/wiki/RC2
  #![no_std]
-extern crate block_cipher_trait;
+#[macro_use]
+extern crate opaque_debug;
+pub extern crate block_cipher_trait;
 
 pub use block_cipher_trait::BlockCipher;
 use block_cipher_trait::InvalidKeyLength;
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U1, U8, U32};
+
+use core::fmt;
 
 mod consts;
 use consts::PI_TABLE;
@@ -184,3 +188,5 @@ impl BlockCipher for Rc2 {
         self.decrypt(block);
     }
 }
+
+impl_opaque_debug!(Rc2);

@@ -1,33 +1,39 @@
 #![no_std]
 extern crate byte_tools;
-extern crate block_cipher_trait;
+#[macro_use]
+extern crate opaque_debug;
+pub extern crate block_cipher_trait;
 
 mod sboxes_exp;
 #[macro_use]
 mod construct;
 
-use byte_tools::{read_u32v_le, read_u32_le, write_u32_le};
 pub use block_cipher_trait::BlockCipher;
+use byte_tools::{read_u32v_le, read_u32_le, write_u32_le};
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U1, U8, U32};
+
+use core::fmt;
 
 use sboxes_exp::*;
 
 type Block = GenericArray<u8, U8>;
 
 #[derive(Clone, Copy)]
-pub struct Gost89<'a> {
-    sbox: &'a SBoxExp,
+struct Gost89 {
+    sbox: &'static SBoxExp,
     key: GenericArray<u32, U8>,
 }
 
-impl<'a> Gost89<'a> {
+impl Gost89 {
+    /*
     /// Switch S-box to a custom one
-    pub fn switch_sbox(&self, sbox: &'a SBoxExp) -> Gost89<'a> {
+    fn switch_sbox(&self, sbox: &'a SBoxExp) -> Gost89<'a> {
         let mut cipher = *self;
         cipher.sbox = sbox;
         cipher
     }
+    */
 
     fn apply_sbox(&self, a: u32) -> u32 {
         let mut v = 0;

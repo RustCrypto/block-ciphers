@@ -3,11 +3,11 @@ macro_rules! constuct_cipher {
     ($name:ident, $sbox:expr) => {
 
         #[derive(Clone, Copy)]
-        pub struct $name<'a> {
-            c: Gost89<'a>
+        pub struct $name {
+            c: Gost89
         }
 
-        impl<'a> BlockCipher for $name<'a> {
+        impl BlockCipher for $name {
             type KeySize = U32;
             type BlockSize = U8;
             type ParBlocks = U1;
@@ -28,5 +28,7 @@ macro_rules! constuct_cipher {
                 self.c.decrypt(block);
             }
         }
+
+        impl_opaque_debug!($name);
     }
 }

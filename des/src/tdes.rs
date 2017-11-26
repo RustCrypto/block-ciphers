@@ -1,9 +1,11 @@
-use byte_tools::{read_u64_be, write_u64_be};
-use traits::BlockCipher;
-use traits::generic_array::GenericArray;
-use traits::generic_array::typenum::{U1, U8, U16, U24};
-
+use super::BlockCipher;
 use des::{Des, gen_keys};
+
+use byte_tools::{read_u64_be, write_u64_be};
+use generic_array::GenericArray;
+use generic_array::typenum::{U1, U8, U16, U24};
+
+use core::fmt;
 
 #[derive(Copy, Clone)]
 pub struct TdesEde3 {
@@ -161,3 +163,8 @@ impl BlockCipher for TdesEee2 {
         write_u64_be(block, data);
     }
 }
+
+impl_opaque_debug!(TdesEde3);
+impl_opaque_debug!(TdesEee3);
+impl_opaque_debug!(TdesEde2);
+impl_opaque_debug!(TdesEee2);

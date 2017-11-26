@@ -1,9 +1,13 @@
 #![no_std]
-extern crate block_cipher_trait;
+#[macro_use]
+extern crate opaque_debug;
+pub extern crate block_cipher_trait;
 
 pub use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U1, U16, U32};
+
+use core::fmt;
 
 mod consts;
 
@@ -143,3 +147,5 @@ impl BlockCipher for Kuznyechik {
         self.decrypt(block);
     }
 }
+
+impl_opaque_debug!(Kuznyechik);

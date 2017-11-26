@@ -1,9 +1,14 @@
 #![no_std]
 extern crate byte_tools;
-extern crate block_cipher_trait;
+#[macro_use]
+extern crate opaque_debug;
+pub extern crate block_cipher_trait;
 
+use core::fmt;
+
+pub use block_cipher_trait::BlockCipher;
 use byte_tools::{read_u32_be, write_u32_be};
-use block_cipher_trait::{BlockCipher, InvalidKeyLength};
+use block_cipher_trait::InvalidKeyLength;
 use block_cipher_trait::generic_array::typenum::{U1, U8, U56};
 use block_cipher_trait::generic_array::GenericArray;
 
@@ -178,3 +183,5 @@ impl Blowfish {
         self.expand_key(key)
     }
 }
+
+impl_opaque_debug!(Blowfish);

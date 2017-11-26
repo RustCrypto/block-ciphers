@@ -1,11 +1,16 @@
 #![no_std]
-extern crate block_cipher_trait;
+#[macro_use]
+extern crate opaque_debug;
 extern crate byte_tools;
+pub extern crate block_cipher_trait;
 
-use block_cipher_trait::{BlockCipher, InvalidKeyLength};
+pub use block_cipher_trait::BlockCipher;
+use block_cipher_trait::InvalidKeyLength;
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U1, U16, U32};
 use byte_tools::{read_u32_le, read_u32v_le, write_u32_le, write_u32v_le};
+
+use core::fmt;
 
 mod consts;
 use consts::{QORD, QBOX, RS, MDS_POLY, RS_POLY};
@@ -233,6 +238,8 @@ impl BlockCipher for Twofish {
         write_u32v_le(block, &c[..]);
     }
 }
+
+impl_opaque_debug!(Twofish);
 
 #[cfg(test)]
 mod tests;
