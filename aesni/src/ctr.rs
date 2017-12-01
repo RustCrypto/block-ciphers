@@ -53,14 +53,14 @@ macro_rules! impl_ctr {
                         let leftover = &self.leftover_buf[n..];
                         let (r, l) = {buf}.split_at_mut(leftover.len());
                         buf = l;
-                        for (a, b) in r.iter_mut().zip(leftover) { *a ^= b; }
+                        for (a, b) in r.iter_mut().zip(leftover) { *a ^= *b; }
                         self.leftover_cursor = BLOCK_SIZE;
                     } else {
                         let s = self.leftover_cursor;
                         let leftover = &self.leftover_buf[s..s + buf.len()];
                         self.leftover_cursor += buf.len();
 
-                        for (a, b) in buf.iter_mut().zip(leftover) { *a ^= b; }
+                        for (a, b) in buf.iter_mut().zip(leftover) { *a ^= *b; }
                         return;
                     }
                 }
@@ -95,7 +95,7 @@ macro_rules! impl_ctr {
                     let n = buf.len();
                     self.leftover_cursor = n;
                     for (a, b) in buf.iter_mut().zip(&self.leftover_buf[..n]) {
-                        *a ^= b;
+                        *a ^= *b;
                     }
                 }
             }

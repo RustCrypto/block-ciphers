@@ -3,32 +3,39 @@
 //! This crate does not implement any software fallback and does not
 //! automatically check CPUID, so if you are using this crate make sure to run
 //! software on appropriate hardware or to check AES-NI availability using
-//! `check_aesni()` function with appropriate software fallback in case of
+//! `check_aesni()` function with an appropriate software fallback in case of
 //! its unavailability.
 //!
 //! Additionally this crate currently requires nigthly Rust compiler due to the
 //! usage of unstable `asm` and `simd` features.
 //!
-//! Ciphers functionality can be also accessed using traits from
-//! [`block-cipher-trait`](https://docs.rs/block-cipher-trait) crate, they are
-//! implemented if `impl_traits` feature is enabled, which is done by default.
-//!
+//! Ciphers functionality is accessed using `BlockCipher` trait from
+//! [`block-cipher-trait`](https://docs.rs/block-cipher-trait) crate.
 //!
 //! # Usage example
 //! ```
-//! let key = [0u8; 16];
-//! let mut block = [0u8; 16];
-//! let mut block8 = [0u8; 16*8];
+//! # use aesni::block_cipher_trait::generic_array::GenericArray;
+//! use aesni::{Aes128, BlockCipher};
+//! 
+//! let key = GenericArray::from_slice(&[0u8; 16]);
+//! let mut block = GenericArray::clone_from_slice(&[0u8; 16]);
+//! let mut block8 = GenericArray::clone_from_slice(&[block; 8]);
 //! // Initialize cipher
-//! let cipher = aesni::Aes128::init(&key);
+//! let cipher = aesni::Aes128::new(&key);
+//! 
+//! let block_copy = block.clone();
 //! // Encrypt block in-place
-//! cipher.encrypt(&mut block);
+//! cipher.encrypt_block(&mut block);
 //! // And decrypt it back
-//! cipher.decrypt(&mut block);
-//! assert_eq!(block, [0u8; 16]);
-//! // We can encrypt 8 blocks simultaneously using instruction-level parallelism
-//! cipher.encrypt8(&mut block8);
-//! cipher.decrypt8(&mut block8);
+//! cipher.decrypt_block(&mut block);
+//! assert_eq!(block, block_copy);
+//! 
+//! // We can encrypt 8 blocks simultaneously using
+//! // instruction-level parallelism
+//! let block8_copy = block8.clone();
+//! cipher.encrypt_blocks(&mut block8);
+//! cipher.decrypt_blocks(&mut block8);
+//! assert_eq!(block8, block8_copy);
 //! ```
 //!
 //! # Related documents
@@ -39,7 +46,7 @@
 #![no_std]
 #![feature(repr_simd)]
 #![feature(asm)]
-extern crate block_cipher_trait;
+pub extern crate block_cipher_trait;
 #[macro_use]
 extern crate opaque_debug;
 
@@ -54,6 +61,7 @@ pub use aes128::Aes128;
 pub use aes192::Aes192;
 pub use aes256::Aes256;
 pub use ctr::{CtrAes128, CtrAes192, CtrAes256};
+pub use block_cipher_trait::BlockCipher;
 
 /// Check if CPU has AES-NI using CPUID instruction.
 ///
