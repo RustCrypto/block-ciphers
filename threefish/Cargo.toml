@@ -11,7 +11,7 @@ keywords = ["crypto", "threefish", "gost", "block-cipher"]
 [dependencies]
 generic-array = "0.7"
 byte-tools = "0.1"
-block-cipher-trait = "0.4.0-alpha"
+block-cipher-trait = "0.5"
 
 [dev-dependencies]
-crypto-tests = "0.4"
+crypto-tests = "0.5"

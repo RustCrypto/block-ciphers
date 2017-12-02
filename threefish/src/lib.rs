@@ -1,16 +1,16 @@
 #![no_std]
-extern crate byte_tools;
 extern crate block_cipher_trait;
+extern crate byte_tools;
 extern crate generic_array;
 use core::ops::BitXor;
 
 mod consts;
-use consts::{C240, R_256, R_512, R_1024, P_256, P_512, P_1024};
+use consts::{C240, P_1024, P_256, P_512, R_1024, R_256, R_512};
 
 use byte_tools::{read_u64v_le, write_u64v_le};
-use block_cipher_trait::{Block, BlockCipher};
-use generic_array::typenum::{U32, U64, U128};
-//use generic_array::typenum::{U8, U32};
+pub use block_cipher_trait::BlockCipher;
+use block_cipher_trait::generic_array::GenericArray;
+use block_cipher_trait::generic_array::typenum::{U1, U128, U32, U64};
 
 fn mix(r: u32, x: (u64, u64)) -> (u64, u64) {
     let y0 = x.0.wrapping_add(x.1);
@@ -36,7 +36,7 @@ macro_rules! impl_threefish(
         }
 
         impl $name {
-            pub fn new(key: &[u8; $n_w*8], tweak: &[u8; 16]) -> $name {
+            pub fn with_tweak(key: &GenericArray<u8, $block_size>, tweak: &[u8; 16]) -> $name {
                 let mut k = [0u64; $n_w + 1];
                 read_u64v_le(&mut k[..$n_w], key);
                 k[$n_w] = k[..$n_w].iter().fold(C240, BitXor::bitxor);
@@ -65,13 +65,18 @@ macro_rules! impl_threefish(
 
         impl BlockCipher for $name {
             type BlockSize = $block_size;
+            type KeySize = $block_size;
+            type ParBlocks = U1;
 
-            fn encrypt_block(&self,
-                input: &Block<Self::BlockSize>,
-                output: &mut Block<Self::BlockSize>)
+            fn new(key: &GenericArray<u8, $block_size>) -> $name {
+                Self::with_tweak(key, &[0u8; 16])
+            }
+
+            fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>)
             {
                 let mut v = [0u64; $n_w];
-                read_u64v_le(&mut v, input.as_slice());
+                read_u64v_le(&mut v, block);
+                for w in v.iter_mut() { *w = w.to_le(); }
 
                 for d in 0..$rounds {
                     let v_tmp = v.clone();
@@ -97,15 +102,15 @@ macro_rules! impl_threefish(
                     v[i] = v[i].wrapping_add(self.sk[$rounds / 4][i]);
                 }
 
-                write_u64v_le(output.as_mut_slice(), &v);
+                for w in v.iter_mut() { *w = w.to_le(); }
+                write_u64v_le(block, &v);
             }
 
-            fn decrypt_block(&self,
-                input: &Block<Self::BlockSize>,
-                output: &mut Block<Self::BlockSize>)
+            fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>)
             {
                 let mut v = [0u64; $n_w];
-                read_u64v_le(&mut v, input.as_slice());
+                read_u64v_le(&mut v, block);
+                for w in v.iter_mut() { *w = w.to_le(); }
 
                 for i in 0..$n_w {
                     v[i] = v[i].wrapping_sub(self.sk[$rounds / 4][i]);
@@ -131,7 +136,8 @@ macro_rules! impl_threefish(
                     }
                 }
 
-                write_u64v_le(output.as_mut_slice(), &v);
+                for w in v.iter_mut() { *w = w.to_le(); }
+                write_u64v_le(block, &v);
             }
         }
     )
