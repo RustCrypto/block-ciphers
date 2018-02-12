@@ -1,13 +1,35 @@
 language: rust
-rust:
-  - stable
-  - beta
-  - nightly
+services: docker
+sudo: required
+
 matrix:
   include:
-    - rust: nightly
-      script: cd aesni && cargo test --verbose
-  allow_failures:
-    - rust: nightly
+    - env: TARGET=i686-unknown-linux-gnu
+      rust: stable
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: stable
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: 1.22.0
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: nightly
+    - env: TARGET=powerpc-unknown-linux-gnu
+      rust: stable
+    - env: TARGET=powerpc64-unknown-linux-gnu
+      rust: stable
+    # tests if crates truly can be built without std
+    - env: TARGET=thumbv7em-none-eabi
+      rust: nightly
+      script: ./build_nostd.sh
+      install:
+        - cargo install xargo --force
+        - rustup target install armv7-unknown-linux-gnueabihf
+        - rustup component add rust-src
+
+install:
+  - curl -LSfs https://japaric.github.io/trust/install.sh | sh -s -- --git japaric/cross --force
+  - source ~/.cargo/env || true
+
 script:
-    - cargo test --verbose --all
+  - cross test --verbose --all --release --target $TARGET
+
+cache: cargo
