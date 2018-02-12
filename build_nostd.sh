@@ -7,7 +7,8 @@ TARGET="thumbv7em-none-eabi"
 cargo clean
 
 for dir in $DIRS; do
-    if [ $dir = "target/" ]
+    # disable check for aesni, as it requires x86
+    if [ $dir = "target/" ] || [ $dir = "aesni/" ]
     then
         continue
     fi
