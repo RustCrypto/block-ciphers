@@ -8,7 +8,8 @@ cargo clean
 
 for dir in $DIRS; do
     # disable check for aesni, as it requires x86
-    if [ $dir = "target/" ] || [ $dir = "aesni/" ]
+    # and block-modes as they are not yet ready
+    if [ $dir = "target/" ] || [ $dir = "aesni/" ] || [ $dir = "block-modes/" ]
     then
         continue
     fi
