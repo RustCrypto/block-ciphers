@@ -16,5 +16,3 @@ byte-tools = "0.2"
 
 [dev-dependencies]
 block-cipher-trait = { version = "0.5", features = ["dev"] }
-
-[workspace]
