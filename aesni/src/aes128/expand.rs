@@ -1,63 +1,47 @@
-use u64x2::u64x2;
+use coresimd::vendor::*;
+
+use core::mem;
 
 macro_rules! expand_round {
-    ($round:expr, $enc_keys:ident, $dec_keys:ident, $pos:expr) => {
-        asm!(concat!("
-            aeskeygenassist xmm2, xmm1, ", $round,
-            "
-            pshufd xmm2, xmm2, 0xff
+    ($enc_keys:expr, $dec_keys:expr, $pos:expr, $round:expr) => {
+        let mut t1 = $enc_keys[$pos-1];
+        let mut t2;
+        let mut t3;
+        unsafe {
+            t2 = _mm_aeskeygenassist_si128(t1, $round);
+            t2 = _mm_shuffle_epi32(t2, 0xff);
+            t3 = _mm_slli_si128(t1, 0x4);
+            t1 = _mm_xor_si128(t1, t3);
+            t3 = _mm_slli_si128(t3, 0x4);
+            t1 = _mm_xor_si128(t1, t3);
+            t3 = _mm_slli_si128(t3, 0x4);
+            t1 = _mm_xor_si128(t1, t3);
+            t1 = _mm_xor_si128(t1, t2);
 
-            movdqa xmm3, xmm1
-            pslldq xmm3, 0x4
-            pxor xmm1, xmm3
-
-            pslldq xmm3, 0x4
-            pxor xmm1, xmm3
-
-            pslldq xmm3, 0x4
-            pxor xmm1, xmm3
-
-            pxor xmm1, xmm2
-            aesimc xmm0, xmm1
-            ")
-            : "={xmm1}"($enc_keys[$pos])
-            : "{xmm1}"($enc_keys[$pos-1])
-            : "xmm2", "xmm3"
-            : "intel", "alignstack", "volatile"
-        );
-        if $pos != 10 {
-            asm!(
-                "aesimc xmm0, xmm1"
-                : "={xmm0}"($dec_keys[$pos])
-                : "{xmm1}"($enc_keys[$pos])
-                :
-                : "intel", "alignstack", "volatile"
-            );
-        } else {
-            $dec_keys[$pos] = $enc_keys[$pos];
+            $enc_keys[$pos] = t1;
+            $dec_keys[$pos] = if $pos != 10 { _mm_aesimc_si128(t1) } else { t1 };
         }
     }
 }
 
 #[inline(always)]
-pub(super) fn expand(key: &[u8; 16]) -> ([u64x2; 11], [u64x2; 11]) {
-    let mut enc_keys = [u64x2(0, 0); 11];
-    let mut dec_keys = [u64x2(0, 0); 11];
-    enc_keys[0] = u64x2::read(key);
+pub(super) fn expand(key: &[u8; 16]) -> ([__m128i; 11], [__m128i; 11]) {
+    let mut enc_keys: [__m128i; 11] = unsafe { mem::uninitialized() };
+    let mut dec_keys: [__m128i; 11] = unsafe { mem::uninitialized() };
+
+    enc_keys[0] = unsafe { _mm_loadu_si128(key.as_ptr() as *const __m128i) };
     dec_keys[0] = enc_keys[0];
 
-    unsafe {
-        expand_round!("0x01", enc_keys, dec_keys, 1);
-        expand_round!("0x02", enc_keys, dec_keys, 2);
-        expand_round!("0x04", enc_keys, dec_keys, 3);
-        expand_round!("0x08", enc_keys, dec_keys, 4);
-        expand_round!("0x10", enc_keys, dec_keys, 5);
-        expand_round!("0x20", enc_keys, dec_keys, 6);
-        expand_round!("0x40", enc_keys, dec_keys, 7);
-        expand_round!("0x80", enc_keys, dec_keys, 8);
-        expand_round!("0x1b", enc_keys, dec_keys, 9);
-        expand_round!("0x36", enc_keys, dec_keys, 10);
-    }
+    expand_round!(enc_keys, dec_keys, 1, 0x01);
+    expand_round!(enc_keys, dec_keys, 2, 0x02);
+    expand_round!(enc_keys, dec_keys, 3, 0x04);
+    expand_round!(enc_keys, dec_keys, 4, 0x08);
+    expand_round!(enc_keys, dec_keys, 5, 0x10);
+    expand_round!(enc_keys, dec_keys, 6, 0x20);
+    expand_round!(enc_keys, dec_keys, 7, 0x40);
+    expand_round!(enc_keys, dec_keys, 8, 0x80);
+    expand_round!(enc_keys, dec_keys, 9, 0x1B);
+    expand_round!(enc_keys, dec_keys, 10, 0x36);
 
     (enc_keys, dec_keys)
 }

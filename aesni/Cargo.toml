@@ -1,6 +1,6 @@
 [package]
 name = "aesni"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
 description = "AES (Rijndael) block ciphers implementation using AES-NI"
@@ -12,6 +12,7 @@ categories = ["cryptography", "no-std"]
 [dependencies]
 block-cipher-trait = "0.5"
 opaque-debug = "0.1"
+coresimd = { git = "https://github.com/rust-lang-nursery/stdsimd" }
 
 [dev-dependencies]
 block-cipher-trait = { version = "0.5", features = ["dev"] }

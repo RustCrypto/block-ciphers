@@ -53,16 +53,3 @@ pub fn aes192_decrypt8(bh: &mut test::Bencher) {
     });
     bh.bytes = (input[0].len()*input.len()) as u64;
 }
-
-#[bench]
-pub fn ctr_aes192(bh: &mut test::Bencher) {
-    let mut cipher = aesni::CtrAes192::new(&[0; 24], &[0; 16]);
-    let mut input = [0u8; 10000];
-
-
-    bh.iter(|| {
-        cipher.xor(&mut input);
-        test::black_box(&input);
-    });
-    bh.bytes = input.len() as u64;
-}
