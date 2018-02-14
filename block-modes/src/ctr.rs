@@ -27,13 +27,9 @@ impl<C> BlockModeIv<C> for Ctr128<C> where C: BlockCipher<BlockSize=U16> {
 
 impl<C> Ctr128<C> where C: BlockCipher<BlockSize=U16> {
     #[inline(always)]
-    // can be relpaced with u128 which will use `add + adc`
-    // this code compiles to `add + jae + inc`
-    // it's not a constant time, but should not pose a security threat
+    // we increment only second half
     fn inc_counter(&mut self) {
-        let r = self.counter[1].overflowing_add(1);
-        self.counter[1] = r.0;
-        if r.1 { self.counter[0] = self.counter[0].wrapping_add(1); }
+        self.counter[1] = self.counter[1].wrapping_add(1);
     }
 
     #[inline(always)]
