@@ -5,20 +5,22 @@ pub extern crate block_padding;
 
 use std as core;
 
-pub mod traits;
 mod utils;
+mod traits;
+pub use traits::{BlockMode, BlockModeIv, BlockModeError};
 
 
-mod ecb;
-pub use ecb::Ecb;
 mod cbc;
 pub use cbc::Cbc;
-pub mod cfb;
+mod cfb;
 pub use cfb::Cfb;
+mod ctr64;
+pub use ctr64::Ctr64;
+mod ctr128;
+pub use ctr128::Ctr128;
+mod ecb;
+pub use ecb::Ecb;
 mod ofb;
 pub use ofb::Ofb;
 mod pcbc;
 pub use pcbc::Pcbc;
-
-mod ctr;
-pub use ctr::{Ctr128, Ctr64};

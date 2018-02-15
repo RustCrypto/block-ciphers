@@ -1,6 +1,4 @@
-//! Test vectors are from NIST "Recommendation for Block Cipher Modes of
-//! Operation":
-//! http://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf
+//! Test vectors generated with OpenSSL
 extern crate aes_soft;
 extern crate block_modes;
 extern crate block_cipher_trait;
@@ -13,7 +11,6 @@ use aes_soft::Aes128;
 
 #[test]
 fn ecb_aes128() {
-    // test vectors generated with OpenSSL
     let key = include_bytes!("data/aes128.key.bin");
     let plaintext = include_bytes!("data/aes128.plaintext.bin");
     let ciphertext = include_bytes!("data/ecb-aes128.ciphertext.bin");
@@ -31,7 +28,6 @@ fn ecb_aes128() {
 
 #[test]
 fn ctr_aes128() {
-    // test vectors generated with OpenSSL
     let key = include_bytes!("data/aes128.key.bin");
     let iv = include_bytes!("data/aes128.iv.bin");
     let plaintext = include_bytes!("data/aes128.plaintext.bin");
@@ -49,7 +45,6 @@ fn ctr_aes128() {
     mode.decrypt_nopad(&mut ct).unwrap();
     assert_eq!(ct, &plaintext[..]);
 }
-
 
 #[test]
 fn ofb_aes128() {

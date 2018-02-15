@@ -8,22 +8,13 @@ type Array<N> = GenericArray<u8, N>;
 #[derive(Clone, Copy, Debug)]
 pub struct BlockModeError;
 
-pub trait BlockMode<C: BlockCipher, P: Padding> {
+pub trait BlockMode<C: BlockCipher, P: Padding>: Sized {
     fn encrypt_nopad(&mut self, buffer: &mut [u8])
         -> Result<(), BlockModeError>;
     fn decrypt_nopad(&mut self, buffer: &mut [u8])
         -> Result<(), BlockModeError>;
 
-    fn encrypt_pad<'a>(&mut self, buffer: &'a mut [u8], pos: usize)
-        -> Result<&'a [u8], BlockModeError>
-    {
-        let bs = C::BlockSize::to_usize();
-        let buf = P::pad(buffer, pos, bs).map_err(|_| BlockModeError)?;
-        self.encrypt_nopad(buf)?;
-        Ok(buf)
-    }
-
-    fn box_encrypt_pad(mut self: Box<Self>, buffer: &mut [u8], pos: usize)
+    fn encrypt_pad(mut self, buffer: &mut [u8], pos: usize)
         -> Result<&[u8], BlockModeError>
     {
         let bs = C::BlockSize::to_usize();
@@ -32,8 +23,8 @@ pub trait BlockMode<C: BlockCipher, P: Padding> {
         Ok(buf)
     }
 
-    fn decrypt_pad<'a>(&mut self, buffer: &'a mut [u8])
-        -> Result<&'a [u8], BlockModeError>
+    fn decrypt_pad(mut self, buffer: &mut [u8])
+        -> Result<&[u8], BlockModeError>
     {
         let bs = C::BlockSize::to_usize();
         if buffer.len() % bs != 0 { Err(BlockModeError)? }
