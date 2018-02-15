@@ -3,11 +3,9 @@ use block_cipher_trait::generic_array::typenum::Unsigned;
 use block_padding::Padding;
 use block_cipher_trait::BlockCipher;
 use traits::{BlockMode, BlockModeIv, BlockModeError};
-use tools::xor;
+use utils::{xor, ParBlocks};
 use core::marker::PhantomData;
 use core::{mem, slice};
-
-type ParBlocks<B, P> = GenericArray<GenericArray<u8, B>, P>;
 
 pub struct Cfb<C: BlockCipher, P: Padding> {
     cipher: C,
@@ -49,42 +47,46 @@ impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Cfb<C, P> {
 
         if buffer.len() == 0 { return Ok(()); }
 
-        if pb != 1 {
-            let bss = bs*pb;
-
-            // we have checked that we have at least one block
+        let bss = bs*pb;
+        if pb != 1 && buffer.len() > bss {
             let (block, r) = {buffer}.split_at_mut(bs);
             buffer = r;
+            println!("iv0: {:?}", self.iv);
             self.cipher.encrypt_block(&mut self.iv);
-            let mut next_iv = GenericArray::clone_from_slice(block);
+            let mut ga_blocks: ParBlocks<C::BlockSize, C::ParBlocks> = unsafe {
+                mem::transmute_copy(&*block.as_ptr())
+            };
             xor(block, self.iv.as_slice());
 
             while buffer.len() >= bss {
                 let (mut blocks, r) = {buffer}.split_at_mut(bss);
                 buffer = r;
 
-                let mut ga_blocks: ParBlocks<C::BlockSize, C::ParBlocks> = unsafe {
-                    // a bit of black magic, we are sure that there is a block
-                    // before `blocks` which will be alive
-                    let p = blocks.as_ptr().offset(-C::BlockSize::to_isize());
-                    mem::transmute_copy(&*p)
-                };
-
-                next_iv = ga_blocks[bs-1].clone();
+                for b in ga_blocks.iter() {
+                    println!("iv2: {:?}", b);
+                }
 
                 self.cipher.encrypt_blocks(&mut ga_blocks);
 
-                xor(&mut blocks, unsafe { slice::from_raw_parts(
-                    ga_blocks.as_ptr() as *mut u8, bss
-                )});
+                let (next_ga, ga_slice) = unsafe {
+                    let p = blocks.as_ptr().offset((bss - bs) as isize);
+                    let s = slice::from_raw_parts(
+                        ga_blocks.as_ptr() as *mut u8, bss
+                    );
+                    (mem::transmute_copy(&*p), s)
+                };
+
+                xor(&mut blocks, ga_slice);
+                ga_blocks = next_ga;
             }
 
-            self.iv = next_iv;
+            self.iv = ga_blocks[0].clone();
         }
 
         while buffer.len() >= bs {
             let (block, r) = {buffer}.split_at_mut(bs);
             buffer = r;
+            println!("iv: {:?}", self.iv);
             self.cipher.encrypt_block(&mut self.iv);
             let next_iv = GenericArray::clone_from_slice(block);
             xor(block, self.iv.as_slice());

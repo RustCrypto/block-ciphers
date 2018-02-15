@@ -1,4 +1,4 @@
-use block_cipher_trait::BlockCipher;
+use block_cipher_trait::{BlockCipher, InvalidKeyLength};
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::Unsigned;
 use block_padding::Padding;
@@ -15,6 +15,14 @@ pub struct Ecb<C: BlockCipher, P: Padding> {
 impl<C: BlockCipher, P: Padding> Ecb<C, P> {
     pub fn new(cipher: C) -> Self {
         Self { cipher, _p: Default::default() }
+    }
+
+    pub fn new_fixkey(key: &GenericArray<u8, C::KeySize>) -> Self {
+        Self::new(C::new(key))
+    }
+
+    pub fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+        C::new_varkey(key).map(Self::new)
     }
 }
 

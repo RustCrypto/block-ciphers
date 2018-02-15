@@ -1,24 +1,29 @@
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::Unsigned;
 use block_cipher_trait::BlockCipher;
-use traits::BlockMode;
-use tools::xor;
+use block_padding::Padding;
+use traits::{BlockMode, BlockModeIv, BlockModeError};
+use utils::xor;
+use core::marker::PhantomData;
 
-pub struct Pcbc<C: BlockCipher>{
+pub struct Pcbc<C: BlockCipher, P: Padding> {
     cipher: C,
     iv: GenericArray<u8, C::BlockSize>,
+    _p: PhantomData<P>,
 }
 
-impl<C: BlockCipher> Pcbc<C> {
-    pub fn new(cipher: C, iv: GenericArray<u8, C::BlockSize>) -> Self {
-        Self { cipher, iv }
+impl<C: BlockCipher, P: Padding> BlockModeIv<C, P> for Pcbc<C, P> {
+    fn new(cipher: C, iv: &GenericArray<u8, C::BlockSize>) -> Self {
+        Self { cipher, iv: iv.clone(), _p: Default::default() }
     }
 }
 
-impl<C: BlockCipher> BlockMode<C> for Pcbc<C> {
-    fn encrypt_nopad(&mut self, buffer: &mut [u8]) {
+impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Pcbc<C, P> {
+    fn encrypt_nopad(&mut self, buffer: &mut [u8])
+        -> Result<(), BlockModeError>
+    {
         let bs = C::BlockSize::to_usize();
-        assert_eq!(buffer.len() % bs, 0);
+        if buffer.len() % bs != 0 { Err(BlockModeError)? }
 
         for block in buffer.chunks_mut(bs) {
             let plaintext = GenericArray::clone_from_slice(block);
@@ -27,11 +32,14 @@ impl<C: BlockCipher> BlockMode<C> for Pcbc<C> {
             self.iv = plaintext;
             xor(self.iv.as_mut_slice(), block);
         }
+        Ok(())
     }
 
-    fn decrypt_nopad(&mut self, buffer: &mut [u8]) {
+    fn decrypt_nopad(&mut self, buffer: &mut [u8])
+        -> Result<(), BlockModeError>
+    {
         let bs = C::BlockSize::to_usize();
-        assert_eq!(buffer.len() % bs, 0);
+        if buffer.len() % bs != 0 { Err(BlockModeError)? }
 
         for block in buffer.chunks_mut(bs) {
             let ciphertext = GenericArray::clone_from_slice(block);
@@ -40,5 +48,6 @@ impl<C: BlockCipher> BlockMode<C> for Pcbc<C> {
             self.iv = ciphertext;
             xor(self.iv.as_mut_slice(), block);
         }
+        Ok(())
     }
 }

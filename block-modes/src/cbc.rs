@@ -3,11 +3,9 @@ use block_cipher_trait::generic_array::typenum::Unsigned;
 use block_cipher_trait::BlockCipher;
 use block_padding::Padding;
 use traits::{BlockMode, BlockModeIv, BlockModeError};
-use tools::xor;
+use utils::{xor, ParBlocks};
 use core::marker::PhantomData;
 use core::slice;
-
-type ParBlocks<B, P> = GenericArray<GenericArray<u8, B>, P>;
 
 pub struct Cbc<C: BlockCipher, P: Padding> {
     cipher: C,
