@@ -4,7 +4,7 @@ extern crate block_modes;
 extern crate block_cipher_trait;
 
 use block_cipher_trait::generic_array::GenericArray;
-use block_modes::traits::{BlockMode, BlockModeIv};
+use block_modes::{BlockMode, BlockModeIv};
 use block_modes::block_padding::ZeroPadding;
 use block_modes::{Ctr128, Ofb, Cfb, Cbc, Ecb};
 use aes_soft::Aes128;

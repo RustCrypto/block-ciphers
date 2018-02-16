@@ -1,9 +1,7 @@
 //! This crate defines a simple trait used to define block ciphers
-//#![no_std]
+#![no_std]
 extern crate block_cipher_trait;
 pub extern crate block_padding;
-
-use std as core;
 
 mod utils;
 mod traits;

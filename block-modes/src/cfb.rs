@@ -51,7 +51,6 @@ impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Cfb<C, P> {
         if pb != 1 && buffer.len() > bss {
             let (block, r) = {buffer}.split_at_mut(bs);
             buffer = r;
-            println!("iv0: {:?}", self.iv);
             self.cipher.encrypt_block(&mut self.iv);
             let mut ga_blocks: ParBlocks<C::BlockSize, C::ParBlocks> = unsafe {
                 mem::transmute_copy(&*block.as_ptr())
@@ -61,10 +60,6 @@ impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Cfb<C, P> {
             while buffer.len() >= bss {
                 let (mut blocks, r) = {buffer}.split_at_mut(bss);
                 buffer = r;
-
-                for b in ga_blocks.iter() {
-                    println!("iv2: {:?}", b);
-                }
 
                 self.cipher.encrypt_blocks(&mut ga_blocks);
 
@@ -86,7 +81,6 @@ impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Cfb<C, P> {
         while buffer.len() >= bs {
             let (block, r) = {buffer}.split_at_mut(bs);
             buffer = r;
-            println!("iv: {:?}", self.iv);
             self.cipher.encrypt_block(&mut self.iv);
             let next_iv = GenericArray::clone_from_slice(block);
             xor(block, self.iv.as_slice());
