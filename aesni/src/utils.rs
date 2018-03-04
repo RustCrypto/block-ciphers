@@ -1,7 +1,7 @@
 #[cfg(test)]
 use core::mem;
 #[cfg(test)]
-use coresimd::vendor::__m128i;
+use core::arch::x86_64::__m128i;
 
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U8, U16};

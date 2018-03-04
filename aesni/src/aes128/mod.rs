@@ -1,7 +1,7 @@
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U8, U16};
 use block_cipher_trait::BlockCipher;
-use coresimd::vendor::*;
+use core::arch::x86_64::*;
 
 use core::{mem, fmt};
 use utils::{Block128, Block128x8};

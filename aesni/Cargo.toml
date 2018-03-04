@@ -12,7 +12,6 @@ categories = ["cryptography", "no-std"]
 [dependencies]
 block-cipher-trait = "0.5"
 opaque-debug = "0.1"
-coresimd = { git = "https://github.com/rust-lang-nursery/stdsimd" }
 
 [dev-dependencies]
 block-cipher-trait = { version = "0.5", features = ["dev"] }

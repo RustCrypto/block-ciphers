@@ -43,13 +43,12 @@
 //! - [Intel AES-NI whitepaper](https://software.intel.com/sites/default/files/article/165683/aes-wp-2012-09-22-v01.pdf)
 //! - [Use of the AES Instruction Set](https://www.cosic.esat.kuleuven.be/ecrypt/AESday/slides/Use_of_the_AES_Instruction_Set.pdf)
 #![no_std]
-#![feature(cfg_target_feature, target_feature)]
+#![feature(cfg_target_feature, stdsimd)]
 #![cfg(any(target_arch = "x86_64", target_arch = "x86"))]
 #![cfg(target_feature = "aes")]
 pub extern crate block_cipher_trait;
 #[macro_use]
 extern crate opaque_debug;
-extern crate coresimd;
 
 #[macro_use]
 mod utils;
