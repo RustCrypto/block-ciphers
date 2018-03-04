@@ -9,8 +9,8 @@ repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "block-cipher", "ciphers"]
 
 [dependencies]
-block-padding = { git = "https://github.com/RustCrypto/utils" }
+block-padding = "0.1"
 block-cipher-trait = "0.5"
 
 [dev-dependencies]
-aes-soft = { git = "https://github.com/RustCrypto/block-ciphers" }
+aes-soft = "0.1"
