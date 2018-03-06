@@ -16,9 +16,6 @@ matrix:
       rust: stable
     - env: TARGET=powerpc64-unknown-linux-gnu
       rust: stable
-  allow_failures:
-    # tests if crates truly can be built without std
-    # allowed to fail due to the https://github.com/rust-lang/rust/issues/48734
     - env: TARGET=thumbv7em-none-eabi
       rust: nightly
       script: ./build_nostd.sh
