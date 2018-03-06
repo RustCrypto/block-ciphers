@@ -2,16 +2,19 @@
 //!
 //! This crate does not implement any software fallback and does not
 //! automatically check CPUID, so if you are using this crate make sure to run
-//! software on appropriate hardware or to use software fallback
+//! software on an appropriate hardware or to use software fallback
 //! (e.g. from [`aes-soft`](https://crates.io/crates/aes-soft) crate) with
 //! runtime detection of AES-NI availability (e.g. by using
 //! [`cupid`](https://crates.io/crates/cupid) crate).
 //! 
-//! To build this crate do not forget to enable `aes` target feature, otherwise
-//! you will get an empty crate. You can do it either by using `RUSTFLAGS="-C
-//! target-feature=+aes"` or by editing your `.cargo/config`.
+//! When using this crate do not forget to enable `aes` target feature,
+//! otherwise you will get an empty crate. You can do it either by using
+//! `RUSTFLAGS="-C target-feature=+aes"` or by editing your `.cargo/config`.
+//! Alternatively you can enable `ignore_target_feature_check` crate feature
+//! which will bypass target feature check, but it will have a negative implact
+//! on performance.
 //!
-//! Additionally this crate currently requires nigthly Rust compiler due to the
+//! This crate currently requires nigthly Rust compiler due to the
 //! usage of unstable `cfg_target_feature` and `stdsimd` features.
 //!
 //! Ciphers functionality is accessed using `BlockCipher` trait from
@@ -50,13 +53,10 @@
 #![no_std]
 #![feature(cfg_target_feature, stdsimd)]
 #![cfg(any(target_arch = "x86_64", target_arch = "x86"))]
-#![cfg(target_feature = "aes")]
+#![cfg(any(target_feature = "aes", feature="ignore_target_feature_check"))]
 pub extern crate block_cipher_trait;
 #[macro_use]
 extern crate opaque_debug;
-
-#[cfg(test)]
-struct Foo;
 
 #[macro_use]
 mod utils;
