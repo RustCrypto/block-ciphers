@@ -4,7 +4,7 @@ use core::mem;
 use core::arch::x86_64::__m128i;
 
 use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::generic_array::typenum::{U8, U16};
+use block_cipher_trait::generic_array::typenum::{U16, U8};
 
 pub type Block128 = GenericArray<u8, U16>;
 pub type Block128x8 = GenericArray<GenericArray<u8, U16>, U8>;

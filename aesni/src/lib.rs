@@ -6,7 +6,7 @@
 //! (e.g. from [`aes-soft`](https://crates.io/crates/aes-soft) crate) with
 //! runtime detection of AES-NI availability (e.g. by using
 //! [`cupid`](https://crates.io/crates/cupid) crate).
-//! 
+//!
 //! When using this crate do not forget to enable `aes` target feature,
 //! otherwise you will get an empty crate. You can do it either by using
 //! `RUSTFLAGS="-C target-feature=+aes"` or by editing your `.cargo/config`.
@@ -53,7 +53,7 @@
 #![no_std]
 #![feature(cfg_target_feature, stdsimd)]
 #![cfg(any(target_arch = "x86_64", target_arch = "x86"))]
-#![cfg(any(target_feature = "aes", feature="ignore_target_feature_check"))]
+#![cfg(any(target_feature = "aes", feature = "ignore_target_feature_check"))]
 pub extern crate block_cipher_trait;
 #[macro_use]
 extern crate opaque_debug;

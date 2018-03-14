@@ -4,6 +4,11 @@ sudo: required
 
 matrix:
   include:
+    - rust: stable
+      before_script: rustup component add rustfmt-preview
+      script:
+        - cargo fmt --all -- --write-mode=diff
+        - cd aesni ; cargo fmt -- --config-path ../rustfmt.toml --write-mode=diff
     - env: TARGET=i686-unknown-linux-gnu
       rust: stable
     - env: TARGET=x86_64-unknown-linux-gnu

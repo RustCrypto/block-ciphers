@@ -1,13 +1,14 @@
 use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::generic_array::typenum::{U8, U16, U32};
+use block_cipher_trait::generic_array::typenum::{U16, U32, U8};
 use block_cipher_trait::BlockCipher;
 use core::arch::x86_64::*;
 
-use core::{mem, fmt};
+use core::{fmt, mem};
 use utils::{Block128, Block128x8};
 
 mod expand;
-#[cfg(test)] mod test_expand;
+#[cfg(test)]
+mod test_expand;
 
 /// AES-256 block cipher
 #[derive(Copy, Clone)]
@@ -25,7 +26,10 @@ impl BlockCipher for Aes256 {
     fn new(key: &GenericArray<u8, U32>) -> Self {
         let key = unsafe { mem::transmute(key) };
         let (encrypt_keys, decrypt_keys) = expand::expand(key);
-        Self { encrypt_keys, decrypt_keys }
+        Self {
+            encrypt_keys,
+            decrypt_keys,
+        }
     }
 
     #[inline]

@@ -2,7 +2,6 @@ use core::arch::x86_64::*;
 
 use core::mem;
 
-
 macro_rules! expand_round {
     ($enc_keys:expr, $dec_keys:expr, $pos:expr, $round:expr) => {
         let mut t1 = $enc_keys[$pos-2];

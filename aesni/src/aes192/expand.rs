@@ -44,11 +44,13 @@ pub(super) fn expand(key: &[u8; 24]) -> ([__m128i; 13], [__m128i; 13]) {
     let mut enc_keys: [__m128i; 13] = unsafe { mem::uninitialized() };
     let mut dec_keys: [__m128i; 13] = unsafe { mem::uninitialized() };
 
-    let (t1, t3) = unsafe {(
-       _mm_loadu_si128(key.as_ptr() as *const __m128i),
-       // we copy garbage for second half, it will be overwritten, so it's fine
-       _mm_loadu_si128(key.as_ptr().offset(16) as *const __m128i),
-    )};
+    let (t1, t3) = unsafe {
+        (
+            _mm_loadu_si128(key.as_ptr() as *const __m128i),
+            // we copy garbage for second half, it will be overwritten, so it's fine
+            _mm_loadu_si128(key.as_ptr().offset(16) as *const __m128i),
+        )
+    };
     enc_keys[0] = t1;
     enc_keys[1] = t3;
 
