@@ -1,8 +1,8 @@
 use core::{fmt, mem};
 
-use block_cipher_trait::generic_array;
-use generic_array::GenericArray;
-use generic_array::typenum::{U11, U13, U15, U16, U24, U32, U8};
+use block_cipher_trait::generic_array::GenericArray;
+use block_cipher_trait::generic_array::typenum::{U16, U8};
+use block_cipher_trait::generic_array::typenum::{U11, U13, U15, U24, U32};
 pub use block_cipher_trait::BlockCipher;
 
 use expand::expand_key;
