@@ -1,12 +1,12 @@
 //! Test vectors generated with OpenSSL
 extern crate aes_soft;
-extern crate block_modes;
 extern crate block_cipher_trait;
+extern crate block_modes;
 
 use block_cipher_trait::generic_array::GenericArray;
 use block_modes::{BlockMode, BlockModeIv};
 use block_modes::block_padding::ZeroPadding;
-use block_modes::{Ctr128, Ofb, Cfb, Cbc, Ecb};
+use block_modes::{Cbc, Cfb, Ctr128, Ecb, Ofb};
 use aes_soft::Aes128;
 
 #[test]

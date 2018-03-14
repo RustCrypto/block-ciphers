@@ -1,9 +1,9 @@
 use super::BlockCipher;
-use des::{Des, gen_keys};
+use des::{gen_keys, Des};
 
 use byte_tools::{read_u64_be, write_u64_be};
 use generic_array::GenericArray;
-use generic_array::typenum::{U1, U8, U16, U24};
+use generic_array::typenum::{U1, U16, U24, U8};
 
 use core::fmt;
 
@@ -33,16 +33,21 @@ pub struct TdesEee2 {
     d2: Des,
 }
 
-
 impl BlockCipher for TdesEde3 {
     type KeySize = U24;
     type BlockSize = U8;
     type ParBlocks = U1;
 
     fn new(key: &GenericArray<u8, U24>) -> Self {
-        let d1 = Des { keys: gen_keys(read_u64_be(&key[0..8])) };
-        let d2 = Des { keys: gen_keys(read_u64_be(&key[8..16])) };
-        let d3 = Des { keys: gen_keys(read_u64_be(&key[16..24])) };
+        let d1 = Des {
+            keys: gen_keys(read_u64_be(&key[0..8])),
+        };
+        let d2 = Des {
+            keys: gen_keys(read_u64_be(&key[8..16])),
+        };
+        let d3 = Des {
+            keys: gen_keys(read_u64_be(&key[16..24])),
+        };
         Self { d1, d2, d3 }
     }
 
@@ -73,9 +78,15 @@ impl BlockCipher for TdesEee3 {
     type ParBlocks = U1;
 
     fn new(key: &GenericArray<u8, U24>) -> Self {
-        let d1 = Des { keys: gen_keys(read_u64_be(&key[0..8])) };
-        let d2 = Des { keys: gen_keys(read_u64_be(&key[8..16])) };
-        let d3 = Des { keys: gen_keys(read_u64_be(&key[16..24])) };
+        let d1 = Des {
+            keys: gen_keys(read_u64_be(&key[0..8])),
+        };
+        let d2 = Des {
+            keys: gen_keys(read_u64_be(&key[8..16])),
+        };
+        let d3 = Des {
+            keys: gen_keys(read_u64_be(&key[16..24])),
+        };
         Self { d1, d2, d3 }
     }
 
@@ -106,8 +117,12 @@ impl BlockCipher for TdesEde2 {
     type ParBlocks = U1;
 
     fn new(key: &GenericArray<u8, U16>) -> Self {
-        let d1 = Des { keys: gen_keys(read_u64_be(&key[0..8])) };
-        let d2 = Des { keys: gen_keys(read_u64_be(&key[8..16])) };
+        let d1 = Des {
+            keys: gen_keys(read_u64_be(&key[0..8])),
+        };
+        let d2 = Des {
+            keys: gen_keys(read_u64_be(&key[8..16])),
+        };
         Self { d1, d2 }
     }
 
@@ -138,8 +153,12 @@ impl BlockCipher for TdesEee2 {
     type ParBlocks = U1;
 
     fn new(key: &GenericArray<u8, U16>) -> Self {
-        let d1 = Des { keys: gen_keys(read_u64_be(&key[0..8])) };
-        let d2 = Des { keys: gen_keys(read_u64_be(&key[8..16])) };
+        let d1 = Des {
+            keys: gen_keys(read_u64_be(&key[0..8])),
+        };
+        let d2 = Des {
+            keys: gen_keys(read_u64_be(&key[8..16])),
+        };
         Self { d1, d2 }
     }
 

@@ -1,15 +1,17 @@
-use block_cipher_trait::generic_array::{GenericArray, ArrayLength};
-use block_cipher_trait::generic_array::typenum::{Unsigned, U16};
+use block_cipher_trait::generic_array::{ArrayLength, GenericArray};
+use block_cipher_trait::generic_array::typenum::{U16, Unsigned};
 use block_cipher_trait::BlockCipher;
 use block_padding::Padding;
-use traits::{BlockMode, BlockModeIv, BlockModeError};
+use traits::{BlockMode, BlockModeError, BlockModeIv};
 use utils::xor;
 use core::mem;
 use core::marker::PhantomData;
 
 pub struct Ctr128<C, P>
-    where C: BlockCipher<BlockSize=U16>, P: Padding,
-        C::ParBlocks: ArrayLength<GenericArray<u8, U16>>
+where
+    C: BlockCipher<BlockSize = U16>,
+    P: Padding,
+    C::ParBlocks: ArrayLength<GenericArray<u8, U16>>,
 {
     cipher: C,
     counter: [u64; 2],
@@ -23,20 +25,28 @@ fn conv_be(val: &mut [u64; 2]) {
 }
 
 impl<C, P> BlockModeIv<C, P> for Ctr128<C, P>
-    where C: BlockCipher<BlockSize=U16>, P: Padding,
-        C::ParBlocks: ArrayLength<GenericArray<u8, U16>>
+where
+    C: BlockCipher<BlockSize = U16>,
+    P: Padding,
+    C::ParBlocks: ArrayLength<GenericArray<u8, U16>>,
 {
     fn new(cipher: C, nonce: &GenericArray<u8, C::BlockSize>) -> Self {
         let mut counter: [u64; 2] = unsafe { mem::transmute_copy(nonce) };
         conv_be(&mut counter);
 
-        Self { cipher,  counter, _p: Default::default() }
+        Self {
+            cipher,
+            counter,
+            _p: Default::default(),
+        }
     }
 }
 
 impl<C, P> Ctr128<C, P>
-    where C: BlockCipher<BlockSize=U16>, P: Padding,
-        C::ParBlocks: ArrayLength<GenericArray<u8, U16>>
+where
+    C: BlockCipher<BlockSize = U16>,
+    P: Padding,
+    C::ParBlocks: ArrayLength<GenericArray<u8, U16>>,
 {
     #[inline(always)]
     // we increment only second half
@@ -61,12 +71,14 @@ impl<C, P> Ctr128<C, P>
 }
 
 impl<C, P> BlockMode<C, P> for Ctr128<C, P>
-    where C: BlockCipher<BlockSize=U16>, P: Padding,
-        C::ParBlocks: ArrayLength<GenericArray<u8, U16>>
+where
+    C: BlockCipher<BlockSize = U16>,
+    P: Padding,
+    C::ParBlocks: ArrayLength<GenericArray<u8, U16>>,
 {
-    fn encrypt_nopad(&mut self, buffer: &mut [u8])
-        -> Result<(), BlockModeError>
-    {
+    fn encrypt_nopad(
+        &mut self, buffer: &mut [u8]
+    ) -> Result<(), BlockModeError> {
         let bs = C::BlockSize::to_usize();
         assert_eq!(buffer.len() % bs, 0);
 
@@ -78,9 +90,9 @@ impl<C, P> BlockMode<C, P> for Ctr128<C, P>
         Ok(())
     }
 
-    fn decrypt_nopad(&mut self, buffer: &mut [u8])
-        -> Result<(), BlockModeError>
-    {
+    fn decrypt_nopad(
+        &mut self, buffer: &mut [u8]
+    ) -> Result<(), BlockModeError> {
         self.encrypt_nopad(buffer)
     }
 }

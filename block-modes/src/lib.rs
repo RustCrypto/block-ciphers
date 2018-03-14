@@ -5,8 +5,7 @@ pub extern crate block_padding;
 
 mod utils;
 mod traits;
-pub use traits::{BlockMode, BlockModeIv, BlockModeError};
-
+pub use traits::{BlockMode, BlockModeError, BlockModeIv};
 
 mod cbc;
 pub use cbc::Cbc;

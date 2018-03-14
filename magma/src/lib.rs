@@ -1,17 +1,17 @@
 #![no_std]
+pub extern crate block_cipher_trait;
 extern crate byte_tools;
 #[macro_use]
 extern crate opaque_debug;
-pub extern crate block_cipher_trait;
 
 mod sboxes_exp;
 #[macro_use]
 mod construct;
 
 pub use block_cipher_trait::BlockCipher;
-use byte_tools::{read_u32v_le, read_u32_le, write_u32_le};
+use byte_tools::{read_u32_le, read_u32v_le, write_u32_le};
 use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::generic_array::typenum::{U1, U8, U32};
+use block_cipher_trait::generic_array::typenum::{U1, U32, U8};
 
 use core::fmt;
 
@@ -38,8 +38,8 @@ impl Gost89 {
     fn apply_sbox(&self, a: u32) -> u32 {
         let mut v = 0;
         for i in 0..4 {
-            let shft = 8*i;
-            let k = ((a & (0xffu32 << shft) ) >> shft) as usize;
+            let shft = 8 * i;
+            let k = ((a & (0xffu32 << shft)) >> shft) as usize;
             v += (self.sbox[i][k] as u32) << shft;
         }
         v

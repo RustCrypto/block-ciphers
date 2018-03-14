@@ -9,7 +9,7 @@ mod des;
 mod tdes;
 
 pub use des::Des;
-pub use tdes::{TdesEde3, TdesEee3, TdesEde2, TdesEee2};
+pub use tdes::{TdesEde2, TdesEde3, TdesEee2, TdesEee3};
 pub use block_cipher_trait::BlockCipher;
 
 use block_cipher_trait::generic_array;

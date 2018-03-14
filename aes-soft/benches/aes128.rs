@@ -38,7 +38,7 @@ pub fn aes128_encrypt8(bh: &mut test::Bencher) {
         cipher.encrypt_blocks(&mut input);
         test::black_box(&input);
     });
-    bh.bytes = (input[0].len()*input.len()) as u64;
+    bh.bytes = (input[0].len() * input.len()) as u64;
 }
 
 #[bench]
@@ -50,7 +50,7 @@ pub fn aes128_decrypt8(bh: &mut test::Bencher) {
         cipher.decrypt_blocks(&mut input);
         test::black_box(&input);
     });
-    bh.bytes = (input[0].len()*input.len()) as u64;
+    bh.bytes = (input[0].len() * input.len()) as u64;
 }
 /*
 #[bench]

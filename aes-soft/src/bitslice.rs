@@ -58,18 +58,27 @@ pub fn decrypt_core<S: AesOps + Copy>(state: &S, sk: &[S]) -> S {
 #[derive(Clone, Copy)]
 pub struct Bs8State<T>(pub T, pub T, pub T, pub T, pub T, pub T, pub T, pub T);
 
-impl <T: Copy> Bs8State<T> {
+impl<T: Copy> Bs8State<T> {
     fn split(self) -> (Bs4State<T>, Bs4State<T>) {
         let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = self;
         (Bs4State(x0, x1, x2, x3), Bs4State(x4, x5, x6, x7))
     }
 }
 
-impl <T: BitXor<Output = T> + Copy> Bs8State<T> {
+impl<T: BitXor<Output = T> + Copy> Bs8State<T> {
     fn xor(self, rhs: Bs8State<T>) -> Bs8State<T> {
         let Bs8State(a0, a1, a2, a3, a4, a5, a6, a7) = self;
         let Bs8State(b0, b1, b2, b3, b4, b5, b6, b7) = rhs;
-        Bs8State(a0 ^ b0, a1 ^ b1, a2 ^ b2, a3 ^ b3, a4 ^ b4, a5 ^ b5, a6 ^ b6, a7 ^ b7)
+        Bs8State(
+            a0 ^ b0,
+            a1 ^ b1,
+            a2 ^ b2,
+            a3 ^ b3,
+            a4 ^ b4,
+            a5 ^ b5,
+            a6 ^ b6,
+            a7 ^ b7,
+        )
     }
 
     // We need to be able to convert a Bs8State to and from a polynomial basis and a normal
@@ -216,7 +225,7 @@ impl <T: BitXor<Output = T> + Copy> Bs8State<T> {
     }
 }
 
-impl <T: Not<Output = T> + Copy> Bs8State<T> {
+impl<T: Not<Output = T> + Copy> Bs8State<T> {
     // The special value "x63" is used as part of the sub_bytes and inv_sub_bytes
     // steps. It is conceptually a Bs8State value where the 0th, 1st, 5th, and 6th
     // elements are all 1s and the other elements are all 0s. The only thing that
@@ -224,7 +233,7 @@ impl <T: Not<Output = T> + Copy> Bs8State<T> {
     // below into just inverting 4 of the elements and leaving the other 4 elements
     // untouched.
     fn xor_x63(self) -> Bs8State<T> {
-        Bs8State (
+        Bs8State(
             !self.0,
             !self.1,
             self.2,
@@ -232,14 +241,15 @@ impl <T: Not<Output = T> + Copy> Bs8State<T> {
             self.4,
             !self.5,
             !self.6,
-            self.7)
+            self.7,
+        )
     }
 }
 
 #[derive(Clone, Copy)]
 struct Bs4State<T>(T, T, T, T);
 
-impl <T: Copy> Bs4State<T> {
+impl<T: Copy> Bs4State<T> {
     fn split(self) -> (Bs2State<T>, Bs2State<T>) {
         let Bs4State(x0, x1, x2, x3) = self;
         (Bs2State(x0, x1), Bs2State(x2, x3))
@@ -252,7 +262,7 @@ impl <T: Copy> Bs4State<T> {
     }
 }
 
-impl <T: BitXor<Output = T> + Copy> Bs4State<T> {
+impl<T: BitXor<Output = T> + Copy> Bs4State<T> {
     fn xor(self, rhs: Bs4State<T>) -> Bs4State<T> {
         let Bs4State(a0, a1, a2, a3) = self;
         let Bs4State(b0, b1, b2, b3) = rhs;
@@ -263,7 +273,7 @@ impl <T: BitXor<Output = T> + Copy> Bs4State<T> {
 #[derive(Clone, Copy)]
 struct Bs2State<T>(T, T);
 
-impl <T> Bs2State<T> {
+impl<T> Bs2State<T> {
     fn split(self) -> (T, T) {
         let Bs2State(x0, x1) = self;
         (x0, x1)
@@ -276,7 +286,7 @@ impl <T> Bs2State<T> {
     }
 }
 
-impl <T: BitXor<Output = T> + Copy> Bs2State<T> {
+impl<T: BitXor<Output = T> + Copy> Bs2State<T> {
     fn xor(self, rhs: Bs2State<T>) -> Bs2State<T> {
         let Bs2State(a0, a1) = self;
         let Bs2State(b0, b1) = rhs;
@@ -292,10 +302,13 @@ pub fn bit_slice_4x4_with_u16(a: u32, b: u32, c: u32, d: u32) -> Bs8State<u16> {
     }
 
     fn construct(a: u32, b: u32, c: u32, d: u32, bit: u32) -> u16 {
-        pb(a, bit, 0)       | pb(b, bit, 1)       | pb(c, bit, 2)       | pb(d, bit, 3)       |
-        pb(a, bit + 8, 4)   | pb(b, bit + 8, 5)   | pb(c, bit + 8, 6)   | pb(d, bit + 8, 7)   |
-        pb(a, bit + 16, 8)  | pb(b, bit + 16, 9)  | pb(c, bit + 16, 10) | pb(d, bit + 16, 11) |
-        pb(a, bit + 24, 12) | pb(b, bit + 24, 13) | pb(c, bit + 24, 14) | pb(d, bit + 24, 15)
+        pb(a, bit, 0) | pb(b, bit, 1) | pb(c, bit, 2) | pb(d, bit, 3)
+            | pb(a, bit + 8, 4) | pb(b, bit + 8, 5) | pb(c, bit + 8, 6)
+            | pb(d, bit + 8, 7) | pb(a, bit + 16, 8)
+            | pb(b, bit + 16, 9) | pb(c, bit + 16, 10)
+            | pb(d, bit + 16, 11) | pb(a, bit + 24, 12)
+            | pb(b, bit + 24, 13) | pb(c, bit + 24, 14)
+            | pb(d, bit + 24, 15)
     }
 
     let x0 = construct(a, b, c, d, 0);
@@ -338,17 +351,20 @@ pub fn un_bit_slice_4x4_with_u16(bs: &Bs8State<u16>) -> (u32, u32, u32, u32) {
     fn deconstruct(bs: &Bs8State<u16>, bit: u32) -> u32 {
         let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = *bs;
 
-        pb(x0, bit, 0) | pb(x1, bit, 1) | pb(x2, bit, 2) | pb(x3, bit, 3) |
-        pb(x4, bit, 4) | pb(x5, bit, 5) | pb(x6, bit, 6) | pb(x7, bit, 7) |
-
-        pb(x0, bit + 4, 8)  | pb(x1, bit + 4, 9)  | pb(x2, bit + 4, 10) | pb(x3, bit + 4, 11) |
-        pb(x4, bit + 4, 12) | pb(x5, bit + 4, 13) | pb(x6, bit + 4, 14) | pb(x7, bit + 4, 15) |
-
-        pb(x0, bit + 8, 16) | pb(x1, bit + 8, 17) | pb(x2, bit + 8, 18) | pb(x3, bit + 8, 19) |
-        pb(x4, bit + 8, 20) | pb(x5, bit + 8, 21) | pb(x6, bit + 8, 22) | pb(x7, bit + 8, 23) |
-
-        pb(x0, bit + 12, 24) | pb(x1, bit + 12, 25) | pb(x2, bit + 12, 26) | pb(x3, bit + 12, 27) |
-        pb(x4, bit + 12, 28) | pb(x5, bit + 12, 29) | pb(x6, bit + 12, 30) | pb(x7, bit + 12, 31)
+        pb(x0, bit, 0) | pb(x1, bit, 1) | pb(x2, bit, 2) | pb(x3, bit, 3)
+            | pb(x4, bit, 4) | pb(x5, bit, 5) | pb(x6, bit, 6)
+            | pb(x7, bit, 7) | pb(x0, bit + 4, 8) | pb(x1, bit + 4, 9)
+            | pb(x2, bit + 4, 10) | pb(x3, bit + 4, 11)
+            | pb(x4, bit + 4, 12) | pb(x5, bit + 4, 13)
+            | pb(x6, bit + 4, 14) | pb(x7, bit + 4, 15)
+            | pb(x0, bit + 8, 16) | pb(x1, bit + 8, 17)
+            | pb(x2, bit + 8, 18) | pb(x3, bit + 8, 19)
+            | pb(x4, bit + 8, 20) | pb(x5, bit + 8, 21)
+            | pb(x6, bit + 8, 22) | pb(x7, bit + 8, 23)
+            | pb(x0, bit + 12, 24) | pb(x1, bit + 12, 25)
+            | pb(x2, bit + 12, 26) | pb(x3, bit + 12, 27)
+            | pb(x4, bit + 12, 28) | pb(x5, bit + 12, 29)
+            | pb(x6, bit + 12, 30) | pb(x7, bit + 12, 31)
     }
 
     let a = deconstruct(bs, 0);
@@ -388,22 +404,19 @@ pub fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
 
     fn read_row_major(data: &[u8]) -> u32x4 {
         u32x4(
-            (data[0] as u32) |
-            ((data[4] as u32) << 8) |
-            ((data[8] as u32) << 16) |
-            ((data[12] as u32) << 24),
-            (data[1] as u32) |
-            ((data[5] as u32) << 8) |
-            ((data[9] as u32) << 16) |
-            ((data[13] as u32) << 24),
-            (data[2] as u32) |
-            ((data[6] as u32) << 8) |
-            ((data[10] as u32) << 16) |
-            ((data[14] as u32) << 24),
-            (data[3] as u32) |
-            ((data[7] as u32) << 8) |
-            ((data[11] as u32) << 16) |
-            ((data[15] as u32) << 24))
+            (data[0] as u32) | ((data[4] as u32) << 8)
+                | ((data[8] as u32) << 16)
+                | ((data[12] as u32) << 24),
+            (data[1] as u32) | ((data[5] as u32) << 8)
+                | ((data[9] as u32) << 16)
+                | ((data[13] as u32) << 24),
+            (data[2] as u32) | ((data[6] as u32) << 8)
+                | ((data[10] as u32) << 16)
+                | ((data[14] as u32) << 24),
+            (data[3] as u32) | ((data[7] as u32) << 8)
+                | ((data[11] as u32) << 16)
+                | ((data[15] as u32) << 24),
+        )
     }
 
     let t0 = read_row_major(&data[0..16]);
@@ -415,29 +428,42 @@ pub fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
     let t6 = read_row_major(&data[96..112]);
     let t7 = read_row_major(&data[112..128]);
 
-    let x0 = (t0 & bit0) | (t1.lsh(1) & bit1) | (t2.lsh(2) & bit2) | (t3.lsh(3) & bit3) |
-        (t4.lsh(4) & bit4) | (t5.lsh(5) & bit5) | (t6.lsh(6) & bit6) | (t7.lsh(7) & bit7);
-    let x1 = (t0.rsh(1) & bit0) | (t1 & bit1) | (t2.lsh(1) & bit2) | (t3.lsh(2) & bit3) |
-        (t4.lsh(3) & bit4) | (t5.lsh(4) & bit5) | (t6.lsh(5) & bit6) | (t7.lsh(6) & bit7);
-    let x2 = (t0.rsh(2) & bit0) | (t1.rsh(1) & bit1) | (t2 & bit2) | (t3.lsh(1) & bit3) |
-        (t4.lsh(2) & bit4) | (t5.lsh(3) & bit5) | (t6.lsh(4) & bit6) | (t7.lsh(5) & bit7);
-    let x3 = (t0.rsh(3) & bit0) | (t1.rsh(2) & bit1) | (t2.rsh(1) & bit2) | (t3 & bit3) |
-        (t4.lsh(1) & bit4) | (t5.lsh(2) & bit5) | (t6.lsh(3) & bit6) | (t7.lsh(4) & bit7);
-    let x4 = (t0.rsh(4) & bit0) | (t1.rsh(3) & bit1) | (t2.rsh(2) & bit2) | (t3.rsh(1) & bit3) |
-        (t4 & bit4) | (t5.lsh(1) & bit5) | (t6.lsh(2) & bit6) | (t7.lsh(3) & bit7);
-    let x5 = (t0.rsh(5) & bit0) | (t1.rsh(4) & bit1) | (t2.rsh(3) & bit2) | (t3.rsh(2) & bit3) |
-        (t4.rsh(1) & bit4) | (t5 & bit5) | (t6.lsh(1) & bit6) | (t7.lsh(2) & bit7);
-    let x6 = (t0.rsh(6) & bit0) | (t1.rsh(5) & bit1) | (t2.rsh(4) & bit2) | (t3.rsh(3) & bit3) |
-        (t4.rsh(2) & bit4) | (t5.rsh(1) & bit5) | (t6 & bit6) | (t7.lsh(1) & bit7);
-    let x7 = (t0.rsh(7) & bit0) | (t1.rsh(6) & bit1) | (t2.rsh(5) & bit2) | (t3.rsh(4) & bit3) |
-        (t4.rsh(3) & bit4) | (t5.rsh(2) & bit5) | (t6.rsh(1) & bit6) | (t7 & bit7);
+    let x0 = (t0 & bit0) | (t1.lsh(1) & bit1) | (t2.lsh(2) & bit2)
+        | (t3.lsh(3) & bit3) | (t4.lsh(4) & bit4)
+        | (t5.lsh(5) & bit5) | (t6.lsh(6) & bit6)
+        | (t7.lsh(7) & bit7);
+    let x1 = (t0.rsh(1) & bit0) | (t1 & bit1) | (t2.lsh(1) & bit2)
+        | (t3.lsh(2) & bit3) | (t4.lsh(3) & bit4)
+        | (t5.lsh(4) & bit5) | (t6.lsh(5) & bit6)
+        | (t7.lsh(6) & bit7);
+    let x2 = (t0.rsh(2) & bit0) | (t1.rsh(1) & bit1) | (t2 & bit2)
+        | (t3.lsh(1) & bit3) | (t4.lsh(2) & bit4)
+        | (t5.lsh(3) & bit5) | (t6.lsh(4) & bit6)
+        | (t7.lsh(5) & bit7);
+    let x3 = (t0.rsh(3) & bit0) | (t1.rsh(2) & bit1) | (t2.rsh(1) & bit2)
+        | (t3 & bit3) | (t4.lsh(1) & bit4) | (t5.lsh(2) & bit5)
+        | (t6.lsh(3) & bit6) | (t7.lsh(4) & bit7);
+    let x4 = (t0.rsh(4) & bit0) | (t1.rsh(3) & bit1) | (t2.rsh(2) & bit2)
+        | (t3.rsh(1) & bit3) | (t4 & bit4) | (t5.lsh(1) & bit5)
+        | (t6.lsh(2) & bit6) | (t7.lsh(3) & bit7);
+    let x5 = (t0.rsh(5) & bit0) | (t1.rsh(4) & bit1) | (t2.rsh(3) & bit2)
+        | (t3.rsh(2) & bit3) | (t4.rsh(1) & bit4) | (t5 & bit5)
+        | (t6.lsh(1) & bit6) | (t7.lsh(2) & bit7);
+    let x6 = (t0.rsh(6) & bit0) | (t1.rsh(5) & bit1) | (t2.rsh(4) & bit2)
+        | (t3.rsh(3) & bit3) | (t4.rsh(2) & bit4)
+        | (t5.rsh(1) & bit5) | (t6 & bit6) | (t7.lsh(1) & bit7);
+    let x7 = (t0.rsh(7) & bit0) | (t1.rsh(6) & bit1) | (t2.rsh(5) & bit2)
+        | (t3.rsh(4) & bit3) | (t4.rsh(3) & bit4)
+        | (t5.rsh(2) & bit5) | (t6.rsh(1) & bit6) | (t7 & bit7);
 
     Bs8State(x0, x1, x2, x3, x4, x5, x6, x7)
 }
 
 // Bit slice a set of 4 u32s by filling a full 128 byte data block with those repeated values. This
 // is used as part of bit slicing the round keys.
-pub fn bit_slice_fill_4x4_with_u32x4(a: u32, b: u32, c: u32, d: u32) -> Bs8State<u32x4> {
+pub fn bit_slice_fill_4x4_with_u32x4(
+    a: u32, b: u32, c: u32, d: u32
+) -> Bs8State<u32x4> {
     let mut tmp = [0u8; 128];
     for i in 0..8 {
         write_u32_le(&mut tmp[i * 16..i * 16 + 4], a);
@@ -463,22 +489,33 @@ pub fn un_bit_slice_1x128_with_u32x4(bs: Bs8State<u32x4>, output: &mut [u8]) {
 
     // decode the individual blocks, in row-major order
     // TODO: this is identical to the same block in bit_slice_1x128_with_u32x4
-    let x0 = (t0 & bit0) | (t1.lsh(1) & bit1) | (t2.lsh(2) & bit2) | (t3.lsh(3) & bit3) |
-        (t4.lsh(4) & bit4) | (t5.lsh(5) & bit5) | (t6.lsh(6) & bit6) | (t7.lsh(7) & bit7);
-    let x1 = (t0.rsh(1) & bit0) | (t1 & bit1) | (t2.lsh(1) & bit2) | (t3.lsh(2) & bit3) |
-        (t4.lsh(3) & bit4) | (t5.lsh(4) & bit5) | (t6.lsh(5) & bit6) | (t7.lsh(6) & bit7);
-    let x2 = (t0.rsh(2) & bit0) | (t1.rsh(1) & bit1) | (t2 & bit2) | (t3.lsh(1) & bit3) |
-        (t4.lsh(2) & bit4) | (t5.lsh(3) & bit5) | (t6.lsh(4) & bit6) | (t7.lsh(5) & bit7);
-    let x3 = (t0.rsh(3) & bit0) | (t1.rsh(2) & bit1) | (t2.rsh(1) & bit2) | (t3 & bit3) |
-        (t4.lsh(1) & bit4) | (t5.lsh(2) & bit5) | (t6.lsh(3) & bit6) | (t7.lsh(4) & bit7);
-    let x4 = (t0.rsh(4) & bit0) | (t1.rsh(3) & bit1) | (t2.rsh(2) & bit2) | (t3.rsh(1) & bit3) |
-        (t4 & bit4) | (t5.lsh(1) & bit5) | (t6.lsh(2) & bit6) | (t7.lsh(3) & bit7);
-    let x5 = (t0.rsh(5) & bit0) | (t1.rsh(4) & bit1) | (t2.rsh(3) & bit2) | (t3.rsh(2) & bit3) |
-        (t4.rsh(1) & bit4) | (t5 & bit5) | (t6.lsh(1) & bit6) | (t7.lsh(2) & bit7);
-    let x6 = (t0.rsh(6) & bit0) | (t1.rsh(5) & bit1) | (t2.rsh(4) & bit2) | (t3.rsh(3) & bit3) |
-        (t4.rsh(2) & bit4) | (t5.rsh(1) & bit5) | (t6 & bit6) | (t7.lsh(1) & bit7);
-    let x7 = (t0.rsh(7) & bit0) | (t1.rsh(6) & bit1) | (t2.rsh(5) & bit2) | (t3.rsh(4) & bit3) |
-        (t4.rsh(3) & bit4) | (t5.rsh(2) & bit5) | (t6.rsh(1) & bit6) | (t7 & bit7);
+    let x0 = (t0 & bit0) | (t1.lsh(1) & bit1) | (t2.lsh(2) & bit2)
+        | (t3.lsh(3) & bit3) | (t4.lsh(4) & bit4)
+        | (t5.lsh(5) & bit5) | (t6.lsh(6) & bit6)
+        | (t7.lsh(7) & bit7);
+    let x1 = (t0.rsh(1) & bit0) | (t1 & bit1) | (t2.lsh(1) & bit2)
+        | (t3.lsh(2) & bit3) | (t4.lsh(3) & bit4)
+        | (t5.lsh(4) & bit5) | (t6.lsh(5) & bit6)
+        | (t7.lsh(6) & bit7);
+    let x2 = (t0.rsh(2) & bit0) | (t1.rsh(1) & bit1) | (t2 & bit2)
+        | (t3.lsh(1) & bit3) | (t4.lsh(2) & bit4)
+        | (t5.lsh(3) & bit5) | (t6.lsh(4) & bit6)
+        | (t7.lsh(5) & bit7);
+    let x3 = (t0.rsh(3) & bit0) | (t1.rsh(2) & bit1) | (t2.rsh(1) & bit2)
+        | (t3 & bit3) | (t4.lsh(1) & bit4) | (t5.lsh(2) & bit5)
+        | (t6.lsh(3) & bit6) | (t7.lsh(4) & bit7);
+    let x4 = (t0.rsh(4) & bit0) | (t1.rsh(3) & bit1) | (t2.rsh(2) & bit2)
+        | (t3.rsh(1) & bit3) | (t4 & bit4) | (t5.lsh(1) & bit5)
+        | (t6.lsh(2) & bit6) | (t7.lsh(3) & bit7);
+    let x5 = (t0.rsh(5) & bit0) | (t1.rsh(4) & bit1) | (t2.rsh(3) & bit2)
+        | (t3.rsh(2) & bit3) | (t4.rsh(1) & bit4) | (t5 & bit5)
+        | (t6.lsh(1) & bit6) | (t7.lsh(2) & bit7);
+    let x6 = (t0.rsh(6) & bit0) | (t1.rsh(5) & bit1) | (t2.rsh(4) & bit2)
+        | (t3.rsh(3) & bit3) | (t4.rsh(2) & bit4)
+        | (t5.rsh(1) & bit5) | (t6 & bit6) | (t7.lsh(1) & bit7);
+    let x7 = (t0.rsh(7) & bit0) | (t1.rsh(6) & bit1) | (t2.rsh(5) & bit2)
+        | (t3.rsh(4) & bit3) | (t4.rsh(3) & bit4)
+        | (t5.rsh(2) & bit5) | (t6.rsh(1) & bit6) | (t7 & bit7);
 
     fn write_row_major(block: u32x4, output: &mut [u8]) {
         let u32x4(a0, a1, a2, a3) = block;
@@ -533,7 +570,7 @@ trait Gf2Ops {
     fn inv(self) -> Self;
 }
 
-impl <T: BitXor<Output = T> + BitAnd<Output = T> + Copy> Gf2Ops for Bs2State<T> {
+impl<T: BitXor<Output = T> + BitAnd<Output = T> + Copy> Gf2Ops for Bs2State<T> {
     fn mul(self, y: Bs2State<T>) -> Bs2State<T> {
         let (b, a) = self.split();
         let (d, c) = y.split();
@@ -561,9 +598,7 @@ impl <T: BitXor<Output = T> + BitAnd<Output = T> + Copy> Gf2Ops for Bs2State<T> 
         Bs2State(a, b)
     }
 
-    fn inv(self) -> Bs2State<T> {
-        self.sq()
-    }
+    fn inv(self) -> Bs2State<T> { self.sq() }
 }
 
 // Operations in GF(2^4) using normal basis (alpha^8,alpha^2)
@@ -579,7 +614,7 @@ trait Gf4Ops {
     fn inv(self) -> Self;
 }
 
-impl <T: BitXor<Output = T> + BitAnd<Output = T> + Copy> Gf4Ops for Bs4State<T> {
+impl<T: BitXor<Output = T> + BitAnd<Output = T> + Copy> Gf4Ops for Bs4State<T> {
     fn mul(self, y: Bs4State<T>) -> Bs4State<T> {
         let (b, a) = self.split();
         let (d, c) = y.split();
@@ -614,7 +649,9 @@ trait Gf8Ops {
     fn inv(&self) -> Self;
 }
 
-impl <T: BitXor<Output = T> + BitAnd<Output = T> + Copy + Default> Gf8Ops for Bs8State<T> {
+impl<T: BitXor<Output = T> + BitAnd<Output = T> + Copy + Default> Gf8Ops
+    for Bs8State<T>
+{
     fn inv(&self) -> Bs8State<T> {
         let (b, a) = self.split();
         let c = a.xor(b).sq_scl();
@@ -626,7 +663,7 @@ impl <T: BitXor<Output = T> + BitAnd<Output = T> + Copy + Default> Gf8Ops for Bs
     }
 }
 
-impl <T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
+impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
     fn sub_bytes(self) -> Bs8State<T> {
         let nb: Bs8State<T> = self.change_basis_a2x();
         let inv = nb.inv();
@@ -651,7 +688,8 @@ impl <T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
             x4.shift_row(),
             x5.shift_row(),
             x6.shift_row(),
-            x7.shift_row())
+            x7.shift_row(),
+        )
     }
 
     fn inv_shift_rows(self) -> Bs8State<T> {
@@ -664,7 +702,8 @@ impl <T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
             x4.inv_shift_row(),
             x5.inv_shift_row(),
             x6.inv_shift_row(),
-            x7.inv_shift_row())
+            x7.inv_shift_row(),
+        )
     }
 
     // Formula from [5]
@@ -672,10 +711,13 @@ impl <T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
         let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = self;
 
         let x0out = x7 ^ x7.ror1() ^ x0.ror1() ^ (x0 ^ x0.ror1()).ror2();
-        let x1out = x0 ^ x0.ror1() ^ x7 ^ x7.ror1() ^ x1.ror1() ^ (x1 ^ x1.ror1()).ror2();
+        let x1out = x0 ^ x0.ror1() ^ x7 ^ x7.ror1() ^ x1.ror1()
+            ^ (x1 ^ x1.ror1()).ror2();
         let x2out = x1 ^ x1.ror1() ^ x2.ror1() ^ (x2 ^ x2.ror1()).ror2();
-        let x3out = x2 ^ x2.ror1() ^ x7 ^ x7.ror1() ^ x3.ror1() ^ (x3 ^ x3.ror1()).ror2();
-        let x4out = x3 ^ x3.ror1() ^ x7 ^ x7.ror1() ^ x4.ror1() ^ (x4 ^ x4.ror1()).ror2();
+        let x3out = x2 ^ x2.ror1() ^ x7 ^ x7.ror1() ^ x3.ror1()
+            ^ (x3 ^ x3.ror1()).ror2();
+        let x4out = x3 ^ x3.ror1() ^ x7 ^ x7.ror1() ^ x4.ror1()
+            ^ (x4 ^ x4.ror1()).ror2();
         let x5out = x4 ^ x4.ror1() ^ x5.ror1() ^ (x5 ^ x5.ror1()).ror2();
         let x6out = x5 ^ x5.ror1() ^ x6.ror1() ^ (x6 ^ x6.ror1()).ror2();
         let x7out = x6 ^ x6.ror1() ^ x7.ror1() ^ (x7 ^ x7.ror1()).ror2();
@@ -687,48 +729,39 @@ impl <T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
     fn inv_mix_columns(self) -> Bs8State<T> {
         let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = self;
 
-        let x0out = x5 ^ x6 ^ x7 ^
-            (x5 ^ x7 ^ x0).ror1() ^
-            (x0 ^ x5 ^ x6).ror2() ^
-            (x5 ^ x0).ror3();
-        let x1out = x5 ^ x0 ^
-            (x6 ^ x5 ^ x0 ^ x7 ^ x1).ror1() ^
-            (x1 ^ x7 ^ x5).ror2() ^
-            (x6 ^ x5 ^ x1).ror3();
-        let x2out = x6 ^ x0 ^ x1 ^
-            (x7 ^ x6 ^ x1 ^ x2).ror1() ^
-            (x0 ^ x2 ^ x6).ror2() ^
-            (x7 ^ x6 ^ x2).ror3();
-        let x3out = x0 ^ x5 ^ x1 ^ x6 ^ x2 ^
-            (x0 ^ x5 ^ x2 ^ x3).ror1() ^
-            (x0 ^ x1 ^ x3 ^ x5 ^ x6 ^ x7).ror2() ^
-            (x0 ^ x5 ^ x7 ^ x3).ror3();
-        let x4out = x1 ^ x5 ^ x2 ^ x3 ^
-            (x1 ^ x6 ^ x5 ^ x3 ^ x7 ^ x4).ror1() ^
-            (x1 ^ x2 ^ x4 ^ x5 ^ x7).ror2() ^
-            (x1 ^ x5 ^ x6 ^ x4).ror3();
-        let x5out = x2 ^ x6 ^ x3 ^ x4 ^
-            (x2 ^ x7 ^ x6 ^ x4 ^ x5).ror1() ^
-            (x2 ^ x3 ^ x5 ^ x6).ror2() ^
-            (x2 ^ x6 ^ x7 ^ x5).ror3();
-        let x6out =  x3 ^ x7 ^ x4 ^ x5 ^
-            (x3 ^ x7 ^ x5 ^ x6).ror1() ^
-            (x3 ^ x4 ^ x6 ^ x7).ror2() ^
-            (x3 ^ x7 ^ x6).ror3();
-        let x7out = x4 ^ x5 ^ x6 ^
-            (x4 ^ x6 ^ x7).ror1() ^
-            (x4 ^ x5 ^ x7).ror2() ^
-            (x4 ^ x7).ror3();
+        let x0out = x5 ^ x6 ^ x7 ^ (x5 ^ x7 ^ x0).ror1() ^ (x0 ^ x5 ^ x6).ror2()
+            ^ (x5 ^ x0).ror3();
+        let x1out = x5 ^ x0 ^ (x6 ^ x5 ^ x0 ^ x7 ^ x1).ror1()
+            ^ (x1 ^ x7 ^ x5).ror2() ^ (x6 ^ x5 ^ x1).ror3();
+        let x2out = x6 ^ x0 ^ x1 ^ (x7 ^ x6 ^ x1 ^ x2).ror1()
+            ^ (x0 ^ x2 ^ x6).ror2() ^ (x7 ^ x6 ^ x2).ror3();
+        let x3out = x0 ^ x5 ^ x1 ^ x6 ^ x2 ^ (x0 ^ x5 ^ x2 ^ x3).ror1()
+            ^ (x0 ^ x1 ^ x3 ^ x5 ^ x6 ^ x7).ror2()
+            ^ (x0 ^ x5 ^ x7 ^ x3).ror3();
+        let x4out = x1 ^ x5 ^ x2 ^ x3 ^ (x1 ^ x6 ^ x5 ^ x3 ^ x7 ^ x4).ror1()
+            ^ (x1 ^ x2 ^ x4 ^ x5 ^ x7).ror2()
+            ^ (x1 ^ x5 ^ x6 ^ x4).ror3();
+        let x5out = x2 ^ x6 ^ x3 ^ x4 ^ (x2 ^ x7 ^ x6 ^ x4 ^ x5).ror1()
+            ^ (x2 ^ x3 ^ x5 ^ x6).ror2()
+            ^ (x2 ^ x6 ^ x7 ^ x5).ror3();
+        let x6out = x3 ^ x7 ^ x4 ^ x5 ^ (x3 ^ x7 ^ x5 ^ x6).ror1()
+            ^ (x3 ^ x4 ^ x6 ^ x7).ror2()
+            ^ (x3 ^ x7 ^ x6).ror3();
+        let x7out = x4 ^ x5 ^ x6 ^ (x4 ^ x6 ^ x7).ror1() ^ (x4 ^ x5 ^ x7).ror2()
+            ^ (x4 ^ x7).ror3();
 
         Bs8State(x0out, x1out, x2out, x3out, x4out, x5out, x6out, x7out)
     }
 
-    fn add_round_key(self, rk: &Bs8State<T>) -> Bs8State<T> {
-        self.xor(*rk)
-    }
+    fn add_round_key(self, rk: &Bs8State<T>) -> Bs8State<T> { self.xor(*rk) }
 }
 
-pub trait AesBitValueOps: BitXor<Output = Self> + BitAnd<Output = Self> + Not<Output = Self> + Default + Sized {
+pub trait AesBitValueOps
+    : BitXor<Output = Self>
+    + BitAnd<Output = Self>
+    + Not<Output = Self>
+    + Default
+    + Sized {
     fn shift_row(self) -> Self;
     fn inv_shift_row(self) -> Self;
     fn ror1(self) -> Self;
@@ -759,17 +792,11 @@ impl AesBitValueOps for u16 {
         ((self & 0xe000) >> 1) | ((self & 0x1000) << 3)
     }
 
-    fn ror1(self) -> u16 {
-        self >> 4 | self << 12
-    }
+    fn ror1(self) -> u16 { self >> 4 | self << 12 }
 
-    fn ror2(self) -> u16 {
-        self >> 8 | self << 8
-    }
+    fn ror2(self) -> u16 { self >> 8 | self << 8 }
 
-    fn ror3(self) -> u16 {
-        self >> 12 | self << 4
-    }
+    fn ror3(self) -> u16 { self >> 12 | self << 4 }
 }
 
 impl u32x4 {
@@ -779,7 +806,8 @@ impl u32x4 {
             a0 << s,
             (a1 << s) | (a0 >> (32 - s)),
             (a2 << s) | (a1 >> (32 - s)),
-            (a3 << s) | (a2 >> (32 - s)))
+            (a3 << s) | (a2 >> (32 - s)),
+        )
     }
 
     fn rsh(self, s: u32) -> u32x4 {
@@ -788,33 +816,40 @@ impl u32x4 {
             (a0 >> s) | (a1 << (32 - s)),
             (a1 >> s) | (a2 << (32 - s)),
             (a2 >> s) | (a3 << (32 - s)),
-            a3 >> s)
+            a3 >> s,
+        )
     }
 }
 
 impl Not for u32x4 {
     type Output = u32x4;
 
-    fn not(self) -> u32x4 {
-        self ^ U32X4_1
-    }
+    fn not(self) -> u32x4 { self ^ U32X4_1 }
 }
 
 impl Default for u32x4 {
-    fn default() -> u32x4 {
-        u32x4(0, 0, 0, 0)
-    }
+    fn default() -> u32x4 { u32x4(0, 0, 0, 0) }
 }
 
 impl AesBitValueOps for u32x4 {
     fn shift_row(self) -> u32x4 {
         let u32x4(a0, a1, a2, a3) = self;
-        u32x4(a0, a1 >> 8 | a1 << 24, a2 >> 16 | a2 << 16, a3 >> 24 | a3 << 8)
+        u32x4(
+            a0,
+            a1 >> 8 | a1 << 24,
+            a2 >> 16 | a2 << 16,
+            a3 >> 24 | a3 << 8,
+        )
     }
 
     fn inv_shift_row(self) -> u32x4 {
         let u32x4(a0, a1, a2, a3) = self;
-        u32x4(a0, a1 >> 24 | a1 << 8, a2 >> 16 | a2 << 16, a3 >> 8 | a3 << 24)
+        u32x4(
+            a0,
+            a1 >> 24 | a1 << 8,
+            a2 >> 16 | a2 << 16,
+            a3 >> 8 | a3 << 24,
+        )
     }
 
     fn ror1(self) -> u32x4 {

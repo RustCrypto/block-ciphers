@@ -1,6 +1,6 @@
 #![no_std]
-extern crate rc2;
 extern crate block_cipher_trait;
+extern crate rc2;
 
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::BlockCipher;

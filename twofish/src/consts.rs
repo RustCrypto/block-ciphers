@@ -5,6 +5,7 @@ pub const QORD: [[usize; 5]; 4] = [
     [1, 0, 1, 1, 0],
 ];
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 pub const QBOX: [[[u8; 16]; 4]; 2] = [
     [
         [

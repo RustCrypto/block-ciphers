@@ -1,6 +1,6 @@
-use block_cipher_trait::generic_array::{GenericArray, ArrayLength};
+use block_cipher_trait::generic_array::{ArrayLength, GenericArray};
 
-use bitslice::{bit_slice_4x1_with_u16, un_bit_slice_4x1_with_u16, AesOps};
+use bitslice::{AesOps, bit_slice_4x1_with_u16, un_bit_slice_4x1_with_u16};
 use consts::RCON;
 
 fn ffmulx(x: u32) -> u32 {
@@ -16,7 +16,8 @@ fn inv_mcol(x: u32) -> u32 {
     let f8 = ffmulx(f4);
     let f9 = x ^ f8;
 
-    f2 ^ f4 ^ f8 ^ (f2 ^ f9).rotate_right(8) ^ (f4 ^ f9).rotate_right(16) ^ f9.rotate_right(24)
+    f2 ^ f4 ^ f8 ^ (f2 ^ f9).rotate_right(8) ^ (f4 ^ f9).rotate_right(16)
+        ^ f9.rotate_right(24)
 }
 
 fn sub_word(x: u32) -> u32 {
@@ -28,29 +29,29 @@ fn sub_word(x: u32) -> u32 {
 // slice the round keys returned from this function. This function, and the few functions above, are
 // derived from the BouncyCastle AES implementation.
 pub fn expand_key<KeySize: ArrayLength<u8>, Rounds: ArrayLength<[u32; 4]>>(
-    key: &GenericArray<u8, KeySize>)
-    -> (GenericArray<[u32; 4], Rounds>, GenericArray<[u32; 4], Rounds>)
-{
+    key: &GenericArray<u8, KeySize>
+) -> (
+    GenericArray<[u32; 4], Rounds>,
+    GenericArray<[u32; 4], Rounds>,
+) {
     let rounds = Rounds::to_usize();
     let key_len = KeySize::to_usize();
     let key_words = match key_len {
         16 => 4,
         24 => 6,
         32 => 8,
-        _ => panic!("Invalid AES key size.")
+        _ => panic!("Invalid AES key size."),
     };
     let mut ek = GenericArray::<[u32; 4], Rounds>::default();
 
     // The key is copied directly into the first few round keys
     let mut j = 0;
-    for i in 0..key_len/4 {
-        ek[j / 4][j % 4] =
-            (key[4*i] as u32) |
-            ((key[4*i+1] as u32) << 8) |
-            ((key[4*i+2] as u32) << 16) |
-            ((key[4*i+3] as u32) << 24);
+    for i in 0..key_len / 4 {
+        ek[j / 4][j % 4] = (key[4 * i] as u32) | ((key[4 * i + 1] as u32) << 8)
+            | ((key[4 * i + 2] as u32) << 16)
+            | ((key[4 * i + 3] as u32) << 24);
         j += 1;
-    };
+    }
 
     // Calculate the rest of the round keys
     for i in key_words..rounds * 4 {

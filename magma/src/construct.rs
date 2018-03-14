@@ -1,4 +1,3 @@
-
 macro_rules! constuct_cipher {
     ($name:ident, $sbox:expr) => {
 

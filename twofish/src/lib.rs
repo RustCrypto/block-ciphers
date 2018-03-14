@@ -1,8 +1,8 @@
 #![no_std]
+pub extern crate block_cipher_trait;
+extern crate byte_tools;
 #[macro_use]
 extern crate opaque_debug;
-extern crate byte_tools;
-pub extern crate block_cipher_trait;
 
 pub use block_cipher_trait::BlockCipher;
 use block_cipher_trait::InvalidKeyLength;
@@ -13,12 +13,12 @@ use byte_tools::{read_u32_le, read_u32v_le, write_u32_le, write_u32v_le};
 use core::fmt;
 
 mod consts;
-use consts::{QORD, QBOX, RS, MDS_POLY, RS_POLY};
+use consts::{MDS_POLY, QBOX, QORD, RS, RS_POLY};
 
 type Block = GenericArray<u8, U16>;
 
 pub struct Twofish {
-    s: [u8; 16], // S-box key
+    s: [u8; 16],  // S-box key
     k: [u32; 40], // Subkeys
     start: usize,
 }

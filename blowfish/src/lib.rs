@@ -1,25 +1,25 @@
 #![no_std]
+pub extern crate block_cipher_trait;
 extern crate byte_tools;
 #[macro_use]
 extern crate opaque_debug;
-pub extern crate block_cipher_trait;
 
 use core::fmt;
 
 pub use block_cipher_trait::BlockCipher;
 use byte_tools::{read_u32_be, write_u32_be};
 use block_cipher_trait::InvalidKeyLength;
-use block_cipher_trait::generic_array::typenum::{U1, U8, U56};
+use block_cipher_trait::generic_array::typenum::{U1, U56, U8};
 use block_cipher_trait::generic_array::GenericArray;
 
 mod consts;
 
 type Block = GenericArray<u8, U8>;
 
-#[derive(Clone,Copy)]
+#[derive(Clone, Copy)]
 pub struct Blowfish {
     s: [[u32; 256]; 4],
-    p: [u32; 18]
+    p: [u32; 18],
 }
 
 fn next_u32_wrap(buf: &[u8], offset: &mut usize) -> u32 {
@@ -35,7 +35,6 @@ fn next_u32_wrap(buf: &[u8], offset: &mut usize) -> u32 {
 }
 
 impl Blowfish {
-
     fn init_state() -> Blowfish {
         Blowfish {
             p: consts::P,
@@ -51,18 +50,17 @@ impl Blowfish {
         let mut lr = (0u32, 0u32);
         for i in 0..9 {
             lr = self.encrypt(lr.0, lr.1);
-            self.p[2*i] = lr.0;
-            self.p[2*i+1] = lr.1;
+            self.p[2 * i] = lr.0;
+            self.p[2 * i + 1] = lr.1;
         }
         for i in 0..4 {
             for j in 0..128 {
                 lr = self.encrypt(lr.0, lr.1);
-                self.s[i][2*j] = lr.0;
-                self.s[i][2*j+1] = lr.1;
+                self.s[i][2 * j] = lr.0;
+                self.s[i][2 * j + 1] = lr.1;
             }
         }
     }
-
 
     fn round_function(&self, x: u32) -> u32 {
         let a = self.s[0][(x >> 24) as usize];
@@ -74,9 +72,9 @@ impl Blowfish {
 
     fn encrypt(&self, mut l: u32, mut r: u32) -> (u32, u32) {
         for i in 0..8 {
-            l ^= self.p[2*i];
+            l ^= self.p[2 * i];
             r ^= self.round_function(l);
-            r ^= self.p[2*i+1];
+            r ^= self.p[2 * i + 1];
             l ^= self.round_function(r);
         }
         l ^= self.p[16];
@@ -86,9 +84,9 @@ impl Blowfish {
 
     fn decrypt(&self, mut l: u32, mut r: u32) -> (u32, u32) {
         for i in (1..9).rev() {
-            l ^= self.p[2*i+1];
+            l ^= self.p[2 * i + 1];
             r ^= self.round_function(l);
-            r ^= self.p[2*i];
+            r ^= self.p[2 * i];
             l ^= self.round_function(r);
         }
         l ^= self.p[1];
@@ -149,8 +147,8 @@ impl Blowfish {
             let rk = next_u32_wrap(salt, &mut salt_pos);
             lr = self.encrypt(lr.0 ^ lk, lr.1 ^ rk);
 
-            self.p[2*i] = lr.0;
-            self.p[2*i+1] = lr.1;
+            self.p[2 * i] = lr.0;
+            self.p[2 * i + 1] = lr.1;
         }
         for i in 0..4 {
             for j in 0..64 {
@@ -158,30 +156,26 @@ impl Blowfish {
                 let rk = next_u32_wrap(salt, &mut salt_pos);
                 lr = self.encrypt(lr.0 ^ lk, lr.1 ^ rk);
 
-                self.s[i][4*j] = lr.0;
-                self.s[i][4*j+1] = lr.1;
+                self.s[i][4 * j] = lr.0;
+                self.s[i][4 * j + 1] = lr.1;
 
                 let lk = next_u32_wrap(salt, &mut salt_pos);
                 let rk = next_u32_wrap(salt, &mut salt_pos);
                 lr = self.encrypt(lr.0 ^ lk, lr.1 ^ rk);
 
-                self.s[i][4*j+2] = lr.0;
-                self.s[i][4*j+3] = lr.1;
+                self.s[i][4 * j + 2] = lr.0;
+                self.s[i][4 * j + 3] = lr.1;
             }
         }
     }
 
-    pub fn bc_init_state() -> Blowfish {
-        Blowfish::init_state()
-    }
+    pub fn bc_init_state() -> Blowfish { Blowfish::init_state() }
 
     pub fn bc_encrypt(&self, l: u32, r: u32) -> (u32, u32) {
         self.encrypt(l, r)
     }
 
-    pub fn bc_expand_key(&mut self, key: &[u8]) {
-        self.expand_key(key)
-    }
+    pub fn bc_expand_key(&mut self, key: &[u8]) { self.expand_key(key) }
 }
 
 impl_opaque_debug!(Blowfish);
