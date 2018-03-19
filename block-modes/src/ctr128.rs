@@ -1,8 +1,8 @@
 use block_cipher_trait::generic_array::{ArrayLength, GenericArray};
 use block_cipher_trait::generic_array::typenum::{U16, Unsigned};
 use block_cipher_trait::BlockCipher;
-use block_padding::Padding;
-use traits::{BlockMode, BlockModeError, BlockModeIv};
+use block_padding::{Padding, ZeroPadding};
+use traits::{BlockMode, BlockModeError, BlockModeIv, Ctr};
 use utils::xor;
 use core::mem;
 use core::marker::PhantomData;
@@ -95,4 +95,11 @@ where
     ) -> Result<(), BlockModeError> {
         self.encrypt_nopad(buffer)
     }
+}
+
+impl<C> Ctr<C> for Ctr128<C, ZeroPadding>
+where
+    C: BlockCipher<BlockSize = U16>,
+    C::ParBlocks: ArrayLength<GenericArray<u8, U16>>
+{
 }
