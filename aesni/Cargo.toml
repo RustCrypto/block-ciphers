@@ -1,6 +1,6 @@
 [package]
 name = "aesni"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
 description = "AES (Rijndael) block ciphers implementation using AES-NI"
@@ -19,4 +19,5 @@ block-cipher-trait = { version = "0.5", features = ["dev"] }
 [workspace]
 
 [package.metadata.docs.rs]
-rustc-args = [ "-C target-feature=+aes" ]
+rustc-args = ["-C target-feature=+aes"]
+rustdoc-args = ["-C target-feature=+aes"]
