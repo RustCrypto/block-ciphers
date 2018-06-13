@@ -51,12 +51,17 @@
 //! - [Intel AES-NI whitepaper](https://software.intel.com/sites/default/files/article/165683/aes-wp-2012-09-22-v01.pdf)
 //! - [Use of the AES Instruction Set](https://www.cosic.esat.kuleuven.be/ecrypt/AESday/slides/Use_of_the_AES_Instruction_Set.pdf)
 #![no_std]
-#![feature(cfg_target_feature, stdsimd)]
-#![cfg(any(target_arch = "x86_64", target_arch = "x86"))]
-#![cfg(any(target_feature = "aes", feature = "ignore_target_feature_check"))]
 pub extern crate block_cipher_trait;
-#[macro_use]
-extern crate opaque_debug;
+#[macro_use] extern crate opaque_debug;
+
+#[cfg(not(all(
+    target_feature = "aes",
+    any(target_arch = "x86_64", target_arch = "x86")
+)))]
+compile_error!(
+    "enable aes target feature, e.g. with \
+    RUSTFLAGS=\"-C target-feature=+aes\" enviromental variable"
+);
 
 #[macro_use]
 mod utils;

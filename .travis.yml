@@ -10,6 +10,9 @@ matrix:
       rust: stable
     - env: TARGET=x86_64-unknown-linux-gnu
       rust: 1.22.0
+    - env: NAME="aesni test"
+      rust: nightly
+      script: cd aesni; RUSTDOCFLAGS="-C target-feature=+aes" RUSTFLAGS="-C target-feature=+aes" cargo test
     - env: TARGET=x86_64-unknown-linux-gnu
       rust: nightly
     - env: TARGET=powerpc-unknown-linux-gnu
