@@ -4,17 +4,25 @@ sudo: required
 
 matrix:
   include:
-    - env: TARGET=i686-unknown-linux-gnu
-      rust: stable
-    - env: TARGET=x86_64-unknown-linux-gnu
-      rust: stable
     - env: TARGET=x86_64-unknown-linux-gnu
       rust: 1.22.0
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: stable
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: nightly
+
+    - env: NAME="aesni test"
+      rust: 1.27.0
+      script: cd aesni; RUSTDOCFLAGS="-C target-feature=+aes" RUSTFLAGS="-C target-feature=+aes" cargo test
+    - env: NAME="aesni test"
+      rust: stable
+      script: cd aesni; RUSTDOCFLAGS="-C target-feature=+aes" RUSTFLAGS="-C target-feature=+aes" cargo test
     - env: NAME="aesni test"
       rust: nightly
       script: cd aesni; RUSTDOCFLAGS="-C target-feature=+aes" RUSTFLAGS="-C target-feature=+aes" cargo test
-    - env: TARGET=x86_64-unknown-linux-gnu
-      rust: nightly
+
+    - env: TARGET=i686-unknown-linux-gnu
+      rust: stable
     - env: TARGET=powerpc-unknown-linux-gnu
       rust: stable
     - env: TARGET=powerpc64-unknown-linux-gnu
