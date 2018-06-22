@@ -14,9 +14,6 @@
 //! which will bypass target feature check, but it will have a negative implact
 //! on performance.
 //!
-//! This crate currently requires nigthly Rust compiler due to the
-//! usage of unstable `cfg_target_feature` and `stdsimd` features.
-//!
 //! Ciphers functionality is accessed using `BlockCipher` trait from
 //! [`block-cipher-trait`](https://docs.rs/block-cipher-trait) crate.
 //!
