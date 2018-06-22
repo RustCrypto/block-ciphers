@@ -11,15 +11,15 @@ matrix:
     - env: TARGET=x86_64-unknown-linux-gnu
       rust: nightly
 
-    - env: NAME="aesni test"
+    - env: NAME="aes+aesni test"
       rust: 1.27.0
-      script: cd aesni; RUSTDOCFLAGS="-C target-feature=+aes" RUSTFLAGS="-C target-feature=+aes" cargo test
-    - env: NAME="aesni test"
+      script: ./test_aes.sh
+    - env: NAME="aes+aesni test"
       rust: stable
-      script: cd aesni; RUSTDOCFLAGS="-C target-feature=+aes" RUSTFLAGS="-C target-feature=+aes" cargo test
-    - env: NAME="aesni test"
+      script: ./test_aes.sh
+    - env: NAME="aes+aesni test"
       rust: nightly
-      script: cd aesni; RUSTDOCFLAGS="-C target-feature=+aes" RUSTFLAGS="-C target-feature=+aes" cargo test
+      script: ./test_aes.sh
 
     - env: TARGET=i686-unknown-linux-gnu
       rust: stable
