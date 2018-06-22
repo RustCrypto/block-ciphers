@@ -34,6 +34,8 @@ matrix:
         - cargo install xargo --force
         - rustup target install armv7-unknown-linux-gnueabihf
         - rustup component add rust-src
+  allow_failures:
+    - rust: nightly
 
 install:
   - curl -LSfs https://japaric.github.io/trust/install.sh | sh -s -- --git japaric/cross --force
