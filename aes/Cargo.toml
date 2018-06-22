@@ -21,3 +21,5 @@ block-cipher-trait = { version = "0.5", features = ["dev"] }
 
 [features]
 force_soft = []
+
+[workspace]
