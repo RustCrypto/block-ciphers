@@ -17,6 +17,58 @@ pub struct Aes256 {
     decrypt_keys: [__m128i; 15],
 }
 
+impl Aes256 {
+    #[inline(always)]
+    pub(crate) fn encrypt8(&self, blocks: [__m128i; 8]) -> [__m128i; 8] {
+        let keys = self.encrypt_keys;
+        unsafe {
+            let mut b = (
+                blocks[0], blocks[1], blocks[2], blocks[3],
+                blocks[4], blocks[5], blocks[6], blocks[7],
+            );
+            xor8!(b, keys[0]);
+            aesenc8!(b, keys[1]);
+            aesenc8!(b, keys[2]);
+            aesenc8!(b, keys[3]);
+            aesenc8!(b, keys[4]);
+            aesenc8!(b, keys[5]);
+            aesenc8!(b, keys[6]);
+            aesenc8!(b, keys[7]);
+            aesenc8!(b, keys[8]);
+            aesenc8!(b, keys[9]);
+            aesenc8!(b, keys[10]);
+            aesenc8!(b, keys[11]);
+            aesenc8!(b, keys[12]);
+            aesenc8!(b, keys[13]);
+            aesenclast8!(b, keys[14]);
+
+            [b.0, b.1, b.2, b.3, b.4, b.5, b.6, b.7]
+        }
+    }
+
+    #[inline(always)]
+    pub(crate) fn encrypt(&self, mut block: __m128i) -> __m128i {
+        let keys = self.encrypt_keys;
+        unsafe {
+            block = _mm_xor_si128(block, keys[0]);
+            block = _mm_aesenc_si128(block, keys[1]);
+            block = _mm_aesenc_si128(block, keys[2]);
+            block = _mm_aesenc_si128(block, keys[3]);
+            block = _mm_aesenc_si128(block, keys[4]);
+            block = _mm_aesenc_si128(block, keys[5]);
+            block = _mm_aesenc_si128(block, keys[6]);
+            block = _mm_aesenc_si128(block, keys[7]);
+            block = _mm_aesenc_si128(block, keys[8]);
+            block = _mm_aesenc_si128(block, keys[9]);
+            block = _mm_aesenc_si128(block, keys[10]);
+            block = _mm_aesenc_si128(block, keys[11]);
+            block = _mm_aesenc_si128(block, keys[12]);
+            block = _mm_aesenc_si128(block, keys[13]);
+            _mm_aesenclast_si128(block, keys[14])
+        }
+    }
+}
+
 impl BlockCipher for Aes256 {
     type KeySize = U32;
     type BlockSize = U16;
@@ -34,24 +86,9 @@ impl BlockCipher for Aes256 {
 
     #[inline]
     fn encrypt_block(&self, block: &mut Block128) {
-        let keys = self.encrypt_keys;
         unsafe {
-            let mut b = _mm_loadu_si128(block.as_ptr() as *const __m128i);
-            b = _mm_xor_si128(b, keys[0]);
-            b = _mm_aesenc_si128(b, keys[1]);
-            b = _mm_aesenc_si128(b, keys[2]);
-            b = _mm_aesenc_si128(b, keys[3]);
-            b = _mm_aesenc_si128(b, keys[4]);
-            b = _mm_aesenc_si128(b, keys[5]);
-            b = _mm_aesenc_si128(b, keys[6]);
-            b = _mm_aesenc_si128(b, keys[7]);
-            b = _mm_aesenc_si128(b, keys[8]);
-            b = _mm_aesenc_si128(b, keys[9]);
-            b = _mm_aesenc_si128(b, keys[10]);
-            b = _mm_aesenc_si128(b, keys[11]);
-            b = _mm_aesenc_si128(b, keys[12]);
-            b = _mm_aesenc_si128(b, keys[13]);
-            b = _mm_aesenclast_si128(b, keys[14]);
+            let b = _mm_loadu_si128(block.as_ptr() as *const __m128i);
+            let b = self.encrypt(b);
             _mm_storeu_si128(block.as_mut_ptr() as *mut __m128i, b);
         }
     }

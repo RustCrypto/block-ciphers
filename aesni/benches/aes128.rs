@@ -53,3 +53,17 @@ pub fn aes128_decrypt8(bh: &mut test::Bencher) {
     });
     bh.bytes = (input[0].len() * input.len()) as u64;
 }
+
+#[bench]
+pub fn ctr_aes128(bh: &mut test::Bencher) {
+    let key = Default::default();
+    let mut cipher = aesni::CtrAes128::new(&key, &[0; 16]);
+    let mut input = [0u8; 10000];
+
+
+    bh.iter(|| {
+        cipher.xor(&mut input);
+        test::black_box(&input);
+    });
+    bh.bytes = input.len() as u64;
+}
