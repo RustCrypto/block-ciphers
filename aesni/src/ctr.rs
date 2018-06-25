@@ -1,5 +1,6 @@
 use core::{mem, fmt};
 
+
 use core::arch::x86_64::*;
 use super::{Aes128, Aes192, Aes256, BlockCipher};
 use block_cipher_trait::generic_array::GenericArray;
@@ -147,7 +148,7 @@ macro_rules! impl_ctr {
                     { ctr = inc_be(ctr); swap_bytes(ctr) },
                     { ctr = inc_be(ctr); swap_bytes(ctr) },
                 ];
-                self.ctr = ctr;
+                self.ctr = inc_be(ctr);
 
                 self.cipher.encrypt8(block8)
             }
