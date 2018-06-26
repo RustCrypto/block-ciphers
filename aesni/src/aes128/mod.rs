@@ -18,6 +18,7 @@ pub struct Aes128 {
 }
 
 impl Aes128 {
+    #[cfg(feature = "ctr")]
     #[inline(always)]
     pub(crate) fn encrypt8(&self, blocks: [__m128i; 8]) -> [__m128i; 8] {
         let keys = self.encrypt_keys;

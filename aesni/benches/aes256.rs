@@ -54,6 +54,7 @@ pub fn aes256_decrypt8(bh: &mut test::Bencher) {
     bh.bytes = (input[0].len() * input.len()) as u64;
 }
 
+#[cfg(feature = "ctr")]
 #[bench]
 pub fn ctr_aes256(bh: &mut test::Bencher) {
     let key = Default::default();

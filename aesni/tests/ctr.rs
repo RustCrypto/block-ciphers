@@ -1,5 +1,6 @@
 #![cfg(any(target_arch = "x86_64", target_arch = "x86"))]
 #![no_std]
+#![cfg(feature = "ctr")]
 extern crate aesni;
 
 use aesni::block_cipher_trait::generic_array::GenericArray;
