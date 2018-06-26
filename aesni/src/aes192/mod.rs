@@ -18,31 +18,25 @@ pub struct Aes192 {
 }
 
 impl Aes192 {
-    #[cfg(feature = "ctr")]
     #[inline(always)]
-    pub(crate) fn encrypt8(&self, blocks: [__m128i; 8]) -> [__m128i; 8] {
+    pub(crate) fn encrypt8(&self, mut blocks: [__m128i; 8]) -> [__m128i; 8] {
         let keys = self.encrypt_keys;
         unsafe {
-            let mut b = (
-                blocks[0], blocks[1], blocks[2], blocks[3],
-                blocks[4], blocks[5], blocks[6], blocks[7],
-            );
-            xor8!(b, keys[0]);
-            aesenc8!(b, keys[1]);
-            aesenc8!(b, keys[2]);
-            aesenc8!(b, keys[3]);
-            aesenc8!(b, keys[4]);
-            aesenc8!(b, keys[5]);
-            aesenc8!(b, keys[6]);
-            aesenc8!(b, keys[7]);
-            aesenc8!(b, keys[8]);
-            aesenc8!(b, keys[9]);
-            aesenc8!(b, keys[10]);
-            aesenc8!(b, keys[11]);
-            aesenclast8!(b, keys[12]);
-
-            [b.0, b.1, b.2, b.3, b.4, b.5, b.6, b.7]
+            xor8!(blocks, keys[0]);
+            aesenc8!(blocks, keys[1]);
+            aesenc8!(blocks, keys[2]);
+            aesenc8!(blocks, keys[3]);
+            aesenc8!(blocks, keys[4]);
+            aesenc8!(blocks, keys[5]);
+            aesenc8!(blocks, keys[6]);
+            aesenc8!(blocks, keys[7]);
+            aesenc8!(blocks, keys[8]);
+            aesenc8!(blocks, keys[9]);
+            aesenc8!(blocks, keys[10]);
+            aesenc8!(blocks, keys[11]);
+            aesenclast8!(blocks, keys[12]);
         }
+        blocks
     }
 
     #[inline(always)]
@@ -114,22 +108,8 @@ impl BlockCipher for Aes192 {
 
     #[inline]
     fn encrypt_blocks(&self, blocks: &mut Block128x8) {
-        let keys = self.encrypt_keys;
         unsafe {
-            let mut b = load8!(blocks);
-            xor8!(b, keys[0]);
-            aesenc8!(b, keys[1]);
-            aesenc8!(b, keys[2]);
-            aesenc8!(b, keys[3]);
-            aesenc8!(b, keys[4]);
-            aesenc8!(b, keys[5]);
-            aesenc8!(b, keys[6]);
-            aesenc8!(b, keys[7]);
-            aesenc8!(b, keys[8]);
-            aesenc8!(b, keys[9]);
-            aesenc8!(b, keys[10]);
-            aesenc8!(b, keys[11]);
-            aesenclast8!(b, keys[12]);
+            let b = self.encrypt8(load8!(blocks));
             store8!(blocks, b);
         }
     }
