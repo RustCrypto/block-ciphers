@@ -23,5 +23,5 @@ ctr = []
 [workspace]
 
 [package.metadata.docs.rs]
-rustc-args = ["-C", "target-feature=+aes"]
-rustdoc-args = ["-C", "target-feature=+aes"]
+rustc-args = ["-C", "target-feature=+aes,+ssse3"]
+rustdoc-args = ["-C", "target-feature=+aes,+ssse3"]
