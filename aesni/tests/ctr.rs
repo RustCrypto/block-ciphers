@@ -13,6 +13,7 @@ macro_rules! impl_test {
             let key = include_bytes!(concat!("data/", $data, ".key.bin"));
             let key = GenericArray::from_slice(key);
             let iv = include_bytes!(concat!("data/", $data, ".iv.bin"));
+            let iv = GenericArray::from_slice(iv);
             let plaintext = include_bytes!(
                 concat!("data/", $data, ".plaintext.bin"));
             let ciphertext = include_bytes!(

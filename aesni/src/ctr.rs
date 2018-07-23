@@ -40,7 +40,7 @@ fn inc_be(v: __m128i) -> __m128i {
 }
 
 #[inline(always)]
-fn load(val: &[u8; BLOCK_SIZE]) -> __m128i {
+fn load(val: &GenericArray<u8, U16>) -> __m128i {
     unsafe { _mm_loadu_si128(val.as_ptr() as *const __m128i) }
 }
 
@@ -59,7 +59,7 @@ macro_rules! impl_ctr {
 
         impl $name {
             pub fn new(
-                key: &GenericArray<u8, $key_size>, nonce: &[u8; BLOCK_SIZE],
+                key: &GenericArray<u8, $key_size>, nonce: &GenericArray<u8, U16>,
             ) -> Self {
                 let ctr = swap_bytes(load(nonce));
                 let cipher = <$cipher>::new(key);
