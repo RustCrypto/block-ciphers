@@ -1,5 +1,6 @@
+//! Check all target requirements. Note that SSE2 should be enabled by default.
 #[cfg(not(any(target_arch = "x86_64", target_arch = "x86")))]
-compile_error!("crate can only be used for x86 and x86_64 architectures");
+compile_error!("crate can only be used on x86 and x86_64 architectures");
 
 #[cfg(all(
     feature = "ctr",
@@ -7,7 +8,8 @@ compile_error!("crate can only be used for x86 and x86_64 architectures");
 ))]
 compile_error!(
     "enable aes and ssse3 target features, e.g. with \
-    RUSTFLAGS=\"-C target-feature=+aes,+ssse3\" enviromental variable"
+    RUSTFLAGS=\"-C target-feature=+aes,+ssse3\" enviromental variable. \
+    For x86 target arch additionally enable sse2 target feature."
 );
 
 #[cfg(all(
@@ -16,5 +18,6 @@ compile_error!(
 ))]
 compile_error!(
     "enable aes target feature, e.g. with \
-    RUSTFLAGS=\"-C target-feature=+aes\" enviromental variable"
+    RUSTFLAGS=\"-C target-feature=+aes\" enviromental variable. \
+    For x86 target arch additionally enable sse2 target feature."
 );

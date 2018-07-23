@@ -50,6 +50,8 @@
 #![no_std]
 pub extern crate block_cipher_trait;
 #[macro_use] extern crate opaque_debug;
+#[cfg(feature = "ctr")]
+pub extern crate stream_cipher;
 
 mod target_checks;
 #[macro_use]
@@ -60,10 +62,15 @@ mod aes256;
 #[cfg(feature = "ctr")]
 mod ctr;
 
+#[cfg(target_arch = "x86_64")]
+use core::arch::x86_64 as arch;
+#[cfg(target_arch = "x86")]
+use core::arch::x86 as arch;
+
 pub use block_cipher_trait::BlockCipher;
 pub use aes128::Aes128;
 pub use aes192::Aes192;
 pub use aes256::Aes256;
 
 #[cfg(feature = "ctr")]
-pub use ctr::{CtrAes128, CtrAes192, CtrAes256};
+pub use ctr::{Aes128Ctr, Aes192Ctr, Aes256Ctr};

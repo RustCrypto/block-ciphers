@@ -1,10 +1,10 @@
 use core::{mem, fmt};
+use arch::*;
 
-
-use core::arch::x86_64::*;
 use super::{Aes128, Aes192, Aes256, BlockCipher};
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U16, U24, U32};
+use stream_cipher::StreamCipherCore;
 
 const BLOCK_SIZE: usize = 16;
 const PAR_BLOCKS: usize = 8;
@@ -70,64 +70,6 @@ macro_rules! impl_ctr {
                 }
             }
 
-            #[inline]
-            pub fn xor(&mut self, mut buf: &mut [u8]) {
-                // process leftover bytes from the last call if any
-                if self.leftover_cursor != BLOCK_SIZE {
-                    // check if input buffer is large enough to be xor'ed
-                    // with all leftover bytes
-                    if buf.len() >= BLOCK_SIZE - self.leftover_cursor {
-                        let n = self.leftover_cursor;
-                        let leftover = &self.leftover_buf[n..];
-                        let (r, l) = {buf}.split_at_mut(leftover.len());
-                        buf = l;
-                        for (a, b) in r.iter_mut().zip(leftover) { *a ^= *b; }
-                        self.leftover_cursor = BLOCK_SIZE;
-                    } else {
-                        let s = self.leftover_cursor;
-                        let leftover = &self.leftover_buf[s..s + buf.len()];
-                        self.leftover_cursor += buf.len();
-
-                        for (a, b) in buf.iter_mut().zip(leftover) { *a ^= *b; }
-                        return;
-                    }
-                }
-
-                // process 8 blocks at a time
-                while buf.len() >= PAR_BLOCKS_SIZE {
-                    let (r, l) = {buf}.split_at_mut(PAR_BLOCKS_SIZE);
-                    buf = l;
-                    xor_block8(r, self.next_block8());
-                }
-
-                // process one block at a time
-                while buf.len() >= BLOCK_SIZE {
-                    let (r, l) = {buf}.split_at_mut(BLOCK_SIZE);
-                    buf = l;
-
-                    let block = self.next_block();
-
-                    unsafe {
-                        let t = _mm_loadu_si128(r.as_ptr() as *const __m128i);
-                        let res = _mm_xor_si128(block, t);
-                        _mm_storeu_si128(r.as_mut_ptr() as *mut __m128i, res);
-                    }
-                }
-
-                // process leftover bytes
-                if buf.len() != 0 {
-                    let block = self.next_block();
-                    self.leftover_buf = unsafe {
-                         mem::transmute::<__m128i, [u8; BLOCK_SIZE]>(block)
-                    };
-                    let n = buf.len();
-                    self.leftover_cursor = n;
-                    for (a, b) in buf.iter_mut().zip(&self.leftover_buf[..n]) {
-                        *a ^= *b;
-                    }
-                }
-            }
-
             #[inline(always)]
             fn next_block(&mut self) -> __m128i {
                 let block = swap_bytes(self.ctr);
@@ -154,10 +96,70 @@ macro_rules! impl_ctr {
             }
         }
 
+        impl StreamCipherCore for $name {
+            #[inline]
+            fn apply_keystream(&mut self, mut data: &mut [u8]) {
+                // process leftover bytes from the last call if any
+                if self.leftover_cursor != BLOCK_SIZE {
+                    // check if input buffer is large enough to be xor'ed
+                    // with all leftover bytes
+                    if data.len() >= BLOCK_SIZE - self.leftover_cursor {
+                        let n = self.leftover_cursor;
+                        let leftover = &self.leftover_buf[n..];
+                        let (r, l) = {data}.split_at_mut(leftover.len());
+                        data = l;
+                        for (a, b) in r.iter_mut().zip(leftover) { *a ^= *b; }
+                        self.leftover_cursor = BLOCK_SIZE;
+                    } else {
+                        let s = self.leftover_cursor;
+                        let leftover = &self.leftover_buf[s..s + data.len()];
+                        self.leftover_cursor += data.len();
+
+                        for (a, b) in data.iter_mut().zip(leftover) { *a ^= *b; }
+                        return;
+                    }
+                }
+
+                // process 8 blocks at a time
+                while data.len() >= PAR_BLOCKS_SIZE {
+                    let (r, l) = {data}.split_at_mut(PAR_BLOCKS_SIZE);
+                    data = l;
+                    xor_block8(r, self.next_block8());
+                }
+
+                // process one block at a time
+                while data.len() >= BLOCK_SIZE {
+                    let (r, l) = {data}.split_at_mut(BLOCK_SIZE);
+                    data = l;
+
+                    let block = self.next_block();
+
+                    unsafe {
+                        let t = _mm_loadu_si128(r.as_ptr() as *const __m128i);
+                        let res = _mm_xor_si128(block, t);
+                        _mm_storeu_si128(r.as_mut_ptr() as *mut __m128i, res);
+                    }
+                }
+
+                // process leftover bytes
+                if data.len() != 0 {
+                    let block = self.next_block();
+                    self.leftover_buf = unsafe {
+                         mem::transmute::<__m128i, [u8; BLOCK_SIZE]>(block)
+                    };
+                    let n = data.len();
+                    self.leftover_cursor = n;
+                    for (a, b) in data.iter_mut().zip(&self.leftover_buf[..n]) {
+                        *a ^= *b;
+                    }
+                }
+            }
+        }
+
         impl_opaque_debug!($name);
     }
 }
 
-impl_ctr!(CtrAes128, Aes128, U16, "AES128 in CTR mode");
-impl_ctr!(CtrAes192, Aes192, U24, "AES192 in CTR mode");
-impl_ctr!(CtrAes256, Aes256, U32, "AES256 in CTR mode");
+impl_ctr!(Aes128Ctr, Aes128, U16, "AES128 in CTR mode");
+impl_ctr!(Aes192Ctr, Aes192, U24, "AES192 in CTR mode");
+impl_ctr!(Aes256Ctr, Aes256, U32, "AES256 in CTR mode");
