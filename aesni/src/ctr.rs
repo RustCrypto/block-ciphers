@@ -4,7 +4,7 @@ use arch::*;
 use super::{Aes128, Aes192, Aes256, BlockCipher};
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U16, U24, U32};
-use stream_cipher::StreamCipherCore;
+use stream_cipher::{StreamCipherCore, NewFixStreamCipher};
 
 const BLOCK_SIZE: usize = 16;
 const PAR_BLOCKS: usize = 8;
@@ -56,18 +56,6 @@ macro_rules! impl_ctr {
         }
 
         impl $name {
-            pub fn new(
-                key: &GenericArray<u8, $key_size>, nonce: &GenericArray<u8, U16>,
-            ) -> Self {
-                let ctr = swap_bytes(load(nonce));
-                let cipher = <$cipher>::new(key);
-                Self{
-                    ctr, cipher,
-                    leftover_cursor: BLOCK_SIZE,
-                    leftover_buf: [0u8; BLOCK_SIZE]
-                }
-            }
-
             #[inline(always)]
             fn next_block(&mut self) -> __m128i {
                 let block = swap_bytes(self.ctr);
@@ -91,6 +79,22 @@ macro_rules! impl_ctr {
                 self.ctr = inc_be(ctr);
 
                 self.cipher.encrypt8(block8)
+            }
+        }
+
+        impl NewFixStreamCipher for $name {
+            type KeySize = $key_size;
+            type NonceSize = U16;
+            fn new(
+                key: &GenericArray<u8, $key_size>, nonce: &GenericArray<u8, U16>,
+            ) -> Self {
+                let ctr = swap_bytes(load(nonce));
+                let cipher = <$cipher>::new(key);
+                Self {
+                    ctr, cipher,
+                    leftover_cursor: BLOCK_SIZE,
+                    leftover_buf: [0u8; BLOCK_SIZE]
+                }
             }
         }
 
