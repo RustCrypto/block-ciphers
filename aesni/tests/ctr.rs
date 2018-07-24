@@ -29,6 +29,10 @@ macro_rules! impl_test {
                 mode.apply_keystream(c);
             }
             assert_eq!(pt, &ciphertext[..]);
+
+            // test unaligned data processing
+            let mut data = [0; 1000];
+            mode.apply_keystream(&mut data[1..]);
         }
     }
 }

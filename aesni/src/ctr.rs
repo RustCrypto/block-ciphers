@@ -14,15 +14,13 @@ const PAR_BLOCKS_SIZE: usize = PAR_BLOCKS*BLOCK_SIZE;
 fn xor_block8(buf: &mut [u8], ctr: [__m128i; 8]) {
     debug_assert_eq!(buf.len(), PAR_BLOCKS_SIZE);
     unsafe {
-        let t = &mut *(buf.as_mut_ptr() as *mut [__m128i; PAR_BLOCKS]);
-        t[0] = _mm_xor_si128(t[0], ctr[0]);
-        t[1] = _mm_xor_si128(t[1], ctr[1]);
-        t[2] = _mm_xor_si128(t[2], ctr[2]);
-        t[3] = _mm_xor_si128(t[3], ctr[3]);
-        t[4] = _mm_xor_si128(t[4], ctr[4]);
-        t[5] = _mm_xor_si128(t[5], ctr[5]);
-        t[6] = _mm_xor_si128(t[6], ctr[6]);
-        t[7] = _mm_xor_si128(t[7], ctr[7]);
+        // compiler should unroll this loop
+        for i in 0..8 {
+            let ptr = buf.as_mut_ptr().offset(16*i) as *mut __m128i;
+            let data = _mm_loadu_si128(ptr);
+            let data = _mm_xor_si128(data, ctr[i as usize]);
+            _mm_storeu_si128(ptr, data);
+        }
     }
 }
 
