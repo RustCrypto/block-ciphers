@@ -59,7 +59,7 @@ pub fn aes128_decrypt8(bh: &mut test::Bencher) {
 pub fn ctr_aes128(bh: &mut test::Bencher) {
     use aesni::stream_cipher::StreamCipherCore;
     let key = Default::default();
-    let mut cipher = aesni::Aes128Ctr::new(&key, &[0; 16]);
+    let mut cipher = aesni::Aes128Ctr::new(&key, &Default::default());
     let mut input = [0u8; 10000];
 
 
