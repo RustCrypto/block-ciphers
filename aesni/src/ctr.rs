@@ -54,8 +54,15 @@ macro_rules! impl_ctr {
             ctr: __m128i,
             cipher: $cipher,
 
+            // if `leftover_pos` is `None` it means that leftover_buf is not
+            // filled with data and current position of the stream cipher
+            // can be calculated as counter*BLOCK_SIZE. If it's equal to
+            // `Some(pos)`, then buffer is filled with leftover keystream data
+            // and current position of the cipher equals to:
+            // `(counter - 1)*BLOCK_SIZE + pos`
+            // In other words counter is set for the next block calculation
             leftover_buf: [u8; BLOCK_SIZE],
-            leftover_cursor: Option<u8>,
+            leftover_pos: Option<u8>,
         }
 
         impl $name {
@@ -104,7 +111,7 @@ macro_rules! impl_ctr {
                     nonce,
                     ctr: nonce,
                     cipher,
-                    leftover_cursor: None,
+                    leftover_pos: None,
                     leftover_buf: [0u8; BLOCK_SIZE],
                 }
             }
@@ -116,7 +123,7 @@ macro_rules! impl_ctr {
                 -> Result<(), LoopError>
             {
                 // process leftover bytes from the last call if any
-                if let Some(pos) = self.leftover_cursor {
+                if let Some(pos) = self.leftover_pos {
                     let pos = pos as usize;
                     // check if input buffer is large enough to be xor'ed
                     // with all leftover bytes
@@ -127,13 +134,13 @@ macro_rules! impl_ctr {
                         for (a, b) in r.iter_mut().zip(buf) { *a ^= *b; }
                     } else {
                         let buf = &self.leftover_buf[pos..pos + data.len()];
-                        self.leftover_cursor = Some((pos + data.len()) as u8);
+                        self.leftover_pos = Some((pos + data.len()) as u8);
 
                         for (a, b) in data.iter_mut().zip(buf) { *a ^= *b; }
                         return Ok(());
                     }
                 }
-                self.leftover_cursor = None;
+                self.leftover_pos = None;
 
                 // check if counter will loop for given data length
                 let data_blocks = data.len() / BLOCK_SIZE;
@@ -170,7 +177,7 @@ macro_rules! impl_ctr {
                          mem::transmute::<__m128i, [u8; BLOCK_SIZE]>(block)
                     };
                     let n = data.len();
-                    self.leftover_cursor = Some(n as u8);
+                    self.leftover_pos = Some(n as u8);
                     for (a, b) in data.iter_mut().zip(&self.leftover_buf[..n]) {
                         *a ^= *b;
                     }
@@ -181,7 +188,11 @@ macro_rules! impl_ctr {
 
         impl StreamCipherSeek for $name {
             fn current_pos(&self) -> u64 {
-                self.get_u64_ctr()
+                let ctr = self.get_u64_ctr();
+                match self.leftover_pos {
+                    Some(pos) => ctr.wrapping_sub(1)*BLOCK_SIZE + pos,
+                    None => ctr*BLOCK_SIZE,
+                }
             }
 
             // TODO: check correctness
@@ -192,12 +203,12 @@ macro_rules! impl_ctr {
                     _mm_add_epi64(self.nonce, _mm_set_epi64x(n as i64, 0))
                 };
                 if l == 0 {
-                    self.leftover_cursor = None;
+                    self.leftover_pos = None;
                 } else {
                     self.leftover_buf = unsafe {
                         mem::transmute(self.next_block())
                     };
-                    self.leftover_cursor = Some(l as u8);
+                    self.leftover_pos = Some(l as u8);
                 }
             }
         }
