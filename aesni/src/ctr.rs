@@ -4,7 +4,9 @@ use arch::*;
 use super::{Aes128, Aes192, Aes256, BlockCipher};
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U16, U24, U32};
-use stream_cipher::{StreamCipherCore, NewFixStreamCipher};
+use stream_cipher::{
+    StreamCipherCore, StreamCipherSeek, NewFixStreamCipher, LoopError,
+};
 
 const BLOCK_SIZE: usize = 16;
 const PAR_BLOCKS: usize = 8;
@@ -48,11 +50,12 @@ macro_rules! impl_ctr {
         #[doc=$doc]
         #[derive(Clone)]
         pub struct $name {
+            nonce: __m128i,
             ctr: __m128i,
             cipher: $cipher,
 
             leftover_buf: [u8; BLOCK_SIZE],
-            leftover_cursor: usize,
+            leftover_cursor: Option<u8>,
         }
 
         impl $name {
@@ -80,6 +83,13 @@ macro_rules! impl_ctr {
 
                 self.cipher.encrypt8(block8)
             }
+
+            #[inline(always)]
+            fn get_u64_ctr(&self) -> u64 {
+                let ctr: [u64; 2] = unsafe { mem::transmute(self.ctr) };
+                let nonce: [u64; 2] = unsafe { mem::transmute(self.nonce) };
+                ctr[1].wrapping_sub(nonce[1])
+            }
         }
 
         impl NewFixStreamCipher for $name {
@@ -88,38 +98,48 @@ macro_rules! impl_ctr {
             fn new(
                 key: &GenericArray<u8, $key_size>, nonce: &GenericArray<u8, U16>,
             ) -> Self {
-                let ctr = swap_bytes(load(nonce));
+                let nonce = swap_bytes(load(nonce));
                 let cipher = <$cipher>::new(key);
                 Self {
-                    ctr, cipher,
-                    leftover_cursor: BLOCK_SIZE,
-                    leftover_buf: [0u8; BLOCK_SIZE]
+                    nonce,
+                    ctr: nonce,
+                    cipher,
+                    leftover_cursor: None,
+                    leftover_buf: [0u8; BLOCK_SIZE],
                 }
             }
         }
 
         impl StreamCipherCore for $name {
             #[inline]
-            fn apply_keystream(&mut self, mut data: &mut [u8]) {
+            fn try_apply_keystream(&mut self, mut data: &mut [u8])
+                -> Result<(), LoopError>
+            {
                 // process leftover bytes from the last call if any
-                if self.leftover_cursor != BLOCK_SIZE {
+                if let Some(pos) = self.leftover_cursor {
+                    let pos = pos as usize;
                     // check if input buffer is large enough to be xor'ed
                     // with all leftover bytes
-                    if data.len() >= BLOCK_SIZE - self.leftover_cursor {
-                        let n = self.leftover_cursor;
-                        let leftover = &self.leftover_buf[n..];
-                        let (r, l) = {data}.split_at_mut(leftover.len());
+                    if data.len() >= BLOCK_SIZE - pos {
+                        let buf = &self.leftover_buf[pos..];
+                        let (r, l) = {data}.split_at_mut(buf.len());
                         data = l;
-                        for (a, b) in r.iter_mut().zip(leftover) { *a ^= *b; }
-                        self.leftover_cursor = BLOCK_SIZE;
+                        for (a, b) in r.iter_mut().zip(buf) { *a ^= *b; }
                     } else {
-                        let s = self.leftover_cursor;
-                        let leftover = &self.leftover_buf[s..s + data.len()];
-                        self.leftover_cursor += data.len();
+                        let buf = &self.leftover_buf[pos..pos + data.len()];
+                        self.leftover_cursor = Some((pos + data.len()) as u8);
 
-                        for (a, b) in data.iter_mut().zip(leftover) { *a ^= *b; }
-                        return;
+                        for (a, b) in data.iter_mut().zip(buf) { *a ^= *b; }
+                        return Ok(());
                     }
+                }
+                self.leftover_cursor = None;
+
+                // check if counter will loop for given data length
+                let data_blocks = data.len() / BLOCK_SIZE;
+                let counter = self.get_u64_ctr();
+                if counter.checked_add(data_blocks as u64).is_none() {
+                    return Err(LoopError);
                 }
 
                 // process 8 blocks at a time
@@ -150,10 +170,34 @@ macro_rules! impl_ctr {
                          mem::transmute::<__m128i, [u8; BLOCK_SIZE]>(block)
                     };
                     let n = data.len();
-                    self.leftover_cursor = n;
+                    self.leftover_cursor = Some(n as u8);
                     for (a, b) in data.iter_mut().zip(&self.leftover_buf[..n]) {
                         *a ^= *b;
                     }
+                }
+                Ok(())
+            }
+        }
+
+        impl StreamCipherSeek for $name {
+            fn current_pos(&self) -> u64 {
+                self.get_u64_ctr()
+            }
+
+            // TODO: check correctness
+            fn seek(&mut self, pos: u64) {
+                let n = pos / BLOCK_SIZE as u64;
+                let l = pos % BLOCK_SIZE as u64;
+                self.ctr = unsafe {
+                    _mm_add_epi64(self.nonce, _mm_set_epi64x(n as i64, 0))
+                };
+                if l == 0 {
+                    self.leftover_cursor = None;
+                } else {
+                    self.leftover_buf = unsafe {
+                        mem::transmute(self.next_block())
+                    };
+                    self.leftover_cursor = Some(l as u8);
                 }
             }
         }
