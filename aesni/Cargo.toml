@@ -12,10 +12,11 @@ categories = ["cryptography", "no-std"]
 [dependencies]
 block-cipher-trait = "0.5"
 opaque-debug = "0.1"
-stream-cipher = { path = "../../traits/stream-cipher" }
+stream-cipher = "0.1"
 
 [dev-dependencies]
 block-cipher-trait = { version = "0.5", features = ["dev"] }
+stream-cipher = { version = "0.1", features = ["dev"] }
 
 [features]
 default = ["ctr"]

@@ -1,9 +1,9 @@
-use core::{mem, fmt};
+use core::{mem, fmt, cmp};
 use arch::*;
 
 use super::{Aes128, Aes192, Aes256, BlockCipher};
 use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::generic_array::typenum::{U16, U24, U32};
+use block_cipher_trait::generic_array::typenum::U16;
 use stream_cipher::{
     StreamCipherCore, StreamCipherSeek, NewFixStreamCipher, LoopError,
 };
@@ -11,6 +11,14 @@ use stream_cipher::{
 const BLOCK_SIZE: usize = 16;
 const PAR_BLOCKS: usize = 8;
 const PAR_BLOCKS_SIZE: usize = PAR_BLOCKS*BLOCK_SIZE;
+
+#[inline(always)]
+pub fn xor(buf: &mut [u8], key: &[u8]) {
+    debug_assert_eq!(buf.len(), key.len());
+    for (a, b) in buf.iter_mut().zip(key) {
+        *a ^= *b;
+    }
+}
 
 #[inline(always)]
 fn xor_block8(buf: &mut [u8], ctr: [__m128i; 8]) {
@@ -46,7 +54,7 @@ fn load(val: &GenericArray<u8, U16>) -> __m128i {
 
 
 macro_rules! impl_ctr {
-    ($name:ident, $cipher:ty, $key_size:ty, $doc:expr) => {
+    ($name:ident, $cipher:ty, $doc:expr) => {
         #[doc=$doc]
         #[derive(Clone)]
         pub struct $name {
@@ -76,34 +84,50 @@ macro_rules! impl_ctr {
             #[inline(always)]
             fn next_block8(&mut self) -> [__m128i; 8] {
                 let mut ctr = self.ctr;
-                let block8 = [
-                    swap_bytes(ctr),
-                    { ctr = inc_be(ctr); swap_bytes(ctr) },
-                    { ctr = inc_be(ctr); swap_bytes(ctr) },
-                    { ctr = inc_be(ctr); swap_bytes(ctr) },
-                    { ctr = inc_be(ctr); swap_bytes(ctr) },
-                    { ctr = inc_be(ctr); swap_bytes(ctr) },
-                    { ctr = inc_be(ctr); swap_bytes(ctr) },
-                    { ctr = inc_be(ctr); swap_bytes(ctr) },
-                ];
-                self.ctr = inc_be(ctr);
+                let mut block8: [__m128i; 8] = unsafe { mem::uninitialized() };
+                for i in 0..8 {
+                    block8[i] = swap_bytes(ctr);
+                    ctr = inc_be(ctr);
+                }
+                self.ctr = ctr;
 
                 self.cipher.encrypt8(block8)
             }
 
             #[inline(always)]
             fn get_u64_ctr(&self) -> u64 {
-                let ctr: [u64; 2] = unsafe { mem::transmute(self.ctr) };
-                let nonce: [u64; 2] = unsafe { mem::transmute(self.nonce) };
-                ctr[1].wrapping_sub(nonce[1])
+                let (ctr, nonce) = unsafe {(
+                    mem::transmute::<__m128i, [u64; 2]>(self.ctr)[0],
+                    mem::transmute::<__m128i, [u64; 2]>(self.nonce)[0],
+                )};
+                ctr.wrapping_sub(nonce)
+            }
+
+            /// Check if provided data will not overflow counter
+            #[inline(always)]
+            fn check_data_len(&self, data: &[u8]) -> Result<(), LoopError> {
+                let dlen = data.len() - match self.leftover_pos {
+                    Some(pos) => cmp::min(BLOCK_SIZE - pos as usize, data.len()),
+                    None => 0,
+                };
+                let data_blocks = dlen/BLOCK_SIZE +
+                    if data.len() % BLOCK_SIZE != 0 { 1 } else { 0 };
+                let counter = self.get_u64_ctr();
+                if counter.checked_add(data_blocks as u64).is_some() {
+                    Ok(())
+                } else {
+                    Err(LoopError)
+                }
             }
         }
 
         impl NewFixStreamCipher for $name {
-            type KeySize = $key_size;
+            type KeySize = <$cipher as BlockCipher>::KeySize;
             type NonceSize = U16;
+
             fn new(
-                key: &GenericArray<u8, $key_size>, nonce: &GenericArray<u8, U16>,
+                key: &GenericArray<u8, Self::KeySize>,
+                nonce: &GenericArray<u8, Self::NonceSize>,
             ) -> Self {
                 let nonce = swap_bytes(load(nonce));
                 let cipher = <$cipher>::new(key);
@@ -122,6 +146,7 @@ macro_rules! impl_ctr {
             fn try_apply_keystream(&mut self, mut data: &mut [u8])
                 -> Result<(), LoopError>
             {
+                self.check_data_len(data)?;
                 // process leftover bytes from the last call if any
                 if let Some(pos) = self.leftover_pos {
                     let pos = pos as usize;
@@ -131,22 +156,14 @@ macro_rules! impl_ctr {
                         let buf = &self.leftover_buf[pos..];
                         let (r, l) = {data}.split_at_mut(buf.len());
                         data = l;
-                        for (a, b) in r.iter_mut().zip(buf) { *a ^= *b; }
+                        xor(r, buf);
+                        self.leftover_pos = None;
                     } else {
                         let buf = &self.leftover_buf[pos..pos + data.len()];
+                        xor(data, buf);
                         self.leftover_pos = Some((pos + data.len()) as u8);
-
-                        for (a, b) in data.iter_mut().zip(buf) { *a ^= *b; }
                         return Ok(());
                     }
-                }
-                self.leftover_pos = None;
-
-                // check if counter will loop for given data length
-                let data_blocks = data.len() / BLOCK_SIZE;
-                let counter = self.get_u64_ctr();
-                if counter.checked_add(data_blocks as u64).is_none() {
-                    return Err(LoopError);
                 }
 
                 // process 8 blocks at a time
@@ -188,14 +205,14 @@ macro_rules! impl_ctr {
 
         impl StreamCipherSeek for $name {
             fn current_pos(&self) -> u64 {
+                let bs = BLOCK_SIZE as u64;
                 let ctr = self.get_u64_ctr();
                 match self.leftover_pos {
-                    Some(pos) => ctr.wrapping_sub(1)*BLOCK_SIZE + pos,
-                    None => ctr*BLOCK_SIZE,
+                    Some(pos) => ctr.wrapping_sub(1)*bs + pos as u64,
+                    None => ctr*bs,
                 }
             }
 
-            // TODO: check correctness
             fn seek(&mut self, pos: u64) {
                 let n = pos / BLOCK_SIZE as u64;
                 let l = pos % BLOCK_SIZE as u64;
@@ -217,6 +234,6 @@ macro_rules! impl_ctr {
     }
 }
 
-impl_ctr!(Aes128Ctr, Aes128, U16, "AES128 in CTR mode");
-impl_ctr!(Aes192Ctr, Aes192, U24, "AES192 in CTR mode");
-impl_ctr!(Aes256Ctr, Aes256, U32, "AES256 in CTR mode");
+impl_ctr!(Aes128Ctr, Aes128, "AES-128 in CTR mode");
+impl_ctr!(Aes192Ctr, Aes192, "AES-192 in CTR mode");
+impl_ctr!(Aes256Ctr, Aes256, "AES-256 in CTR mode");
