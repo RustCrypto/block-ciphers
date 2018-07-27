@@ -5,17 +5,17 @@
 //! implementation
 //! - [`aesni`](https://docs.rs/aesni) implementation using
 //! [AES-NI](https://en.wikipedia.org/wiki/AES_instruction_set) instruction set.
-//! Used for x86-64 and x86 target architectures with enabled "aes" target feature.
+//! Used for x86-64 and x86 target architectures with enabled `aes` and `sse2`
+//! target features (the latter is usually enabled by default).
 //!
 //! Crate switches between implementations automatically at compile time.
-//! (i.e. it does not use run-time feature detection) If `enforce_soft` crate
-//! feature is enabled software implementation will be used regardless of target
-//! architecture and enabled target features.
+//! (i.e. it does not use run-time feature detection)
 //!
 //! # Usage example
 //! ```
-//! # use aes::block_cipher_trait::generic_array::GenericArray;
-//! use aes::{Aes128, BlockCipher};
+//! use aes::block_cipher_trait::generic_array::GenericArray;
+//! use aes::block_cipher_trait::BlockCipher;
+//! use aes::Aes128;
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
 //! let mut block = GenericArray::clone_from_slice(&[0u8; 16]);

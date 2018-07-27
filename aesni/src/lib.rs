@@ -26,8 +26,9 @@
 //!
 //! # Usage example
 //! ```
-//! # use aesni::block_cipher_trait::generic_array::GenericArray;
-//! use aesni::{Aes128, BlockCipher};
+//! use aesni::block_cipher_trait::generic_array::GenericArray;
+//! use aesni::block_cipher_trait::BlockCipher;
+//! use aesni::Aes128;
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
 //! let mut block = GenericArray::clone_from_slice(&[0u8; 16]);
@@ -74,7 +75,6 @@ use core::arch::x86_64 as arch;
 #[cfg(target_arch = "x86")]
 use core::arch::x86 as arch;
 
-pub use block_cipher_trait::BlockCipher;
 pub use aes128::Aes128;
 pub use aes192::Aes192;
 pub use aes256::Aes256;
