@@ -1,7 +1,8 @@
 use core::{mem, fmt, cmp};
 use arch::*;
 
-use super::{Aes128, Aes192, Aes256, BlockCipher};
+use super::{Aes128, Aes192, Aes256};
+use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::U16;
 use stream_cipher::{
