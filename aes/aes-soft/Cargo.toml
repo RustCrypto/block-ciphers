@@ -1,8 +1,8 @@
 [package]
 name = "aes-soft"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["RustCrypto Developers"]
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 description = "AES (Rijndael) block ciphers bit-sliced implementation"
 documentation = "https://docs.rs/aes-soft"
 repository = "https://github.com/RustCrypto/block-ciphers"

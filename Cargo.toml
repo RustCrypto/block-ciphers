@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "aes-soft",
+    "aes/aes-soft",
     "blowfish",
     "block-modes",
     "des",
