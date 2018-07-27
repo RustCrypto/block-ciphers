@@ -8,7 +8,7 @@
 //! [`cupid`](https://crates.io/crates/cupid) crate).
 //!
 //! When using this crate do not forget to enable `aes` target feature,
-//! otherwise you will get compilation error. You can do it either by using
+//! otherwise you will get a compilation error. You can do it either by using
 //! `RUSTFLAGS="-C target-feature=+aes"` or by editing your `.cargo/config`.
 //!
 //! Ciphers functionality is accessed using `BlockCipher` trait from
@@ -18,7 +18,7 @@
 //! In addition to core block cipher functionality this crate provides optimized
 //! CTR mode implementation. This functionality requires additionall `ssse3`
 //! target feature and feature-gated behind `ctr` feature flag, which is enabled
-//! by default. If you only need block ciphers disable default features with
+//! by default. If you only need block ciphers, disable default features with
 //! `default-features = false` in your `Cargro.toml`.
 //!
 //! AES-CTR functionality is accessed using traits from
