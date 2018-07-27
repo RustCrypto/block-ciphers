@@ -5,17 +5,17 @@
 //! implementation
 //! - [`aesni`](https://docs.rs/aesni) implementation using
 //! [AES-NI](https://en.wikipedia.org/wiki/AES_instruction_set) instruction set.
-//! Used for x86-64 and x86 target architectures with enabled "aes" target feature.
+//! Used for x86-64 and x86 target architectures with enabled `aes` and `sse2`
+//! target features (the latter is usually enabled by default).
 //!
 //! Crate switches between implementations automatically at compile time.
-//! (i.e. it does not use run-time feature detection) If `enforce_soft` crate
-//! feature is enabled software implementation will be used regardless of target
-//! architecture and enabled target features.
+//! (i.e. it does not use run-time feature detection)
 //!
 //! # Usage example
 //! ```
-//! # use aes::block_cipher_trait::generic_array::GenericArray;
-//! use aes::{Aes128, BlockCipher};
+//! use aes::block_cipher_trait::generic_array::GenericArray;
+//! use aes::block_cipher_trait::BlockCipher;
+//! use aes::Aes128;
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
 //! let mut block = GenericArray::clone_from_slice(&[0u8; 16]);
@@ -42,31 +42,25 @@
 //! [`block-modes`](https://docs.rs/block-modes) crate.
 #![no_std]
 pub extern crate block_cipher_trait;
+#[cfg(not(all(
+    target_feature="aes", target_feature = "sse2",
+    any(target_arch = "x86_64", target_arch = "x86"),
+)))]
 extern crate aes_soft;
+#[cfg(not(all(
+    target_feature="aes", target_feature = "sse2",
+    any(target_arch = "x86_64", target_arch = "x86"),
+)))]
+pub use aes_soft::{Aes128, Aes192, Aes256};
+
+
 #[cfg(all(
-    not(feature = "enforce_soft"),
-    target_feature = "aes",
+    target_feature="aes", target_feature = "sse2",
     any(target_arch = "x86_64", target_arch = "x86"),
 ))]
 extern crate aesni;
-
-pub use block_cipher_trait::BlockCipher;
-
-#[cfg(
-    all(
-        not(feature = "enforce_soft"),
-        target_feature="aes",
-        any(target_arch = "x86_64", target_arch = "x86"),
-    )
-)]
-pub use aesni::{Aes128, Aes192, Aes256};
-
-#[cfg(any(
-    feature = "enforce_soft",
-    // aesni cfg
-    not(all(
-        target_feature="aes",
-        any(target_arch = "x86_64", target_arch = "x86"),
-    ))
+#[cfg(all(
+    target_feature="aes", target_feature = "sse2",
+    any(target_arch = "x86_64", target_arch = "x86"),
 ))]
-pub use aes_soft::{Aes128, Aes192, Aes256};
+pub use aesni::{Aes128, Aes192, Aes256};

@@ -7,8 +7,9 @@
 //!
 //! # Usage example
 //! ```
-//! # use aes_soft::block_cipher_trait::generic_array::GenericArray;
-//! use aes_soft::{Aes128, BlockCipher};
+//! use aes_soft::block_cipher_trait::generic_array::GenericArray;
+//! use aes_soft::block_cipher_trait::BlockCipher;
+//! use aes_soft::Aes128;
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
 //! let mut block = GenericArray::clone_from_slice(&[0u8; 16]);
@@ -36,8 +37,6 @@ pub extern crate block_cipher_trait;
 extern crate byte_tools;
 #[macro_use]
 extern crate opaque_debug;
-
-pub use block_cipher_trait::BlockCipher;
 
 mod simd;
 mod bitslice;

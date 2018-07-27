@@ -1,4 +1,4 @@
-//! AES block cipher implementation using AES-NI instruction set.
+//! AES block ciphers implementation using AES-NI instruction set.
 //!
 //! This crate does not implement any software fallback and does not
 //! automatically check CPUID, so if you are using this crate make sure to run
@@ -8,19 +8,35 @@
 //! [`cupid`](https://crates.io/crates/cupid) crate).
 //!
 //! When using this crate do not forget to enable `aes` target feature,
-//! otherwise you will get an empty crate. You can do it either by using
+//! otherwise you will get a compilation error. You can do it either by using
 //! `RUSTFLAGS="-C target-feature=+aes"` or by editing your `.cargo/config`.
-//! Alternatively you can enable `ignore_target_feature_check` crate feature
-//! which will bypass target feature check, but it will have a negative implact
-//! on performance.
 //!
 //! Ciphers functionality is accessed using `BlockCipher` trait from
 //! [`block-cipher-trait`](https://docs.rs/block-cipher-trait) crate.
 //!
+//! # CTR mode
+//! In addition to core block cipher functionality this crate provides optimized
+//! CTR mode implementation. This functionality requires additionall `ssse3`
+//! target feature and feature-gated behind `ctr` feature flag, which is enabled
+//! by default. If you only need block ciphers, disable default features with
+//! `default-features = false` in your `Cargro.toml`.
+//!
+//! AES-CTR functionality is accessed using traits from
+//! [`stream-cipher`](https://docs.rs/stream-cipher) crate.
+//!
+//! # Vulnerability
+//! Lazy FP state restory vulnerability can allow local process to leak content
+//! of the FPU register, in which round keys are stored. This vulnerability
+//! can be mitigated at the operating system level by installing relevant
+//! patches. (i.e. keep your OS updated!) More info:
+//! - [Intel advisory](https://www.intel.com/content/www/us/en/security-center/advisory/intel-sa-00145.html)
+//! - [Wikipedia](https://en.wikipedia.org/wiki/Lazy_FP_state_restore)
+//!
 //! # Usage example
 //! ```
-//! # use aesni::block_cipher_trait::generic_array::GenericArray;
-//! use aesni::{Aes128, BlockCipher};
+//! use aesni::block_cipher_trait::generic_array::GenericArray;
+//! use aesni::block_cipher_trait::BlockCipher;
+//! use aesni::Aes128;
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
 //! let mut block = GenericArray::clone_from_slice(&[0u8; 16]);
@@ -50,23 +66,26 @@
 #![no_std]
 pub extern crate block_cipher_trait;
 #[macro_use] extern crate opaque_debug;
+#[cfg(feature = "ctr")]
+pub extern crate stream_cipher;
 
-#[cfg(not(all(
-    target_feature = "aes",
-    any(target_arch = "x86_64", target_arch = "x86")
-)))]
-compile_error!(
-    "enable aes target feature, e.g. with \
-    RUSTFLAGS=\"-C target-feature=+aes\" enviromental variable"
-);
-
+mod target_checks;
 #[macro_use]
 mod utils;
 mod aes128;
 mod aes192;
 mod aes256;
+#[cfg(feature = "ctr")]
+mod ctr;
 
-pub use block_cipher_trait::BlockCipher;
+#[cfg(target_arch = "x86_64")]
+use core::arch::x86_64 as arch;
+#[cfg(target_arch = "x86")]
+use core::arch::x86 as arch;
+
 pub use aes128::Aes128;
 pub use aes192::Aes192;
 pub use aes256::Aes256;
+
+#[cfg(feature = "ctr")]
+pub use ctr::{Aes128Ctr, Aes192Ctr, Aes256Ctr};

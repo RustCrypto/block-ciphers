@@ -1,4 +1,4 @@
-use core::arch::x86_64::*;
+use arch::*;
 
 use core::mem;
 
