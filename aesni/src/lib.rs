@@ -24,6 +24,14 @@
 //! AES-CTR functionality is accessed using traits from
 //! [`stream-cipher`](https://docs.rs/stream-cipher) crate.
 //!
+//! # Vulnerability
+//! Lazy FP state restory vulnerability can allow local process to leak content
+//! of the FPU register, in which round keys are stored. This vulnerability
+//! can be mitigated at the operating system level by installing relevant
+//! patches. (i.e. keep your OS updated!) More info:
+//! - [Intel advisory](https://www.intel.com/content/www/us/en/security-center/advisory/intel-sa-00145.html)
+//! - [Wikipedia](https://en.wikipedia.org/wiki/Lazy_FP_state_restore)
+//!
 //! # Usage example
 //! ```
 //! use aesni::block_cipher_trait::generic_array::GenericArray;
