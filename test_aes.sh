@@ -1,6 +1,6 @@
 #!/bin/sh
 # test aes crate without aesni
-cd aes/ &&
+cd aes/aes/ &&
 cargo test &&
 cd .. &&
 
