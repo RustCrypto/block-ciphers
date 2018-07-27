@@ -3,7 +3,7 @@ Collection of block cipher algorithms written in pure Rust.
 
 ## Warnings
 
-Currently only `aesni` and `aes-soft` crates provide constant-time implementation.
+Currently only AES implementations currently provide constant-time implementation.
 If you do not really know what you are doing it's generally recommended not to
 use other cipher implementations in this repository.
 
@@ -15,7 +15,7 @@ cryptographic and security reviews.
 ## Supported algorithms
 | Name     | Alt name   | Crates.io  | Documentation  |
 | ------------- |:-------------:| :-----:| :-----:|
-| [AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) | Rijndael | [![crates.io](https://img.shields.io/crates/v/aesni.svg)](https://crates.io/crates/aesni) [![crates.io](https://img.shields.io/crates/v/aes-soft.svg)](https://crates.io/crates/aes-soft) | [![Documentation](https://docs.rs/aesni/badge.svg)](https://docs.rs/aesni) [![Documentation](https://docs.rs/aes-soft/badge.svg)](https://docs.rs/aes-soft) |
+| [AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) | Rijndael | [![crates.io](https://img.shields.io/crates/v/aes.svg)](https://crates.io/crates/aes) | [![Documentation](https://docs.rs/aes/badge.svg)](https://docs.rs/aes) |
 | [Blowfish](https://en.wikipedia.org/wiki/Blowfish_(cipher)) |   | [![crates.io](https://img.shields.io/crates/v/blowfish.svg)](https://crates.io/crates/blowfish) | [![Documentation](https://docs.rs/blowfish/badge.svg)](https://docs.rs/blowfish) |
 | [DES](https://en.wikipedia.org/wiki/Data_Encryption_Standard) |   | [![crates.io](https://img.shields.io/crates/v/des.svg)](https://crates.io/crates/des) | [![Documentation](https://docs.rs/des/badge.svg)](https://docs.rs/des) |
 | [Kuznyechik](https://en.wikipedia.org/wiki/Kuznyechik) |  GOST R 34.12-2015  | [![crates.io](https://img.shields.io/crates/v/kuznyechik.svg)](https://crates.io/crates/kuznyechik) | [![Documentation](https://docs.rs/kuznyechik/badge.svg)](https://docs.rs/kuznyechik) |
