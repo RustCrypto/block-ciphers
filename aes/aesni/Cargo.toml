@@ -21,6 +21,7 @@ stream-cipher = { version = "0.1", features = ["dev"] }
 [features]
 default = ["ctr"]
 ctr = []
+nocheck = []
 
 [workspace]
 

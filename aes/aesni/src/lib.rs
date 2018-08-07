@@ -68,7 +68,7 @@ pub extern crate block_cipher_trait;
 #[macro_use] extern crate opaque_debug;
 #[cfg(feature = "ctr")]
 pub extern crate stream_cipher;
-
+#[cfg(not(feature = "nocheck"))]
 mod target_checks;
 #[macro_use]
 mod utils;
