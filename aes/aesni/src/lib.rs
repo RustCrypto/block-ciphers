@@ -59,6 +59,13 @@
 //! assert_eq!(block8, block8_copy);
 //! ```
 //!
+//! # Runtime detection
+//! If you plan to use AES with runtime detection (e.g. via
+//! `is_x86_feature_detected!("aes")`), then you'll need to enable `nocheck`
+//! feature to disable compile-time target checks. Note that techincally
+//! doing so will make API of this crate unsafe, so you MUST ensure that
+//! this crate will be used in contexts with enabled necessary target features!
+//!
 //! # Related documents
 //!
 //! - [Intel AES-NI whitepaper](https://software.intel.com/sites/default/files/article/165683/aes-wp-2012-09-22-v01.pdf)
