@@ -37,9 +37,8 @@ matrix:
   allow_failures:
     - rust: nightly
 
-install:
-  - curl -LSfs https://japaric.github.io/trust/install.sh | sh -s -- --git japaric/cross --force
-  - source ~/.cargo/env || true
+#install:
+#  - cargo install cross --force
 
 script:
   - cross test --verbose --all --release --target $TARGET
