@@ -1,5 +1,5 @@
-# RustCrypto's block ciphers [![Build Status](https://travis-ci.org/RustCrypto/block-ciphers.svg?branch=master)](https://travis-ci.org/RustCrypto/block-ciphers)
-Collection of block cipher algorithms written in pure Rust.
+# RustCrypto: block ciphers [![Build Status](https://travis-ci.org/RustCrypto/block-ciphers.svg?branch=master)](https://travis-ci.org/RustCrypto/block-ciphers)
+Collection of block ciphers and block modes written in pure Rust.
 
 ## Warnings
 
@@ -24,16 +24,16 @@ cryptographic and security reviews.
 | [Twofish](https://en.wikipedia.org/wiki/Twofish) | | [![crates.io](https://img.shields.io/crates/v/twofish.svg)](https://crates.io/crates/twofish) | [![Documentation](https://docs.rs/twofish/badge.svg)](https://docs.rs/twofish) |
 
 ### Minimum Rust version
-All crates in this repository support Rust 1.22 or higher. (except `aesni`,
-which requires Rust 1.27) In future minimally supported version of Rust can be
-changed, but it will be done with the minor version bump.
+All crates in this repository support Rust 1.22 or higher. (except `aesni` and
+`aes` crates, which require Rust 1.27) In future minimum supported Rust version
+can be changed, but it will be done with the minor version bump.
 
 ## Usage
 Block cipher crates provide only bare block cipher implementations. For most
 applications you will need to use some [block cipher mode of operation](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation)
-which are generically implemented in the `block-modes` crate.
+which are generically implemented in the [`block-modes`](https://docs.rs/block-modes/) crate.
 
-Lets use AES128-ECB with PKCS7 padding to show an example:
+Lets use AES128-CBC with PKCS7 padding to show an example:
 
 ```Rust
 extern crate aes_soft as aes;
@@ -60,6 +60,11 @@ let decrypted_msg = cipher.decrypt_pad(encrypted_data).unwrap();
 Note that this example does not use any authentification which can lead to serious
 vulnarabilities! For Message Authentication Code implementations take a look at
 [RustCrypto/MACs](https://github.com/RustCrypto/MACs) repository.
+
+For CTR mode which transforms block cipher into synchronous stream cipher see
+[`ctr`](https://docs.rs/ctr/) crate from
+[RustCrypto/stream-ciphers](https://github.com/RustCrypto/stream-ciphers)
+repository.
 
 ## License
 
