@@ -54,7 +54,7 @@ pub(super) fn expand(key: &[u8; 24]) -> ([__m128i; 13], [__m128i; 13]) {
         // note that unaligned load MUST be used here, even though we read
         // from the array (compiler missoptimizes aligned load)
         let (k0, k1l) = {
-            let mut t: [u8; 32] = mem::uninitialized();
+            let mut t = [0u8; 32];
             ptr::write(t.as_mut_ptr() as *mut [u8; 24], *key);
             (
                 _mm_loadu_si128(t.as_ptr() as *const __m128i),
