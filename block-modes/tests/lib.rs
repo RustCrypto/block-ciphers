@@ -6,7 +6,7 @@ extern crate block_modes;
 use block_cipher_trait::generic_array::GenericArray;
 use block_modes::{BlockMode, BlockModeIv};
 use block_modes::block_padding::ZeroPadding;
-use block_modes::{Cbc, Cfb, Ctr128, Ecb, Ofb};
+use block_modes::{Cbc, Cfb, Ctr128, Ecb, Ofb, Ige};
 use aes_soft::Aes128;
 
 #[test]
@@ -101,6 +101,46 @@ fn cbc_aes128() {
     assert_eq!(pt, &ciphertext[..]);
 
     let mut mode = Cbc::<Aes128, ZeroPadding>::new_varkey(key, iv).unwrap();
+    let mut ct = ciphertext.to_vec();
+    mode.decrypt_nopad(&mut ct).unwrap();
+    assert_eq!(ct, &plaintext[..]);
+}
+
+#[test]
+fn ige_aes256_1() {
+    let key = include_bytes!("data/ige-aes128-1.key.bin");
+    let iv = include_bytes!("data/ige-aes128-1.iv.bin");
+    let plaintext = include_bytes!("data/ige-aes128-1.plaintext.bin");
+    let ciphertext = include_bytes!("data/ige-aes128-1.ciphertext.bin");
+
+    let iv = GenericArray::from_slice(iv);
+
+    let mut mode = Ige::<Aes128, ZeroPadding>::new_varkey(key, iv).unwrap();
+    let mut pt = plaintext.to_vec();
+    mode.encrypt_nopad(&mut pt).unwrap();
+    assert_eq!(pt, &ciphertext[..]);
+
+    let mut mode = Ige::<Aes128, ZeroPadding>::new_varkey(key, iv).unwrap();
+    let mut ct = ciphertext.to_vec();
+    mode.decrypt_nopad(&mut ct).unwrap();
+    assert_eq!(ct, &plaintext[..]);
+}
+
+#[test]
+fn ige_aes256_2() {
+    let key = include_bytes!("data/ige-aes128-2.key.bin");
+    let iv = include_bytes!("data/ige-aes128-2.iv.bin");
+    let plaintext = include_bytes!("data/ige-aes128-2.plaintext.bin");
+    let ciphertext = include_bytes!("data/ige-aes128-2.ciphertext.bin");
+
+    let iv = GenericArray::from_slice(iv);
+
+    let mut mode = Ige::<Aes128, ZeroPadding>::new_varkey(key, iv).unwrap();
+    let mut pt = plaintext.to_vec();
+    mode.encrypt_nopad(&mut pt).unwrap();
+    assert_eq!(pt, &ciphertext[..]);
+
+    let mut mode = Ige::<Aes128, ZeroPadding>::new_varkey(key, iv).unwrap();
     let mut ct = ciphertext.to_vec();
     mode.decrypt_nopad(&mut ct).unwrap();
     assert_eq!(ct, &plaintext[..]);

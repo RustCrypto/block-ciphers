@@ -24,6 +24,8 @@ where
     P: Padding,
     C::ParBlocks: ArrayLength<GenericArray<u8, U8>>,
 {
+    type IvBlockSize = C::BlockSize;
+
     fn new(cipher: C, nonce: &GenericArray<u8, C::BlockSize>) -> Self {
         // native endian counter
         let counter = unsafe { mem::transmute_copy::<_, u64>(nonce).to_be() };

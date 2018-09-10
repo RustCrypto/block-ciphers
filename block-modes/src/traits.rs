@@ -1,5 +1,6 @@
 use block_cipher_trait::{BlockCipher, InvalidKeyLength};
 use block_cipher_trait::generic_array::GenericArray;
+use block_cipher_trait::generic_array::ArrayLength;
 use block_cipher_trait::generic_array::typenum::Unsigned;
 use block_padding::Padding;
 
@@ -39,14 +40,16 @@ pub trait BlockMode<C: BlockCipher, P: Padding>: Sized {
 }
 
 pub trait BlockModeIv<C: BlockCipher, P: Padding>: BlockMode<C, P> + Sized {
-    fn new(cipher: C, iv: &Array<C::BlockSize>) -> Self;
+    type IvBlockSize: ArrayLength<u8>;
 
-    fn new_fixkey(key: &Array<C::KeySize>, iv: &Array<C::BlockSize>) -> Self {
+    fn new(cipher: C, iv: &Array<Self::IvBlockSize>) -> Self;
+
+    fn new_fixkey(key: &Array<C::KeySize>, iv: &Array<Self::IvBlockSize>) -> Self {
         Self::new(C::new(key), iv)
     }
 
     fn new_varkey(
-        key: &[u8], iv: &Array<C::BlockSize>
+        key: &[u8], iv: &Array<Self::IvBlockSize>
     ) -> Result<Self, InvalidKeyLength> {
         C::new_varkey(key).map(|c| Self::new(c, iv))
     }

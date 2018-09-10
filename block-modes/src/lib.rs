@@ -1,6 +1,7 @@
 //! This crate defines a simple trait used to define block ciphers
 #![no_std]
 extern crate block_cipher_trait;
+extern crate byte_tools;
 pub extern crate block_padding;
 
 mod utils;
@@ -21,3 +22,5 @@ mod ofb;
 pub use ofb::Ofb;
 mod pcbc;
 pub use pcbc::Pcbc;
+mod ige;
+pub use ige::Ige;

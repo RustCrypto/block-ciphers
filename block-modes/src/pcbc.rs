@@ -13,6 +13,8 @@ pub struct Pcbc<C: BlockCipher, P: Padding> {
 }
 
 impl<C: BlockCipher, P: Padding> BlockModeIv<C, P> for Pcbc<C, P> {
+    type IvBlockSize = C::BlockSize;
+
     fn new(cipher: C, iv: &GenericArray<u8, C::BlockSize>) -> Self {
         Self {
             cipher,

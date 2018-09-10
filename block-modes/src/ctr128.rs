@@ -30,6 +30,8 @@ where
     P: Padding,
     C::ParBlocks: ArrayLength<GenericArray<u8, U16>>,
 {
+    type IvBlockSize = C::BlockSize;
+
     fn new(cipher: C, nonce: &GenericArray<u8, C::BlockSize>) -> Self {
         let mut counter: [u64; 2] = unsafe { mem::transmute_copy(nonce) };
         conv_be(&mut counter);
