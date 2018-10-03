@@ -61,7 +61,7 @@ where
 
     #[inline(always)]
     fn next_buf(&mut self) -> GenericArray<u8, U16> {
-        let mut res = self.counter.clone();
+        let mut res = self.counter;
         conv_be(&mut res);
 
         self.inc_counter();
