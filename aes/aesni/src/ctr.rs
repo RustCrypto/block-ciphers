@@ -1,4 +1,4 @@
-use core::{mem, fmt, cmp};
+use core::{mem, cmp};
 use arch::*;
 
 use super::{Aes128, Aes192, Aes256};

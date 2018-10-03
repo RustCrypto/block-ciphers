@@ -3,7 +3,7 @@ use block_cipher_trait::generic_array::typenum::{U16, U24, U8};
 use block_cipher_trait::BlockCipher;
 use arch::*;
 
-use core::{fmt, mem};
+use core::mem;
 use utils::{Block128, Block128x8};
 
 mod expand;

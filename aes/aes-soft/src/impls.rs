@@ -1,4 +1,4 @@
-use core::{fmt, mem};
+use core::mem;
 
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U16, U8};
