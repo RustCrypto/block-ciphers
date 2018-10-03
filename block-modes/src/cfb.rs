@@ -52,7 +52,7 @@ impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Cfb<C, P> {
             Err(BlockModeError)?
         }
 
-        if buffer.len() == 0 {
+        if buffer.is_empty() {
             return Ok(());
         }
 
