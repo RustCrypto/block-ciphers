@@ -194,7 +194,7 @@ impl BlockCipher for Rc2 {
     }
 
     fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
-        if key.len() < 1 || key.len() > 128 {
+        if key.is_empty() || key.len() > 128 {
             Err(InvalidKeyLength)
         } else {
             Ok(Self::new_with_eff_key_len(key, key.len() * 8))
