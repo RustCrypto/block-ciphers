@@ -1,5 +1,5 @@
 # RustCrypto: block ciphers [![Build Status](https://travis-ci.org/RustCrypto/block-ciphers.svg?branch=master)](https://travis-ci.org/RustCrypto/block-ciphers)
-Collection of block ciphers and block modes written in pure Rust.
+Collection of [block ciphers][1] and [block modes][2] written in pure Rust.
 
 ## Warnings
 
@@ -33,7 +33,7 @@ Block cipher crates provide only bare block cipher implementations. For most
 applications you will need to use some [block cipher mode of operation](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation)
 which are generically implemented in the [`block-modes`](https://docs.rs/block-modes/) crate.
 
-Lets use AES128-CBC with PKCS7 padding to show an example:
+Lets use AES128-CBC with [PKCS7][3] padding to show an example:
 
 ```Rust
 extern crate aes_soft as aes;
@@ -59,12 +59,11 @@ let decrypted_msg = cipher.decrypt_pad(encrypted_data).unwrap();
 
 Note that this example does not use any authentification which can lead to serious
 vulnarabilities! For Message Authentication Code implementations take a look at
-[RustCrypto/MACs](https://github.com/RustCrypto/MACs) repository.
+[RustCrypto/MACs][4] repository.
 
-For CTR mode which transforms block cipher into synchronous stream cipher see
-[`ctr`](https://docs.rs/ctr/) crate from
-[RustCrypto/stream-ciphers](https://github.com/RustCrypto/stream-ciphers)
-repository.
+Some block modes (e.g. CTR, CFB) effectively transform block ciphers into stream
+ciphers. Such modes are published under separate crates in the 
+[RustCrypto/stream-ciphers][5] repository.
 
 ## License
 
@@ -80,3 +79,9 @@ at your option.
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
+
+[1]: https://en.wikipedia.org/wiki/Block_cipher
+[2]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation
+[3]: https://en.wikipedia.org/wiki/Padding_(cryptography)#PKCS%235_and_PKCS%237
+[4]: https://github.com/RustCrypto/MACs
+[5]: https://github.com/RustCrypto/stream-ciphers
