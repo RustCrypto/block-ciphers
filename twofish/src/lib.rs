@@ -33,7 +33,7 @@ fn gf_mult(mut a: u8, mut b: u8, p: u8) -> u8 {
         if b & 0x80 == 0x80 {
             b = (b << 1) ^ p;
         } else {
-            b = b << 1;
+            b <<= 1;
         }
     }
     result
