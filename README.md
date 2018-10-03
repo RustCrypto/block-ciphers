@@ -3,7 +3,7 @@ Collection of [block ciphers][1] and [block modes][2] written in pure Rust.
 
 ## Warnings
 
-Currently only AES implementations currently provide constant-time implementation.
+Currently only AES crates provide constant-time implementations.
 If you do not really know what you are doing it's generally recommended not to
 use other cipher implementations in this repository.
 
