@@ -27,6 +27,7 @@ macro_rules! define_aes_impl {
         $doc:expr
     ) => {
         #[doc=$doc]
+        #[derive(Clone)]
         pub struct $name {
             enc_keys: [Bs8State<u16>; $rounds],
             dec_keys: [Bs8State<u16>; $rounds],
