@@ -80,11 +80,11 @@ fn get_c(n: usize) -> [u8; 16] {
 
 fn f(k1: &mut [u8; 16], k2: &mut [u8; 16], n: usize) {
     for i in 0..4 {
-        let mut k1_cpy = k1.clone();
+        let mut k1_cpy = *k1;
         lsx(&mut k1_cpy, &get_c(8 * n + 2 * i + 1));
         x(k2, &k1_cpy);
 
-        let mut k2_cpy = k2.clone();
+        let mut k2_cpy = *k2;
         lsx(&mut k2_cpy, &get_c(8 * n + 2 * i + 2));
         x(k1, &k2_cpy);
     }
