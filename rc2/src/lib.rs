@@ -41,8 +41,8 @@ impl Rc2 {
         key_buffer[..key_len].copy_from_slice(&key[..key_len]);
 
         for i in key_len..128 {
-            let pos: u32 = (key_buffer[i - 1] as u32
-                + key_buffer[i - key_len] as u32)
+            let pos: u32 = (u32::from(key_buffer[i - 1])
+                + u32::from(key_buffer[i - key_len]))
                 & 0xff;
             key_buffer[i] = PI_TABLE[pos as usize];
         }
@@ -57,8 +57,8 @@ impl Rc2 {
 
         let mut result: [u16; 64] = [0; 64];
         for i in 0..64 {
-            result[i] = ((key_buffer[2 * i + 1] as u16) << 8)
-                + (key_buffer[2 * i] as u16)
+            result[i] = (u16::from(key_buffer[2 * i + 1]) << 8)
+                + u16::from(key_buffer[2 * i])
         }
         result
     }
@@ -131,10 +131,10 @@ impl Rc2 {
 
     fn encrypt(&self, block: &mut GenericArray<u8, U8>) {
         let mut r: [u16; 4] = [
-            ((block[1] as u16) << 8) + (block[0] as u16),
-            ((block[3] as u16) << 8) + (block[2] as u16),
-            ((block[5] as u16) << 8) + (block[4] as u16),
-            ((block[7] as u16) << 8) + (block[6] as u16),
+            (u16::from(block[1]) << 8) + u16::from(block[0]),
+            (u16::from(block[3]) << 8) + u16::from(block[2]),
+            (u16::from(block[5]) << 8) + u16::from(block[4]),
+            (u16::from(block[7]) << 8) + u16::from(block[6]),
         ];
 
         let mut j = 0;
@@ -158,10 +158,10 @@ impl Rc2 {
 
     fn decrypt(&self, block: &mut GenericArray<u8, U8>) {
         let mut r: [u16; 4] = [
-            ((block[1] as u16) << 8) + (block[0] as u16),
-            ((block[3] as u16) << 8) + (block[2] as u16),
-            ((block[5] as u16) << 8) + (block[4] as u16),
-            ((block[7] as u16) << 8) + (block[6] as u16),
+            (u16::from(block[1]) << 8) + u16::from(block[0]),
+            (u16::from(block[3]) << 8) + u16::from(block[2]),
+            (u16::from(block[5]) << 8) + u16::from(block[4]),
+            (u16::from(block[7]) << 8) + u16::from(block[6]),
         ];
 
         let mut j = 63;

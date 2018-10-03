@@ -47,9 +47,9 @@ pub fn expand_key<KeySize: ArrayLength<u8>, Rounds: ArrayLength<[u32; 4]>>(
     // The key is copied directly into the first few round keys
     let mut j = 0;
     for i in 0..key_len / 4 {
-        ek[j / 4][j % 4] = (key[4 * i] as u32) | ((key[4 * i + 1] as u32) << 8)
-            | ((key[4 * i + 2] as u32) << 16)
-            | ((key[4 * i + 3] as u32) << 24);
+        ek[j / 4][j % 4] = u32::from(key[4 * i]) | (u32::from(key[4 * i + 1]) << 8)
+            | (u32::from(key[4 * i + 2]) << 16)
+            | (u32::from(key[4 * i + 3]) << 24);
         j += 1;
     }
 
