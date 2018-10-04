@@ -1,3 +1,5 @@
+#![cfg_attr(feature="cargo-clippy", allow(unreadable_literal))]
+
 use core::ops::{BitAnd, BitXor, Not};
 use byte_tools::{read_u32v_le, write_u32_le};
 use simd::u32x4;

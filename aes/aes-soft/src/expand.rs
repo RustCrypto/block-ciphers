@@ -1,3 +1,5 @@
+#![cfg_attr(feature="cargo-clippy", allow(unreadable_literal))]
+
 use block_cipher_trait::generic_array::{ArrayLength, GenericArray};
 
 use bitslice::{AesOps, bit_slice_4x1_with_u16, un_bit_slice_4x1_with_u16};
