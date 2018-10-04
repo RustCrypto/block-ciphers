@@ -34,7 +34,7 @@
 //! [1]: https://github.com/DaGenix/rust-crypto/blob/master/src/aessafe.rs
 #![no_std]
 pub extern crate block_cipher_trait;
-extern crate byte_tools;
+extern crate byteorder;
 #[macro_use]
 extern crate opaque_debug;
 

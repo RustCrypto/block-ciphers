@@ -1,5 +1,5 @@
 use core::ops::{BitAnd, BitXor, Not};
-use byte_tools::{read_u32v_le, write_u32_le};
+use byteorder::{LE, ByteOrder};
 use simd::u32x4;
 use consts::U32X4_1;
 
@@ -332,7 +332,7 @@ pub fn bit_slice_4x1_with_u16(a: u32) -> Bs8State<u16> {
 // Bit slice a 16 byte array in column major order
 pub fn bit_slice_1x16_with_u16(data: &[u8]) -> Bs8State<u16> {
     let mut n = [0u32; 4];
-    read_u32v_le(&mut n, data);
+    LE::read_u32_into(data, &mut n);
 
     let a = n[0];
     let b = n[1];
@@ -385,10 +385,10 @@ pub fn un_bit_slice_4x1_with_u16(bs: &Bs8State<u16>) -> u32 {
 pub fn un_bit_slice_1x16_with_u16(bs: &Bs8State<u16>, output: &mut [u8]) {
     let (a, b, c, d) = un_bit_slice_4x4_with_u16(bs);
 
-    write_u32_le(&mut output[0..4], a);
-    write_u32_le(&mut output[4..8], b);
-    write_u32_le(&mut output[8..12], c);
-    write_u32_le(&mut output[12..16], d);
+    LE::write_u32(&mut output[0..4], a);
+    LE::write_u32(&mut output[4..8], b);
+    LE::write_u32(&mut output[8..12], c);
+    LE::write_u32(&mut output[12..16], d);
 }
 
 // Bit Slice a 128 byte array of eight 16 byte blocks. Each block is in column major order.
@@ -466,10 +466,10 @@ pub fn bit_slice_fill_4x4_with_u32x4(
 ) -> Bs8State<u32x4> {
     let mut tmp = [0u8; 128];
     for i in 0..8 {
-        write_u32_le(&mut tmp[i * 16..i * 16 + 4], a);
-        write_u32_le(&mut tmp[i * 16 + 4..i * 16 + 8], b);
-        write_u32_le(&mut tmp[i * 16 + 8..i * 16 + 12], c);
-        write_u32_le(&mut tmp[i * 16 + 12..i * 16 + 16], d);
+        LE::write_u32(&mut tmp[i * 16..i * 16 + 4], a);
+        LE::write_u32(&mut tmp[i * 16 + 4..i * 16 + 8], b);
+        LE::write_u32(&mut tmp[i * 16 + 8..i * 16 + 12], c);
+        LE::write_u32(&mut tmp[i * 16 + 12..i * 16 + 16], d);
     }
     bit_slice_1x128_with_u32x4(&tmp)
 }
