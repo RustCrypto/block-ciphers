@@ -13,15 +13,15 @@ cryptographic and security reviews.
 **USE AT YOUR OWN RISK.**
 
 ## Supported algorithms
-| Name     | Alt name   | Crates.io  | Documentation  |
-| ------------- |:-------------:| :-----:| :-----:|
-| [AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) | Rijndael | [![crates.io](https://img.shields.io/crates/v/aes.svg)](https://crates.io/crates/aes) | [![Documentation](https://docs.rs/aes/badge.svg)](https://docs.rs/aes) |
-| [Blowfish](https://en.wikipedia.org/wiki/Blowfish_(cipher)) |   | [![crates.io](https://img.shields.io/crates/v/blowfish.svg)](https://crates.io/crates/blowfish) | [![Documentation](https://docs.rs/blowfish/badge.svg)](https://docs.rs/blowfish) |
-| [DES](https://en.wikipedia.org/wiki/Data_Encryption_Standard) + [3DES](https://en.wikipedia.org/wiki/Triple_DES) |  DEA + 3DEA  | [![crates.io](https://img.shields.io/crates/v/des.svg)](https://crates.io/crates/des) | [![Documentation](https://docs.rs/des/badge.svg)](https://docs.rs/des) |
-| [Kuznyechik](https://en.wikipedia.org/wiki/Kuznyechik) |  GOST R 34.12-2015  | [![crates.io](https://img.shields.io/crates/v/kuznyechik.svg)](https://crates.io/crates/kuznyechik) | [![Documentation](https://docs.rs/kuznyechik/badge.svg)](https://docs.rs/kuznyechik) |
-| [Magma](https://en.wikipedia.org/wiki/GOST_(block_cipher)) | GOST 28147-89 and GOST R 34.12-2015 | [![crates.io](https://img.shields.io/crates/v/magma.svg)](https://crates.io/crates/magma) | [![Documentation](https://docs.rs/magma/badge.svg)](https://docs.rs/magma) |
-| [RC2](https://en.wikipedia.org/wiki/RC2) |  ARC2  | [![crates.io](https://img.shields.io/crates/v/rc2.svg)](https://crates.io/crates/rc2) | [![Documentation](https://docs.rs/rc2/badge.svg)](https://docs.rs/rc2) |
-| [Twofish](https://en.wikipedia.org/wiki/Twofish) | | [![crates.io](https://img.shields.io/crates/v/twofish.svg)](https://crates.io/crates/twofish) | [![Documentation](https://docs.rs/twofish/badge.svg)](https://docs.rs/twofish) |
+| Name     | Alt name   | Crate |
+| ------------- |:-------------:| :-----:|
+| [AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) | Rijndael | `aes` [![crates.io](https://img.shields.io/crates/v/aes.svg)](https://crates.io/crates/aes) [![Documentation](https://docs.rs/aes/badge.svg)](https://docs.rs/aes) <br/><br/> `aesni` [![crates.io](https://img.shields.io/crates/v/aesni.svg)](https://crates.io/crates/aesni) [![Documentation](https://docs.rs/aesni/badge.svg)](https://docs.rs/aesni) <br/><br/> `aes-soft` [![crates.io](https://img.shields.io/crates/v/aes-soft.svg)](https://crates.io/crates/aes-soft) [![Documentation](https://docs.rs/aes-soft/badge.svg)](https://docs.rs/aes-soft)  |
+| [Blowfish](https://en.wikipedia.org/wiki/Blowfish_(cipher)) |   | `blowfish` [![crates.io](https://img.shields.io/crates/v/blowfish.svg)](https://crates.io/crates/blowfish) [![Documentation](https://docs.rs/blowfish/badge.svg)](https://docs.rs/blowfish) |
+| [DES](https://en.wikipedia.org/wiki/Data_Encryption_Standard) + [3DES](https://en.wikipedia.org/wiki/Triple_DES) |  DEA + 3DEA  | `des` [![crates.io](https://img.shields.io/crates/v/des.svg)](https://crates.io/crates/des) [![Documentation](https://docs.rs/des/badge.svg)](https://docs.rs/des) |
+| [Kuznyechik](https://en.wikipedia.org/wiki/Kuznyechik) |  GOST R 34.12-2015  | `kuznyechik` [![crates.io](https://img.shields.io/crates/v/kuznyechik.svg)](https://crates.io/crates/kuznyechik) [![Documentation](https://docs.rs/kuznyechik/badge.svg)](https://docs.rs/kuznyechik) |
+| [Magma](https://en.wikipedia.org/wiki/GOST_(block_cipher)) | GOST 28147-89 and GOST R 34.12-2015 | `magma` [![crates.io](https://img.shields.io/crates/v/magma.svg)](https://crates.io/crates/magma) [![Documentation](https://docs.rs/magma/badge.svg)](https://docs.rs/magma) |
+| [RC2](https://en.wikipedia.org/wiki/RC2) |  ARC2  | `rc2` [![crates.io](https://img.shields.io/crates/v/rc2.svg)](https://crates.io/crates/rc2) [![Documentation](https://docs.rs/rc2/badge.svg)](https://docs.rs/rc2) |
+| [Twofish](https://en.wikipedia.org/wiki/Twofish) | | `twofish` [![crates.io](https://img.shields.io/crates/v/twofish.svg)](https://crates.io/crates/twofish) [![Documentation](https://docs.rs/twofish/badge.svg)](https://docs.rs/twofish) |
 
 ### Minimum Rust version
 All crates in this repository support Rust 1.22 or higher. (except `aesni` and
