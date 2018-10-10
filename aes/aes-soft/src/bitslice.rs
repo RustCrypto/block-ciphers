@@ -1,3 +1,5 @@
+#![cfg_attr(feature="cargo-clippy", allow(unreadable_literal))]
+
 use core::ops::{BitAnd, BitXor, Not};
 use byteorder::{LE, ByteOrder};
 use simd::u32x4;
@@ -345,7 +347,7 @@ pub fn bit_slice_1x16_with_u16(data: &[u8]) -> Bs8State<u16> {
 // Un Bit Slice into a set of 4 u32s
 pub fn un_bit_slice_4x4_with_u16(bs: &Bs8State<u16>) -> (u32, u32, u32, u32) {
     fn pb(x: u16, bit: u32, shift: u32) -> u32 {
-        (((x >> bit) & 1) as u32) << shift
+        u32::from((x >> bit) & 1) << shift
     }
 
     fn deconstruct(bs: &Bs8State<u16>, bit: u32) -> u32 {
@@ -404,18 +406,18 @@ pub fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
 
     fn read_row_major(data: &[u8]) -> u32x4 {
         u32x4(
-            (data[0] as u32) | ((data[4] as u32) << 8)
-                | ((data[8] as u32) << 16)
-                | ((data[12] as u32) << 24),
-            (data[1] as u32) | ((data[5] as u32) << 8)
-                | ((data[9] as u32) << 16)
-                | ((data[13] as u32) << 24),
-            (data[2] as u32) | ((data[6] as u32) << 8)
-                | ((data[10] as u32) << 16)
-                | ((data[14] as u32) << 24),
-            (data[3] as u32) | ((data[7] as u32) << 8)
-                | ((data[11] as u32) << 16)
-                | ((data[15] as u32) << 24),
+            u32::from(data[0]) | (u32::from(data[4]) << 8)
+                | (u32::from(data[8]) << 16)
+                | (u32::from(data[12]) << 24),
+            u32::from(data[1]) | (u32::from(data[5]) << 8)
+                | (u32::from(data[9]) << 16)
+                | (u32::from(data[13]) << 24),
+            u32::from(data[2]) | (u32::from(data[6]) << 8)
+                | (u32::from(data[10]) << 16)
+                | (u32::from(data[14]) << 24),
+            u32::from(data[3]) | (u32::from(data[7]) << 8)
+                | (u32::from(data[11]) << 16)
+                | (u32::from(data[15]) << 24),
         )
     }
 

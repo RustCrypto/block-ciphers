@@ -1,3 +1,5 @@
+#![cfg_attr(feature="cargo-clippy", allow(unreadable_literal))]
+
 use simd::u32x4;
 
 pub const U32X4_0: u32x4 = u32x4(0, 0, 0, 0);
