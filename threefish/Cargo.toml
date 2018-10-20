@@ -14,4 +14,4 @@ byteorder = { version = "1", default-features = false }
 block-cipher-trait = "0.6"
 
 [dev-dependencies]
-crypto-tests = "0.5"
+hex-literal = "0.1"

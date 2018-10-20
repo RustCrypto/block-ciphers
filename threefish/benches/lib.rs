@@ -1,7 +1,5 @@
 #![no_std]
 #![feature(test)]
-//#[macro_use]
-//extern crate crypto_tests;
 extern crate threefish;
 
 extern crate test;
