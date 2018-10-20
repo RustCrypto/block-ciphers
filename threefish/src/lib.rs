@@ -10,7 +10,7 @@ use consts::{C240, P_1024, P_256, P_512, R_1024, R_256, R_512};
 use byteorder::{ByteOrder, LE};
 pub use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::generic_array::typenum::{U1, U128, U32, U64, U16};
+use block_cipher_trait::generic_array::typenum::{U1, U128, U32, U64};
 
 fn mix(r: u32, x: (u64, u64)) -> (u64, u64) {
     let y0 = x.0.wrapping_add(x.1);
@@ -48,15 +48,12 @@ macro_rules! impl_threefish(
         }
 
         impl $name {
-            pub fn with_tweak(key: &GenericArray<u8, $block_size>, tweak: &GenericArray<u8, U16>) -> $name {
+            pub fn with_tweak(key: &GenericArray<u8, $block_size>, tweak0: u64, tweak1: u64) -> $name {
                 let mut k = [0u64; $n_w + 1];
                 read_u64v_le(&mut k[..$n_w], key);
                 k[$n_w] = k[..$n_w].iter().fold(C240, BitXor::bitxor);
 
-                let mut t = [0u64; 3];
-                read_u64v_le(&mut t[..2], tweak);
-                t[2] = t[0] ^ t[1];
-
+                let t = [tweak0, tweak1, tweak0 ^ tweak1];
                 let mut sk = [[0u64; $n_w]; $rounds / 4 + 1];
                 for s in 0..($rounds / 4 + 1) {
                     for i in 0..$n_w {
@@ -81,7 +78,7 @@ macro_rules! impl_threefish(
             type ParBlocks = U1;
 
             fn new(key: &GenericArray<u8, $block_size>) -> $name {
-                Self::with_tweak(key, &GenericArray::default())
+                Self::with_tweak(key, 0, 0)
             }
 
             fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>)
