@@ -88,7 +88,6 @@ macro_rules! impl_threefish(
             {
                 let mut v = [0u64; $n_w];
                 read_u64v_le(&mut v, block);
-                for w in v.iter_mut() { *w = w.to_le(); }
 
                 for d in 0..$rounds {
                     let v_tmp = v.clone();
@@ -114,7 +113,6 @@ macro_rules! impl_threefish(
                     v[i] = v[i].wrapping_add(self.sk[$rounds / 4][i]);
                 }
 
-                for w in v.iter_mut() { *w = w.to_le(); }
                 write_u64v_le(block, &v[..]);
             }
 
@@ -122,7 +120,6 @@ macro_rules! impl_threefish(
             {
                 let mut v = [0u64; $n_w];
                 read_u64v_le(&mut v, &block[..]);
-                for w in v.iter_mut() { *w = w.to_le(); }
 
                 for i in 0..$n_w {
                     v[i] = v[i].wrapping_sub(self.sk[$rounds / 4][i]);
@@ -148,8 +145,7 @@ macro_rules! impl_threefish(
                     }
                 }
 
-                for w in v.iter_mut() { *w = w.to_le(); }
-                write_u64v_le(block, &mut v[..]);
+                write_u64v_le(block, &v[..]);
             }
         }
     )
