@@ -6,7 +6,7 @@ use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::U16;
 use stream_cipher::{
-    StreamCipherCore, StreamCipherSeek, NewFixStreamCipher, LoopError,
+    SyncStreamCipher, SyncStreamCipherSeek, NewStreamCipher, LoopError,
 };
 
 const BLOCK_SIZE: usize = 16;
@@ -122,7 +122,7 @@ macro_rules! impl_ctr {
             }
         }
 
-        impl NewFixStreamCipher for $name {
+        impl NewStreamCipher for $name {
             type KeySize = <$cipher as BlockCipher>::KeySize;
             type NonceSize = U16;
 
@@ -142,7 +142,7 @@ macro_rules! impl_ctr {
             }
         }
 
-        impl StreamCipherCore for $name {
+        impl SyncStreamCipher for $name {
             #[inline]
             fn try_apply_keystream(&mut self, mut data: &mut [u8])
                 -> Result<(), LoopError>
@@ -204,7 +204,7 @@ macro_rules! impl_ctr {
             }
         }
 
-        impl StreamCipherSeek for $name {
+        impl SyncStreamCipherSeek for $name {
             fn current_pos(&self) -> u64 {
                 let bs = BLOCK_SIZE as u64;
                 let ctr = self.get_u64_ctr();

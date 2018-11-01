@@ -4,7 +4,8 @@
 extern crate aesni;
 extern crate test;
 
-use aesni::{Aes128, BlockCipher};
+use aesni::Aes128;
+use aesni::block_cipher_trait::BlockCipher;
 
 #[bench]
 pub fn aes128_encrypt(bh: &mut test::Bencher) {
