@@ -4,6 +4,7 @@ members = [
     "blowfish",
     "block-modes",
     "des",
+    "idea",
     "kuznyechik",
     "magma",
     "rc2",
