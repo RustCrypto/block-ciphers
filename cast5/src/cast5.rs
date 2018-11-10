@@ -1,6 +1,5 @@
 use block_cipher_trait::generic_array::typenum::{U1, U16, U8};
 use block_cipher_trait::generic_array::GenericArray;
-use core::fmt;
 
 use block_cipher_trait::{BlockCipher, InvalidKeyLength};
 use byte_tools::{read_u32_be, write_u32_be};

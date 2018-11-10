@@ -11,12 +11,12 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 byte-tools = "0.2"
-block-cipher-trait = "0.5"
-opaque-debug = "0.1"
+block-cipher-trait = "0.6"
+opaque-debug = "0.2"
 
 [dev-dependencies]
-block-cipher-trait = { version = "0.5", features = ["dev"] }
-generic-array = "0.9"
+block-cipher-trait = { version = "0.6", features = ["dev"] }
+generic-array = "0.12"
 
 [features]
 default = []
