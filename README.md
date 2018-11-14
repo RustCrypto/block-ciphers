@@ -1,4 +1,6 @@
-# RustCrypto: block ciphers [![Build Status](https://travis-ci.org/RustCrypto/block-ciphers.svg?branch=master)](https://travis-ci.org/RustCrypto/block-ciphers)
+# RustCrypto: block ciphers
+[![Build Status](https://travis-ci.org/RustCrypto/block-ciphers.svg?branch=master)](https://travis-ci.org/RustCrypto/block-ciphers) [![dependency status](https://deps.rs/repo/github/RustCrypto/block-ciphers/status.svg)](https://deps.rs/repo/github/RustCrypto/block-ciphers)
+
 Collection of [block ciphers][1] and [block modes][2] written in pure Rust.
 
 ## Warnings
@@ -62,7 +64,7 @@ vulnarabilities! For Message Authentication Code implementations take a look at
 [RustCrypto/MACs][4] repository.
 
 Some block modes (e.g. CTR, CFB) effectively transform block ciphers into stream
-ciphers. Such modes are published under separate crates in the 
+ciphers. Such modes are published under separate crates in the
 [RustCrypto/stream-ciphers][5] repository.
 
 ## License
