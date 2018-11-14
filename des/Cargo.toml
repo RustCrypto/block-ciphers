@@ -1,6 +1,6 @@
 [package]
 name = "des"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
 description = "DES and Triple DES (3DES, TDES) block ciphers implementation"
@@ -10,12 +10,12 @@ keywords = ["crypto", "des", "tdes", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-block-cipher-trait = "0.5"
-byte-tools = "0.2"
-opaque-debug = "0.1"
+block-cipher-trait = "0.6"
+byteorder = { version = "1", default-features = false }
+opaque-debug = "0.2"
 
 [dev-dependencies]
-block-cipher-trait = { version = "0.5", features = ["dev"] }
+block-cipher-trait = { version = "0.6", features = ["dev"] }
 
 [badges]
 travis-ci = { repository = "RustCrypto/block-ciphers" }

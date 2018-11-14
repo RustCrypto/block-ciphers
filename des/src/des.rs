@@ -1,9 +1,7 @@
 use super::BlockCipher;
-use byte_tools::{read_u64_be, write_u64_be};
+use byteorder::{BE, ByteOrder};
 use generic_array::GenericArray;
 use generic_array::typenum::{U1, U8};
-
-use core::fmt;
 
 use consts::{SBOXES, SHIFTS};
 
@@ -190,18 +188,18 @@ impl BlockCipher for Des {
 
     fn new(key: &GenericArray<u8, U8>) -> Self {
         Des {
-            keys: gen_keys(read_u64_be(key)),
+            keys: gen_keys(BE::read_u64(key)),
         }
     }
 
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
-        let data = read_u64_be(block);
-        write_u64_be(block, self.encrypt(data));
+        let data = BE::read_u64(block);
+        BE::write_u64(block, self.encrypt(data));
     }
 
     fn decrypt_block(&self, block: &mut GenericArray<u8, U8>) {
-        let data = read_u64_be(block);
-        write_u64_be(block, self.decrypt(data));
+        let data = BE::read_u64(block);
+        BE::write_u64(block, self.decrypt(data));
     }
 }
 
