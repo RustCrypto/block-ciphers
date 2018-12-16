@@ -16,7 +16,6 @@ pub use byteorder::{BE, LE};
 
 mod consts;
 
-pub type BlowfishBE = Blowfish<BE>;
 pub type BlowfishLE = Blowfish<LE>;
 
 type Block = GenericArray<u8, U8>;
