@@ -10,8 +10,8 @@ keywords = ["crypto", "blowfish", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-byte-tools = "0.2"
 block-cipher-trait = "0.5"
+byteorder = { version = "1", default-features = false }
 opaque-debug = "0.1"
 
 [dev-dependencies]
