@@ -7,6 +7,7 @@ use utils::xor;
 use core::mem;
 use core::marker::PhantomData;
 
+/// Struct for the Counter (CTR) block cipher mode of operation with 64-bits
 pub struct Ctr64<C, P>
 where
     C: BlockCipher<BlockSize = U8>,

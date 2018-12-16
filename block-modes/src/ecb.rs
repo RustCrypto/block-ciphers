@@ -7,6 +7,7 @@ use core::marker::PhantomData;
 
 type ParBlocks<B, P> = GenericArray<GenericArray<u8, B>, P>;
 
+/// Struct for the Electronic Codebook (ECB) block cipher mode of operation
 pub struct Ecb<C: BlockCipher, P: Padding> {
     cipher: C,
     _p: PhantomData<P>,
