@@ -12,14 +12,16 @@ use block_cipher_trait::generic_array::GenericArray;
 pub use block_cipher_trait::BlockCipher;
 use block_cipher_trait::InvalidKeyLength;
 use byteorder::ByteOrder;
-pub use byteorder::{BE, LE};
+use byteorder::{BE, LE};
 
 mod consts;
 
+/// Blowfish variant which uses Little Endian byte order read/writes.s.
 pub type BlowfishLE = Blowfish<LE>;
 
 type Block = GenericArray<u8, U8>;
 
+/// Blowfish block cipher instance.
 #[derive(Clone, Copy)]
 pub struct Blowfish<T: ByteOrder = BE> {
     s: [[u32; 256]; 4],
@@ -140,7 +142,7 @@ impl<T: ByteOrder> BlockCipher for Blowfish<T> {
 
 /// Bcrypt extension of blowfish
 #[cfg(feature = "bcrypt")]
-impl<T: ByteOrder> Blowfish<T> {
+impl Blowfish<BE> {
     pub fn salted_expand_key(&mut self, salt: &[u8], key: &[u8]) {
         let mut key_pos = 0;
         for i in 0..18 {
@@ -175,7 +177,7 @@ impl<T: ByteOrder> Blowfish<T> {
         }
     }
 
-    pub fn bc_init_state() -> Blowfish<T> { Blowfish::init_state() }
+    pub fn bc_init_state() -> Blowfish<BE> { Blowfish::init_state() }
 
     pub fn bc_encrypt(&self, l: u32, r: u32) -> (u32, u32) {
         self.encrypt(l, r)
