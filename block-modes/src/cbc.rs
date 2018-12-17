@@ -7,6 +7,7 @@ use utils::{xor, ParBlocks};
 use core::marker::PhantomData;
 use core::slice;
 
+/// Struct for the Cipher Block Chaining (CBC) block cipher mode of operation
 pub struct Cbc<C: BlockCipher, P: Padding> {
     cipher: C,
     iv: GenericArray<u8, C::BlockSize>,

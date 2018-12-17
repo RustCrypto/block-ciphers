@@ -8,6 +8,8 @@ type Array<N> = GenericArray<u8, N>;
 #[derive(Clone, Copy, Debug)]
 pub struct BlockModeError;
 
+/// Trait for a block cipher mode of operation that is used to apply a block cipher
+/// operation to input data to transform it into a variable-length output message.
 pub trait BlockMode<C: BlockCipher, P: Padding>: Sized {
     fn encrypt_nopad(
         &mut self, buffer: &mut [u8]

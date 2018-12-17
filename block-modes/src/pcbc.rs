@@ -6,6 +6,7 @@ use traits::{BlockMode, BlockModeError, BlockModeIv};
 use utils::xor;
 use core::marker::PhantomData;
 
+/// Struct for the Propagating Cipher Block Chaining (PCBC) block cipher mode of operation
 pub struct Pcbc<C: BlockCipher, P: Padding> {
     cipher: C,
     iv: GenericArray<u8, C::BlockSize>,

@@ -6,6 +6,7 @@ use traits::{BlockMode, BlockModeError, BlockModeIv};
 use core::marker::PhantomData;
 use utils::xor;
 
+/// Struct for the Output Feedback (OFB) block cipher mode of operation
 pub struct Ofb<C: BlockCipher, P: Padding> {
     cipher: C,
     iv: GenericArray<u8, C::BlockSize>,
