@@ -13,7 +13,7 @@ macro_rules! constuct_cipher {
 
             fn new(key: &GenericArray<u8, U32>) -> Self {
                 let mut c = Gost89 { sbox: &$sbox, key: Default::default() };
-                read_u32v_le(&mut c.key, key);
+                LE::read_u32_into(key, &mut c.key);
                 Self { c }
             }
 

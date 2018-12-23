@@ -10,9 +10,12 @@ keywords = ["crypto", "twofish", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-byte-tools = "0.2"
-block-cipher-trait = "0.5"
+byteorder = { version = "1", default-features = false }
+block-cipher-trait = "0.6"
 opaque-debug = "0.1"
+
+[dev-dependencies]
+block-cipher-trait = { version = "0.6", features = ["dev"] }
 
 [badges]
 travis-ci = { repository = "RustCrypto/block-ciphers" }
