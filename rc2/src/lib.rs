@@ -3,15 +3,12 @@
 //! [1]: https://en.wikipedia.org/wiki/RC2
 #![no_std]
 pub extern crate block_cipher_trait;
-#[macro_use]
-extern crate opaque_debug;
+#[macro_use] extern crate opaque_debug;
 
-pub use block_cipher_trait::BlockCipher;
+use block_cipher_trait::BlockCipher;
 use block_cipher_trait::InvalidKeyLength;
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U1, U32, U8};
-
-use core::fmt;
 
 mod consts;
 use consts::PI_TABLE;

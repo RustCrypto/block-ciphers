@@ -1,6 +1,6 @@
 [package]
 name = "rc2"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
 description = "RC2 block cipher"
@@ -10,8 +10,11 @@ keywords = ["crypto", "rc2", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-block-cipher-trait = "0.5"
-opaque-debug = "0.1"
+block-cipher-trait = "0.6"
+opaque-debug = "0.2"
+
+[dev-dependencies]
+block-cipher-trait = { version = "0.6", features = ["dev"] }
 
 [badges]
 travis-ci = { repository = "RustCrypto/block-ciphers" }

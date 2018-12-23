@@ -3,7 +3,7 @@ extern crate block_cipher_trait;
 extern crate kuznyechik;
 
 use block_cipher_trait::generic_array::GenericArray;
-use kuznyechik::BlockCipher;
+use block_cipher_trait::BlockCipher;
 
 #[test]
 fn kuznyechik() {

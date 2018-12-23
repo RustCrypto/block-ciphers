@@ -10,8 +10,11 @@ keywords = ["crypto", "kuznyechik", "gost", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-block-cipher-trait = "0.5"
-opaque-debug = "0.1"
+block-cipher-trait = "0.6"
+opaque-debug = "0.2"
+
+[dev-dependencies]
+block-cipher-trait = { version = "0.6", features = ["dev"] }
 
 [badges]
 travis-ci = { repository = "RustCrypto/block-ciphers" }

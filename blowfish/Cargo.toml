@@ -1,6 +1,6 @@
 [package]
 name = "blowfish"
-version = "0.3.1"
+version = "0.4.0"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
 description = "Blowfish block cipher"
@@ -10,12 +10,12 @@ keywords = ["crypto", "blowfish", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-block-cipher-trait = "0.5"
+block-cipher-trait = "0.6"
 byteorder = { version = "1", default-features = false }
-opaque-debug = "0.1"
+opaque-debug = "0.2"
 
 [dev-dependencies]
-block-cipher-trait = { version = "0.5", features = ["dev"] }
+block-cipher-trait = { version = "0.6", features = ["dev"] }
 
 [features]
 bcrypt = []

@@ -1,13 +1,10 @@
 #![no_std]
 pub extern crate block_cipher_trait;
-#[macro_use]
-extern crate opaque_debug;
+#[macro_use] extern crate opaque_debug;
 
-pub use block_cipher_trait::BlockCipher;
+use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U1, U16, U32};
-
-use core::fmt;
 
 mod consts;
 

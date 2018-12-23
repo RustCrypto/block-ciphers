@@ -1,16 +1,13 @@
 #![no_std]
 pub extern crate block_cipher_trait;
-extern crate byte_tools;
-#[macro_use]
-extern crate opaque_debug;
+extern crate byteorder;
+#[macro_use] extern crate opaque_debug;
 
-pub use block_cipher_trait::BlockCipher;
+use block_cipher_trait::BlockCipher;
 use block_cipher_trait::InvalidKeyLength;
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U1, U16, U32};
-use byte_tools::{read_u32_le, read_u32v_le, write_u32_le, write_u32v_le};
-
-use core::fmt;
+use byteorder::{LE, ByteOrder};
 
 mod consts;
 use consts::{MDS_POLY, QBOX, QORD, RS, RS_POLY};
@@ -62,7 +59,7 @@ fn mds_column_mult(x: u8, column: usize) -> u32 {
         3 => [x5b, x, xef, x5b],
         _ => unreachable!(),
     };
-    read_u32_le(&v)
+    LE::read_u32(&v)
 }
 
 fn mds_mult(y: [u8; 4]) -> u32 {
@@ -84,7 +81,7 @@ fn rs_mult(m: &[u8], out: &mut [u8]) {
 
 fn h(x: u32, m: &[u8], k: usize, offset: usize) -> u32 {
     let mut y = [0u8; 4];
-    write_u32_le(&mut y, x);
+    LE::write_u32(&mut y, x);
 
     if k == 4 {
         y[0] = sbox(1, y[0]) ^ m[4 * (6 + offset) + 0];
@@ -177,7 +174,7 @@ impl BlockCipher for Twofish {
 
     fn encrypt_block(&self, block: &mut Block) {
         let mut p = [0u32; 4];
-        read_u32v_le(&mut p, block);
+        LE::read_u32_into(block, &mut p);
 
         // Input whitening
         for i in 0..4 {
@@ -201,19 +198,19 @@ impl BlockCipher for Twofish {
         }
 
         // Undo last swap and output whitening
-        write_u32_le(&mut block[0..4], p[2] ^ self.k[4]);
-        write_u32_le(&mut block[4..8], p[3] ^ self.k[5]);
-        write_u32_le(&mut block[8..12], p[0] ^ self.k[6]);
-        write_u32_le(&mut block[12..16], p[1] ^ self.k[7]);
+        LE::write_u32(&mut block[0..4], p[2] ^ self.k[4]);
+        LE::write_u32(&mut block[4..8], p[3] ^ self.k[5]);
+        LE::write_u32(&mut block[8..12], p[0] ^ self.k[6]);
+        LE::write_u32(&mut block[12..16], p[1] ^ self.k[7]);
     }
 
     fn decrypt_block(&self, block: &mut Block) {
         let mut c = [0u32; 4];
 
-        c[0] = read_u32_le(&block[8..12]) ^ self.k[6];
-        c[1] = read_u32_le(&block[12..16]) ^ self.k[7];
-        c[2] = read_u32_le(&block[0..4]) ^ self.k[4];
-        c[3] = read_u32_le(&block[4..8]) ^ self.k[5];
+        c[0] = LE::read_u32(&block[8..12]) ^ self.k[6];
+        c[1] = LE::read_u32(&block[12..16]) ^ self.k[7];
+        c[2] = LE::read_u32(&block[0..4]) ^ self.k[4];
+        c[3] = LE::read_u32(&block[4..8]) ^ self.k[5];
 
         for r in (0..8).rev() {
             let k = 4 * r + 8;
@@ -235,7 +232,7 @@ impl BlockCipher for Twofish {
             c[i] ^= self.k[i];
         }
 
-        write_u32v_le(block, &c[..]);
+        LE::write_u32_into(&c[..], block);
     }
 }
 

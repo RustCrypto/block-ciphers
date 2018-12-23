@@ -3,7 +3,8 @@
 extern crate aes_soft;
 extern crate test;
 
-use aes_soft::{Aes128, BlockCipher};
+use aes_soft::Aes128;
+use aes_soft::block_cipher_trait::BlockCipher;
 
 #[bench]
 pub fn aes128_encrypt(bh: &mut test::Bencher) {
