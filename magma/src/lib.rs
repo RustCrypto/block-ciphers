@@ -11,8 +11,6 @@ use byteorder::{LE, ByteOrder};
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U1, U32, U8};
 
-use core::fmt;
-
 use sboxes_exp::*;
 
 type Block = GenericArray<u8, U8>;
