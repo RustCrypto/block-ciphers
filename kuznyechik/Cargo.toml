@@ -11,7 +11,7 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 block-cipher-trait = "0.6"
-opaque-debug = "0.1"
+opaque-debug = "0.2"
 
 [dev-dependencies]
 block-cipher-trait = { version = "0.6", features = ["dev"] }

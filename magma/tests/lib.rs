@@ -3,7 +3,7 @@ extern crate block_cipher_trait;
 extern crate magma;
 
 use block_cipher_trait::generic_array::GenericArray;
-use magma::{BlockCipher, Magma};
+use block_cipher_trait::BlockCipher;
 
 #[test]
 fn magma_test() {
@@ -15,7 +15,7 @@ fn magma_test() {
     let plaintext = [16, 50, 84, 118, 152, 186, 220, 254];
     let ciphertext = [61, 202, 216, 194, 229, 1, 233, 78];
 
-    let state = Magma::new_varkey(&key).unwrap();
+    let state = magma::Magma::new_varkey(&key).unwrap();
 
     let mut block = GenericArray::clone_from_slice(&plaintext);
     state.encrypt_block(&mut block);

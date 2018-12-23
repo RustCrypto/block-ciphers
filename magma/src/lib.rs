@@ -1,14 +1,12 @@
 #![no_std]
 pub extern crate block_cipher_trait;
 extern crate byteorder;
-#[macro_use]
-extern crate opaque_debug;
+#[macro_use] extern crate opaque_debug;
 
 mod sboxes_exp;
-#[macro_use]
-mod construct;
+#[macro_use] mod construct;
 
-pub use block_cipher_trait::BlockCipher;
+use block_cipher_trait::BlockCipher;
 use byteorder::{LE, ByteOrder};
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U1, U32, U8};

@@ -1,15 +1,13 @@
 #![no_std]
 pub extern crate block_cipher_trait;
 extern crate byteorder;
-#[macro_use]
-extern crate opaque_debug;
+#[macro_use] extern crate opaque_debug;
 
-use core::fmt;
 use core::marker::PhantomData;
 
 use block_cipher_trait::generic_array::typenum::{U1, U56, U8};
 use block_cipher_trait::generic_array::GenericArray;
-pub use block_cipher_trait::BlockCipher;
+use block_cipher_trait::BlockCipher;
 use block_cipher_trait::InvalidKeyLength;
 use byteorder::ByteOrder;
 use byteorder::{BE, LE};
