@@ -5,10 +5,12 @@ use traits::{BlockMode, InvalidKeyIvLength};
 use utils::{Block, get_par_blocks};
 use core::marker::PhantomData;
 
-/// Electronic Codebook (ECB) block cipher mode instance.
+/// [Electronic Codebook][1] (ECB) block cipher mode instance.
 ///
 /// Note that `new` method ignores IV, so during initialization you can
 /// just pass `Default::default()` instead.
+///
+/// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB
 pub struct Ecb<C: BlockCipher, P: Padding> {
     cipher: C,
     _p: PhantomData<P>,
