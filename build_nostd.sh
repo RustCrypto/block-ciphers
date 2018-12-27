@@ -6,16 +6,20 @@ DIRS=`ls -d */`
 TARGET="thumbv7em-none-eabi"
 cargo clean
 
-for dir in $DIRS; do
+for DIR in $DIRS; do
     # disable check for aesni, as it requires x86
-    if [ $dir = "target/" ] || [ $dir = "aesni/" ]
+    if [ $DIR = "target/" ] || [ $DIR = "aes/" ]
     then
         continue
     fi
-    cd $dir
-    xargo build --no-default-features --verbose --target $TARGET || {
-        echo $dir failed
+    cd $DIR
+    xargo build --no-default-features --target $TARGET || {
+        echo $DIR failed
         exit 1
     }
     cd ..
 done
+
+cd aes/aes
+xargo build --no-default-features --target $TARGET
+cd ..
