@@ -1,97 +1,46 @@
-use block_cipher_trait::{BlockCipher, InvalidKeyLength};
-use block_cipher_trait::generic_array::GenericArray;
+use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::typenum::Unsigned;
 use block_padding::Padding;
-use traits::{BlockMode, BlockModeError};
+use traits::{BlockMode, InvalidKeyIvLength};
+use utils::{Block, get_par_blocks};
 use core::marker::PhantomData;
 
-type ParBlocks<B, P> = GenericArray<GenericArray<u8, B>, P>;
-
-/// Struct for the Electronic Codebook (ECB) block cipher mode of operation
+/// Electronic Codebook (ECB) block cipher mode instance.
+///
+/// Note that during `new` method ignores IV, so during initialization you can
+/// just pass `Default::default()` instead.
 pub struct Ecb<C: BlockCipher, P: Padding> {
     cipher: C,
     _p: PhantomData<P>,
 }
 
-impl<C: BlockCipher, P: Padding> Ecb<C, P> {
-    pub fn new(cipher: C) -> Self {
-        Self {
-            cipher,
-            _p: Default::default(),
-        }
-    }
-
-    pub fn new_fixkey(key: &GenericArray<u8, C::KeySize>) -> Self {
-        Self::new(C::new(key))
-    }
-
-    pub fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
-        C::new_varkey(key).map(Self::new)
-    }
-}
-
 impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Ecb<C, P> {
-    fn encrypt_nopad(
-        &mut self, mut buffer: &mut [u8]
-    ) -> Result<(), BlockModeError> {
-        let bs = C::BlockSize::to_usize();
-        let pb = C::ParBlocks::to_usize();
-        if buffer.len() % bs != 0 {
-            Err(BlockModeError)?
-        }
-
-        if pb != 1 {
-            let bss = bs * pb;
-            while buffer.len() >= bss {
-                let (l, r) = { buffer }.split_at_mut(bss);
-                buffer = r;
-                self.cipher.encrypt_blocks(unsafe {
-                    &mut *(l.as_mut_ptr()
-                        as *mut ParBlocks<C::BlockSize, C::ParBlocks>)
-                })
-            }
-        }
-
-        while buffer.len() >= bs {
-            let (l, r) = { buffer }.split_at_mut(bs);
-            buffer = r;
-            self.cipher.encrypt_block(unsafe {
-                &mut *(l.as_mut_ptr() as *mut GenericArray<u8, C::BlockSize>)
-            })
-        }
-
-        Ok(())
+    fn new(cipher: C, _iv: &Block<C>) -> Self {
+        Self { cipher, _p: Default::default() }
     }
 
-    fn decrypt_nopad(
-        &mut self, mut buffer: &mut [u8]
-    ) -> Result<(), BlockModeError> {
-        let bs = C::BlockSize::to_usize();
-        let pb = C::ParBlocks::to_usize();
-        if buffer.len() % bs != 0 {
-            Err(BlockModeError)?
-        }
+    fn new_var(key: &[u8], _iv: &[u8]) -> Result<Self, InvalidKeyIvLength> {
+        let cipher = C::new_varkey(key).map_err(|_| InvalidKeyIvLength)?;
+        Ok(Self { cipher, _p: Default::default() })
+    }
 
-        if pb != 1 {
-            let bss = bs * pb;
-            while buffer.len() >= bss {
-                let (l, r) = { buffer }.split_at_mut(bss);
-                buffer = r;
-                self.cipher.decrypt_blocks(unsafe {
-                    &mut *(l.as_mut_ptr()
-                        as *mut ParBlocks<C::BlockSize, C::ParBlocks>)
-                })
-            }
+    fn encrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
+        if C::ParBlocks::to_usize() != 1 {
+            let (par_blocks, blocks) = get_par_blocks::<C>(blocks);
+            par_blocks.iter_mut().for_each(|pb| self.cipher.encrypt_blocks(pb));
+            blocks.iter_mut().for_each(|pb| self.cipher.encrypt_block(pb));
+        } else {
+            blocks.iter_mut().for_each(|pb| self.cipher.encrypt_block(pb));
         }
+    }
 
-        while buffer.len() >= bs {
-            let (l, r) = { buffer }.split_at_mut(bs);
-            buffer = r;
-            self.cipher.decrypt_block(unsafe {
-                &mut *(l.as_mut_ptr() as *mut GenericArray<u8, C::BlockSize>)
-            })
+    fn decrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
+        if C::ParBlocks::to_usize() != 1 {
+            let (par_blocks, blocks) = get_par_blocks::<C>(blocks);
+            par_blocks.iter_mut().for_each(|pb| self.cipher.decrypt_blocks(pb));
+            blocks.iter_mut().for_each(|pb| self.cipher.decrypt_block(pb));
+        } else {
+            blocks.iter_mut().for_each(|pb| self.cipher.decrypt_block(pb));
         }
-
-        Ok(())
     }
 }

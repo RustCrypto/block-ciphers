@@ -1,20 +1,19 @@
 use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::generic_array::typenum::Unsigned;
 use block_cipher_trait::BlockCipher;
 use block_padding::Padding;
-use traits::{BlockMode, BlockModeError, BlockModeIv};
-use utils::xor;
+use traits::BlockMode;
+use utils::{xor, Block};
 use core::marker::PhantomData;
 
-/// Struct for the Propagating Cipher Block Chaining (PCBC) block cipher mode of operation
+/// Propagating Cipher Block Chaining (PCBC) mode instance.
 pub struct Pcbc<C: BlockCipher, P: Padding> {
     cipher: C,
     iv: GenericArray<u8, C::BlockSize>,
     _p: PhantomData<P>,
 }
 
-impl<C: BlockCipher, P: Padding> BlockModeIv<C, P> for Pcbc<C, P> {
-    fn new(cipher: C, iv: &GenericArray<u8, C::BlockSize>) -> Self {
+impl<C: BlockCipher, P: Padding> Pcbc<C, P> {
+    pub fn new(cipher: C, iv: &Block<C>) -> Self {
         Self {
             cipher,
             iv: iv.clone(),
@@ -24,41 +23,31 @@ impl<C: BlockCipher, P: Padding> BlockModeIv<C, P> for Pcbc<C, P> {
 }
 
 impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Pcbc<C, P> {
-    fn encrypt_nopad(
-        &mut self, buffer: &mut [u8]
-    ) -> Result<(), BlockModeError> {
-        let bs = C::BlockSize::to_usize();
-        if buffer.len() % bs != 0 {
-            Err(BlockModeError)?
+    fn new(cipher: C, iv: &GenericArray<u8, C::BlockSize>) -> Self {
+        Self {
+            cipher,
+            iv: iv.clone(),
+            _p: Default::default(),
         }
-
-        for block in buffer.chunks_mut(bs) {
-            let plaintext = GenericArray::clone_from_slice(block);
-            xor(block, self.iv.as_slice());
-            self.cipher
-                .encrypt_block(GenericArray::from_mut_slice(block));
-            self.iv = plaintext;
-            xor(self.iv.as_mut_slice(), block);
-        }
-        Ok(())
     }
 
-    fn decrypt_nopad(
-        &mut self, buffer: &mut [u8]
-    ) -> Result<(), BlockModeError> {
-        let bs = C::BlockSize::to_usize();
-        if buffer.len() % bs != 0 {
-            Err(BlockModeError)?
+    fn encrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
+        for block in blocks {
+            let plaintext = block.clone();
+            xor(block, &self.iv);
+            self.cipher.encrypt_block(block);
+            self.iv = plaintext;
+            xor(&mut self.iv, block);
         }
+    }
 
-        for block in buffer.chunks_mut(bs) {
-            let ciphertext = GenericArray::clone_from_slice(block);
-            self.cipher
-                .decrypt_block(GenericArray::from_mut_slice(block));
-            xor(block, self.iv.as_slice());
+    fn decrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
+        for block in blocks {
+            let ciphertext = block.clone();
+            self.cipher.decrypt_block(block);
+            xor(block, &self.iv);
             self.iv = ciphertext;
-            xor(self.iv.as_mut_slice(), block);
+            xor(&mut self.iv, block);
         }
-        Ok(())
     }
 }

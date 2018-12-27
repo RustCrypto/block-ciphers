@@ -35,37 +35,63 @@ Block cipher crates provide only bare block cipher implementations. For most
 applications you will need to use some [block cipher mode of operation](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation)
 which are generically implemented in the [`block-modes`](https://docs.rs/block-modes/) crate.
 
+Some block modes (CTR, CFB, OFV) transform block ciphers into stream ciphers.Such modes are published under separate crates in the
+[RustCrypto/stream-ciphers][5] repository.
+
 Lets use AES128-CBC with [PKCS7][3] padding to show an example:
 
-```Rust
+```rust
+#[macro_use] extern crate hex_literal;
 extern crate aes_soft as aes;
 extern crate block_modes;
 
-use block_modes::{BlockMode, BlockModeIv, Cbc};
+use block_modes::{BlockMode, Cbc};
 use block_modes::block_padding::Pkcs7;
 use aes::Aes128;
 
 // create an alias for convinience
 type Aes128Cbc = Cbc<Aes128, Pkcs7>;
 
-let mut cipher = Aes128Cbc::new_varkey(key, iv).unwrap();
+let key = hex!("000102030405060708090a0b0c0d0e0f");
+let iv = hex!("f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff");
+let plaintext = b"Hello world!";
+let cipher = Aes128Cbc::new_var(&key, &iv).unwrap();
+
 // buffer must have enough space for message+padding
 let mut buffer = [0u8; 32];
 // copy message to the buffer
-buffer[..msg_len].copy_from_slice(msg);
-let encrypted_msg = cipher.encrypt_pad(&mut buffer, msg_len).unwrap();
+let pos = plaintext.len();
+buffer[..pos].copy_from_slice(plaintext);
+let ciphertext = cipher.encrypt(&mut buffer, pos).unwrap();
 
-let mut cipher = Aes128Cbc::new_varkey(key, iv).unwrap();
-let decrypted_msg = cipher.decrypt_pad(encrypted_data).unwrap();
+assert_eq!(ciphertext, hex!("1b7a4c403124ae2fb52bedc534d82fa8"));
+
+// re-create cipher mode instance and decrypt the message
+let cipher = Aes128Cbc::new_var(&key, &iv).unwrap();
+let mut buf = ciphertext.to_vec();
+let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
+
+assert_eq!(decrypted_ciphertext, plaintext);
 ```
 
-Note that this example does not use any authentification which can lead to serious
-vulnarabilities! For Message Authentication Code implementations take a look at
-[RustCrypto/MACs][4] repository.
+With an enabled `std` feature (which is enabled by default) you can use
+`encrypt_vec` and `descrypt_vec` methods:
 
-Some block modes (e.g. CTR, CFB) effectively transform block ciphers into stream
-ciphers. Such modes are published under separate crates in the
-[RustCrypto/stream-ciphers][5] repository.
+```rust
+let cipher = Aes128Cbc::new_var(&key, &iv).unwrap();
+let ciphertext = cipher.encrypt_vec(plaintext);
+
+assert_eq!(ciphertext, hex!("1b7a4c403124ae2fb52bedc534d82fa8"));
+
+let cipher = Aes128Cbc::new_var(&key, &iv).unwrap();
+let decrypted_ciphertext = cipher.decrypt_vec(&ciphertext).unwrap();
+
+assert_eq!(decrypted_ciphertext, plaintext);
+```
+
+Note that this example does not use any authentification which can lead to
+serious vulnarabilities! For Message Authentication Code implementations take
+a look at [RustCrypto/MACs][4] repository.
 
 ## License
 

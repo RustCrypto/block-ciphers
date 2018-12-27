@@ -2,101 +2,69 @@ use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::Unsigned;
 use block_cipher_trait::BlockCipher;
 use block_padding::Padding;
-use traits::{BlockMode, BlockModeError, BlockModeIv};
-use utils::{xor, ParBlocks};
+use traits::BlockMode;
+use utils::{xor, get_par_blocks, ParBlocks, Block};
 use core::marker::PhantomData;
-use core::slice;
 
-/// Struct for the Cipher Block Chaining (CBC) block cipher mode of operation
+/// Cipher Block Chaining (CBC) block cipher mode isntance.
 pub struct Cbc<C: BlockCipher, P: Padding> {
     cipher: C,
     iv: GenericArray<u8, C::BlockSize>,
     _p: PhantomData<P>,
 }
 
-impl<C: BlockCipher, P: Padding> BlockModeIv<C, P> for Cbc<C, P> {
-    fn new(cipher: C, iv: &GenericArray<u8, C::BlockSize>) -> Self {
+impl<C: BlockCipher, P: Padding> Cbc<C, P> {
+    #[inline(always)]
+    fn single_blocks_decrypt(&mut self, blocks: &mut [Block<C>]) {
+        let mut iv = self.iv.clone();
+        for block in blocks {
+            let block_copy = block.clone();
+            self.cipher.decrypt_block(block);
+            xor(block, iv.as_slice());
+            iv = block_copy;
+        }
+        self.iv = iv;
+    }
+}
+
+impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Cbc<C, P> {
+    fn new(cipher: C, iv: &Block<C>) -> Self {
         Self {
             cipher,
             iv: iv.clone(),
             _p: Default::default(),
         }
     }
-}
 
-impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Cbc<C, P> {
-    fn encrypt_nopad(
-        &mut self, mut buffer: &mut [u8]
-    ) -> Result<(), BlockModeError> {
-        let bs = C::BlockSize::to_usize();
-        if buffer.len() % bs != 0 {
-            Err(BlockModeError)?
-        }
+    fn encrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
         self.iv = {
-            let mut iv = self.iv.as_slice();
-            while buffer.len() >= bs {
-                let (block, r) = { buffer }.split_at_mut(bs);
-                buffer = r;
-                xor(block, iv);
-                self.cipher
-                    .encrypt_block(GenericArray::from_mut_slice(block));
+            let mut iv = &self.iv;
+            for block in blocks {
+                xor(block, &iv);
+                self.cipher.encrypt_block(block);
                 iv = block;
             }
-            GenericArray::clone_from_slice(iv)
+            iv.clone()
         };
-        Ok(())
     }
 
-    fn decrypt_nopad(
-        &mut self, mut buffer: &mut [u8]
-    ) -> Result<(), BlockModeError> {
-        let bs = C::BlockSize::to_usize();
-        let pb = C::ParBlocks::to_usize();
-        if buffer.len() % bs != 0 {
-            Err(BlockModeError)?
-        }
-
-        if pb != 1 {
-            let bss = bs * pb;
-            while buffer.len() >= bss {
-                let (blocks, r) = { buffer }.split_at_mut(bss);
-                buffer = r;
-
-                let mut blocks_copy = {
-                    let ga_blocks = unsafe {
-                        &mut *(blocks.as_mut_ptr()
-                            as *mut ParBlocks<C::BlockSize, C::ParBlocks>)
-                    };
-                    let blocks_copy = ga_blocks.clone();
-                    self.cipher.decrypt_blocks(ga_blocks);
-                    blocks_copy
-                };
-                let next_iv = blocks_copy[pb - 1].clone();
-                let blocks_copy = unsafe {
-                    slice::from_raw_parts(
-                        blocks_copy.as_mut_ptr() as *mut u8,
-                        bss - bs,
-                    )
-                };
-
-                xor(&mut blocks[..bs], self.iv.as_slice());
-                xor(&mut blocks[bs..], blocks_copy);
-                self.iv = next_iv;
+    fn decrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
+        let pbn = C::ParBlocks::to_usize();
+        if pbn != 1 {
+            let (par_blocks, leftover) = get_par_blocks::<C>(blocks);
+            let mut iv_buf = ParBlocks::<C>::default();
+            iv_buf[0] = self.iv.clone();
+            for pb in par_blocks {
+                iv_buf[1..].clone_from_slice(&pb[..pbn-1]);
+                let next_iv = pb[pbn - 1].clone();
+                self.cipher.decrypt_blocks(pb);
+                pb.iter_mut().zip(iv_buf.iter()).for_each(|(a, b)| xor(a, b));
+                iv_buf[0] = next_iv;
             }
+            self.iv = iv_buf[0].clone();
+            self.single_blocks_decrypt(leftover);
+        } else {
+            self.single_blocks_decrypt(blocks);
         }
-
-        while buffer.len() >= bs {
-            let (block, r) = { buffer }.split_at_mut(bs);
-            buffer = r;
-            let block_copy = GenericArray::clone_from_slice(block);
-            self.cipher.decrypt_block(unsafe {
-                &mut *(block.as_mut_ptr()
-                    as *mut GenericArray<u8, C::BlockSize>)
-            });
-            xor(block, self.iv.as_slice());
-            self.iv = block_copy;
-        }
-
-        Ok(())
     }
 }
