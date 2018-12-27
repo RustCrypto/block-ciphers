@@ -7,7 +7,7 @@ use core::marker::PhantomData;
 
 /// Electronic Codebook (ECB) block cipher mode instance.
 ///
-/// Note that during `new` method ignores IV, so during initialization you can
+/// Note that `new` method ignores IV, so during initialization you can
 /// just pass `Default::default()` instead.
 pub struct Ecb<C: BlockCipher, P: Padding> {
     cipher: C,
