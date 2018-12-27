@@ -18,6 +18,7 @@
 //! // create an alias for convinience
 //! type Aes128Cbc = Cbc<Aes128, Pkcs7>;
 //!
+//! # fn main() {
 //! let key = hex!("000102030405060708090a0b0c0d0e0f");
 //! let iv = hex!("f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff");
 //! let plaintext = b"Hello world!";
@@ -38,6 +39,7 @@
 //! let decrypted_ciphertext = cipher.decrypt(&mut buf).unwrap();
 //!
 //! assert_eq!(decrypted_ciphertext, plaintext);
+//! # }
 //! ```
 //!
 //! With an enabled `std` feature (which is enabled by default) you can use
@@ -54,6 +56,7 @@
 //! # // create an alias for convinience
 //! # type Aes128Cbc = Cbc<Aes128, Pkcs7>;
 //! #
+//! # fn main() {
 //! # let key = hex!("000102030405060708090a0b0c0d0e0f");
 //! # let iv = hex!("f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff");
 //! # let plaintext = b"Hello world!";
@@ -66,6 +69,7 @@
 //! let decrypted_ciphertext = cipher.decrypt_vec(&ciphertext).unwrap();
 //!
 //! assert_eq!(decrypted_ciphertext, plaintext);
+//! # }
 //! ```
 //!
 //! [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation
