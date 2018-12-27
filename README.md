@@ -25,7 +25,12 @@ cryptographic and security reviews.
 | [RC2](https://en.wikipedia.org/wiki/RC2) |  ARC2  | `rc2` | [![crates.io](https://img.shields.io/crates/v/rc2.svg)](https://crates.io/crates/rc2) | [![Documentation](https://docs.rs/rc2/badge.svg)](https://docs.rs/rc2) |
 | [Twofish](https://en.wikipedia.org/wiki/Twofish) | | `twofish` | [![crates.io](https://img.shields.io/crates/v/twofish.svg)](https://crates.io/crates/twofish) | [![Documentation](https://docs.rs/twofish/badge.svg)](https://docs.rs/twofish) |
 
-### Minimum Rust version
+### Additional crates
+| Crate name | crates.io |  Docs  |
+| :---------:| :--------:| :-----:|
+| `block-modes` | [![crates.io](https://img.shields.io/crates/v/block-modes.svg)](https://crates.io/crates/block-modes) | [![Documentation](https://docs.rs/block-modes/badge.svg)](https://docs.rs/block-modes) |
+
+### Minimum Supported Rust Version
 All crates in this repository support Rust 1.22 or higher. (except `aesni` and
 `aes` crates, which require Rust 1.27) In future minimum supported Rust version
 can be changed, but it will be done with the minor version bump.
