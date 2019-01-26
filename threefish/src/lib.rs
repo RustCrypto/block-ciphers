@@ -1,4 +1,5 @@
 #![no_std]
+#![allow(non_upper_case_globals)]
 extern crate block_cipher_trait;
 extern crate byteorder;
 extern crate generic_array;
@@ -36,6 +37,48 @@ fn read_u64v_le(ns: &mut [u64], buf: &[u8]) {
 fn write_u64v_le(buf: &mut [u8], ns: &[u64]) {
     for (c, n) in buf.chunks_mut(8).zip(ns) {
         LE::write_u64(c, *n);
+    }
+}
+
+#[cfg(not(feature = "no_unroll"))]
+macro_rules! unroll8 {
+    ($var:ident, $body:block) => {
+        { const $var: usize = 0; $body; }
+        { const $var: usize = 1; $body; }
+        { const $var: usize = 2; $body; }
+        { const $var: usize = 3; $body; }
+        { const $var: usize = 4; $body; }
+        { const $var: usize = 5; $body; }
+        { const $var: usize = 6; $body; }
+        { const $var: usize = 7; $body; }
+    };
+}
+
+#[cfg(feature = "no_unroll")]
+macro_rules! unroll8 {
+    ($var:ident, $body:block) => {
+        for $var in 0..8 $body
+    }
+}
+
+#[cfg(not(feature = "no_unroll"))]
+macro_rules! unroll8_rev {
+    ($var:ident, $body:block) => {
+        { const $var: usize = 7; $body; }
+        { const $var: usize = 6; $body; }
+        { const $var: usize = 5; $body; }
+        { const $var: usize = 4; $body; }
+        { const $var: usize = 3; $body; }
+        { const $var: usize = 2; $body; }
+        { const $var: usize = 1; $body; }
+        { const $var: usize = 0; $body; }
+    };
+}
+
+#[cfg(feature = "no_unroll")]
+macro_rules! unroll8_rev {
+    ($var:ident, $body:block) => {
+        for $var in (0..8).rev() $body
     }
 }
 
@@ -89,24 +132,26 @@ macro_rules! impl_threefish(
                 let mut v = [0u64; $n_w];
                 read_u64v_le(&mut v, block);
 
-                for d in 0..$rounds {
-                    let v_tmp = v.clone();
-                    for j in 0..($n_w / 2) {
-                        let (v0, v1) = (v_tmp[2 * j], v_tmp[2 * j + 1]);
-                        let (e0, e1) =
-                            if d % 4 == 0 {
-                                (v0.wrapping_add(self.sk[d / 4][2 * j]),
-                                 v1.wrapping_add(self.sk[d / 4][2 * j + 1]))
-                            } else {
-                                (v0, v1)
-                            };
-                        let r = $rot[d % 8][j];
-                        let (f0, f1) = mix(r, (e0, e1));
-                        let (pi0, pi1) =
-                            ($perm[2 * j], $perm[2 * j + 1]);
-                        v[pi0] = f0;
-                        v[pi1] = f1;
-                    }
+                for i in 0..$rounds/8 {
+                    unroll8!(d, {
+                        let v_tmp = v.clone();
+                        for j in 0..($n_w / 2) {
+                            let (v0, v1) = (v_tmp[2 * j], v_tmp[2 * j + 1]);
+                            let (e0, e1) =
+                                if d % 4 == 0 {
+                                    (v0.wrapping_add(self.sk[2 * i + d / 4][2 * j]),
+                                     v1.wrapping_add(self.sk[2 * i + d / 4][2 * j + 1]))
+                                } else {
+                                    (v0, v1)
+                                };
+                            let r = $rot[d % 8][j];
+                            let (f0, f1) = mix(r, (e0, e1));
+                            let (pi0, pi1) =
+                                ($perm[2 * j], $perm[2 * j + 1]);
+                            v[pi0] = f0;
+                            v[pi1] = f1;
+                        }
+                    });
                 }
 
                 for i in 0..$n_w {
@@ -125,24 +170,25 @@ macro_rules! impl_threefish(
                     v[i] = v[i].wrapping_sub(self.sk[$rounds / 4][i]);
                 }
 
-                for d in (0..$rounds).rev() {
-                    let v_tmp = v.clone();
-                    for j in 0..($n_w / 2) {
-                        let (inv_pi0, inv_pi1) =
-                            ($perm[2 * j], $perm[2 * j + 1]);
-                        let (f0, f1) = (v_tmp[inv_pi0], v_tmp[inv_pi1]);
-                        let r = $rot[d % 8][j];
-                        let (e0, e1) = inv_mix(r, (f0, f1));
-                        let (v0, v1) =
-                            if d % 4 == 0 {
-                                (e0.wrapping_sub(self.sk[d / 4][2 * j]),
-                                 e1.wrapping_sub(self.sk[d / 4][2 * j + 1]))
-                             } else {
-                                 (e0, e1)
-                             };
-                        v[2 * j] = v0;
-                        v[2 * j + 1] = v1;
-                    }
+                for i in (0..$rounds/8).rev() {
+                    unroll8_rev!(d, {
+                        let v_tmp = v.clone();
+                        for j in 0..($n_w / 2) {
+                            let (inv_pi0, inv_pi1) = ($perm[2 * j], $perm[2 * j + 1]);
+                            let (f0, f1) = (v_tmp[inv_pi0], v_tmp[inv_pi1]);
+                            let r = $rot[d % 8][j];
+                            let (e0, e1) = inv_mix(r, (f0, f1));
+                            let (v0, v1) =
+                                if d % 4 == 0 {
+                                    (e0.wrapping_sub(self.sk[2 * i + d / 4][2 * j]),
+                                     e1.wrapping_sub(self.sk[2 * i + d / 4][2 * j + 1]))
+                                 } else {
+                                     (e0, e1)
+                                 };
+                            v[2 * j] = v0;
+                            v[2 * j + 1] = v1;
+                        }
+                    });
                 }
 
                 write_u64v_le(block, &v[..]);
