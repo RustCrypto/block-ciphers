@@ -171,12 +171,21 @@ mod test {
         let expected = hex!("84da2a1f8beaee947066ae3e3103f1ad536db1f4a1192495116b9f3ce6133fd8");
         assert_eq!(&block[..], &expected[..]);
 
+        let fish = Threefish256::new(&GenericArray::default());
+        fish.decrypt_block(&mut block);
+        assert_eq!(&block[..], &[0; 32][..]);
+
         let key = hex!("101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f").into();
         let fish = Threefish256::with_tweak(&key, 0x0706050403020100, 0x0f0e0d0c0b0a0908);
-        let mut block = hex!("FFFEFDFCFBFAF9F8F7F6F5F4F3F2F1F0EFEEEDECEBEAE9E8E7E6E5E4E3E2E1E0").into();
+        let input = hex!("FFFEFDFCFBFAF9F8F7F6F5F4F3F2F1F0EFEEEDECEBEAE9E8E7E6E5E4E3E2E1E0");
+        let mut block = input.into();
         fish.encrypt_block(&mut block);
         let expected = hex!("e0d091ff0eea8fdfc98192e62ed80ad59d865d08588df476657056b5955e97df");
         assert_eq!(&block[..], &expected[..]);
+
+        let fish = Threefish256::with_tweak(&key, 0x0706050403020100, 0x0f0e0d0c0b0a0908);
+        fish.decrypt_block(&mut block);
+        assert_eq!(&block[..], &input[..]);
     }
 
     #[test]
@@ -189,20 +198,29 @@ mod test {
             7bc2f8586e35f0cff7e7f03084b0b7b1f1ab3961a580a3e97eb41ea14a6d7bbe");
         assert_eq!(&block[..], &expected[..]);
 
+        let fish = Threefish512::new(&GenericArray::default());
+        fish.decrypt_block(&mut block);
+        assert_eq!(&block[..], &[0; 64][..]);
+
         let mut key = GenericArray::default();
         key.copy_from_slice(&hex!("
             101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f
             303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f"));
         let fish = Threefish512::with_tweak(&key, 0x0706050403020100, 0x0f0e0d0c0b0a0908);
         let mut block = GenericArray::default();
-        block.copy_from_slice(&hex!("
+        let input = hex!("
             fffefdfcfbfaf9f8f7f6f5f4f3f2f1f0efeeedecebeae9e8e7e6e5e4e3e2e1e0
-            dfdedddcdbdad9d8d7d6d5d4d3d2d1d0cfcecdcccbcac9c8c7c6c5c4c3c2c1c0"));
+            dfdedddcdbdad9d8d7d6d5d4d3d2d1d0cfcecdcccbcac9c8c7c6c5c4c3c2c1c0");
+        block.copy_from_slice(&input);
         fish.encrypt_block(&mut block);
         let expected = hex!("
             e304439626d45a2cb401cad8d636249a6338330eb06d45dd8b36b90e97254779
             272a0a8d99463504784420ea18c9a725af11dffea10162348927673d5c1caf3d");
         assert_eq!(&block[..], &expected[..]);
+
+        let fish = Threefish512::with_tweak(&key, 0x0706050403020100, 0x0f0e0d0c0b0a0908);
+        fish.decrypt_block(&mut block);
+        assert_eq!(&block[..], &input[..]);
     }
 
     #[test]
@@ -217,6 +235,10 @@ mod test {
             9a5b4a43286ca3c4cf46104b443143d560a4b230488311df4feef7e1dfe8391e");
         assert_eq!(&block[..], &expected[..]);
 
+        let fish = Threefish1024::new(&GenericArray::default());
+        fish.decrypt_block(&mut block);
+        assert_eq!(&block[..], &[0; 128][..]);
+
         let mut key = GenericArray::default();
         key.copy_from_slice(&hex!("
             101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f
@@ -225,11 +247,12 @@ mod test {
             707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f"));
         let fish = Threefish1024::with_tweak(&key, 0x0706050403020100, 0x0f0e0d0c0b0a0908);
         let mut block = GenericArray::default();
-        block.copy_from_slice(&hex!("
+        let input = hex!("
             fffefdfcfbfaf9f8f7f6f5f4f3f2f1f0efeeedecebeae9e8e7e6e5e4e3e2e1e0
             dfdedddcdbdad9d8d7d6d5d4d3d2d1d0cfcecdcccbcac9c8c7c6c5c4c3c2c1c0
             bfbebdbcbbbab9b8b7b6b5b4b3b2b1b0afaeadacabaaa9a8a7a6a5a4a3a2a1a0
-            9f9e9d9c9b9a999897969594939291908f8e8d8c8b8a89888786858483828180"));
+            9f9e9d9c9b9a999897969594939291908f8e8d8c8b8a89888786858483828180");
+        block.copy_from_slice(&input);
         fish.encrypt_block(&mut block);
         let expected = hex!("
             a6654ddbd73cc3b05dd777105aa849bce49372eaaffc5568d254771bab85531c
@@ -237,5 +260,9 @@ mod test {
             8aa41ee63c2e1f45fbd477922f8360b388d6125ea6c7af0ad7056d01796e90c8
             3313f4150a5716b30ed5f569288ae974ce2b4347926fce57de44512177dd7cde");
         assert_eq!(&block[..], &expected[..]);
+
+        let fish = Threefish1024::with_tweak(&key, 0x0706050403020100, 0x0f0e0d0c0b0a0908);
+        fish.decrypt_block(&mut block);
+        assert_eq!(&block[..], &input[..]);
     }
 }
