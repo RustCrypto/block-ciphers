@@ -6,14 +6,7 @@ use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::Unsigned;
 use block_padding::Padding;
 use utils::{Block, Key, to_blocks};
-
-/// Block mode error.
-#[derive(Clone, Copy, Debug)]
-pub struct BlockModeError;
-
-/// Invalid key or IV length error.
-#[derive(Clone, Copy, Debug)]
-pub struct InvalidKeyIvLength;
+use errors::{InvalidKeyIvLength, BlockModeError};
 
 /// Trait for a block cipher mode of operation that is used to apply a block cipher
 /// operation to input data to transform it into a variable-length output message.

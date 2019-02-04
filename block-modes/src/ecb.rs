@@ -1,7 +1,8 @@
 use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::typenum::Unsigned;
 use block_padding::Padding;
-use traits::{BlockMode, InvalidKeyIvLength};
+use traits::BlockMode;
+use errors::InvalidKeyIvLength;
 use utils::{Block, get_par_blocks};
 use core::marker::PhantomData;
 

@@ -82,7 +82,9 @@ extern crate std;
 
 mod utils;
 mod traits;
-pub use traits::{BlockMode, BlockModeError, InvalidKeyIvLength};
+mod errors;
+pub use traits::BlockMode;
+pub use errors::{BlockModeError, InvalidKeyIvLength};
 
 mod cbc;
 pub use cbc::Cbc;
