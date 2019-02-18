@@ -1,18 +1,17 @@
 #![no_std]
 extern crate block_cipher_trait;
+extern crate cast5;
 #[macro_use]
 extern crate generic_array;
-extern crate cast5;
 
 use block_cipher_trait::BlockCipher;
 use cast5::Cast5;
 use generic_array::GenericArray;
 
 #[test]
-fn single_plaintext_key_ciphertext_sets() {
+fn single_plaintext_key_ciphertext_sets_128bit() {
     // Test based on RFC 2144 Appendix B.1
     // https://tools.ietf.org/html/rfc2144#appendix-B.1
-    // 128-bit case
 
     let key = arr![u8; 0x01, 0x23, 0x45, 0x67, 0x12, 0x34, 0x56, 0x78, 0x23, 0x45, 0x67, 0x89, 0x34, 0x56, 0x78, 0x9A];
     let plain = arr![u8; 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF];
@@ -21,7 +20,53 @@ fn single_plaintext_key_ciphertext_sets() {
 
     for _ in 1..50 {
         let cast5 = Cast5::new(&key);
+        let mut cipher = plain.clone();
+        cast5.encrypt_block(&mut cipher);
+        assert_eq!(&cipher[..], &cipher_expected[..]);
 
+        let mut decrypted = cipher.clone();
+        cast5.decrypt_block(&mut decrypted);
+
+        assert_eq!(&plain[..], &decrypted[..]);
+    }
+}
+
+#[test]
+fn single_plaintext_key_ciphertext_sets_80bit() {
+    // Test based on RFC 2144 Appendix B.1
+    // https://tools.ietf.org/html/rfc2144#appendix-B.1
+
+    let key =
+        arr![u8; 0x01, 0x23, 0x45, 0x67, 0x12, 0x34, 0x56, 0x78, 0x23, 0x45];
+    let plain = arr![u8; 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF];
+    let cipher_expected =
+        arr![u8; 0xEB, 0x6A, 0x71, 0x1A, 0x2C, 0x02, 0x27, 0x1B];
+
+    for _ in 1..50 {
+        let cast5 = Cast5::new_varkey(&key).unwrap();
+        let mut cipher = plain.clone();
+        cast5.encrypt_block(&mut cipher);
+        assert_eq!(&cipher[..], &cipher_expected[..]);
+
+        let mut decrypted = cipher.clone();
+        cast5.decrypt_block(&mut decrypted);
+
+        assert_eq!(&plain[..], &decrypted[..]);
+    }
+}
+
+#[test]
+fn single_plaintext_key_ciphertext_sets_40bit() {
+    // Test based on RFC 2144 Appendix B.1
+    // https://tools.ietf.org/html/rfc2144#appendix-B.1
+
+    let key = arr![u8; 0x01, 0x23, 0x45, 0x67, 0x12];
+    let plain = arr![u8; 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF];
+    let cipher_expected =
+        arr![u8; 0x7A, 0xC8, 0x16, 0xD1, 0x6E, 0x9B, 0x30, 0x2E];
+
+    for _ in 1..50 {
+        let cast5 = Cast5::new_varkey(&key).unwrap();
         let mut cipher = plain.clone();
         cast5.encrypt_block(&mut cipher);
         assert_eq!(&cipher[..], &cipher_expected[..]);

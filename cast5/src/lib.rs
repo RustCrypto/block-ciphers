@@ -24,7 +24,7 @@
 
 #![no_std]
 pub extern crate block_cipher_trait;
-extern crate byte_tools;
+extern crate byteorder;
 #[macro_use]
 extern crate opaque_debug;
 
