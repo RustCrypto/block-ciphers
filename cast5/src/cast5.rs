@@ -32,12 +32,9 @@ impl Cast5 {
     /// Implements the key schedule according to RFC 2144 2.4.
     /// https://tools.ietf.org/html/rfc2144#section-2.4
     fn key_schedule(&mut self, key: &[u8]) {
-        let mut x = [
-            BigEndian::read_u32(&key[0..4]),
-            BigEndian::read_u32(&key[4..8]),
-            BigEndian::read_u32(&key[8..12]),
-            BigEndian::read_u32(&key[12..]),
-        ];
+        let mut x = [0; 4];
+        BigEndian::read_u32_into(&key, &mut x);
+
         let mut z = [0u32; 4];
         let mut k = [0u32; 16];
 
