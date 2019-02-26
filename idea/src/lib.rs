@@ -10,8 +10,6 @@ pub use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U1, U8, U16};
 
-use core::fmt;
-
 mod consts;
 use consts::{ROUNDS, LENGTH_SUB_KEYS, MAXIM, FUYI, ONE};
 
@@ -53,12 +51,11 @@ impl Idea {
             let j = i * 6;
             let l = k - j;
             
-            let mut m = 1usize;
-            let mut n = 2usize;
-            if i > 0 && i < 8 {
-                m = 2;
-                n = 1;
-            }
+            let (m, n) = if i > 0 && i < 8 {
+                (2, 1)
+            } else {
+                (1, 2)
+            };
 
             self.decryption_sub_keys[j] = self.mul_inv(self.encryption_sub_keys[l]);
             self.decryption_sub_keys[j + 1] = self.add_inv(self.encryption_sub_keys[l + m]);
