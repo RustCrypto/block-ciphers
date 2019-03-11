@@ -1,5 +1,4 @@
-// #![no_std]
-
+#![no_std]
 #[macro_use]
 extern crate block_cipher_trait;
 extern crate cast5;
