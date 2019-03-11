@@ -3,9 +3,10 @@ members = [
     "aes/aes-soft",
     "blowfish",
     "block-modes",
+    "cast5",
     "des",
     "kuznyechik",
     "magma",
     "rc2",
-    "twofish"
+    "twofish",
 ]
