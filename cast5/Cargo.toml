@@ -2,7 +2,7 @@
 name = "cast5"
 version = "0.1.0"
 authors = ["RustCrypto Developers"]
-license = "MIT or Apache-2.0"
+license = "MIT OR Apache-2.0"
 description = "CAST5 block cipher"
 documentation = "https://docs.rs/cast5"
 repository = "https://github.com/RustCrypto/block-ciphers"
