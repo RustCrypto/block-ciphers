@@ -6,7 +6,7 @@ use traits::BlockMode;
 use utils::{xor, get_par_blocks, ParBlocks, Block};
 use core::marker::PhantomData;
 
-/// [Cipher Block Chaining][1] (CBC) block cipher mode isntance.
+/// [Cipher Block Chaining][1] (CBC) block cipher mode instance.
 ///
 /// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CBC
 pub struct Cbc<C: BlockCipher, P: Padding> {
