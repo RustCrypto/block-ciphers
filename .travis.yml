@@ -4,8 +4,8 @@ sudo: required
 
 matrix:
   include:
-    - env: TARGET=x86_64-unknown-linux-gnu
-      rust: 1.22.0
+    - rust: 1.22.0
+      script: cargo test --verbose --all --release
     - env: TARGET=x86_64-unknown-linux-gnu
       rust: stable
     - env: TARGET=x86_64-unknown-linux-gnu
