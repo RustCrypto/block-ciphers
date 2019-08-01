@@ -54,7 +54,7 @@ use block_modes::{BlockMode, Cbc};
 use block_modes::block_padding::Pkcs7;
 use aes::Aes128;
 
-// create an alias for convinience
+// create an alias for convenience
 type Aes128Cbc = Cbc<Aes128, Pkcs7>;
 
 let key = hex!("000102030405060708090a0b0c0d0e0f");
