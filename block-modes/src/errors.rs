@@ -17,21 +17,13 @@ impl fmt::Display for BlockModeError {
 }
 
 #[cfg(feature = "std")]
-impl error::Error for BlockModeError {
-    fn description(&self) -> &str {
-        "block mode error"
-    }
-}
+impl error::Error for BlockModeError {}
 
 impl fmt::Display for InvalidKeyIvLength {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "InvalidKeyIvLength")
+        write!(f, "invalid key or IV length during block cipher mode initialization")
     }
 }
 
 #[cfg(feature = "std")]
-impl error::Error for InvalidKeyIvLength {
-    fn description(&self) -> &str {
-        "invalid key or IV length during block cipher mode initialization"
-    }
-}
+impl error::Error for InvalidKeyIvLength {}
