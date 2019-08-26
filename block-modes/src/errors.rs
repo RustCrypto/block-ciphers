@@ -22,14 +22,15 @@ impl error::Error for BlockModeError {
     // should be removed, once rust v1.22 is no longer supported:
     // https://github.com/rust-lang/rust/blob/4c58535d09d1261d21569df0036b974811544256/
     // src/libstd/error.rs#L69
-    fn description(&self) -> &str {
-        "description() is deprecated; use Display"
-    }
+    fn description(&self) -> &str { "description() is deprecated; use Display" }
 }
 
 impl fmt::Display for InvalidKeyIvLength {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "invalid key or IV length, during block cipher mode initialization")
+        write!(
+            f,
+            "invalid key or IV length, during block cipher mode initialization"
+        )
     }
 }
 
@@ -39,7 +40,5 @@ impl error::Error for InvalidKeyIvLength {
     // should be removed, once rust v1.22 is no longer supported:
     // https://github.com/rust-lang/rust/blob/4c58535d09d1261d21569df0036b974811544256/
     // src/libstd/error.rs#L69
-    fn description(&self) -> &str {
-        "description() is deprecated; use Display"
-    }
+    fn description(&self) -> &str { "description() is deprecated; use Display" }
 }

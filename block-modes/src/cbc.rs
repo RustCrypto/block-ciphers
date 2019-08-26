@@ -1,10 +1,10 @@
-use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::Unsigned;
+use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::BlockCipher;
 use block_padding::Padding;
-use traits::BlockMode;
-use utils::{xor, get_par_blocks, ParBlocks, Block};
 use core::marker::PhantomData;
+use traits::BlockMode;
+use utils::{get_par_blocks, xor, Block, ParBlocks};
 
 /// [Cipher Block Chaining][1] (CBC) block cipher mode instance.
 ///
@@ -57,10 +57,12 @@ impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Cbc<C, P> {
             let mut iv_buf = ParBlocks::<C>::default();
             iv_buf[0] = self.iv.clone();
             for pb in par_blocks {
-                iv_buf[1..].clone_from_slice(&pb[..pbn-1]);
+                iv_buf[1..].clone_from_slice(&pb[..pbn - 1]);
                 let next_iv = pb[pbn - 1].clone();
                 self.cipher.decrypt_blocks(pb);
-                pb.iter_mut().zip(iv_buf.iter()).for_each(|(a, b)| xor(a, b));
+                pb.iter_mut()
+                    .zip(iv_buf.iter())
+                    .for_each(|(a, b)| xor(a, b));
                 iv_buf[0] = next_iv;
             }
             self.iv = iv_buf[0].clone();

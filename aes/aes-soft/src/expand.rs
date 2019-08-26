@@ -2,7 +2,7 @@
 
 use block_cipher_trait::generic_array::{ArrayLength, GenericArray};
 
-use bitslice::{AesOps, bit_slice_4x1_with_u16, un_bit_slice_4x1_with_u16};
+use bitslice::{bit_slice_4x1_with_u16, un_bit_slice_4x1_with_u16, AesOps};
 use consts::RCON;
 
 fn ffmulx(x: u32) -> u32 {
@@ -18,7 +18,10 @@ fn inv_mcol(x: u32) -> u32 {
     let f8 = ffmulx(f4);
     let f9 = x ^ f8;
 
-    f2 ^ f4 ^ f8 ^ (f2 ^ f9).rotate_right(8) ^ (f4 ^ f9).rotate_right(16)
+    f2 ^ f4
+        ^ f8
+        ^ (f2 ^ f9).rotate_right(8)
+        ^ (f4 ^ f9).rotate_right(16)
         ^ f9.rotate_right(24)
 }
 
@@ -31,7 +34,7 @@ fn sub_word(x: u32) -> u32 {
 // slice the round keys returned from this function. This function, and the few functions above, are
 // derived from the BouncyCastle AES implementation.
 pub fn expand_key<KeySize: ArrayLength<u8>, Rounds: ArrayLength<[u32; 4]>>(
-    key: &GenericArray<u8, KeySize>
+    key: &GenericArray<u8, KeySize>,
 ) -> (
     GenericArray<[u32; 4], Rounds>,
     GenericArray<[u32; 4], Rounds>,
@@ -49,7 +52,8 @@ pub fn expand_key<KeySize: ArrayLength<u8>, Rounds: ArrayLength<[u32; 4]>>(
     // The key is copied directly into the first few round keys
     let mut j = 0;
     for i in 0..key_len / 4 {
-        ek[j / 4][j % 4] = u32::from(key[4 * i]) | (u32::from(key[4 * i + 1]) << 8)
+        ek[j / 4][j % 4] = u32::from(key[4 * i])
+            | (u32::from(key[4 * i + 1]) << 8)
             | (u32::from(key[4 * i + 2]) << 16)
             | (u32::from(key[4 * i + 3]) << 24);
         j += 1;
