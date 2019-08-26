@@ -12,7 +12,7 @@ pub struct InvalidKeyIvLength;
 
 impl fmt::Display for BlockModeError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "BlockModeError")
+        f.write_str("BlockModeError")
     }
 }
 
@@ -27,9 +27,8 @@ impl error::Error for BlockModeError {
 
 impl fmt::Display for InvalidKeyIvLength {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "invalid key or IV length, during block cipher mode initialization"
+        f.write_str(
+            "invalid key or IV length, during block cipher mode initialization",
         )
     }
 }
