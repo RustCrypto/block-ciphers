@@ -5,7 +5,7 @@ Collection of [block ciphers][1] and [block modes][2] written in pure Rust.
 
 ## Warnings
 
-Currently only AES crates provide constant-time implementations.
+Currently only AES and HCTR crates provide constant-time implementations.
 If you do not really know what you are doing it's generally recommended not to
 use other cipher implementations in this repository.
 
@@ -24,6 +24,7 @@ cryptographic and security reviews.
 | [Magma](https://en.wikipedia.org/wiki/GOST_(block_cipher)) | GOST 28147-89 and GOST R 34.12-2015 | `magma` | [![crates.io](https://img.shields.io/crates/v/magma.svg)](https://crates.io/crates/magma) | [![Documentation](https://docs.rs/magma/badge.svg)](https://docs.rs/magma) |
 | [RC2](https://en.wikipedia.org/wiki/RC2) |  ARC2  | `rc2` | [![crates.io](https://img.shields.io/crates/v/rc2.svg)](https://crates.io/crates/rc2) | [![Documentation](https://docs.rs/rc2/badge.svg)](https://docs.rs/rc2) |
 | [Twofish](https://en.wikipedia.org/wiki/Twofish) | | `twofish` | [![crates.io](https://img.shields.io/crates/v/twofish.svg)](https://crates.io/crates/twofish) | [![Documentation](https://docs.rs/twofish/badge.svg)](https://docs.rs/twofish) |
+| [HCTR](http://delta.cs.cinvestav.mx/~debrup/hctr.pdf) | | `hctr` | [![crates.io](https://img.shields.io/crates/v/hctr.svg)](https://crates.io/crates/hctr) | [![Documentation](https://docs.rs/hctr/badge.svg)](https://docs.rs/hctr) |
 
 ### Additional crates
 | Crate name | crates.io |  Docs  |

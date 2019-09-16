@@ -9,4 +9,5 @@ members = [
     "magma",
     "rc2",
     "twofish",
+    "hctr",
 ]

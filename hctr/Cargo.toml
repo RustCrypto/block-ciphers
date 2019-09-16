@@ -1,0 +1,40 @@
+[package]
+name = "hctr"
+version = "0.0.0"
+authors = ["RustCrypto Developers"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+description = "HCTR implementation using Aes128 and Polyval."
+documentation = "https://docs.rs/hctr"
+repository = "https://github.com/RustCrypto/block-ciphers"
+keywords = ["crypto", "hctr", "aes", "polyval", "block-cipher"]
+categories = ["cryptography", "no-std"]
+
+[[bench]]
+name = "hctr"
+harness = false
+
+[dependencies.block-cipher-trait]
+version = "0.6.2"
+default-features = false
+
+[dependencies.ctr]
+version = "0.3.2"
+default-features = false
+
+[dependencies.aes]
+version = "0.3.2"
+default-features = false
+
+[dependencies.polyval]
+version = "0.0.1"
+default-features = false
+
+[dev-dependencies.criterion]
+version = "0.3.0"
+default-features = false
+
+[dev-dependencies.aesni]
+version = "0.6.0"
+default-features = false
+features = ["ctr"]
