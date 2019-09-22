@@ -16,6 +16,7 @@ harness = false
 
 [features]
 default = ["aes", "polyval"]
+extended-bench = ["aez", "aesni"]
 
 [dependencies.block-cipher-trait]
 version = "0.6.2"
@@ -35,15 +36,23 @@ default-features = false
 optional = true
 
 [dependencies.polyval]
-version = "0.1.0"
+git = "https://github.com/james-darkfox/universal-hashes"
 optional = true
 default-features = false
 
-[dev-dependencies.criterion]
-version = "0.3.0"
+# extended-benchmark only. these are not used by hctr.
+[dependencies.aesni]
+version = "0.6.0"
 default-features = false
+features = ["ctr"]
+optional = true
 
-#[dev-dependencies.aesni]
-#version = "0.6.0"
-#default-features = false
-#features = ["ctr"]
+[dependencies.aez]
+git = "https://github.com/james-darkfox/aez"
+optional = true
+
+[dev-dependencies.criterion]
+git = "https://github.com/james-darkfox/criterion.rs"
+branch = "cycles"
+default-features = false
+features = ["cycles"]

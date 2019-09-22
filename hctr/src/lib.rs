@@ -1,5 +1,6 @@
 #![no_std]
-#![forbid(unsafe_code, missing_docs)]
+#![forbid(unsafe_code)]
+#![warn(missing_docs)]
 
 //! [HCTR](http://delta.cs.cinvestav.mx/~debrup/hctr.pdf): A Variable-Input-Length Enciphering
 //! Mode.
@@ -81,18 +82,6 @@ fn xor_in_place(a: &mut [u8], b: &[u8]) {
     }
 }
 
-fn hash<H: UniversalHash>(
-    h: &mut H,
-    a: &[u8],
-    b: &[u8],
-) -> GenericArray<u8, H::OutputSize>
-{
-    h.update_padded(a);
-    h.update_padded(b);
-
-    h.result_reset().into_bytes()
-}
-
 impl<C, H> Hctr<C, H>
 where
     C: BlockCipher<BlockSize = U16> + Clone,
@@ -115,46 +104,79 @@ where
     ///
     /// Panics if the message length is not at least as large as the `BlockCipher`'s `BlockSize`.
     pub fn seal_in_place(&self, buf: &mut [u8], tweak: &[u8]) {
-        self.internal_prp(false, buf, tweak);
+        Self::internal_prp(&[(self, tweak)], false, buf);
     }
 
     /// Decrypt a message in-place with a tweak.
     ///
     /// Panics if the message length is not at least as large as the `BlockCipher`'s `BlockSize`.
     pub fn open_in_place(&self, buf: &mut [u8], tweak: &[u8]) {
-        self.internal_prp(true, buf, tweak);
+        Self::internal_prp(&[(self, tweak)], true, buf);
     }
 
-    fn internal_prp(&self, inverse: bool, buf: &mut [u8], tweak: &[u8]) {
+    fn internal_prp(states: &[(&Self, &[u8])], inverse: bool, buf: &mut [u8]) {
         assert!(
             buf.len() >= C::BlockSize::to_usize(),
             "message must be at least as large as the BlockCipher::BlockSize."
         );
-
-        let mut hasher = self.hasher.clone();
+        let mut states = states.into_iter();
 
         let (l, r) = buf.split_at_mut(C::BlockSize::to_usize());
 
-        // phase 1: L ^= H(R, T)
-        xor_in_place(l, &hash(&mut hasher, r, tweak));
+        let mut curr = states.next();
+        let mut next = states.next();
 
-        // phase 2a: L' = E(L)
-        let mut internal_nonce = GenericArray::clone_from_slice(l);
+        if let Some((hctr1, tweak1)) = curr {
+            // phase 1 (curr): L ^= H(R, T)
+            let mut hasher1 = hctr1.hasher.clone();
+            hasher1.update_padded(r);
+            hasher1.update_padded(tweak1);
+            xor_in_place(l, &hasher1.result_reset().into_bytes());
 
-        if inverse {
-            self.cipher.decrypt_block(GenericArray::from_mut_slice(l));
-        } else {
-            self.cipher.encrypt_block(GenericArray::from_mut_slice(l));
+            while let Some((hctr1, tweak1)) = curr.take() {
+                // phase 2a (curr): L' = E(L)
+                let mut internal_nonce = GenericArray::clone_from_slice(l);
+
+                if inverse {
+                    hctr1.cipher.decrypt_block(GenericArray::from_mut_slice(l));
+                } else {
+                    hctr1.cipher.encrypt_block(GenericArray::from_mut_slice(l));
+                }
+
+                // phase 2b (curr): K = L ^ L'
+                xor_in_place(&mut *internal_nonce, l);
+
+                // phase 2c (curr): R = Ctr(K, R)
+                Ctr128::from_cipher(hctr1.cipher.clone(), &internal_nonce)
+                    .apply_keystream(r);
+
+                // phase 3 (curr): L ^= H(R, T)
+                // phase 1 (next): L ^= H(R, T)
+                if let Some((hctr2, tweak2)) = next {
+                    let mut hasher2 = hctr2.hasher.clone();
+                    for chunk in r.chunks_mut(
+                        C::BlockSize::to_usize() * C::ParBlocks::to_usize(),
+                    ) {
+                        hasher1.update_padded(chunk);
+                        hasher2.update_padded(chunk);
+                    }
+                    hasher1.update_padded(tweak1);
+                    hasher2.update_padded(tweak2);
+
+                    xor_in_place(l, &hasher1.result().into_bytes());
+                    xor_in_place(l, &hasher2.result_reset().into_bytes());
+
+                    hasher1 = hasher2;
+
+                    curr = next;
+                    next = states.next();
+                } else {
+                    hasher1.update_padded(r);
+                    hasher1.update_padded(tweak1);
+                    xor_in_place(l, &hasher1.result_reset().into_bytes());
+                }
+            }
         }
-
-        // phase 2b: R = Ctr(L ^ L', R)
-        xor_in_place(&mut *internal_nonce, l);
-
-        Ctr128::from_cipher(self.cipher.clone(), &internal_nonce)
-            .apply_keystream(r);
-
-        // phase 3: L = L' ^ H(R, T)
-        xor_in_place(l, &hash(&mut hasher, r, tweak));
     }
 }
 

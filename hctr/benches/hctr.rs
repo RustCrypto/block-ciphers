@@ -1,12 +1,7 @@
-#[cfg(feature = "polyval")]
-use core::convert::TryInto;
-
-use criterion::*;
-
-#[cfg(feature = "aesni-bench")]
-use aesni::Aes128Ctr;
-#[cfg(feature = "aesni-bench")]
-use ctr::stream_cipher::NewStreamCipher;
+use criterion::{
+    criterion_group, criterion_main, measurement::CyclesPerByte, BenchmarkId,
+    Criterion, Throughput,
+};
 
 #[cfg(feature = "aes")]
 use aes::{block_cipher_trait::BlockCipher, Aes128};
@@ -18,116 +13,85 @@ use polyval::{universal_hash::UniversalHash, Polyval};
 #[cfg(all(feature = "aes", feature = "polyval"))]
 use hctr::Aes128HctrPolyval;
 
-fn bench(c: &mut Criterion) {
-    const KB: usize = 1024;
+const KB: usize = 1024;
 
-    c.bench(
-        "throughput",
-        ParameterizedBenchmark::new(
-            "memcpy",
-            |b, &&size| {
-                let buf =
-                    core::iter::repeat(0u8).take(size).collect::<Vec<_>>();
-                b.iter(|| buf.clone());
-            },
-            &[KB, 2 * KB, 4 * KB, 8 * KB, 16 * KB, 1280],
-        )
-        .throughput(|elems| Throughput::Bytes(**elems as u64)),
-    );
+fn throughput(c: &mut Criterion<CyclesPerByte>) {
+    let mut group = c.benchmark_group("throughput");
 
-    // FIXME: remove after aesni[ctr] performance isn't better than aes+ctr
-    #[cfg(feature = "aesni-bench")]
-    c.bench(
-        "throughput",
-        ParameterizedBenchmark::new(
-            "ctr-ni",
-            |b, &&size| {
-                let mut aes =
-                    Aes128Ctr::new(&Default::default(), &Default::default());
-                let mut buf =
-                    core::iter::repeat(0u8).take(size).collect::<Vec<_>>();
-                b.iter(|| {
-                    aes.apply_keystream(&mut buf);
-                });
-            },
-            &[KB, 2 * KB, 4 * KB, 8 * KB, 16 * KB, 1280],
-        )
-        .throughput(|elems| Throughput::Bytes(**elems as u64)),
-    );
+    for size in [KB, 2 * KB, 4 * KB, 8 * KB, 16 * KB].into_iter() {
+        let mut buf = vec![0; *size];
 
-    #[cfg(feature = "aes")]
-    c.bench(
-        "throughput",
-        ParameterizedBenchmark::new(
-            "ctr",
-            |b, &&size| {
-                let aes = Aes128::new(&Default::default());
-                let mut cipher = Ctr128::from_cipher(aes, &Default::default());
-                let mut buf =
-                    core::iter::repeat(0u8).take(size).collect::<Vec<_>>();
-                b.iter(|| {
-                    cipher.apply_keystream(&mut buf);
-                });
-            },
-            &[KB, 2 * KB, 4 * KB, 8 * KB, 16 * KB, 1280],
-        )
-        .throughput(|elems| Throughput::Bytes(**elems as u64)),
-    );
+        group.throughput(Throughput::Bytes(*size as u64));
 
-    #[cfg(feature = "polyval")]
-    c.bench(
-        "throughput",
-        ParameterizedBenchmark::new(
-            "polyval",
-            |b, &&size| {
-                let hasher = Polyval::new(&Default::default());
-                let buf =
-                    core::iter::repeat(0u8).take(size).collect::<Vec<_>>();
-                b.iter(|| {
-                    let mut hasher = hasher.clone();
-                    for chunk in buf.chunks(16) {
-                        hasher.update_block(chunk.try_into().unwrap());
-                    }
-                    hasher.result()
-                });
-            },
-            &[KB, 2 * KB, 4 * KB, 8 * KB, 16 * KB, 1280],
-        )
-        .throughput(|elems| Throughput::Bytes(**elems as u64)),
-    );
+        group.bench_function(BenchmarkId::new("memcpy", size), |b| {
+            b.iter(|| buf.clone())
+        });
 
-    #[cfg(all(feature = "aes", feature = "polyval"))]
-    c.bench(
-        "throughput",
-        ParameterizedBenchmark::new(
-            "seal",
-            |b, &&size| {
+        #[cfg(feature = "aes")]
+        group.bench_function(BenchmarkId::new("aes-ctr", size), |b| {
+            let cipher = Aes128::new(&Default::default());
+            b.iter(|| {
+                Ctr128::from_cipher(cipher, &Default::default())
+                    .apply_keystream(&mut buf)
+            })
+        });
+
+        #[cfg(feature = "polyval")]
+        group.bench_function(BenchmarkId::new("polyval", size), |b| {
+            let mut polyval = Polyval::new(&Default::default());
+            b.iter(|| {
+                polyval.update_padded(&buf);
+                polyval.result_reset()
+            })
+        });
+
+        #[cfg(all(feature = "aes", feature = "polyval"))]
+        {
+            group.bench_function(BenchmarkId::new("hctr-seal", size), |b| {
                 let hctr = Aes128HctrPolyval::new(Default::default());
-                let mut buf =
-                    core::iter::repeat(0u8).take(size).collect::<Vec<_>>();
-                b.iter(|| hctr.seal_in_place(&mut buf, &[]));
-            },
-            &[KB, 2 * KB, 4 * KB, 8 * KB, 16 * KB, 1280],
-        )
-        .throughput(|elems| Throughput::Bytes(**elems as u64)),
-    );
-
-    #[cfg(all(feature = "aes", feature = "polyval"))]
-    c.bench(
-        "throughput",
-        ParameterizedBenchmark::new(
-            "open",
-            |b, &&size| {
+                b.iter(|| hctr.seal_in_place(&mut buf, &[]))
+            });
+            group.bench_function(BenchmarkId::new("hctr-open", size), |b| {
                 let hctr = Aes128HctrPolyval::new(Default::default());
-                let mut buf =
-                    core::iter::repeat(0u8).take(size).collect::<Vec<_>>();
-                b.iter(|| hctr.open_in_place(&mut buf, &[]));
-            },
-            &[KB, 2 * KB, 4 * KB, 8 * KB, 16 * KB, 1280],
-        )
-        .throughput(|elems| Throughput::Bytes(**elems as u64)),
-    );
+                b.iter(|| hctr.open_in_place(&mut buf, &[]))
+            });
+        }
+
+        #[cfg(feature = "extended-bench")]
+        {
+            // FIXME: remove after aesni[ctr] performance isn't better than aes+ctr
+            group.bench_function(BenchmarkId::new("aesni-ctr", size), |b| {
+                use aesni::Aes128Ctr;
+                use ctr::stream_cipher::NewStreamCipher;
+                b.iter(|| {
+                    let mut aes =
+                        Aes128Ctr::new(&Default::default(), &Default::default());
+                    aes.apply_keystream(&mut buf)
+                })
+            });
+
+            group.bench_function(BenchmarkId::new("aez-encrypt", size), |b| {
+                let aez = aez::Aez::new(&[0u8; 48]);
+                let mut out = vec![0; *size];
+                b.iter(|| aez.encrypt(&[0], &[], &buf, &mut out))
+            });
+
+            group.bench_function(BenchmarkId::new("aez-decrypt", size), |b| {
+                let aez = aez::Aez::new(&[0u8; 48]);
+                let mut ct = vec![0; *size];
+                aez.encrypt(&[0], &[], &buf, &mut ct);
+                let mut pt = vec![0; *size];
+                b.iter(|| aez.decrypt(&[0], &[], &ct, &mut pt).unwrap())
+            });
+        }
+    }
+
+    group.finish();
 }
 
-criterion_group!(benches, bench);
-criterion_main!(benches);
+criterion_group!(
+    name = throughput_cpb;
+    config = Criterion::default().with_measurement(CyclesPerByte);
+    targets = throughput
+);
+criterion_main!(throughput_cpb);
