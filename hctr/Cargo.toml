@@ -36,7 +36,7 @@ default-features = false
 optional = true
 
 [dependencies.polyval]
-git = "https://github.com/james-darkfox/universal-hashes"
+version = "0.1.0"
 optional = true
 default-features = false
 
@@ -48,11 +48,13 @@ features = ["ctr"]
 optional = true
 
 [dependencies.aez]
-git = "https://github.com/james-darkfox/aez"
+version = "0.0.6"
 optional = true
 
 [dev-dependencies.criterion]
-git = "https://github.com/james-darkfox/criterion.rs"
-branch = "cycles"
+version = "0.3.0"
 default-features = false
-features = ["cycles"]
+
+[dev-dependencies.criterion-cycles-per-byte]
+version = "0.1.1"
+default-features = false

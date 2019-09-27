@@ -82,7 +82,32 @@ fn xor_in_place(a: &mut [u8], b: &[u8]) {
     }
 }
 
-impl<C, H> Hctr<C, H>
+/// A wide strong pseudorandom permutation
+pub trait WideSPRP {
+    /// How large the key must be
+    type KeySize: ArrayLength<u8>;
+
+    /// Create a new wide-SPRP instance.
+    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self;
+    /// Encrypt a message in-place with a tweak.
+    fn seal_in_place(&self, buf: &mut [u8], tweak: &[u8]);
+    /// Decrypt a message in-place with a tweak.
+    fn open_in_place(&self, buf: &mut [u8], tweak: &[u8]);
+
+    /// Enc/decrypt multiple Wide SPRP layers with independent tweaks. This is especially
+    /// useful for onion routers and mixnets.
+    fn process_layers(states: &[(&Self, bool, &[u8])], buf: &mut [u8]) {
+        for (cipher, inverse, tweak) in states {
+            if *inverse {
+                cipher.open_in_place(buf, tweak);
+            } else {
+                cipher.seal_in_place(buf, tweak);
+            }
+        }
+    }
+}
+
+impl<C, H> WideSPRP for Hctr<C, H>
 where
     C: BlockCipher<BlockSize = U16> + Clone,
     C::ParBlocks: ArrayLength<GenericArray<u8, C::BlockSize>>,
@@ -91,8 +116,9 @@ where
     Ctr128<C>: SyncStreamCipher,
     H: UniversalHash<OutputSize = C::BlockSize>,
 {
-    /// Create a new HCTR instance with key size `C::KeySize + H::KeySize`.
-    pub fn new(key: GenericArray<u8, Sum<C::KeySize, H::KeySize>>) -> Self {
+    type KeySize = Sum<C::KeySize, H::KeySize>;
+
+    fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
         let (a, b) = key.split_at(C::KeySize::to_usize());
         Hctr {
             cipher: C::new(GenericArray::from_slice(a)),
@@ -100,21 +126,15 @@ where
         }
     }
 
-    /// Encrypt a message in-place with a tweak.
-    ///
-    /// Panics if the message length is not at least as large as the `BlockCipher`'s `BlockSize`.
-    pub fn seal_in_place(&self, buf: &mut [u8], tweak: &[u8]) {
-        Self::internal_prp(&[(self, tweak)], false, buf);
+    fn seal_in_place(&self, buf: &mut [u8], tweak: &[u8]) {
+        Self::process_layers(&[(self, false, tweak)], buf);
     }
 
-    /// Decrypt a message in-place with a tweak.
-    ///
-    /// Panics if the message length is not at least as large as the `BlockCipher`'s `BlockSize`.
-    pub fn open_in_place(&self, buf: &mut [u8], tweak: &[u8]) {
-        Self::internal_prp(&[(self, tweak)], true, buf);
+    fn open_in_place(&self, buf: &mut [u8], tweak: &[u8]) {
+        Self::process_layers(&[(self, true, tweak)], buf);
     }
 
-    fn internal_prp(states: &[(&Self, &[u8])], inverse: bool, buf: &mut [u8]) {
+    fn process_layers(states: &[(&Self, bool, &[u8])], buf: &mut [u8]) {
         assert!(
             buf.len() >= C::BlockSize::to_usize(),
             "message must be at least as large as the BlockCipher::BlockSize."
@@ -126,18 +146,18 @@ where
         let mut curr = states.next();
         let mut next = states.next();
 
-        if let Some((hctr1, tweak1)) = curr {
+        if let Some((hctr1, _, tweak1)) = curr {
             // phase 1 (curr): L ^= H(R, T)
             let mut hasher1 = hctr1.hasher.clone();
             hasher1.update_padded(r);
             hasher1.update_padded(tweak1);
             xor_in_place(l, &hasher1.result_reset().into_bytes());
 
-            while let Some((hctr1, tweak1)) = curr.take() {
+            while let Some((hctr1, inverse, tweak1)) = curr.take() {
                 // phase 2a (curr): L' = E(L)
                 let mut internal_nonce = GenericArray::clone_from_slice(l);
 
-                if inverse {
+                if *inverse {
                     hctr1.cipher.decrypt_block(GenericArray::from_mut_slice(l));
                 } else {
                     hctr1.cipher.encrypt_block(GenericArray::from_mut_slice(l));
@@ -152,7 +172,7 @@ where
 
                 // phase 3 (curr): L ^= H(R, T)
                 // phase 1 (next): L ^= H(R, T)
-                if let Some((hctr2, tweak2)) = next {
+                if let Some((hctr2, _, tweak2)) = next {
                     let mut hasher2 = hctr2.hasher.clone();
                     for chunk in r.chunks_mut(
                         C::BlockSize::to_usize() * C::ParBlocks::to_usize(),
@@ -183,7 +203,7 @@ where
 #[test]
 #[cfg(all(feature = "aes", feature = "polyval"))]
 fn weak_sanity_check() {
-    let hctr = Aes128HctrPolyval::new(Default::default());
+    let hctr = Aes128HctrPolyval::new(&Default::default());
     let a = include_bytes!("../LICENSE-MIT");
 
     let mut b = a.to_vec();

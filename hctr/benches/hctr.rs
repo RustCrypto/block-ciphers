@@ -1,7 +1,7 @@
 use criterion::{
-    criterion_group, criterion_main, measurement::CyclesPerByte, BenchmarkId,
-    Criterion, Throughput,
+    criterion_group, criterion_main, BenchmarkId, Criterion, Throughput,
 };
+use criterion_cycles_per_byte::CyclesPerByte;
 
 #[cfg(feature = "aes")]
 use aes::{block_cipher_trait::BlockCipher, Aes128};
@@ -11,7 +11,7 @@ use ctr::{stream_cipher::SyncStreamCipher, Ctr128};
 use polyval::{universal_hash::UniversalHash, Polyval};
 
 #[cfg(all(feature = "aes", feature = "polyval"))]
-use hctr::Aes128HctrPolyval;
+use hctr::{Aes128HctrPolyval, WideSPRP};
 
 const KB: usize = 1024;
 
@@ -31,7 +31,7 @@ fn throughput(c: &mut Criterion<CyclesPerByte>) {
         group.bench_function(BenchmarkId::new("aes-ctr", size), |b| {
             let cipher = Aes128::new(&Default::default());
             b.iter(|| {
-                Ctr128::from_cipher(cipher, &Default::default())
+                Ctr128::from_cipher(cipher.clone(), &Default::default())
                     .apply_keystream(&mut buf)
             })
         });
@@ -48,11 +48,11 @@ fn throughput(c: &mut Criterion<CyclesPerByte>) {
         #[cfg(all(feature = "aes", feature = "polyval"))]
         {
             group.bench_function(BenchmarkId::new("hctr-seal", size), |b| {
-                let hctr = Aes128HctrPolyval::new(Default::default());
+                let hctr = Aes128HctrPolyval::new(&Default::default());
                 b.iter(|| hctr.seal_in_place(&mut buf, &[]))
             });
             group.bench_function(BenchmarkId::new("hctr-open", size), |b| {
-                let hctr = Aes128HctrPolyval::new(Default::default());
+                let hctr = Aes128HctrPolyval::new(&Default::default());
                 b.iter(|| hctr.open_in_place(&mut buf, &[]))
             });
         }
@@ -64,8 +64,10 @@ fn throughput(c: &mut Criterion<CyclesPerByte>) {
                 use aesni::Aes128Ctr;
                 use ctr::stream_cipher::NewStreamCipher;
                 b.iter(|| {
-                    let mut aes =
-                        Aes128Ctr::new(&Default::default(), &Default::default());
+                    let mut aes = Aes128Ctr::new(
+                        &Default::default(),
+                        &Default::default(),
+                    );
                     aes.apply_keystream(&mut buf)
                 })
             });
