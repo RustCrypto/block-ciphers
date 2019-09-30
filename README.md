@@ -32,7 +32,7 @@ cryptographic and security reviews.
 
 ### Minimum Supported Rust Version
 All crates in this repository support Rust 1.22 or higher. (except `aesni` and
-`aes` crates, which require Rust 1.27) In future minimum supported Rust version
+`aes` crates, which require Rust 1.31) In future minimum supported Rust version
 can be changed, but it will be done with the minor version bump.
 
 ## Usage

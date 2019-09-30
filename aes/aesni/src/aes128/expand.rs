@@ -1,6 +1,6 @@
-use arch::*;
-
 use core::mem;
+
+use crate::arch::*;
 
 macro_rules! expand_round {
     ($enc_keys:expr, $dec_keys:expr, $pos:expr, $round:expr) => {

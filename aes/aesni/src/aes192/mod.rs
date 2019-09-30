@@ -1,10 +1,11 @@
+use core::mem;
+
+use opaque_debug::impl_opaque_debug;
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U16, U24, U8};
 use block_cipher_trait::BlockCipher;
-use arch::*;
-
-use core::mem;
-use utils::{Block128, Block128x8};
+use crate::arch::*;
+use crate::utils::{Block128, Block128x8};
 
 mod expand;
 #[cfg(test)]

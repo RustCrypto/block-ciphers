@@ -1,8 +1,8 @@
 #![no_std]
 #![cfg(any(target_arch = "x86_64", target_arch = "x86"))]
 #![feature(test)]
-extern crate aesni;
 extern crate test;
+use aesni;
 
 use aesni::Aes192;
 use aesni::block_cipher_trait::BlockCipher;

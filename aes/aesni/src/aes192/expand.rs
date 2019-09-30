@@ -1,6 +1,6 @@
-use arch::*;
-
 use core::{mem, ptr};
+
+use crate::arch::*;
 
 macro_rules! expand_round {
     ($t1:expr, $t3:expr, $round:expr) => {{

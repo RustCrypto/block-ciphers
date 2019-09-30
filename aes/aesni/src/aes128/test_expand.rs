@@ -1,5 +1,5 @@
 use super::expand::expand;
-use utils::check;
+use crate::utils::check;
 
 #[test]
 fn test() {

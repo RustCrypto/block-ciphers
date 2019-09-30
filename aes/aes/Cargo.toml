@@ -20,5 +20,3 @@ aesni = { version = "0.6", default-features = false }
 
 [dev-dependencies]
 block-cipher-trait = { version = "0.6", features = ["dev"] }
-
-[workspace]

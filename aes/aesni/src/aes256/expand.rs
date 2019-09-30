@@ -1,12 +1,12 @@
-use arch::*;
-
 use core::mem;
+
+use crate::arch::*;
 
 macro_rules! expand_round {
     ($enc_keys:expr, $dec_keys:expr, $pos:expr, $round:expr) => {
-        let mut t1 = _mm_load_si128($enc_keys.as_ptr().offset($pos - 2));;
+        let mut t1 = _mm_load_si128($enc_keys.as_ptr().offset($pos - 2));
         let mut t2;
-        let mut t3 = _mm_load_si128($enc_keys.as_ptr().offset($pos - 1));;
+        let mut t3 = _mm_load_si128($enc_keys.as_ptr().offset($pos - 1));
         let mut t4;
 
         t2 = _mm_aeskeygenassist_si128(t3, $round);
@@ -41,9 +41,9 @@ macro_rules! expand_round {
 
 macro_rules! expand_round_last {
     ($enc_keys:expr, $dec_keys:expr, $pos:expr, $round:expr) => {
-        let mut t1 = _mm_load_si128($enc_keys.as_ptr().offset($pos - 2));;
+        let mut t1 = _mm_load_si128($enc_keys.as_ptr().offset($pos - 2));
         let mut t2;
-        let t3 = _mm_load_si128($enc_keys.as_ptr().offset($pos - 1));;
+        let t3 = _mm_load_si128($enc_keys.as_ptr().offset($pos - 1));
         let mut t4;
 
         t2 = _mm_aeskeygenassist_si128(t3, $round);

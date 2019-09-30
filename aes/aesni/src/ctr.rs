@@ -1,13 +1,14 @@
 use core::{mem, cmp};
-use arch::*;
 
-use super::{Aes128, Aes192, Aes256};
 use block_cipher_trait::BlockCipher;
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::U16;
 use stream_cipher::{
     SyncStreamCipher, SyncStreamCipherSeek, NewStreamCipher, LoopError,
 };
+use opaque_debug::impl_opaque_debug;
+use super::{Aes128, Aes192, Aes256};
+use crate::arch::*;
 
 const BLOCK_SIZE: usize = 16;
 const PAR_BLOCKS: usize = 8;

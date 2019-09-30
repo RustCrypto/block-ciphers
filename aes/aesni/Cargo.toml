@@ -8,6 +8,7 @@ documentation = "https://docs.rs/aesni"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "aes", "rijndael", "block-cipher"]
 categories = ["cryptography", "no-std"]
+edition = "2018"
 
 [dependencies]
 block-cipher-trait = "0.6"
@@ -22,8 +23,6 @@ stream-cipher = { version = "0.3", features = ["dev"] }
 default = ["ctr"]
 ctr = ["stream-cipher"]
 nocheck = []
-
-[workspace]
 
 [package.metadata.docs.rs]
 rustc-args = ["-C", "target-feature=+aes,+ssse3"]
