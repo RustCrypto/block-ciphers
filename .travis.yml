@@ -12,7 +12,7 @@ matrix:
       rust: nightly
 
     - env: NAME="aes+aesni test"
-      rust: 1.27.0
+      rust: 1.31.0
       script: ./test_aes.sh
     - env: NAME="aes+aesni test"
       rust: stable
@@ -39,7 +39,7 @@ matrix:
     - rust: nightly
 
 install:
-- cargo install cross || true
+  - cargo install cross || true
 
 script:
   - cross test --verbose --all --release --target $TARGET
