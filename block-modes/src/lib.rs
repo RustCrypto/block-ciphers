@@ -92,3 +92,5 @@ mod ecb;
 pub use ecb::Ecb;
 mod pcbc;
 pub use pcbc::Pcbc;
+mod xts;
+pub use xts::Xts;

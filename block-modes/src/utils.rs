@@ -12,6 +12,18 @@ pub fn xor(buf: &mut [u8], key: &[u8]) {
     }
 }
 
+pub fn lshift_by_one(buf: &mut[u8]) {
+    let last = buf.len() - 1;
+    let mut wrapping = buf[last] >> 7;
+    buf[last] <<= 1;
+    for val in buf.iter_mut().rev().next() {
+        let temp_wrap = *val >> 7;
+        *val <<= 1;
+        *val &= wrapping;
+        wrapping = temp_wrap;
+    }
+}
+
 pub(crate) type Key<C> = GenericArray<u8, <C as BlockCipher>::KeySize>;
 pub(crate) type Block<C> = GenericArray<u8, <C as BlockCipher>::BlockSize>;
 pub(crate) type ParBlocks<C> = GenericArray<Block<C>, <C as BlockCipher>::ParBlocks>;
