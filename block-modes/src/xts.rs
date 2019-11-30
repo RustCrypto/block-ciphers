@@ -110,7 +110,7 @@ impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Xts<C, P> {
     fn decrypt(mut self, buffer: &mut [u8]) -> Result<&[u8], BlockModeError> {
         let bs = C::BlockSize::to_usize();
         let buffer_length = buffer.len();
-        let num_of_full_blocks = (buffer_length / bs) * bs;
+        let num_of_full_blocks = buffer_length / bs;
         self.decrypt_blocks(&mut to_blocks_uneven(buffer)[..&num_of_full_blocks - 1]);
         if buffer_length % bs != 0 {
             let second_to_last_tweak = self.tweak.clone();
