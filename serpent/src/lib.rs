@@ -84,7 +84,8 @@ fn round_inverse(
     khat: Subkeys,
     bhat_i: &mut Block128,
 ) {
-    let (xored_block, shat_i) = &mut ([0u8; 16], [0u8; 16]);
+    let xored_block = &mut [0u8; 16];
+    let shat_i = &mut [0u8; 16];
     if i <= ROUNDS - 2 {
         linear_transform_inverse(bhat_i_next, shat_i);
     } else if i == ROUNDS - 1 {
@@ -232,7 +233,9 @@ impl BlockCipher for Serpent {
     fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
         let mut b = [0u8; 16];
 
-        LE::write_u128(&mut b, LE::read_u128(block.as_slice()));
+        for (i, v) in block.iter().enumerate() {
+            b[i] = *v;
+        }
 
         let mut bhat = permutate(IP, b);
 
@@ -248,7 +251,9 @@ impl BlockCipher for Serpent {
     fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
         let mut b = [0u8; 16];
 
-        LE::write_u128(&mut b, LE::read_u128(block.as_slice()));
+        for (i, v) in block.iter().enumerate() {
+            b[i] = *v;
+        }
 
         // IP = FP inverse
         let mut bhat = permutate(IP, b);
