@@ -32,7 +32,7 @@ fn get_word_bit(w: Word, i: usize) -> u8 {
     w[i / 8] >> (i % 8) & 0x01
 }
 fn get_bit(x: usize, i: usize) -> u8 {
-    (x as u8 >> i) & 0x01
+    (x >> i) as u8 & 0x01
 }
 
 fn set_bit(i: usize, v: u8, w: &mut Word) {
