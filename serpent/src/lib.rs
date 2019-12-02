@@ -29,11 +29,10 @@ pub struct Serpent {
 }
 
 fn get_word_bit(w: Word, i: usize) -> u8 {
-    let b_per_w = 8u32;
-    w[i / b_per_w as usize].rotate_right(i as u32 % b_per_w) & 0x01
+    w[i / 8] >> (i % 8) & 0x01
 }
 fn get_bit(x: usize, i: usize) -> u8 {
-    (x.rotate_right(i as u32 % 32) & 0x01) as u8
+    ((x >> i) & 0x01) as u8
 }
 
 fn set_bit(i: usize, v: u8, w: &mut Word) {
