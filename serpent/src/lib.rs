@@ -36,7 +36,6 @@ fn get_bit(x: usize, i: usize) -> u8 {
 }
 
 fn set_bit(i: usize, v: u8, w: &mut Word) {
-    // Fix this
     let index = i / 8;
     if v == 1 {
         w[index] |= 0x1 << (i % 8);
