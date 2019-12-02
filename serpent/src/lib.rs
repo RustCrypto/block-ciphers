@@ -32,7 +32,7 @@ fn get_word_bit(w: Word, i: usize) -> u8 {
     w[i / 8] >> (i % 8) & 0x01
 }
 fn get_bit(x: usize, i: usize) -> u8 {
-    ((x >> i) & 0x01) as u8
+    (x as u8 >> i) & 0x01
 }
 
 fn set_bit(i: usize, v: u8, w: &mut Word) {
@@ -173,9 +173,10 @@ impl Serpent {
                 .rotate_left(11);
         }
 
+        let r = ROUNDS + 1;
         let words = &words[8..];
         let mut k = [0u32; 132];
-        for i in 0..ROUNDS + 1 {
+        for i in 0..r {
             let sbox_index = (ROUNDS + 3 - i) % ROUNDS;
             let a = words[(4 * i + 0) as usize];
             let b = words[(4 * i + 1) as usize];
@@ -194,7 +195,6 @@ impl Serpent {
             }
         }
 
-        let r = ROUNDS + 1;
         let mut sub_keys: Subkeys = [[0u8; 16]; ROUNDS + 1];
         for i in 0..r {
             LE::write_u32(&mut sub_keys[i][..4], k[4 * i]);
