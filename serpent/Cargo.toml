@@ -1,6 +1,6 @@
 [package]
 name = "serpent"
-version = "0.1.0"
+version = "0.6.0"
 authors = ["Blocs <jonathan@cryptoblocs.fr>"]
 license = "MIT/Apache-2.0"
 edition = "2018"
