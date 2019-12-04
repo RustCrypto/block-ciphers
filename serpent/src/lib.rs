@@ -81,8 +81,6 @@ fn round_bitslice(
     } else {
         linear_transform_bitslice(s_i, b_output);
     }
-
-    // println!("i={} : {:?}", i, s_i);
 }
 fn round_inverse_bitslice(
     i: usize,
