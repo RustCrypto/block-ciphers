@@ -16,7 +16,7 @@ use block_cipher_trait::InvalidKeyLength;
 use byteorder::{ByteOrder, LE};
 
 mod consts;
-use consts::{FP, IP, LT, LT_INVERSE, PHI, ROUNDS, S, S_INVERSE};
+use consts::{PHI, ROUNDS, S, S_INVERSE};
 
 type Key = [u8; 16];
 type Subkeys = [Key; ROUNDS + 1];
@@ -25,75 +25,81 @@ type Word = [u8; 16];
 
 #[derive(Clone)]
 pub struct Serpent {
-    k: Subkeys, // Khat
+    k: Subkeys,
 }
 
-fn get_word_bit(w: Word, i: usize) -> u8 {
-    w[i / 8] >> (i % 8) & 0x01
-}
 fn get_bit(x: usize, i: usize) -> u8 {
     (x >> i) as u8 & 0x01
 }
 
-fn set_bit(i: usize, v: u8, w: &mut Word) {
-    let index = i / 8;
-    if v == 1 {
-        w[index] |= 0x1 << (i % 8);
-    } else {
-        w[index] &= !(0x1 << (i % 8));
-    }
+fn linear_transform_bitslice(input: Block128, output: &mut Block128) {
+    let mut words = [0u32; 4];
+    LE::read_u32_into(&input, &mut words);
+
+    words[0] = words[0].rotate_left(13);
+    words[2] = words[2].rotate_left(3);
+    words[1] ^= words[0] ^ words[2];
+    words[3] = words[3] ^ words[2] ^ (words[0] << 3);
+    words[1] = words[1].rotate_left(1);
+    words[3] = words[3].rotate_left(7);
+    words[0] ^= words[1] ^ words[3];
+    words[2] = words[2] ^ words[3] ^ (words[1] << 7);
+    words[0] = words[0].rotate_left(5);
+    words[2] = words[2].rotate_left(22);
+
+    LE::write_u32_into(&words, output);
+}
+fn linear_transform_inverse_bitslice(input: Block128, output: &mut Block128) {
+    let mut words = [0u32; 4];
+    LE::read_u32_into(&input, &mut words);
+    words[2] = words[2].rotate_right(22);
+    words[0] = words[0].rotate_right(5);
+    words[2] = words[2] ^ words[3] ^ (words[1] << 7);
+    words[0] ^= words[1] ^ words[3];
+    words[3] = words[3].rotate_right(7);
+    words[1] = words[1].rotate_right(1);
+    words[3] = words[3] ^ words[2] ^ (words[0] << 3);
+    words[1] ^= words[0] ^ words[2];
+    words[2] = words[2].rotate_right(3);
+    words[0] = words[0].rotate_right(13);
+
+    LE::write_u32_into(&words, output);
 }
 
-fn permutate(t: [u8; 128], input: Block128) -> Block128 {
-    let mut output = [0u8; 16];
-    for (i, mv) in t.iter().enumerate() {
-        let b = get_word_bit(input, *mv as usize);
-        set_bit(i, b, &mut output);
-    }
-    output
-}
-
-fn linear_transform(input: Block128, output: &mut Block128) {
-    *output = xor_table(LT, input);
-}
-fn linear_transform_inverse(output: Block128, input: &mut Block128) {
-    *input = xor_table(LT_INVERSE, output);
-}
-
-fn round(
+fn round_bitslice(
     i: usize,
-    bhat_i: Block128,
-    khat: Subkeys,
-    bhat_output: &mut Block128,
+    b_i: Block128,
+    k: Subkeys,
+    b_output: &mut Block128,
 ) {
-    let xored_block = xor_block(bhat_i, khat[i]);
-    let shat_i = apply_shat(i, xored_block);
-    if i <= ROUNDS - 2 {
-        linear_transform(shat_i, bhat_output);
-    } else if i == ROUNDS - 1 {
-        *bhat_output = xor_block(shat_i, khat[ROUNDS]);
-    } else {
-        panic!("Encrypt: Round {} out of range", i);
-    }
-}
+    let xored_block = xor_block(b_i, k[i]);
 
-fn round_inverse(
-    i: usize,
-    bhat_i_next: Block128,
-    khat: Subkeys,
-    bhat_i: &mut Block128,
-) {
-    let xored_block = &mut [0u8; 16];
-    let shat_i = &mut [0u8; 16];
-    if i <= ROUNDS - 2 {
-        linear_transform_inverse(bhat_i_next, shat_i);
-    } else if i == ROUNDS - 1 {
-        *shat_i = xor_block(bhat_i_next, khat[ROUNDS]);
+    let s_i = apply_s_bitslice(i, xored_block);
+
+    if i == ROUNDS - 1 {
+        *b_output = xor_block(s_i, k[ROUNDS]);
     } else {
-        panic!("Decrypt: Round {} out of range", i);
+        linear_transform_bitslice(s_i, b_output);
     }
-    *xored_block = apply_shat_inverse(i, *shat_i);
-    *bhat_i = xor_block(*xored_block, khat[i]);
+
+    // println!("i={} : {:?}", i, s_i);
+}
+fn round_inverse_bitslice(
+    i: usize,
+    b_i_next: Block128,
+    k: Subkeys,
+    b_output: &mut Block128,
+) {
+    let mut s_i = [0u8; 16];
+    if i == ROUNDS - 1 {
+        s_i = xor_block(b_i_next, k[ROUNDS]);
+    } else {
+        linear_transform_inverse_bitslice(b_i_next, &mut s_i);
+    }
+
+    let xored = apply_s_inverse_bitslice(i, s_i);
+
+    *b_output = xor_block(xored, k[i]);
 }
 
 fn apply_s(index: usize, nibble: u8) -> u8 {
@@ -103,27 +109,48 @@ fn apply_s_inverse(index: usize, nibble: u8) -> u8 {
     S_INVERSE[index % 8][nibble as usize]
 }
 
-fn apply_shat(b_i: usize, input: Block128) -> Block128 {
-    let mut output: Block128 = [0u8; 16];
-    for i in 0..16 {
-        // 2 nibbles per byte
-        for nibble_index in 0..2 {
-            output[i] |= apply_s(b_i, (input[i] >> 4 * nibble_index) & 0xf)
-                << (nibble_index * 4);
+fn apply_s_bitslice(index: usize, word: Word) -> Word {
+    let mut output = [0u8; 16];
+    let w1 = LE::read_u32(&word[0..4]);
+    let w2 = LE::read_u32(&word[4..8]);
+    let w3 = LE::read_u32(&word[8..12]);
+    let w4 = LE::read_u32(&word[12..16]);
+    let mut words = [0u32; 4];
+    for i in 0..32 {
+        let quad = apply_s(
+            index,
+            get_bit(w1 as usize, i)
+                | get_bit(w2 as usize, i) << 1
+                | get_bit(w3 as usize, i) << 2
+                | get_bit(w4 as usize, i) << 3,
+        );
+        for l in 0..4 {
+            words[l] |= u32::from(get_bit(quad as usize, l)) << i;
         }
     }
+    LE::write_u32_into(&words, &mut output);
     output
 }
-fn apply_shat_inverse(b_i: usize, input: Block128) -> Block128 {
-    let mut output: Block128 = [0u8; 16];
-    for i in 0..16 {
-        // 2 nibbles per byte
-        for nibble_index in 0..2 {
-            output[i] |=
-                apply_s_inverse(b_i, (input[i] >> 4 * nibble_index) & 0xf)
-                    << (nibble_index * 4);
+fn apply_s_inverse_bitslice(index: usize, word: Word) -> Word {
+    let mut output = [0u8; 16];
+    let w1 = LE::read_u32(&word[0..4]);
+    let w2 = LE::read_u32(&word[4..8]);
+    let w3 = LE::read_u32(&word[8..12]);
+    let w4 = LE::read_u32(&word[12..16]);
+    let mut words = [0u32; 4];
+    for i in 0..32 {
+        let quad = apply_s_inverse(
+            index,
+            get_bit(w1 as usize, i)
+                | get_bit(w2 as usize, i) << 1
+                | get_bit(w3 as usize, i) << 2
+                | get_bit(w4 as usize, i) << 3,
+        );
+        for l in 0..4 {
+            words[l] |= u32::from(get_bit(quad as usize, l)) << i;
         }
     }
+    LE::write_u32_into(&words, &mut output);
     output
 }
 
@@ -131,18 +158,6 @@ fn xor_block(b1: Block128, k: Key) -> Block128 {
     let mut xored: Block128 = [0u8; 16];
     for (i, _) in b1.iter().enumerate() {
         xored[i] = b1[i] ^ k[i];
-    }
-    xored
-}
-fn xor_table<'a>(t: [&'a [u8]; 128], input: Block128) -> Block128 {
-    let mut xored: Block128 = [0u8; 16];
-    for i in 0..128 {
-        let _t = t[i];
-        let mut b = 0usize;
-        for table_value in _t.iter() {
-            b ^= get_word_bit(input, *table_value as usize) as usize;
-        }
-        set_bit(i, b as u8, &mut xored);
     }
     xored
 }
@@ -182,6 +197,7 @@ impl Serpent {
             let b = words[(4 * i + 1) as usize];
             let c = words[(4 * i + 2) as usize];
             let d = words[(4 * i + 3) as usize];
+            // calculate keys in bitslicing mode
             for j in 0..32 {
                 let input = get_bit(a as usize, j)
                     | get_bit(b as usize, j) << 1
@@ -201,9 +217,6 @@ impl Serpent {
             LE::write_u32(&mut sub_keys[i][4..8], k[4 * i + 1]);
             LE::write_u32(&mut sub_keys[i][8..12], k[4 * i + 2]);
             LE::write_u32(&mut sub_keys[i][12..], k[4 * i + 3]);
-        }
-        for sub_key in &mut sub_keys.iter_mut() {
-            *sub_key = permutate(IP, *sub_key);
         }
 
         sub_keys
@@ -236,15 +249,10 @@ impl BlockCipher for Serpent {
             b[i] = *v;
         }
 
-        let mut bhat = permutate(IP, b);
-
         for i in 0..ROUNDS {
-            round(i, bhat, self.k, &mut bhat);
+            round_bitslice(i, b, self.k, &mut b);
         }
-
-        let cipher = permutate(FP, bhat);
-
-        *block = *GenericArray::from_slice(&cipher);
+        *block = *GenericArray::from_slice(&b);
     }
 
     fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
@@ -254,15 +262,11 @@ impl BlockCipher for Serpent {
             b[i] = *v;
         }
 
-        // IP = FP inverse
-        let mut bhat = permutate(IP, b);
         for i in (0..ROUNDS).rev() {
-            round_inverse(i, bhat, self.k, &mut bhat);
+            round_inverse_bitslice(i, b, self.k, &mut b);
         }
-        // FP = IP inverse
-        let plain = permutate(FP, bhat);
 
-        *block = *GenericArray::from_slice(&plain);
+        *block = *GenericArray::from_slice(&b);
     }
 }
 
