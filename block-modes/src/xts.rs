@@ -81,17 +81,17 @@ impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Xts<C, P> {
         let bs = C::BlockSize::to_usize();
         let buffer_length = buffer.len();
         self.encrypt_blocks(to_blocks_uneven(buffer));
-
         if buffer_length % bs != 0 {
             let encrypted_len = (buffer_length / bs) * bs;
             let leftover = buffer_length - encrypted_len;
             let last_block_index = buffer_length - bs;
             assert!(buffer_length - last_block_index == bs);
             let mut last_block = &mut to_blocks(&mut buffer[last_block_index..])[0];
-            swap::<C::BlockSize>(&mut last_block, bs - leftover);
+            swap(&mut last_block, bs - leftover);
             xor(&mut last_block, &self.tweak);
             self.cipher.encrypt_block(&mut last_block);
             xor(&mut last_block, &self.tweak);
+            swap(&mut buffer[buffer_length - leftover - bs..], leftover);
         }
         Ok(buffer)
     }
@@ -106,19 +106,20 @@ impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Xts<C, P> {
         if buffer_length % bs != 0 {
             let second_to_last_tweak = self.tweak.clone();
             get_next_tweak(&mut self.tweak);
-
             let leftover = buffer_length - (buffer_length / bs) * bs;
-            let last_block_index = buffer_length - bs;
-            assert!(buffer_length - last_block_index == bs);
 
-            let last_block = to_blocks(&mut buffer[last_block_index..]);
-            xor(&mut last_block[0], &self.tweak);
-            self.cipher.decrypt_block(&mut last_block[0]);
-            xor(&mut last_block[0], &self.tweak);
-            swap::<C::BlockSize>(&mut last_block[0], leftover);
+            {
+                let mut last_block = &mut to_blocks_uneven(buffer)[num_of_full_blocks - 1];
+                xor(&mut last_block, &self.tweak);
+                self.cipher.decrypt_block(&mut last_block);
+                xor(&mut last_block, &self.tweak);
+            }
+
+            swap(&mut buffer[buffer_length - leftover - bs..], bs);
+            swap(&mut buffer[buffer_length - bs..], leftover);
             self.tweak = second_to_last_tweak;
         }
-        let last_block = &mut to_blocks(buffer)[num_of_full_blocks - 1];
+        let last_block = &mut to_blocks_uneven(buffer)[num_of_full_blocks - 1];
         xor(last_block, &self.tweak);
         self.cipher.decrypt_block(last_block);
         xor(last_block, &self.tweak);
