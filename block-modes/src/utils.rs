@@ -13,21 +13,30 @@ pub fn xor(buf: &mut [u8], key: &[u8]) {
     }
 }
 
-pub fn lshift_by_one(buf: &mut [u8]) {
-    let last = buf.len() - 1;
-    let mut wrapping = buf[last] >> 7;
-    buf[last] <<= 1;
-    for val in buf.iter_mut().rev().next() {
-        let temp_wrap = *val >> 7;
-        *val <<= 1;
-        *val &= wrapping;
-        wrapping = temp_wrap;
-    }
+// Tweak in XTS mode, little endian,
+// gauss field GF(2^128), x^128 + x^7 + x^2 + x^1 + 1
+pub fn get_next_tweak(buf: &mut [u8]) {
+    assert_eq!(buf.len(), 16);
+
+    let tweak = to_u128(buf);
+    let res = 0x87 * (tweak[0] >> 127);
+
+    tweak[0] = (tweak[0] << 1) ^ res;
 }
 
 pub(crate) type Key<C> = GenericArray<u8, <C as BlockCipher>::KeySize>;
 pub(crate) type Block<C> = GenericArray<u8, <C as BlockCipher>::BlockSize>;
 pub(crate) type ParBlocks<C> = GenericArray<Block<C>, <C as BlockCipher>::ParBlocks>;
+
+pub(crate) fn to_u128(data: &mut [u8]) -> &mut [u128]
+{
+    unsafe {
+        slice::from_raw_parts_mut(
+            data.as_ptr() as *mut u128,
+            1,
+        )
+    }
+}
 
 pub(crate) fn to_blocks<N>(data: &mut [u8]) -> &mut [GenericArray<u8, N>]
     where N: ArrayLength<u8>
