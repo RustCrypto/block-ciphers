@@ -12,30 +12,34 @@ pub fn xor(buf: &mut [u8], key: &[u8]) {
     }
 }
 
-// Tweak in XTS mode, little endian,
+// Tweak in XTS mode
 // gauss field GF(2^128), x^128 + x^7 + x^2 + x^1 + 1
 pub fn get_next_tweak(buf: &mut [u8]) {
     assert_eq!(buf.len(), 16);
 
-    let tweak = to_u128(buf);
-    let res = 0x87 * (tweak[0] >> 127);
+    // Little endian style left shift
+    // Could have been written like in the comment below,
+    // but need one style of shifting both for
+    // little endian and big endian 
+    let mut carry = 0u8;
+    for v in buf.iter_mut() {
+        let to_carry = *v >> 7;
+        *v <<= 1;
+        *v |= carry;
+        carry = to_carry;
+    }
+    buf[0] ^= (0x87 * carry);
 
-    tweak[0] = (tweak[0] << 1) ^ res;
+
+    //let tweak = buf as u128(;
+    //let res = 0x87 * (tweak[0] >> 127);
+
+    //tweak[0] = (tweak[0] << 1) ^ res;
 }
 
 pub(crate) type Key<C> = GenericArray<u8, <C as BlockCipher>::KeySize>;
 pub(crate) type Block<C> = GenericArray<u8, <C as BlockCipher>::BlockSize>;
 pub(crate) type ParBlocks<C> = GenericArray<Block<C>, <C as BlockCipher>::ParBlocks>;
-
-pub(crate) fn to_u128(data: &mut [u8]) -> &mut [u128]
-{
-    unsafe {
-        slice::from_raw_parts_mut(
-            data.as_ptr() as *mut u128,
-            1,
-        )
-    }
-}
 
 pub(crate) fn to_blocks<N>(data: &mut [u8]) -> &mut [GenericArray<u8, N>]
     where N: ArrayLength<u8>
