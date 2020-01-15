@@ -95,31 +95,3 @@ impl BlockCipher for Sm4 {
         BE::write_u32_into(&x, block);
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::Sm4;
-    use block_cipher_trait::BlockCipher;
-
-    #[test]
-    fn example() {
-        let key: [u8; 16] = [
-            0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0xfe, 0xdc, 0xba, 0x98, 0x76, 0x54,
-            0x32, 0x10,
-        ];
-        let cipher = Sm4::new(&key.into());
-        let mut buffer = key.clone().into();
-        cipher.encrypt_block(&mut buffer);
-        assert_eq!(
-            buffer
-                .iter()
-                .map(|c| format!("{:02X}", c))
-                .collect::<Vec<_>>()
-                .concat(),
-            "681EDF34D206965E86B3E94F536E4246"
-        );
-
-        cipher.decrypt_block(&mut buffer);
-        assert_eq!(buffer, key.into());
-    }
-}
