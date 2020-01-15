@@ -3,7 +3,7 @@ use super::generic_array::GenericArray;
 use super::BlockCipher;
 use byteorder::{ByteOrder, BE};
 
-use crate::consts::{CK, FK, SBOX};
+use consts::{CK, FK, SBOX};
 
 #[inline]
 fn tau(a: u32) -> u32 {
