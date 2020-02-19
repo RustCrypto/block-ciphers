@@ -1,0 +1,24 @@
+[package]
+name = "serpent"
+version = "0.6.0"
+authors = ["Blocs <jonathan@cryptoblocs.fr>"]
+license = "MIT/Apache-2.0"
+edition = "2018"
+description = "Serpent block cipher : A Candidate Block Cipher for the Advanced Encryption Standard (AES)"
+documentation = "https://docs.rs/serpent"
+repository = "https://github.com/RustCrypto/block-ciphers"
+keywords = ["crypto", "serpent", "block-cipher"]
+categories = ["cryptography", "no-std"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+byteorder = { version = "1", default-features = false }
+block-cipher-trait = "0.6"
+opaque-debug = "0.2"
+
+[dev-dependencies]
+block-cipher-trait = { version = "0.6", features = ["dev"] }
+
+[badges]
+travis-ci = { repository = "RustCrypto/block-ciphers" }
