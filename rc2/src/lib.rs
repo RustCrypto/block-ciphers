@@ -2,6 +2,7 @@
 //!
 //! [1]: https://en.wikipedia.org/wiki/RC2
 #![no_std]
+#![forbid(unsafe_code)]
 pub extern crate block_cipher_trait;
 #[macro_use] extern crate opaque_debug;
 

@@ -23,6 +23,7 @@
 //! ```
 
 #![no_std]
+#![forbid(unsafe_code)]
 pub extern crate block_cipher_trait;
 extern crate byteorder;
 #[macro_use]

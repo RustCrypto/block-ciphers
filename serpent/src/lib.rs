@@ -4,6 +4,7 @@
 //! [2]: https://www.cl.cam.ac.uk/~fms27/serpent/
 //! [3]: https://github.com/efb9-860a-e752-0dac/serpent
 // #![no_std]
+#![forbid(unsafe_code)]
 pub extern crate block_cipher_trait;
 extern crate byteorder;
 #[macro_use]
