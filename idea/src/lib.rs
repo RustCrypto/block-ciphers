@@ -1,7 +1,9 @@
 //! An implementation of the [IDEA][1] block cipher.
 //!
 //! [1]: https://en.wikipedia.org/wiki/International_Data_Encryption_Algorithm
+
 #![no_std]
+
 pub extern crate block_cipher_trait;
 #[macro_use]
 extern crate opaque_debug;
