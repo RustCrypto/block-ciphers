@@ -11,8 +11,6 @@ repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "serpent", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 byteorder = { version = "1", default-features = false }
 block-cipher-trait = "0.6"

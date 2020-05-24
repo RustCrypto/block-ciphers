@@ -1,11 +1,12 @@
 [package]
 name = "sm4"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["andelf <andelf@gmail.com>"]
-license = "MIT OR Apache-2.0"
+license = "Apache-2.0 OR MIT"
 description = "SM4 block cipher algorithm"
 documentation = "https://docs.rs/sm4"
-repository = "https://github.com/andelf/rust-sca"
+repository = "https://github.com/RustCrypto/block-ciphers/tree/master/rc2"
+readme = "README.md"
 keywords = ["crypto", "sm4", "block-cipher"]
 categories = ["cryptography"]
 
@@ -16,3 +17,6 @@ opaque-debug = "0.2"
 
 [dev-dependencies]
 block-cipher-trait = { version = "0.6", features = ["dev"] }
+
+[badges]
+maintenance = { status = "experimental" }

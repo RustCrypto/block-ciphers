@@ -6,6 +6,7 @@ license = "Apache-2.0 AND MIT"
 description = "IDEA block cipher"
 documentation = "https://docs.rs/idea"
 repository = "https://github.com/RustCrypto/block-ciphers"
+readme = "README.md"
 keywords = ["crypto", "idea", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
