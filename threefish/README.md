@@ -1,4 +1,4 @@
-# RustCrypto: `sm4` block cipher
+# RustCrypto: `threefish` block cipher
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
@@ -33,8 +33,8 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]: https://img.shields.io/crates/v/sm4.svg
-[crate-link]: https://crates.io/crates/sm4
-[docs-image]: https://docs.rs/sm4/badge.svg
-[docs-link]: https://docs.rs/sm4/
+[crate-image]: https://img.shields.io/crates/v/threefish.svg
+[crate-link]: https://crates.io/crates/threefish
+[docs-image]: https://docs.rs/threefish/badge.svg
+[docs-link]: https://docs.rs/threefish/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
