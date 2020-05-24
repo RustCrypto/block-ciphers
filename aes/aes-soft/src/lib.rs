@@ -38,10 +38,10 @@ extern crate byteorder;
 #[macro_use]
 extern crate opaque_debug;
 
-mod simd;
 mod bitslice;
-mod expand;
 mod consts;
+mod expand;
 mod impls;
+mod simd;
 
 pub use impls::{Aes128, Aes192, Aes256};

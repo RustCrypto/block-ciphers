@@ -80,11 +80,11 @@ pub extern crate block_padding;
 #[cfg(feature = "std")]
 extern crate std;
 
-mod utils;
-mod traits;
 mod errors;
-pub use traits::BlockMode;
+mod traits;
+mod utils;
 pub use errors::{BlockModeError, InvalidKeyIvLength};
+pub use traits::BlockMode;
 
 mod cbc;
 pub use cbc::Cbc;

@@ -2,7 +2,8 @@
 #![forbid(unsafe_code)]
 pub extern crate block_cipher_trait;
 extern crate byteorder;
-#[macro_use] extern crate opaque_debug;
+#[macro_use]
+extern crate opaque_debug;
 
 use core::marker::PhantomData;
 

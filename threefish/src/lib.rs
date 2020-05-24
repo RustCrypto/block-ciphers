@@ -2,17 +2,17 @@
 
 #![no_std]
 
-extern crate byte_tools;
 extern crate block_cipher_trait;
+extern crate byte_tools;
 extern crate generic_array;
 use core::ops::BitXor;
 
 mod consts;
-use consts::{C240, R_256, R_512, R_1024, P_256, P_512, P_1024};
+use consts::{C240, P_1024, P_256, P_512, R_1024, R_256, R_512};
 
-use byte_tools::{read_u64v_le, write_u64v_le};
 use block_cipher_trait::BlockCipher;
-use generic_array::typenum::{U1, U32, U64, U128};
+use byte_tools::{read_u64v_le, write_u64v_le};
+use generic_array::typenum::{U1, U128, U32, U64};
 use generic_array::GenericArray;
 
 fn mix(r: u32, x: (u64, u64)) -> (u64, u64) {

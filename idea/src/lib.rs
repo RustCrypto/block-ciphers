@@ -8,12 +8,12 @@ pub extern crate block_cipher_trait;
 #[macro_use]
 extern crate opaque_debug;
 
-pub use block_cipher_trait::BlockCipher;
+use block_cipher_trait::generic_array::typenum::{U1, U16, U8};
 use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::generic_array::typenum::{U1, U8, U16};
+pub use block_cipher_trait::BlockCipher;
 
 mod consts;
-use consts::{ROUNDS, LENGTH_SUB_KEYS, MAXIM, FUYI, ONE};
+use consts::{FUYI, LENGTH_SUB_KEYS, MAXIM, ONE, ROUNDS};
 
 #[derive(Copy, Clone)]
 pub struct Idea {
@@ -25,7 +25,8 @@ impl Idea {
     fn expand_key(&mut self, key: &GenericArray<u8, U16>) {
         let length_key = key.len();
         for i in 0..(length_key / 2) {
-            self.encryption_sub_keys[i] = (u16::from(key[2 * i]) << 8) + u16::from(key[2 * i + 1]);
+            self.encryption_sub_keys[i] =
+                (u16::from(key[2 * i]) << 8) + u16::from(key[2 * i + 1]);
         }
 
         let mut a: u16;
@@ -36,7 +37,7 @@ impl Idea {
             } else {
                 a = self.encryption_sub_keys[i - 7];
             }
-            
+
             if (i + 2) % 8 < 2 {
                 b = self.encryption_sub_keys[i - 14];
             } else {
@@ -52,17 +53,17 @@ impl Idea {
         for i in 0..ROUNDS + 1 {
             let j = i * 6;
             let l = k - j;
-            
-            let (m, n) = if i > 0 && i < 8 {
-                (2, 1)
-            } else {
-                (1, 2)
-            };
 
-            self.decryption_sub_keys[j] = self.mul_inv(self.encryption_sub_keys[l]);
-            self.decryption_sub_keys[j + 1] = self.add_inv(self.encryption_sub_keys[l + m]);
-            self.decryption_sub_keys[j + 2] = self.add_inv(self.encryption_sub_keys[l + n]);
-            self.decryption_sub_keys[j + 3] = self.mul_inv(self.encryption_sub_keys[l + 3]);
+            let (m, n) = if i > 0 && i < 8 { (2, 1) } else { (1, 2) };
+
+            self.decryption_sub_keys[j] =
+                self.mul_inv(self.encryption_sub_keys[l]);
+            self.decryption_sub_keys[j + 1] =
+                self.add_inv(self.encryption_sub_keys[l + m]);
+            self.decryption_sub_keys[j + 2] =
+                self.add_inv(self.encryption_sub_keys[l + n]);
+            self.decryption_sub_keys[j + 3] =
+                self.mul_inv(self.encryption_sub_keys[l + 3]);
         }
 
         k = (ROUNDS - 1) * 6;
@@ -74,7 +75,12 @@ impl Idea {
         }
     }
 
-    fn crypt(&self, block: &mut GenericArray<u8, U8>, sub_keys: &[u16; LENGTH_SUB_KEYS]) {
+    fn crypt(
+        &self,
+        block: &mut GenericArray<u8, U8>,
+        sub_keys: &[u16; LENGTH_SUB_KEYS],
+    )
+    {
         let mut x1 = (u16::from(block[0]) << 8) + (u16::from(block[1]));
         let mut x2 = (u16::from(block[2]) << 8) + (u16::from(block[3]));
         let mut x3 = (u16::from(block[4]) << 8) + (u16::from(block[5]));
@@ -97,7 +103,7 @@ impl Idea {
             x3 = y2 ^ t2;
             x4 = y4 ^ t2;
         }
-        
+
         let y1 = self.mul(x1, sub_keys[48]);
         let y2 = self.add(x3, sub_keys[49]);
         let y3 = self.add(x2, sub_keys[50]);
@@ -141,7 +147,7 @@ impl Idea {
         if a <= 1 {
             a
         } else {
-            let mut x = u32::from(a); 
+            let mut x = u32::from(a);
             let mut y = MAXIM;
             let mut t0 = 1u32;
             let mut t1 = 0u32;
@@ -149,20 +155,18 @@ impl Idea {
                 t1 += y / x * t0;
                 y %= x;
                 if y == 1 {
-                    return (MAXIM - t1) as u16
+                    return (MAXIM - t1) as u16;
                 }
                 t0 += x / y * t1;
                 x %= y;
                 if x == 1 {
-                    return t0 as u16
+                    return t0 as u16;
                 }
             }
         }
     }
 
-    fn add_inv(&self, a: u16) -> u16 {
-        ((FUYI - (u32::from(a))) & ONE) as u16
-    }
+    fn add_inv(&self, a: u16) -> u16 { ((FUYI - (u32::from(a))) & ONE) as u16 }
 }
 
 impl BlockCipher for Idea {
@@ -173,7 +177,7 @@ impl BlockCipher for Idea {
     fn new(key: &GenericArray<u8, U16>) -> Self {
         let mut cipher = Self {
             encryption_sub_keys: [0u16; 52],
-            decryption_sub_keys: [0u16; 52]
+            decryption_sub_keys: [0u16; 52],
         };
         cipher.expand_key(key);
         cipher.invert_sub_keys();

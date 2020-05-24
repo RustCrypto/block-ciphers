@@ -2,13 +2,14 @@
 #![forbid(unsafe_code)]
 pub extern crate block_cipher_trait;
 extern crate byteorder;
-#[macro_use] extern crate opaque_debug;
+#[macro_use]
+extern crate opaque_debug;
 
+use block_cipher_trait::generic_array::typenum::{U1, U16, U32};
+use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::BlockCipher;
 use block_cipher_trait::InvalidKeyLength;
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::generic_array::typenum::{U1, U16, U32};
-use byteorder::{LE, ByteOrder};
+use byteorder::{ByteOrder, LE};
 
 mod consts;
 use consts::{MDS_POLY, QBOX, QORD, RS, RS_POLY};
