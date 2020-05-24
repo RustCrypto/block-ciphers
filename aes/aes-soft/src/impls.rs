@@ -1,19 +1,19 @@
 use core::mem;
 
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::generic_array::typenum::{U16, U8};
 use block_cipher_trait::generic_array::typenum::{U11, U13, U15, U24, U32};
+use block_cipher_trait::generic_array::typenum::{U16, U8};
+use block_cipher_trait::generic_array::GenericArray;
 pub use block_cipher_trait::BlockCipher;
 
+use bitslice::{
+    bit_slice_1x128_with_u32x4, bit_slice_1x16_with_u16,
+    bit_slice_4x4_with_u16, bit_slice_fill_4x4_with_u32x4, decrypt_core,
+    encrypt_core, un_bit_slice_1x128_with_u32x4, un_bit_slice_1x16_with_u16,
+    Bs8State,
+};
+use consts::U32X4_0;
 use expand::expand_key;
 use simd::u32x4;
-use consts::U32X4_0;
-use bitslice::{
-    decrypt_core, encrypt_core, Bs8State, bit_slice_1x128_with_u32x4,
-    bit_slice_1x16_with_u16, bit_slice_4x4_with_u16,
-    bit_slice_fill_4x4_with_u32x4, un_bit_slice_1x128_with_u32x4,
-    un_bit_slice_1x16_with_u16,
-};
 
 pub type Block128 = GenericArray<u8, U16>;
 pub type Block128x8 = GenericArray<GenericArray<u8, U16>, U8>;

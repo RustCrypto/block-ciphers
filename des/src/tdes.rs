@@ -1,9 +1,9 @@
 use super::BlockCipher;
 use des::{gen_keys, Des};
 
-use byteorder::{BE, ByteOrder};
-use generic_array::GenericArray;
+use byteorder::{ByteOrder, BE};
 use generic_array::typenum::{U1, U16, U24, U8};
+use generic_array::GenericArray;
 
 #[derive(Copy, Clone)]
 pub struct TdesEde3 {

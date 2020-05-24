@@ -4,12 +4,13 @@
 #![no_std]
 #![forbid(unsafe_code)]
 pub extern crate block_cipher_trait;
-#[macro_use] extern crate opaque_debug;
+#[macro_use]
+extern crate opaque_debug;
 
+use block_cipher_trait::generic_array::typenum::{U1, U32, U8};
+use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::BlockCipher;
 use block_cipher_trait::InvalidKeyLength;
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::generic_array::typenum::{U1, U32, U8};
 
 mod consts;
 use consts::PI_TABLE;
@@ -62,25 +63,29 @@ impl Rc2 {
     }
 
     fn mix(&self, r: &mut [u16; 4], j: &mut usize) {
-        r[0] = r[0].wrapping_add(self.exp_key[*j])
+        r[0] = r[0]
+            .wrapping_add(self.exp_key[*j])
             .wrapping_add(r[3] & r[2])
             .wrapping_add(!r[3] & r[1]);
         *j += 1;
         r[0] = (r[0] << 1) | (r[0] >> 15);
 
-        r[1] = r[1].wrapping_add(self.exp_key[*j])
+        r[1] = r[1]
+            .wrapping_add(self.exp_key[*j])
             .wrapping_add(r[0] & r[3])
             .wrapping_add(!r[0] & r[2]);
         *j += 1;
         r[1] = (r[1] << 2) | (r[1] >> 14);
 
-        r[2] = r[2].wrapping_add(self.exp_key[*j])
+        r[2] = r[2]
+            .wrapping_add(self.exp_key[*j])
             .wrapping_add(r[1] & r[0])
             .wrapping_add(!r[1] & r[3]);
         *j += 1;
         r[2] = (r[2] << 3) | (r[2] >> 13);
 
-        r[3] = r[3].wrapping_add(self.exp_key[*j])
+        r[3] = r[3]
+            .wrapping_add(self.exp_key[*j])
             .wrapping_add(r[2] & r[1])
             .wrapping_add(!r[2] & r[0]);
         *j += 1;
@@ -96,25 +101,29 @@ impl Rc2 {
 
     fn reverse_mix(&self, r: &mut [u16; 4], j: &mut usize) {
         r[3] = (r[3] << 11) | (r[3] >> 5);
-        r[3] = r[3].wrapping_sub(self.exp_key[*j])
+        r[3] = r[3]
+            .wrapping_sub(self.exp_key[*j])
             .wrapping_sub(r[2] & r[1])
             .wrapping_sub(!r[2] & r[0]);
         *j -= 1;
 
         r[2] = (r[2] << 13) | (r[2] >> 3);
-        r[2] = r[2].wrapping_sub(self.exp_key[*j])
+        r[2] = r[2]
+            .wrapping_sub(self.exp_key[*j])
             .wrapping_sub(r[1] & r[0])
             .wrapping_sub(!r[1] & r[3]);
         *j -= 1;
 
         r[1] = (r[1] << 14) | (r[1] >> 2);
-        r[1] = r[1].wrapping_sub(self.exp_key[*j])
+        r[1] = r[1]
+            .wrapping_sub(self.exp_key[*j])
             .wrapping_sub(r[0] & r[3])
             .wrapping_sub(!r[0] & r[2]);
         *j -= 1;
 
         r[0] = (r[0] << 15) | (r[0] >> 1);
-        r[0] = r[0].wrapping_sub(self.exp_key[*j])
+        r[0] = r[0]
+            .wrapping_sub(self.exp_key[*j])
             .wrapping_sub(r[3] & r[2])
             .wrapping_sub(!r[3] & r[1]);
         *j = j.wrapping_sub(1);

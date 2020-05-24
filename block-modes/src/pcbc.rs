@@ -1,9 +1,9 @@
 use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::BlockCipher;
 use block_padding::Padding;
+use core::marker::PhantomData;
 use traits::BlockMode;
 use utils::{xor, Block};
-use core::marker::PhantomData;
 
 /// [Propagating Cipher Block Chaining][1] (PCBC) mode instance.
 ///

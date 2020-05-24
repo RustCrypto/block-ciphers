@@ -4,13 +4,13 @@
 //extern crate crypto_tests;
 extern crate threefish;
 
-extern crate test;
 extern crate block_cipher_trait;
 extern crate generic_array;
+extern crate test;
 
-use test::Bencher;
 use block_cipher_trait::BlockCipher;
 use generic_array::GenericArray;
+use test::Bencher;
 
 #[bench]
 pub fn encrypt_1_256(bh: &mut Bencher) {

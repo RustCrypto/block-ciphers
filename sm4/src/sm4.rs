@@ -19,23 +19,20 @@ fn tau(a: u32) -> u32 {
 /// L: linear transformation
 #[inline]
 fn el(b: u32) -> u32 {
-    b ^ b.rotate_left(2) ^ b.rotate_left(10) ^ b.rotate_left(18) ^ b.rotate_left(24)
+    b ^ b.rotate_left(2)
+        ^ b.rotate_left(10)
+        ^ b.rotate_left(18)
+        ^ b.rotate_left(24)
 }
 
 #[inline]
-fn el_prime(b: u32) -> u32 {
-    b ^ b.rotate_left(13) ^ b.rotate_left(23)
-}
+fn el_prime(b: u32) -> u32 { b ^ b.rotate_left(13) ^ b.rotate_left(23) }
 
 #[inline]
-fn t(val: u32) -> u32 {
-    el(tau(val))
-}
+fn t(val: u32) -> u32 { el(tau(val)) }
 
 #[inline]
-fn t_prime(val: u32) -> u32 {
-    el_prime(tau(val))
-}
+fn t_prime(val: u32) -> u32 { el_prime(tau(val)) }
 
 #[derive(Copy, Clone)]
 pub struct Sm4 {
@@ -51,7 +48,8 @@ impl BlockCipher for Sm4 {
         let mut mk = [0u32; 4];
         let mut rk = [0u32; 32];
         BE::read_u32_into(key, &mut mk);
-        let mut k = [mk[0] ^ FK[0], mk[1] ^ FK[1], mk[2] ^ FK[2], mk[3] ^ FK[3]];
+        let mut k =
+            [mk[0] ^ FK[0], mk[1] ^ FK[1], mk[2] ^ FK[2], mk[3] ^ FK[3]];
 
         for i in 0..8 {
             k[0] = k[0] ^ t_prime(k[1] ^ k[2] ^ k[3] ^ CK[i * 4]);
