@@ -1,0 +1,17 @@
+[package]
+name = "idea"
+version = "0.1.0"
+authors = ["RustCrypto Developers"]
+license = "MIT/Apache-2.0"
+description = "IDEA block cipher"
+documentation = "https://docs.rs/idea"
+repository = "https://github.com/RustCrypto/block-ciphers"
+keywords = ["crypto", "idea", "block-cipher"]
+categories = ["cryptography", "no-std"]
+
+[dependencies]
+block-cipher-trait = "0.6"
+opaque-debug = "0.2"
+
+[badges]
+travis-ci = { repository = "RustCrypto/block-ciphers" }

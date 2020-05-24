@@ -5,6 +5,7 @@ members = [
     "block-modes",
     "cast5",
     "des",
+    "idea",
     "kuznyechik",
     "magma",
     "rc2",
