@@ -1,31 +1,33 @@
-
 macro_rules! constuct_cipher {
     ($name:ident, $sbox:expr) => {
 
         #[derive(Clone, Copy)]
-        pub struct $name<'a> {
-            c: Gost89<'a>
+        pub struct $name {
+            c: Gost89
         }
 
-        impl<'a> BlockCipher for $name<'a> {
-            type BlockSize = U8;
-
-            fn encrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
-                self.c.encrypt_block(input, output);
-            }
-
-            fn decrypt_block(&self, input: &Block<U8>, output: &mut Block<U8>) {
-                self.c.decrypt_block(input, output);
-            }
-        }
-
-        impl<'a> BlockCipherFixKey for $name<'a> {
+        impl BlockCipher for $name {
             type KeySize = U32;
+            type BlockSize = U8;
+            type ParBlocks = U1;
 
             fn new(key: &GenericArray<u8, U32>) -> Self {
-                $name{c: Gost89::new(key, &$sbox)}
+                let mut c = Gost89 { sbox: &$sbox, key: Default::default() };
+                LE::read_u32_into(key, &mut c.key);
+                Self { c }
+            }
+
+            #[inline]
+            fn encrypt_block(&self, block: &mut Block) {
+                self.c.encrypt(block);
+            }
+
+            #[inline]
+            fn decrypt_block(&self, block: &mut Block) {
+                self.c.decrypt(block);
             }
         }
 
+        impl_opaque_debug!($name);
     }
 }

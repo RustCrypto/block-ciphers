@@ -1,0 +1,21 @@
+[package]
+name = "block-modes"
+version = "0.3.3"
+authors = ["RustCrypto Developers"]
+license = "MIT OR Apache-2.0"
+description = "Block cipher modes of operation"
+documentation = "https://docs.rs/block-modes"
+repository = "https://github.com/RustCrypto/block-ciphers"
+keywords = ["crypto", "block-cipher", "ciphers"]
+
+[dependencies]
+block-padding = "0.1"
+block-cipher-trait = "0.6"
+
+[dev-dependencies]
+aes-soft = "0.3"
+hex-literal = "0.1"
+
+[features]
+default = ["std"]
+std = []

@@ -1,9 +1,47 @@
 language: rust
-rust:
-  - stable
-  - beta
-  - nightly
+services: docker
+sudo: required
+
 matrix:
+  include:
+    - rust: 1.22.0
+      script: cargo test --verbose --all --release
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: stable
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: nightly
+
+    - env: NAME="aes+aesni test"
+      rust: 1.27.0
+      script: ./test_aes.sh
+    - env: NAME="aes+aesni test"
+      rust: stable
+      script: ./test_aes.sh
+    - env: NAME="aes+aesni test"
+      rust: nightly
+      script: ./test_aes.sh
+
+    - env: TARGET=i686-unknown-linux-gnu
+      rust: stable
+    - env: TARGET=powerpc-unknown-linux-gnu
+      rust: stable
+    - env: TARGET=powerpc64-unknown-linux-gnu
+      rust: stable
+    # tests if crates truly can be built without std
+    - env: TARGET=thumbv7em-none-eabi
+      rust: nightly
+      script: ./build_nostd.sh
+      install:
+        - cargo install xargo || true
+        - rustup target install armv7-unknown-linux-gnueabihf
+        - rustup component add rust-src
   allow_failures:
     - rust: nightly
-script: cargo test --verbose --all
+
+install:
+- cargo install cross || true
+
+script:
+  - cross test --verbose --all --release --target $TARGET
+
+cache: cargo

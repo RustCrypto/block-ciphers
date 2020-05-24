@@ -6,8 +6,8 @@ fn gen_exp_sbox(sbox: sboxes::SBox) -> sboxes_exp::SBoxExp {
     for i in 0..4 {
         for j in 0..16 {
             for k in 0..16 {
-                let v: u8 = sbox[2*i][j] + (sbox[2*i+1][k]<<4);
-                let c: usize = j + (k<<4);
+                let v: u8 = sbox[2 * i][j] + (sbox[2 * i + 1][k] << 4);
+                let c: usize = j + (k << 4);
                 out[i][c] = v;
             }
         }

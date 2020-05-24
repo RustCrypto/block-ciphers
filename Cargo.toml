@@ -1,8 +1,16 @@
 [workspace]
 members = [
+    "aes/aes-soft",
     "blowfish",
+    "block-modes",
+    "cast5",
+    "des",
+    "idea",
     "kuznyechik",
     "magma",
     "rc2",
+    "serpent",
+    "sm4",
+    "twofish",
     "threefish",
 ]
