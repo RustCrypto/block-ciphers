@@ -1,4 +1,4 @@
-# RustCrypto: International Data Encryption Algorithm (IDEA)
+# RustCrypto: Blowfish Cipher
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
@@ -7,11 +7,9 @@
 [![Build Status][build-image]][build-link]
 [![HAZMAT][hazmat-image]][hazmat-link]
 
-Experimental Pure Rust implementation of the [IDEA block cipher][1].
+Pure Rust implementation of the [Blowfish block cipher][1].
 
 [Documentation][docs-link]
-
-<img src="https://raw.githubusercontent.com/RustCrypto/meta/master/img/block-ciphers/des.png" width="480px">
 
 ## ⚠️ Security Warning: [Hazmat!][hazmat-link]
 
@@ -54,17 +52,17 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]: https://img.shields.io/crates/v/idea.svg
-[crate-link]: https://crates.io/crates/idea
-[docs-image]: https://docs.rs/idea/badge.svg
-[docs-link]: https://docs.rs/idea/
+[crate-image]: https://img.shields.io/crates/v/blowfish.svg
+[crate-link]: https://crates.io/crates/blowfish
+[docs-image]: https://docs.rs/blowfish/badge.svg
+[docs-link]: https://docs.rs/blowfish/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
 [hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0%EF%B8%8F-red.svg
 [hazmat-link]: https://github.com/RustCrypto/meta/wiki/About-%22hazmat%22-crates
-[build-image]: https://github.com/RustCrypto/block-ciphers/workflows/idea/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/block-ciphers/actions?query=workflow%3Aidea
+[build-image]: https://github.com/RustCrypto/block-ciphers/workflows/blowfish/badge.svg?branch=master&event=push
+[build-link]: https://github.com/RustCrypto/block-ciphers/actions?query=workflow%3Ablowfish
 
 [//]: # (general links)
 
-[1]: https://simple.wikipedia.org/wiki/International_Data_Encryption_Algorithm
+[1]: https://en.wikipedia.org/wiki/Blowfish_(cipher)

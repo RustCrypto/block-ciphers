@@ -1,9 +1,10 @@
 [package]
 name = "magma"
 version = "0.3.0"
+description = "Magma (GOST 28147-89 and GOST R 34.12-2015) block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
-description = "Magma (GOST 28147-89 and GOST R 34.12-2015) block cipher"
+readme = "README.md"
 documentation = "https://docs.rs/magma"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "magma", "gost", "block-cipher"]
