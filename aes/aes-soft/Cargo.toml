@@ -1,18 +1,19 @@
 [package]
 name = "aes-soft"
 version = "0.3.3"
+description = "AES (Rijndael) block ciphers bit-sliced implementation"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
-description = "AES (Rijndael) block ciphers bit-sliced implementation"
+edition = "2018"
 documentation = "https://docs.rs/aes-soft"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "aes", "rijndael", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-block-cipher-trait = "0.6"
+block-cipher = "= 0.7.0-pre"
 opaque-debug = "0.2"
 byteorder = { version = "1", default-features = false }
 
 [dev-dependencies]
-block-cipher-trait = { version = "0.6", features = ["dev"] }
+block-cipher = { version = "0.7.0-pre", features = ["dev"] }

@@ -1,5 +1,5 @@
 #![cfg(feature = "ctr")]
-extern crate aesni;
+
 #[macro_use]
 extern crate stream_cipher;
 

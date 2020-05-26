@@ -1,6 +1,7 @@
-use arch::*;
+use crate::arch::*;
 
-use core::{mem, ptr};
+use core::mem::{self, MaybeUninit};
+use core::ptr;
 
 macro_rules! expand_round {
     ($t1:expr, $t3:expr, $round:expr) => {{
@@ -40,8 +41,8 @@ macro_rules! shuffle {
 #[inline(always)]
 pub(super) fn expand(key: &[u8; 24]) -> ([__m128i; 13], [__m128i; 13]) {
     unsafe {
-        let mut enc_keys: [__m128i; 13] = mem::uninitialized();
-        let mut dec_keys: [__m128i; 13] = mem::uninitialized();
+        let mut enc_keys: [__m128i; 13] = MaybeUninit::uninit().assume_init();
+        let mut dec_keys: [__m128i; 13] = MaybeUninit::uninit().assume_init();
 
         macro_rules! store {
             ($i:expr, $k:expr) => {

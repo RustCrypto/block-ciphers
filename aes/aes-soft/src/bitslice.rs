@@ -1,9 +1,9 @@
-#![cfg_attr(feature="cargo-clippy", allow(unreadable_literal))]
+#![allow(clippy::many_single_char_names)]
 
+use crate::consts::U32X4_1;
+use crate::simd::u32x4;
 use byteorder::{ByteOrder, LE};
-use consts::U32X4_1;
 use core::ops::{BitAnd, BitXor, Not};
-use simd::u32x4;
 
 // This trait defines all of the operations needed for a type to be processed as part of an AES
 // encryption or decryption operation.

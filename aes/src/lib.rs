@@ -13,8 +13,8 @@
 //!
 //! # Usage example
 //! ```
-//! use aes::block_cipher_trait::generic_array::GenericArray;
-//! use aes::block_cipher_trait::BlockCipher;
+//! use aes::block_cipher::generic_array::GenericArray;
+//! use aes::block_cipher::{BlockCipher, NewBlockCipher};
 //! use aes::Aes128;
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
@@ -40,14 +40,16 @@
 //!
 //! For implementations of block cipher modes of operation see
 //! [`block-modes`](https://docs.rs/block-modes) crate.
+
 #![no_std]
-#[cfg(not(all(
-    target_feature = "aes",
-    target_feature = "sse2",
-    any(target_arch = "x86_64", target_arch = "x86"),
-)))]
-extern crate aes_soft;
-pub extern crate block_cipher_trait;
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
+)]
+#![deny(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
+
+pub use block_cipher::{self, BlockCipher, NewBlockCipher};
+
 #[cfg(not(all(
     target_feature = "aes",
     target_feature = "sse2",
@@ -55,12 +57,6 @@ pub extern crate block_cipher_trait;
 )))]
 pub use aes_soft::{Aes128, Aes192, Aes256};
 
-#[cfg(all(
-    target_feature = "aes",
-    target_feature = "sse2",
-    any(target_arch = "x86_64", target_arch = "x86"),
-))]
-extern crate aesni;
 #[cfg(all(
     target_feature = "aes",
     target_feature = "sse2",

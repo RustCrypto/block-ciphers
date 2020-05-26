@@ -1,23 +1,23 @@
-use arch::*;
-use block_cipher_trait::generic_array::typenum::{U16, U8};
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::BlockCipher;
+use crate::arch::*;
+use block_cipher::generic_array::typenum::{U16, U32, U8};
+use block_cipher::generic_array::GenericArray;
+use block_cipher::{BlockCipher, NewBlockCipher};
 
+use crate::utils::{Block128, Block128x8};
 use core::mem;
-use utils::{Block128, Block128x8};
 
 mod expand;
 #[cfg(test)]
 mod test_expand;
 
-/// AES-128 block cipher
+/// AES-256 block cipher
 #[derive(Copy, Clone)]
-pub struct Aes128 {
-    encrypt_keys: [__m128i; 11],
-    decrypt_keys: [__m128i; 11],
+pub struct Aes256 {
+    encrypt_keys: [__m128i; 15],
+    decrypt_keys: [__m128i; 15],
 }
 
-impl Aes128 {
+impl Aes256 {
     #[inline(always)]
     pub(crate) fn encrypt8(&self, mut blocks: [__m128i; 8]) -> [__m128i; 8] {
         let keys = self.encrypt_keys;
@@ -32,7 +32,11 @@ impl Aes128 {
             aesenc8!(blocks, keys[7]);
             aesenc8!(blocks, keys[8]);
             aesenc8!(blocks, keys[9]);
-            aesenclast8!(blocks, keys[10]);
+            aesenc8!(blocks, keys[10]);
+            aesenc8!(blocks, keys[11]);
+            aesenc8!(blocks, keys[12]);
+            aesenc8!(blocks, keys[13]);
+            aesenclast8!(blocks, keys[14]);
         }
         blocks
     }
@@ -51,18 +55,20 @@ impl Aes128 {
             block = _mm_aesenc_si128(block, keys[7]);
             block = _mm_aesenc_si128(block, keys[8]);
             block = _mm_aesenc_si128(block, keys[9]);
-            _mm_aesenclast_si128(block, keys[10])
+            block = _mm_aesenc_si128(block, keys[10]);
+            block = _mm_aesenc_si128(block, keys[11]);
+            block = _mm_aesenc_si128(block, keys[12]);
+            block = _mm_aesenc_si128(block, keys[13]);
+            _mm_aesenclast_si128(block, keys[14])
         }
     }
 }
 
-impl BlockCipher for Aes128 {
-    type KeySize = U16;
-    type BlockSize = U16;
-    type ParBlocks = U8;
+impl NewBlockCipher for Aes256 {
+    type KeySize = U32;
 
     #[inline]
-    fn new(key: &GenericArray<u8, U16>) -> Self {
+    fn new(key: &GenericArray<u8, U32>) -> Self {
         let key = unsafe { mem::transmute(key) };
         let (encrypt_keys, decrypt_keys) = expand::expand(key);
         Self {
@@ -70,6 +76,11 @@ impl BlockCipher for Aes128 {
             decrypt_keys,
         }
     }
+}
+
+impl BlockCipher for Aes256 {
+    type BlockSize = U16;
+    type ParBlocks = U8;
 
     #[inline]
     fn encrypt_block(&self, block: &mut Block128) {
@@ -85,7 +96,11 @@ impl BlockCipher for Aes128 {
         let keys = self.decrypt_keys;
         unsafe {
             let mut b = _mm_loadu_si128(block.as_ptr() as *const __m128i);
-            b = _mm_xor_si128(b, keys[10]);
+            b = _mm_xor_si128(b, keys[14]);
+            b = _mm_aesdec_si128(b, keys[13]);
+            b = _mm_aesdec_si128(b, keys[12]);
+            b = _mm_aesdec_si128(b, keys[11]);
+            b = _mm_aesdec_si128(b, keys[10]);
             b = _mm_aesdec_si128(b, keys[9]);
             b = _mm_aesdec_si128(b, keys[8]);
             b = _mm_aesdec_si128(b, keys[7]);
@@ -113,7 +128,11 @@ impl BlockCipher for Aes128 {
         let keys = self.decrypt_keys;
         unsafe {
             let mut b = load8!(blocks);
-            xor8!(b, keys[10]);
+            xor8!(b, keys[14]);
+            aesdec8!(b, keys[13]);
+            aesdec8!(b, keys[12]);
+            aesdec8!(b, keys[11]);
+            aesdec8!(b, keys[10]);
             aesdec8!(b, keys[9]);
             aesdec8!(b, keys[8]);
             aesdec8!(b, keys[7]);
@@ -129,4 +148,4 @@ impl BlockCipher for Aes128 {
     }
 }
 
-impl_opaque_debug!(Aes128);
+impl_opaque_debug!(Aes256);

@@ -1,10 +1,11 @@
-use arch::*;
-use core::{cmp, mem};
+use crate::arch::*;
+use core::cmp;
+use core::mem::{self, MaybeUninit};
 
 use super::{Aes128, Aes192, Aes256};
-use block_cipher_trait::generic_array::typenum::U16;
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::BlockCipher;
+use block_cipher::generic_array::typenum::U16;
+use block_cipher::generic_array::GenericArray;
+use block_cipher::NewBlockCipher;
 use stream_cipher::{
     LoopError, NewStreamCipher, SyncStreamCipher, SyncStreamCipherSeek,
 };
@@ -84,7 +85,7 @@ macro_rules! impl_ctr {
             #[inline(always)]
             fn next_block8(&mut self) -> [__m128i; 8] {
                 let mut ctr = self.ctr;
-                let mut block8: [__m128i; 8] = unsafe { mem::uninitialized() };
+                let mut block8: [__m128i; 8] = unsafe { MaybeUninit::uninit().assume_init() };
                 for i in 0..8 {
                     block8[i] = swap_bytes(ctr);
                     ctr = inc_be(ctr);
@@ -122,7 +123,7 @@ macro_rules! impl_ctr {
         }
 
         impl NewStreamCipher for $name {
-            type KeySize = <$cipher as BlockCipher>::KeySize;
+            type KeySize = <$cipher as NewBlockCipher>::KeySize;
             type NonceSize = U16;
 
             fn new(

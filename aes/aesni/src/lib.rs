@@ -34,8 +34,8 @@
 //!
 //! # Usage example
 //! ```
-//! use aesni::block_cipher_trait::generic_array::GenericArray;
-//! use aesni::block_cipher_trait::BlockCipher;
+//! use aesni::block_cipher::generic_array::GenericArray;
+//! use aesni::block_cipher::{BlockCipher, NewBlockCipher};
 //! use aesni::Aes128;
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
@@ -70,8 +70,14 @@
 //!
 //! - [Intel AES-NI whitepaper](https://software.intel.com/sites/default/files/article/165683/aes-wp-2012-09-22-v01.pdf)
 //! - [Use of the AES Instruction Set](https://www.cosic.esat.kuleuven.be/ecrypt/AESday/slides/Use_of_the_AES_Instruction_Set.pdf)
+
 #![no_std]
-pub extern crate block_cipher_trait;
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
+)]
+#![warn(missing_docs, rust_2018_idioms)]
+
+pub use block_cipher;
 #[macro_use]
 extern crate opaque_debug;
 #[cfg(feature = "ctr")]
@@ -91,9 +97,9 @@ use core::arch::x86 as arch;
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64 as arch;
 
-pub use aes128::Aes128;
-pub use aes192::Aes192;
-pub use aes256::Aes256;
+pub use crate::aes128::Aes128;
+pub use crate::aes192::Aes192;
+pub use crate::aes256::Aes256;
 
 #[cfg(feature = "ctr")]
-pub use ctr::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
+pub use crate::ctr::{Aes128Ctr, Aes192Ctr, Aes256Ctr};

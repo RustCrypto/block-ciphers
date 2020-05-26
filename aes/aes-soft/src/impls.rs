@@ -1,19 +1,19 @@
 use core::mem;
 
-use block_cipher_trait::generic_array::typenum::{U11, U13, U15, U24, U32};
-use block_cipher_trait::generic_array::typenum::{U16, U8};
-use block_cipher_trait::generic_array::GenericArray;
-pub use block_cipher_trait::BlockCipher;
+use block_cipher::generic_array::typenum::{U11, U13, U15, U24, U32};
+use block_cipher::generic_array::typenum::{U16, U8};
+use block_cipher::generic_array::GenericArray;
+pub use block_cipher::{BlockCipher, NewBlockCipher};
 
-use bitslice::{
+use crate::bitslice::{
     bit_slice_1x128_with_u32x4, bit_slice_1x16_with_u16,
     bit_slice_4x4_with_u16, bit_slice_fill_4x4_with_u32x4, decrypt_core,
     encrypt_core, un_bit_slice_1x128_with_u32x4, un_bit_slice_1x16_with_u16,
     Bs8State,
 };
-use consts::U32X4_0;
-use expand::expand_key;
-use simd::u32x4;
+use crate::consts::U32X4_0;
+use crate::expand::expand_key;
+use crate::simd::u32x4;
 
 pub type Block128 = GenericArray<u8, U16>;
 pub type Block128x8 = GenericArray<GenericArray<u8, U16>, U8>;
@@ -35,10 +35,8 @@ macro_rules! define_aes_impl {
             dec_keys8: [Bs8State<u32x4>; $rounds],
         }
 
-        impl BlockCipher for $name {
+        impl NewBlockCipher for $name {
             type KeySize = $key_size;
-            type BlockSize = U16;
-            type ParBlocks = U8;
 
             #[inline]
             fn new(key: &GenericArray<u8, $key_size>) -> Self {
@@ -69,6 +67,11 @@ macro_rules! define_aes_impl {
                 }
                 c
             }
+        }
+
+        impl BlockCipher for $name {
+            type BlockSize = U16;
+            type ParBlocks = U8;
 
             #[inline]
             fn encrypt_block(&self, block: &mut Block128) {
@@ -86,6 +89,7 @@ macro_rules! define_aes_impl {
 
             #[inline]
             fn encrypt_blocks(&self, blocks: &mut Block128x8) {
+                #[allow(unsafe_code)]
                 let blocks: &mut [u8; 16*8] = unsafe {
                     mem::transmute(blocks)
                 };
@@ -96,6 +100,7 @@ macro_rules! define_aes_impl {
 
             #[inline]
             fn decrypt_blocks(&self, blocks: &mut Block128x8) {
+                #[allow(unsafe_code)]
                 let blocks: &mut [u8; 16*8] = unsafe {
                     mem::transmute(blocks)
                 };

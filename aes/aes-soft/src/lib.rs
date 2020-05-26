@@ -7,8 +7,8 @@
 //!
 //! # Usage example
 //! ```
-//! use aes_soft::block_cipher_trait::generic_array::GenericArray;
-//! use aes_soft::block_cipher_trait::BlockCipher;
+//! use aes_soft::block_cipher::generic_array::GenericArray;
+//! use aes_soft::block_cipher::{BlockCipher, NewBlockCipher};
 //! use aes_soft::Aes128;
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
@@ -32,9 +32,16 @@
 //! assert_eq!(block8, block8_copy);
 //! ```
 //! [1]: https://github.com/DaGenix/rust-crypto/blob/master/src/aessafe.rs
+
 #![no_std]
-pub extern crate block_cipher_trait;
-extern crate byteorder;
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
+)]
+#![deny(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
+
+pub use block_cipher;
+
 #[macro_use]
 extern crate opaque_debug;
 
@@ -44,4 +51,4 @@ mod expand;
 mod impls;
 mod simd;
 
-pub use impls::{Aes128, Aes192, Aes256};
+pub use crate::impls::{Aes128, Aes192, Aes256};

@@ -5,13 +5,14 @@ description = "Facade for AES (Rijndael) block ciphers implementations"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
+edition = "2018"
 documentation = "https://docs.rs/aes"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "aes", "rijndael", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-block-cipher-trait = "0.6"
+block-cipher = "= 0.7.0-pre"
 
 [target.'cfg(not(all(target_feature="aes", target_feature = "sse2", any(target_arch = "x86_64", target_arch = "x86"))))'.dependencies]
 aes-soft = { version = "0.3", path = "aes-soft" }
@@ -20,4 +21,4 @@ aes-soft = { version = "0.3", path = "aes-soft" }
 aesni = { version = "0.6", default-features = false, path = "aesni" }
 
 [dev-dependencies]
-block-cipher-trait = { version = "0.6", features = ["dev"] }
+block-cipher = { version = "= 0.7.0-pre", features = ["dev"] }
