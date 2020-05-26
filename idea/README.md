@@ -11,8 +11,6 @@ Experimental Pure Rust implementation of the [IDEA block cipher][1].
 
 [Documentation][docs-link]
 
-<img src="https://raw.githubusercontent.com/RustCrypto/meta/master/img/block-ciphers/des.png" width="480px">
-
 ## ⚠️ Security Warning: [Hazmat!][hazmat-link]
 
 This crate does not ensure ciphertexts are authentic (i.e. by using a MAC to
