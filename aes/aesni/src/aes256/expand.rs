@@ -1,6 +1,6 @@
-use arch::*;
+use crate::arch::*;
 
-use core::mem;
+use core::mem::MaybeUninit;
 
 macro_rules! expand_round {
     ($enc_keys:expr, $dec_keys:expr, $pos:expr, $round:expr) => {
@@ -64,8 +64,8 @@ macro_rules! expand_round_last {
 #[inline(always)]
 pub(super) fn expand(key: &[u8; 32]) -> ([__m128i; 15], [__m128i; 15]) {
     unsafe {
-        let mut enc_keys: [__m128i; 15] = mem::uninitialized();
-        let mut dec_keys: [__m128i; 15] = mem::uninitialized();
+        let mut enc_keys: [__m128i; 15] = MaybeUninit::uninit().assume_init();
+        let mut dec_keys: [__m128i; 15] = MaybeUninit::uninit().assume_init();
 
         let kp = key.as_ptr() as *const __m128i;
         let k1 = _mm_loadu_si128(kp);

@@ -1,9 +1,9 @@
-#![cfg_attr(feature="cargo-clippy", allow(unreadable_literal))]
+use block_cipher::generic_array::{ArrayLength, GenericArray};
 
-use block_cipher_trait::generic_array::{ArrayLength, GenericArray};
-
-use bitslice::{bit_slice_4x1_with_u16, un_bit_slice_4x1_with_u16, AesOps};
-use consts::RCON;
+use crate::bitslice::{
+    bit_slice_4x1_with_u16, un_bit_slice_4x1_with_u16, AesOps,
+};
+use crate::consts::RCON;
 
 fn ffmulx(x: u32) -> u32 {
     let m1: u32 = 0x80808080;

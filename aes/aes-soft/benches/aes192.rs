@@ -1,9 +1,8 @@
 #![no_std]
 #![feature(test)]
-extern crate aes_soft;
 extern crate test;
 
-use aes_soft::block_cipher_trait::BlockCipher;
+use aes_soft::block_cipher::{BlockCipher, NewBlockCipher};
 use aes_soft::Aes192;
 
 #[bench]

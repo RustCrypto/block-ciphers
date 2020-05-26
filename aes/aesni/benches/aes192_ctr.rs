@@ -2,6 +2,6 @@
 #![feature(test)]
 #[macro_use]
 extern crate stream_cipher;
-extern crate aesni;
+use aesni;
 
 bench_sync!(aesni::Aes192Ctr);

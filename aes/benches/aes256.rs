@@ -1,9 +1,9 @@
 #![no_std]
 #![feature(test)]
-extern crate aes;
+
 extern crate test;
 
-use aes::{Aes256, BlockCipher};
+use aes::{Aes256, BlockCipher, NewBlockCipher};
 
 #[bench]
 pub fn aes256_encrypt(bh: &mut test::Bencher) {
