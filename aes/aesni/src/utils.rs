@@ -1,10 +1,10 @@
 #[cfg(test)]
-use core::mem;
-#[cfg(test)]
 use arch::__m128i;
+#[cfg(test)]
+use core::mem;
 
-use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::{U16, U8};
+use block_cipher_trait::generic_array::GenericArray;
 
 pub type Block128 = GenericArray<u8, U16>;
 pub type Block128x8 = GenericArray<GenericArray<u8, U16>, U8>;
@@ -30,7 +30,7 @@ macro_rules! load8 {
             _mm_loadu_si128($blocks[6].as_ptr() as *const __m128i),
             _mm_loadu_si128($blocks[7].as_ptr() as *const __m128i),
         ]
-    }
+    };
 }
 
 macro_rules! store8 {
@@ -43,7 +43,7 @@ macro_rules! store8 {
         _mm_storeu_si128($blocks[5].as_mut_ptr() as *mut __m128i, $b[5]);
         _mm_storeu_si128($blocks[6].as_mut_ptr() as *mut __m128i, $b[6]);
         _mm_storeu_si128($blocks[7].as_mut_ptr() as *mut __m128i, $b[7]);
-    }
+    };
 }
 
 macro_rules! xor8 {
@@ -56,7 +56,7 @@ macro_rules! xor8 {
         $b[5] = _mm_xor_si128($b[5], $key);
         $b[6] = _mm_xor_si128($b[6], $key);
         $b[7] = _mm_xor_si128($b[7], $key);
-    }
+    };
 }
 
 macro_rules! aesenc8 {
@@ -69,7 +69,7 @@ macro_rules! aesenc8 {
         $b[5] = _mm_aesenc_si128($b[5], $key);
         $b[6] = _mm_aesenc_si128($b[6], $key);
         $b[7] = _mm_aesenc_si128($b[7], $key);
-    }
+    };
 }
 
 macro_rules! aesenclast8 {
@@ -82,7 +82,7 @@ macro_rules! aesenclast8 {
         $b[5] = _mm_aesenclast_si128($b[5], $key);
         $b[6] = _mm_aesenclast_si128($b[6], $key);
         $b[7] = _mm_aesenclast_si128($b[7], $key);
-    }
+    };
 }
 
 macro_rules! aesdec8 {
@@ -95,7 +95,7 @@ macro_rules! aesdec8 {
         $b[5] = _mm_aesdec_si128($b[5], $key);
         $b[6] = _mm_aesdec_si128($b[6], $key);
         $b[7] = _mm_aesdec_si128($b[7], $key);
-    }
+    };
 }
 
 macro_rules! aesdeclast8 {
@@ -108,5 +108,5 @@ macro_rules! aesdeclast8 {
         $b[5] = _mm_aesdeclast_si128($b[5], $key);
         $b[6] = _mm_aesdeclast_si128($b[6], $key);
         $b[7] = _mm_aesdeclast_si128($b[7], $key);
-    }
+    };
 }

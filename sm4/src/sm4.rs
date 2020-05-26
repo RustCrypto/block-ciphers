@@ -26,13 +26,19 @@ fn el(b: u32) -> u32 {
 }
 
 #[inline]
-fn el_prime(b: u32) -> u32 { b ^ b.rotate_left(13) ^ b.rotate_left(23) }
+fn el_prime(b: u32) -> u32 {
+    b ^ b.rotate_left(13) ^ b.rotate_left(23)
+}
 
 #[inline]
-fn t(val: u32) -> u32 { el(tau(val)) }
+fn t(val: u32) -> u32 {
+    el(tau(val))
+}
 
 #[inline]
-fn t_prime(val: u32) -> u32 { el_prime(tau(val)) }
+fn t_prime(val: u32) -> u32 {
+    el_prime(tau(val))
+}
 
 #[derive(Copy, Clone)]
 pub struct Sm4 {

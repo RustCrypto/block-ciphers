@@ -46,8 +46,7 @@ pub trait BlockMode<C: BlockCipher, P: Padding>: Sized {
         mut self,
         buffer: &mut [u8],
         pos: usize,
-    ) -> Result<&[u8], BlockModeError>
-    {
+    ) -> Result<&[u8], BlockModeError> {
         let bs = C::BlockSize::to_usize();
         let buf = P::pad(buffer, pos, bs).map_err(|_| BlockModeError)?;
         self.encrypt_blocks(to_blocks(buf));
@@ -92,8 +91,7 @@ pub trait BlockMode<C: BlockCipher, P: Padding>: Sized {
     fn decrypt_vec(
         mut self,
         ciphertext: &[u8],
-    ) -> Result<Vec<u8>, BlockModeError>
-    {
+    ) -> Result<Vec<u8>, BlockModeError> {
         let bs = C::BlockSize::to_usize();
         if ciphertext.len() % bs != 0 {
             Err(BlockModeError)?

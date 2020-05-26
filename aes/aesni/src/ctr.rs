@@ -1,17 +1,17 @@
-use core::{mem, cmp};
 use arch::*;
+use core::{cmp, mem};
 
 use super::{Aes128, Aes192, Aes256};
-use block_cipher_trait::BlockCipher;
-use block_cipher_trait::generic_array::GenericArray;
 use block_cipher_trait::generic_array::typenum::U16;
+use block_cipher_trait::generic_array::GenericArray;
+use block_cipher_trait::BlockCipher;
 use stream_cipher::{
-    SyncStreamCipher, SyncStreamCipherSeek, NewStreamCipher, LoopError,
+    LoopError, NewStreamCipher, SyncStreamCipher, SyncStreamCipherSeek,
 };
 
 const BLOCK_SIZE: usize = 16;
 const PAR_BLOCKS: usize = 8;
-const PAR_BLOCKS_SIZE: usize = PAR_BLOCKS*BLOCK_SIZE;
+const PAR_BLOCKS_SIZE: usize = PAR_BLOCKS * BLOCK_SIZE;
 
 #[inline(always)]
 pub fn xor(buf: &mut [u8], key: &[u8]) {
@@ -27,7 +27,7 @@ fn xor_block8(buf: &mut [u8], ctr: [__m128i; 8]) {
     unsafe {
         // compiler should unroll this loop
         for i in 0..8 {
-            let ptr = buf.as_mut_ptr().offset(16*i) as *mut __m128i;
+            let ptr = buf.as_mut_ptr().offset(16 * i) as *mut __m128i;
             let data = _mm_loadu_si128(ptr);
             let data = _mm_xor_si128(data, ctr[i as usize]);
             _mm_storeu_si128(ptr, data);
@@ -52,7 +52,6 @@ fn inc_be(v: __m128i) -> __m128i {
 fn load(val: &GenericArray<u8, U16>) -> __m128i {
     unsafe { _mm_loadu_si128(val.as_ptr() as *const __m128i) }
 }
-
 
 macro_rules! impl_ctr {
     ($name:ident, $cipher:ty, $doc:expr) => {

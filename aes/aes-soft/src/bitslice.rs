@@ -529,8 +529,7 @@ pub fn bit_slice_fill_4x4_with_u32x4(
     b: u32,
     c: u32,
     d: u32,
-) -> Bs8State<u32x4>
-{
+) -> Bs8State<u32x4> {
     let mut tmp = [0u8; 128];
     for i in 0..8 {
         LE::write_u32(&mut tmp[i * 16..i * 16 + 4], a);
@@ -702,7 +701,9 @@ impl<T: BitXor<Output = T> + BitAnd<Output = T> + Copy> Gf2Ops for Bs2State<T> {
         Bs2State(a, b)
     }
 
-    fn inv(self) -> Bs2State<T> { self.sq() }
+    fn inv(self) -> Bs2State<T> {
+        self.sq()
+    }
 }
 
 // Operations in GF(2^4) using normal basis (alpha^8,alpha^2)
@@ -901,7 +902,9 @@ impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
         Bs8State(x0out, x1out, x2out, x3out, x4out, x5out, x6out, x7out)
     }
 
-    fn add_round_key(self, rk: &Bs8State<T>) -> Bs8State<T> { self.xor(*rk) }
+    fn add_round_key(self, rk: &Bs8State<T>) -> Bs8State<T> {
+        self.xor(*rk)
+    }
 }
 
 pub trait AesBitValueOps:
@@ -941,11 +944,17 @@ impl AesBitValueOps for u16 {
         ((self & 0xe000) >> 1) | ((self & 0x1000) << 3)
     }
 
-    fn ror1(self) -> u16 { self >> 4 | self << 12 }
+    fn ror1(self) -> u16 {
+        self >> 4 | self << 12
+    }
 
-    fn ror2(self) -> u16 { self >> 8 | self << 8 }
+    fn ror2(self) -> u16 {
+        self >> 8 | self << 8
+    }
 
-    fn ror3(self) -> u16 { self >> 12 | self << 4 }
+    fn ror3(self) -> u16 {
+        self >> 12 | self << 4
+    }
 }
 
 impl u32x4 {
@@ -973,11 +982,15 @@ impl u32x4 {
 impl Not for u32x4 {
     type Output = u32x4;
 
-    fn not(self) -> u32x4 { self ^ U32X4_1 }
+    fn not(self) -> u32x4 {
+        self ^ U32X4_1
+    }
 }
 
 impl Default for u32x4 {
-    fn default() -> u32x4 { u32x4(0, 0, 0, 0) }
+    fn default() -> u32x4 {
+        u32x4(0, 0, 0, 0)
+    }
 }
 
 impl AesBitValueOps for u32x4 {

@@ -41,26 +41,29 @@
 //! For implementations of block cipher modes of operation see
 //! [`block-modes`](https://docs.rs/block-modes) crate.
 #![no_std]
-pub extern crate block_cipher_trait;
 #[cfg(not(all(
-    target_feature="aes", target_feature = "sse2",
+    target_feature = "aes",
+    target_feature = "sse2",
     any(target_arch = "x86_64", target_arch = "x86"),
 )))]
 extern crate aes_soft;
+pub extern crate block_cipher_trait;
 #[cfg(not(all(
-    target_feature="aes", target_feature = "sse2",
+    target_feature = "aes",
+    target_feature = "sse2",
     any(target_arch = "x86_64", target_arch = "x86"),
 )))]
 pub use aes_soft::{Aes128, Aes192, Aes256};
 
-
 #[cfg(all(
-    target_feature="aes", target_feature = "sse2",
+    target_feature = "aes",
+    target_feature = "sse2",
     any(target_arch = "x86_64", target_arch = "x86"),
 ))]
 extern crate aesni;
 #[cfg(all(
-    target_feature="aes", target_feature = "sse2",
+    target_feature = "aes",
+    target_feature = "sse2",
     any(target_arch = "x86_64", target_arch = "x86"),
 ))]
 pub use aesni::{Aes128, Aes192, Aes256};

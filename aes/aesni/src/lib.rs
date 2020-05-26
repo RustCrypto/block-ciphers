@@ -72,7 +72,8 @@
 //! - [Use of the AES Instruction Set](https://www.cosic.esat.kuleuven.be/ecrypt/AESday/slides/Use_of_the_AES_Instruction_Set.pdf)
 #![no_std]
 pub extern crate block_cipher_trait;
-#[macro_use] extern crate opaque_debug;
+#[macro_use]
+extern crate opaque_debug;
 #[cfg(feature = "ctr")]
 pub extern crate stream_cipher;
 #[cfg(not(feature = "nocheck"))]
@@ -85,10 +86,10 @@ mod aes256;
 #[cfg(feature = "ctr")]
 mod ctr;
 
-#[cfg(target_arch = "x86_64")]
-use core::arch::x86_64 as arch;
 #[cfg(target_arch = "x86")]
 use core::arch::x86 as arch;
+#[cfg(target_arch = "x86_64")]
+use core::arch::x86_64 as arch;
 
 pub use aes128::Aes128;
 pub use aes192::Aes192;

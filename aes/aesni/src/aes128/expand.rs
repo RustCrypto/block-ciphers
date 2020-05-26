@@ -21,7 +21,7 @@ macro_rules! expand_round {
         _mm_store_si128($enc_keys.as_mut_ptr().offset($pos), t1);
         let t1 = if $pos != 10 { _mm_aesimc_si128(t1) } else { t1 };
         _mm_store_si128($dec_keys.as_mut_ptr().offset($pos), t1);
-    }
+    };
 }
 
 #[inline(always)]

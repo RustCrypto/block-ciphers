@@ -31,7 +31,9 @@ pub struct Serpent {
     k: Subkeys,
 }
 
-fn get_bit(x: usize, i: usize) -> u8 { (x >> i) as u8 & 0x01 }
+fn get_bit(x: usize, i: usize) -> u8 {
+    (x >> i) as u8 & 0x01
+}
 
 fn linear_transform_bitslice(input: Block128, output: &mut Block128) {
     let mut words = [0u32; 4];
@@ -72,8 +74,7 @@ fn round_bitslice(
     b_i: Block128,
     k: Subkeys,
     b_output: &mut Block128,
-)
-{
+) {
     let xored_block = xor_block(b_i, k[i]);
 
     let s_i = apply_s_bitslice(i, xored_block);
@@ -89,8 +90,7 @@ fn round_inverse_bitslice(
     b_i_next: Block128,
     k: Subkeys,
     b_output: &mut Block128,
-)
-{
+) {
     let mut s_i = [0u8; 16];
     if i == ROUNDS - 1 {
         s_i = xor_block(b_i_next, k[ROUNDS]);
@@ -103,7 +103,9 @@ fn round_inverse_bitslice(
     *b_output = xor_block(xored, k[i]);
 }
 
-fn apply_s(index: usize, nibble: u8) -> u8 { S[index % 8][nibble as usize] }
+fn apply_s(index: usize, nibble: u8) -> u8 {
+    S[index % 8][nibble as usize]
+}
 fn apply_s_inverse(index: usize, nibble: u8) -> u8 {
     S_INVERSE[index % 8][nibble as usize]
 }

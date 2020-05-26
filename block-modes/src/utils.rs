@@ -18,7 +18,9 @@ pub(crate) type ParBlocks<C> =
     GenericArray<Block<C>, <C as BlockCipher>::ParBlocks>;
 
 pub(crate) fn to_blocks<N>(data: &mut [u8]) -> &mut [GenericArray<u8, N>]
-where N: ArrayLength<u8> {
+where
+    N: ArrayLength<u8>,
+{
     let n = N::to_usize();
     debug_assert!(data.len() % n == 0);
     unsafe {
