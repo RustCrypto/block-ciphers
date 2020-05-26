@@ -30,7 +30,7 @@ jobs:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
           override: true
-      - working-directory: aes/aes
+      - working-directory: aes
         run: cargo build --no-default-features --release --target ${{ matrix.target }}
   test:
     runs-on: ubuntu-latest
@@ -50,4 +50,4 @@ jobs:
         cargo test --no-default-features
         cargo test
         cargo test --all-features
-      working-directory: aes/aes
+      working-directory: aes

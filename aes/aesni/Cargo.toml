@@ -23,8 +23,6 @@ default = ["ctr"]
 ctr = ["stream-cipher"]
 nocheck = []
 
-[workspace]
-
 [package.metadata.docs.rs]
 rustc-args = ["-C", "target-feature=+aes,+ssse3"]
 rustdoc-args = ["-C", "target-feature=+aes,+ssse3"]
