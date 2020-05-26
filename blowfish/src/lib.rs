@@ -177,13 +177,17 @@ impl Blowfish<BE> {
         }
     }
 
-    pub fn bc_init_state() -> Blowfish<BE> { Blowfish::init_state() }
+    pub fn bc_init_state() -> Blowfish<BE> {
+        Blowfish::init_state()
+    }
 
     pub fn bc_encrypt(&self, l: u32, r: u32) -> (u32, u32) {
         self.encrypt(l, r)
     }
 
-    pub fn bc_expand_key(&mut self, key: &[u8]) { self.expand_key(key) }
+    pub fn bc_expand_key(&mut self, key: &[u8]) {
+        self.expand_key(key)
+    }
 }
 
 impl_opaque_debug!(Blowfish);

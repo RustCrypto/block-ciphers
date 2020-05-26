@@ -1,7 +1,2 @@
 max_width = 80
 force_explicit_abi = false
-fn_single_line = true
-match_block_trailing_comma = true
-normalize_comments = false
-imports_indent = "Block"
-where_single_line = true

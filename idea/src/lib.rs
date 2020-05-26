@@ -79,8 +79,7 @@ impl Idea {
         &self,
         block: &mut GenericArray<u8, U8>,
         sub_keys: &[u16; LENGTH_SUB_KEYS],
-    )
-    {
+    ) {
         let mut x1 = (u16::from(block[0]) << 8) + (u16::from(block[1]));
         let mut x2 = (u16::from(block[2]) << 8) + (u16::from(block[3]));
         let mut x3 = (u16::from(block[4]) << 8) + (u16::from(block[5]));
@@ -166,7 +165,9 @@ impl Idea {
         }
     }
 
-    fn add_inv(&self, a: u16) -> u16 { ((FUYI - (u32::from(a))) & ONE) as u16 }
+    fn add_inv(&self, a: u16) -> u16 {
+        ((FUYI - (u32::from(a))) & ONE) as u16
+    }
 }
 
 impl BlockCipher for Idea {

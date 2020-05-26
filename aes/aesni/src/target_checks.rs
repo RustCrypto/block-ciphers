@@ -4,7 +4,11 @@ compile_error!("crate can only be used on x86 and x86_64 architectures");
 
 #[cfg(all(
     feature = "ctr",
-    not(all(target_feature = "aes", target_feature = "sse2", target_feature = "ssse3")),
+    not(all(
+        target_feature = "aes",
+        target_feature = "sse2",
+        target_feature = "ssse3"
+    )),
 ))]
 compile_error!(
     "enable aes and ssse3 target features, e.g. with \

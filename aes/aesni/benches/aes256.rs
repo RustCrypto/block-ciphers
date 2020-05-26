@@ -4,8 +4,8 @@
 extern crate aesni;
 extern crate test;
 
-use aesni::Aes256;
 use aesni::block_cipher_trait::BlockCipher;
+use aesni::Aes256;
 
 #[bench]
 pub fn aes256_encrypt(bh: &mut test::Bencher) {

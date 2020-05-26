@@ -18,7 +18,9 @@ impl fmt::Display for BlockModeError {
 
 #[cfg(feature = "std")]
 impl error::Error for BlockModeError {
-    fn description(&self) -> &str { "block mode error" }
+    fn description(&self) -> &str {
+        "block mode error"
+    }
 }
 
 impl fmt::Display for InvalidKeyIvLength {
