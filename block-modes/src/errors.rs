@@ -11,7 +11,7 @@ pub struct BlockModeError;
 pub struct InvalidKeyIvLength;
 
 impl fmt::Display for BlockModeError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         f.write_str("BlockModeError")
     }
 }
@@ -24,7 +24,7 @@ impl error::Error for BlockModeError {
 }
 
 impl fmt::Display for InvalidKeyIvLength {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         f.write_str("InvalidKeyIvLength")
     }
 }

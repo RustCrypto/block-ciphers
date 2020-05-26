@@ -1,7 +1,6 @@
-use block_cipher_trait::generic_array::typenum::Unsigned;
-use block_cipher_trait::generic_array::ArrayLength;
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::BlockCipher;
+use block_cipher::generic_array::typenum::Unsigned;
+use block_cipher::generic_array::{ArrayLength, GenericArray};
+use block_cipher::{BlockCipher, NewBlockCipher};
 use core::slice;
 
 #[inline(always)]
@@ -12,7 +11,7 @@ pub fn xor(buf: &mut [u8], key: &[u8]) {
     }
 }
 
-pub(crate) type Key<C> = GenericArray<u8, <C as BlockCipher>::KeySize>;
+pub(crate) type Key<C> = GenericArray<u8, <C as NewBlockCipher>::KeySize>;
 pub(crate) type Block<C> = GenericArray<u8, <C as BlockCipher>::BlockSize>;
 pub(crate) type ParBlocks<C> =
     GenericArray<Block<C>, <C as BlockCipher>::ParBlocks>;
@@ -23,6 +22,8 @@ where
 {
     let n = N::to_usize();
     debug_assert!(data.len() % n == 0);
+
+    #[allow(unsafe_code)]
     unsafe {
         slice::from_raw_parts_mut(
             data.as_ptr() as *mut GenericArray<u8, N>,
@@ -38,6 +39,8 @@ pub(crate) fn get_par_blocks<C: BlockCipher>(
     let n_par = blocks.len() / pb;
 
     let (par, single) = blocks.split_at_mut(n_par * pb);
+
+    #[allow(unsafe_code)]
     let par = unsafe {
         slice::from_raw_parts_mut(par.as_ptr() as *mut ParBlocks<C>, n_par)
     };

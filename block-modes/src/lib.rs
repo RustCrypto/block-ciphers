@@ -8,9 +8,7 @@
 //! # Usage example
 //! ```
 //! #[macro_use] extern crate hex_literal;
-//! extern crate aes_soft as aes;
-//! extern crate block_modes;
-//!
+//! # use aes_soft as aes;
 //! use block_modes::{BlockMode, Cbc};
 //! use block_modes::block_padding::Pkcs7;
 //! use aes::Aes128;
@@ -46,9 +44,7 @@
 //! `encrypt_vec` and `descrypt_vec` methods:
 //! ```
 //! # #[macro_use] extern crate hex_literal;
-//! # extern crate aes_soft as aes;
-//! # extern crate block_modes;
-//! #
+//! # use aes_soft as aes;
 //! # use block_modes::{BlockMode, Cbc};
 //! # use block_modes::block_padding::Pkcs7;
 //! # use aes::Aes128;
@@ -74,21 +70,27 @@
 //!
 //! [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation
 //! [2]: https://github.com/RustCrypto/stream-ciphers
+
 #![no_std]
-extern crate block_cipher_trait;
-pub extern crate block_padding;
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
+)]
+#![deny(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
+
+pub use block_padding;
 #[cfg(feature = "std")]
 extern crate std;
 
 mod errors;
 mod traits;
 mod utils;
-pub use errors::{BlockModeError, InvalidKeyIvLength};
-pub use traits::BlockMode;
+pub use crate::errors::{BlockModeError, InvalidKeyIvLength};
+pub use crate::traits::BlockMode;
 
 mod cbc;
-pub use cbc::Cbc;
+pub use crate::cbc::Cbc;
 mod ecb;
-pub use ecb::Ecb;
+pub use crate::ecb::Ecb;
 mod pcbc;
-pub use pcbc::Pcbc;
+pub use crate::pcbc::Pcbc;
