@@ -1,9 +1,10 @@
 [package]
 name = "kuznyechik"
 version = "0.3.0"
+description = "Kuznyechik (GOST R 34.12-2015) block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
-description = "Kuznyechik (GOST R 34.12-2015) block cipher"
+readme = "README.md"
 documentation = "https://docs.rs/kuznyechik"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "kuznyechik", "gost", "block-cipher"]
@@ -15,6 +16,3 @@ opaque-debug = "0.2"
 
 [dev-dependencies]
 block-cipher-trait = { version = "0.6", features = ["dev"] }
-
-[badges]
-travis-ci = { repository = "RustCrypto/block-ciphers" }

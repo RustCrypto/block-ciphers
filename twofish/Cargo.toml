@@ -1,9 +1,10 @@
 [package]
 name = "twofish"
 version = "0.2.0"
+description = "Twofish block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
-description = "Twofish block cipher"
+readme = "README.md"
 documentation = "https://docs.rs/twofish"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "twofish", "block-cipher"]

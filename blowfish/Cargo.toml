@@ -1,9 +1,10 @@
 [package]
 name = "blowfish"
 version = "0.4.0"
+description = "Blowfish block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
-description = "Blowfish block cipher"
+readme = "README.md"
 documentation = "https://docs.rs/blowfish"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "blowfish", "block-cipher"]

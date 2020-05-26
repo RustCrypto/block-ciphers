@@ -1,24 +1,45 @@
-# RustCrypto: `serpent` block cipher
+# RustCrypto: Serpent Cipher
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
 ![Apache2/MIT licensed][license-image]
+![Rust Version][rustc-image]
+[![Build Status][build-image]][build-link]
+[![HAZMAT][hazmat-image]][hazmat-link]
+
+Experimental Pure Rust implementation of the [IDEA cipher][1].
 
 [Documentation][docs-link]
 
-## Warnings
+<img src="https://raw.githubusercontent.com/RustCrypto/meta/master/img/block-ciphers/serpent.png" width="200px">
 
-This is an experimental pure Rust implementation of the Serpent block cipher.
+## ⚠️ Security Warning: [Hazmat!][hazmat-link]
 
-It has never received any review by professional cryptographers.
+This crate does not ensure ciphertexts are authentic (i.e. by using a MAC to
+verify ciphertext integerity), which can lead to serious vulnerabilities
+if used incorrectly!
 
-We recommend it should not be used in production applications.
+No security audits of this crate have ever been performed, and it has not been
+thoroughly assessed to ensure its operation is constant-time on common CPU
+architectures.
 
-**USE AT YOUR OWN RISK.**
+USE AT YOUR OWN RISK!
+
+## Minimum Supported Rust Version
+
+Rust **1.41** or higher.
+
+Minimum supported Rust version can be changed in the future, but it will be
+done with a minor version bump.
+
+## SemVer Policy
+
+- All on-by-default features of this library are covered by SemVer
+- MSRV is considered exempt from SemVer as noted above
 
 ## License
 
-Licensed under either of
+Licensed under either of:
 
  * [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
  * [MIT license](http://opensource.org/licenses/MIT)
@@ -38,3 +59,12 @@ dual licensed as above, without any additional terms or conditions.
 [docs-image]: https://docs.rs/serpent/badge.svg
 [docs-link]: https://docs.rs/serpent/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
+[hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0%EF%B8%8F-red.svg
+[hazmat-link]: https://github.com/RustCrypto/meta/wiki/About-%22hazmat%22-crates
+[build-image]: https://github.com/RustCrypto/block-ciphers/workflows/serpent/badge.svg?branch=master&event=push
+[build-link]: https://github.com/RustCrypto/block-ciphers/actions?query=workflow%3Aserpent
+
+[//]: # (general links)
+
+[1]: https://en.wikipedia.org/wiki/Serpent_(cipher)

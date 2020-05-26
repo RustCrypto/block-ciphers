@@ -1,12 +1,12 @@
 [package]
 name = "idea"
 version = "0.0.1"
+description = "IDEA block cipher"
 authors = ["RustCrypto Developers"]
 license = "Apache-2.0 AND MIT"
-description = "IDEA block cipher"
+readme = "README.md"
 documentation = "https://docs.rs/idea"
 repository = "https://github.com/RustCrypto/block-ciphers"
-readme = "README.md"
 keywords = ["crypto", "idea", "block-cipher"]
 categories = ["cryptography", "no-std"]
 

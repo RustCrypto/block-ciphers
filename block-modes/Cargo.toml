@@ -1,9 +1,10 @@
 [package]
 name = "block-modes"
 version = "0.3.3"
+description = "Block cipher modes of operation"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
-description = "Block cipher modes of operation"
+readme = "README.md"
 documentation = "https://docs.rs/block-modes"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "block-cipher", "ciphers"]

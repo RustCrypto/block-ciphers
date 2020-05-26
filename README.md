@@ -1,4 +1,4 @@
-# RustCrypto: block ciphers [![Build Status](https://travis-ci.org/RustCrypto/block-ciphers.svg?branch=master)](https://travis-ci.org/RustCrypto/block-ciphers)
+# RustCrypto: block ciphers
 
 Collection of [block ciphers][1] and [block modes][2] written in pure Rust.
 
@@ -18,6 +18,7 @@ cryptographic and security reviews.
 |----------|------------|------------|-----------|------|
 | [AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) | Rijndael | `aes` <br/><br/> `aesni` <br/><br/> `aes-soft` | [![crates.io](https://img.shields.io/crates/v/aes.svg)](https://crates.io/crates/aes) <br/><br/> [![crates.io](https://img.shields.io/crates/v/aesni.svg)](https://crates.io/crates/aesni)  <br/><br/> [![crates.io](https://img.shields.io/crates/v/aes-soft.svg)](https://crates.io/crates/aes-soft) | [![Documentation](https://docs.rs/aes/badge.svg)](https://docs.rs/aes)  <br/><br/> [![Documentation](https://docs.rs/aesni/badge.svg)](https://docs.rs/aesni)  <br/><br/> [![Documentation](https://docs.rs/aes-soft/badge.svg)](https://docs.rs/aes-soft) |
 | [Blowfish](https://en.wikipedia.org/wiki/Blowfish_(cipher)) |   | `blowfish` | [![crates.io](https://img.shields.io/crates/v/blowfish.svg)](https://crates.io/crates/blowfish) | [![Documentation](https://docs.rs/blowfish/badge.svg)](https://docs.rs/blowfish) |
+| [CAST5](https://en.wikipedia.org/wiki/CAST-128) | CAST-128 | `cast5` | [![crates.io](https://img.shields.io/crates/v/cast5.svg)](https://crates.io/crates/cast5) | [![Documentation](https://docs.rs/cast5/badge.svg)](https://docs.rs/cast5) |
 | [DES](https://en.wikipedia.org/wiki/Data_Encryption_Standard) + [3DES](https://en.wikipedia.org/wiki/Triple_DES) |  DEA + 3DEA  | `des` | [![crates.io](https://img.shields.io/crates/v/des.svg)](https://crates.io/crates/des) | [![Documentation](https://docs.rs/des/badge.svg)](https://docs.rs/des) |
 | [IDEA](https://simple.wikipedia.org/wiki/International_Data_Encryption_Algorithm) | | `idea` | [![crates.io](https://img.shields.io/crates/v/idea.svg)](https://crates.io/crates/idea) | [![Documentation](https://docs.rs/idea/badge.svg)](https://docs.rs/idea) |
 | [Kuznyechik](https://en.wikipedia.org/wiki/Kuznyechik) |  GOST R 34.12-2015  | `kuznyechik` | [![crates.io](https://img.shields.io/crates/v/kuznyechik.svg)](https://crates.io/crates/kuznyechik) | [![Documentation](https://docs.rs/kuznyechik/badge.svg)](https://docs.rs/kuznyechik) |
@@ -29,8 +30,9 @@ cryptographic and security reviews.
 | [Threefish](https://en.wikipedia.org/wiki/Threefish) | | `threefish` | [![crates.io](https://img.shields.io/crates/v/threefish.svg)](https://crates.io/crates/threefish) | [![Documentation](https://docs.rs/threefish/badge.svg)](https://docs.rs/threefish) |
 
 ### Additional crates
+
 | Crate name | crates.io |  Docs  |
-| :---------:| :--------:| :-----:|
+|------------|-----------|--------|
 | `block-modes` | [![crates.io](https://img.shields.io/crates/v/block-modes.svg)](https://crates.io/crates/block-modes) | [![Documentation](https://docs.rs/block-modes/badge.svg)](https://docs.rs/block-modes) |
 
 ### Minimum Supported Rust Version
