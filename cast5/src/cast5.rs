@@ -1,14 +1,15 @@
-use block_cipher_trait::generic_array::typenum::{U1, U16, U8};
-use block_cipher_trait::generic_array::GenericArray;
+use block_cipher::generic_array::typenum::{U1, U16, U8};
+use block_cipher::generic_array::GenericArray;
 
-use block_cipher_trait::{BlockCipher, InvalidKeyLength};
+use block_cipher::{BlockCipher, InvalidKeyLength, NewBlockCipher};
 use byteorder::{BigEndian, ByteOrder};
 
-use consts::*;
-use schedule::key_schedule;
+use crate::consts::*;
+use crate::schedule::key_schedule;
 
 type Block = GenericArray<u8, U8>;
 
+/// The CAST5 block cipher.
 #[derive(Clone, Copy)]
 pub struct Cast5 {
     masking: [u32; 16],
@@ -77,10 +78,8 @@ macro_rules! f3 {
     }};
 }
 
-impl BlockCipher for Cast5 {
+impl NewBlockCipher for Cast5 {
     type KeySize = U16;
-    type BlockSize = U8;
-    type ParBlocks = U1;
 
     fn new(key: &GenericArray<u8, U16>) -> Self {
         Self::new_varkey(&key).unwrap()
@@ -103,6 +102,11 @@ impl BlockCipher for Cast5 {
         }
         Ok(cast5)
     }
+}
+
+impl BlockCipher for Cast5 {
+    type BlockSize = U8;
+    type ParBlocks = U1;
 
     #[inline]
     fn encrypt_block(&self, block: &mut Block) {

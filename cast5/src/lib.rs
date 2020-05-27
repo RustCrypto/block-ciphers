@@ -5,8 +5,8 @@
 //!
 //! # Usage example
 //! ```
-//! use cast5::block_cipher_trait::generic_array::GenericArray;
-//! use cast5::block_cipher_trait::BlockCipher;
+//! use cast5::block_cipher::generic_array::GenericArray;
+//! use cast5::block_cipher::{BlockCipher, NewBlockCipher};
 //! use cast5::Cast5;
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
@@ -22,17 +22,22 @@
 //! assert_eq!(block, block_copy);
 //! ```
 
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
+)]
+#![deny(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
 #![no_std]
 #![forbid(unsafe_code)]
-pub extern crate block_cipher_trait;
-extern crate byteorder;
+pub use block_cipher;
+
 #[macro_use]
 extern crate opaque_debug;
 
-pub use block_cipher_trait::BlockCipher;
+pub use block_cipher::BlockCipher;
 
 mod cast5;
 mod consts;
 mod schedule;
 
-pub use cast5::Cast5;
+pub use crate::cast5::Cast5;
