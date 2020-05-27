@@ -5,17 +5,21 @@
 //! [3]: https://github.com/efb9-860a-e752-0dac/serpent
 
 #![no_std]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
+)]
 #![forbid(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
 
-pub extern crate block_cipher_trait;
-extern crate byteorder;
 #[macro_use]
 extern crate opaque_debug;
 
-use block_cipher_trait::generic_array::typenum::{U1, U16};
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::BlockCipher;
-use block_cipher_trait::InvalidKeyLength;
+pub use block_cipher;
+
+use block_cipher::generic_array::typenum::{U1, U16};
+use block_cipher::generic_array::GenericArray;
+use block_cipher::InvalidKeyLength;
+use block_cipher::{BlockCipher, NewBlockCipher};
 use byteorder::{ByteOrder, LE};
 
 mod consts;
@@ -26,6 +30,7 @@ type Subkeys = [Key; ROUNDS + 1];
 type Block128 = [u8; 16];
 type Word = [u8; 16];
 
+/// Serpent block cipher
 #[derive(Clone)]
 pub struct Serpent {
     k: Subkeys,
@@ -52,9 +57,11 @@ fn linear_transform_bitslice(input: Block128, output: &mut Block128) {
 
     LE::write_u32_into(&words, output);
 }
+
 fn linear_transform_inverse_bitslice(input: Block128, output: &mut Block128) {
     let mut words = [0u32; 4];
     LE::read_u32_into(&input, &mut words);
+
     words[2] = words[2].rotate_right(22);
     words[0] = words[0].rotate_right(5);
     words[2] = words[2] ^ words[3] ^ (words[1] << 7);
@@ -85,6 +92,7 @@ fn round_bitslice(
         linear_transform_bitslice(s_i, b_output);
     }
 }
+
 fn round_inverse_bitslice(
     i: usize,
     b_i_next: Block128,
@@ -92,6 +100,7 @@ fn round_inverse_bitslice(
     b_output: &mut Block128,
 ) {
     let mut s_i = [0u8; 16];
+
     if i == ROUNDS - 1 {
         s_i = xor_block(b_i_next, k[ROUNDS]);
     } else {
@@ -106,17 +115,21 @@ fn round_inverse_bitslice(
 fn apply_s(index: usize, nibble: u8) -> u8 {
     S[index % 8][nibble as usize]
 }
+
 fn apply_s_inverse(index: usize, nibble: u8) -> u8 {
     S_INVERSE[index % 8][nibble as usize]
 }
 
 fn apply_s_bitslice(index: usize, word: Word) -> Word {
     let mut output = [0u8; 16];
+
     let w1 = LE::read_u32(&word[0..4]);
     let w2 = LE::read_u32(&word[4..8]);
     let w3 = LE::read_u32(&word[8..12]);
     let w4 = LE::read_u32(&word[12..16]);
+
     let mut words = [0u32; 4];
+
     for i in 0..32 {
         let quad = apply_s(
             index,
@@ -129,9 +142,12 @@ fn apply_s_bitslice(index: usize, word: Word) -> Word {
             words[l] |= u32::from(get_bit(quad as usize, l)) << i;
         }
     }
+
     LE::write_u32_into(&words, &mut output);
+
     output
 }
+
 fn apply_s_inverse_bitslice(index: usize, word: Word) -> Word {
     let mut output = [0u8; 16];
     let w1 = LE::read_u32(&word[0..4]);
@@ -224,10 +240,9 @@ impl Serpent {
     }
 }
 
-impl BlockCipher for Serpent {
+impl NewBlockCipher for Serpent {
     type KeySize = U16;
-    type BlockSize = U16;
-    type ParBlocks = U1;
+
     fn new(key: &GenericArray<u8, U16>) -> Self {
         Self::new_varkey(key).unwrap()
     }
@@ -242,6 +257,11 @@ impl BlockCipher for Serpent {
             k: Serpent::key_schedule(k),
         })
     }
+}
+
+impl BlockCipher for Serpent {
+    type BlockSize = U16;
+    type ParBlocks = U1;
 
     fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
         let mut b = [0u8; 16];
