@@ -1,8 +1,9 @@
 //! Test vectors are from NESSIE:
 //! https://www.cosic.esat.kuleuven.be/nessie/testvectors/
+
 #![no_std]
-#[macro_use]
-extern crate block_cipher;
+
+use block_cipher::new_test;
 use des;
 
 new_test!(des_test, "des", des::Des);
