@@ -1,16 +1,26 @@
+//! Pure Rust implementation of the Kuznyechik (GOST R 34.12-2015) block cipher
+
 #![no_std]
-pub extern crate block_cipher_trait;
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
+)]
+#![deny(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
+
 #[macro_use]
 extern crate opaque_debug;
 
-use block_cipher_trait::generic_array::typenum::{U1, U16, U32};
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::BlockCipher;
+pub use block_cipher;
+
+use block_cipher::generic_array::typenum::{U1, U16, U32};
+use block_cipher::generic_array::GenericArray;
+use block_cipher::{BlockCipher, NewBlockCipher};
 
 mod consts;
 
 type Block = GenericArray<u8, U16>;
 
+/// Kuznyechik (GOST R 34.12-2015) block cipher
 #[derive(Clone, Copy)]
 pub struct Kuznyechik {
     keys: [[u8; 16]; 10],
@@ -121,10 +131,8 @@ impl Kuznyechik {
     }
 }
 
-impl BlockCipher for Kuznyechik {
+impl NewBlockCipher for Kuznyechik {
     type KeySize = U32;
-    type BlockSize = U16;
-    type ParBlocks = U1;
 
     fn new(key: &GenericArray<u8, U32>) -> Self {
         let mut cipher = Self {
@@ -133,15 +141,22 @@ impl BlockCipher for Kuznyechik {
         cipher.expand_key(key);
         cipher
     }
+}
+
+impl BlockCipher for Kuznyechik {
+    type BlockSize = U16;
+    type ParBlocks = U1;
 
     #[inline]
     fn encrypt_block(&self, block: &mut Block) {
+        #[allow(unsafe_code)]
         let block: &mut [u8; 16] = unsafe { core::mem::transmute(block) };
         self.encrypt(block);
     }
 
     #[inline]
     fn decrypt_block(&self, block: &mut Block) {
+        #[allow(unsafe_code)]
         let block: &mut [u8; 16] = unsafe { core::mem::transmute(block) };
         self.decrypt(block);
     }
