@@ -206,7 +206,7 @@ checksum = "38c47dcb1594802de8c02f3b899e2018c78291168a22c281be21ea0fb4796842"
 name = "rc2"
 version = "0.3.0"
 dependencies = [
- "block-cipher-trait",
+ "block-cipher",
  "opaque-debug",
 ]
 

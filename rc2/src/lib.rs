@@ -1,19 +1,26 @@
 //! An implementation of the [RC2][1] block cipher.
 //!
 //! [1]: https://en.wikipedia.org/wiki/RC2
+
 #![no_std]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
+)]
 #![forbid(unsafe_code)]
-pub extern crate block_cipher_trait;
+#![warn(rust_2018_idioms)]
+
 #[macro_use]
 extern crate opaque_debug;
 
-use block_cipher_trait::generic_array::typenum::{U1, U32, U8};
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::BlockCipher;
-use block_cipher_trait::InvalidKeyLength;
+pub use block_cipher;
+
+use block_cipher::generic_array::typenum::{U1, U32, U8};
+use block_cipher::generic_array::GenericArray;
+use block_cipher::InvalidKeyLength;
+use block_cipher::{BlockCipher, NewBlockCipher};
 
 mod consts;
-use consts::PI_TABLE;
+use crate::consts::PI_TABLE;
 
 /// A structure that represents the block cipher initialized with a key
 pub struct Rc2 {
@@ -191,10 +198,8 @@ impl Rc2 {
     }
 }
 
-impl BlockCipher for Rc2 {
+impl NewBlockCipher for Rc2 {
     type KeySize = U32;
-    type BlockSize = U8;
-    type ParBlocks = U1;
 
     fn new(key: &GenericArray<u8, U32>) -> Self {
         Self::new_varkey(key).unwrap()
@@ -207,6 +212,11 @@ impl BlockCipher for Rc2 {
             Ok(Self::new_with_eff_key_len(key, key.len() * 8))
         }
     }
+}
+
+impl BlockCipher for Rc2 {
+    type BlockSize = U8;
+    type ParBlocks = U1;
 
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         self.encrypt(block);
