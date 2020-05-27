@@ -168,7 +168,7 @@ dependencies = [
 name = "kuznyechik"
 version = "0.3.0"
 dependencies = [
- "block-cipher-trait",
+ "block-cipher",
  "opaque-debug",
 ]
 

@@ -1,7 +1,6 @@
 #![no_std]
 #![feature(test)]
-#[macro_use]
-extern crate block_cipher_trait;
-extern crate kuznyechik;
+
+use block_cipher::bench;
 
 bench!(kuznyechik::Kuznyechik, 32);
