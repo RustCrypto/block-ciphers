@@ -1,10 +1,13 @@
-use super::BlockCipher;
+//! Data Encryption Standard (DES) block cipher.
+
+use crate::generic_array::typenum::{U1, U8};
+use crate::generic_array::GenericArray;
+use block_cipher::{BlockCipher, NewBlockCipher};
 use byteorder::{ByteOrder, BE};
-use generic_array::typenum::{U1, U8};
-use generic_array::GenericArray;
 
-use consts::{SBOXES, SHIFTS};
+use crate::consts::{SBOXES, SHIFTS};
 
+/// Data Encryption Standard (DES) block cipher.
 #[derive(Copy, Clone)]
 pub struct Des {
     pub(crate) keys: [u64; 16],
@@ -187,16 +190,19 @@ impl Des {
     }
 }
 
-impl BlockCipher for Des {
+impl NewBlockCipher for Des {
     type KeySize = U8;
-    type BlockSize = U8;
-    type ParBlocks = U1;
 
     fn new(key: &GenericArray<u8, U8>) -> Self {
         Des {
             keys: gen_keys(BE::read_u64(key)),
         }
     }
+}
+
+impl BlockCipher for Des {
+    type BlockSize = U8;
+    type ParBlocks = U1;
 
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let data = BE::read_u64(block);

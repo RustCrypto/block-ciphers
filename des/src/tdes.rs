@@ -1,10 +1,13 @@
-use super::BlockCipher;
-use des::{gen_keys, Des};
+//! Triple DES (3DES) block cipher.
 
+use crate::des::{gen_keys, Des};
+use block_cipher::{BlockCipher, NewBlockCipher};
+
+use crate::generic_array::typenum::{U1, U16, U24, U8};
+use crate::generic_array::GenericArray;
 use byteorder::{ByteOrder, BE};
-use generic_array::typenum::{U1, U16, U24, U8};
-use generic_array::GenericArray;
 
+/// Triple DES (3DES) block cipher.
 #[derive(Copy, Clone)]
 pub struct TdesEde3 {
     d1: Des,
@@ -12,6 +15,7 @@ pub struct TdesEde3 {
     d3: Des,
 }
 
+/// Triple DES (3DES) block cipher.
 #[derive(Copy, Clone)]
 pub struct TdesEee3 {
     d1: Des,
@@ -19,22 +23,22 @@ pub struct TdesEee3 {
     d3: Des,
 }
 
+/// Triple DES (3DES) block cipher.
 #[derive(Copy, Clone)]
 pub struct TdesEde2 {
     d1: Des,
     d2: Des,
 }
 
+/// Triple DES (3DES) block cipher.
 #[derive(Copy, Clone)]
 pub struct TdesEee2 {
     d1: Des,
     d2: Des,
 }
 
-impl BlockCipher for TdesEde3 {
+impl NewBlockCipher for TdesEde3 {
     type KeySize = U24;
-    type BlockSize = U8;
-    type ParBlocks = U1;
 
     fn new(key: &GenericArray<u8, U24>) -> Self {
         let d1 = Des {
@@ -48,6 +52,11 @@ impl BlockCipher for TdesEde3 {
         };
         Self { d1, d2, d3 }
     }
+}
+
+impl BlockCipher for TdesEde3 {
+    type BlockSize = U8;
+    type ParBlocks = U1;
 
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let mut data = BE::read_u64(block);
@@ -67,26 +76,29 @@ impl BlockCipher for TdesEde3 {
         data = self.d1.decrypt(data);
 
         BE::write_u64(block, data);
+    }
+}
+
+impl NewBlockCipher for TdesEee3 {
+    type KeySize = U24;
+
+    fn new(key: &GenericArray<u8, U24>) -> Self {
+        let d1 = Des {
+            keys: gen_keys(BE::read_u64(&key[0..8])),
+        };
+        let d2 = Des {
+            keys: gen_keys(BE::read_u64(&key[8..16])),
+        };
+        let d3 = Des {
+            keys: gen_keys(BE::read_u64(&key[16..24])),
+        };
+        Self { d1, d2, d3 }
     }
 }
 
 impl BlockCipher for TdesEee3 {
-    type KeySize = U24;
     type BlockSize = U8;
     type ParBlocks = U1;
-
-    fn new(key: &GenericArray<u8, U24>) -> Self {
-        let d1 = Des {
-            keys: gen_keys(BE::read_u64(&key[0..8])),
-        };
-        let d2 = Des {
-            keys: gen_keys(BE::read_u64(&key[8..16])),
-        };
-        let d3 = Des {
-            keys: gen_keys(BE::read_u64(&key[16..24])),
-        };
-        Self { d1, d2, d3 }
-    }
 
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let mut data = BE::read_u64(block);
@@ -109,10 +121,8 @@ impl BlockCipher for TdesEee3 {
     }
 }
 
-impl BlockCipher for TdesEde2 {
+impl NewBlockCipher for TdesEde2 {
     type KeySize = U16;
-    type BlockSize = U8;
-    type ParBlocks = U1;
 
     fn new(key: &GenericArray<u8, U16>) -> Self {
         let d1 = Des {
@@ -123,6 +133,11 @@ impl BlockCipher for TdesEde2 {
         };
         Self { d1, d2 }
     }
+}
+
+impl BlockCipher for TdesEde2 {
+    type BlockSize = U8;
+    type ParBlocks = U1;
 
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let mut data = BE::read_u64(block);
@@ -145,10 +160,8 @@ impl BlockCipher for TdesEde2 {
     }
 }
 
-impl BlockCipher for TdesEee2 {
+impl NewBlockCipher for TdesEee2 {
     type KeySize = U16;
-    type BlockSize = U8;
-    type ParBlocks = U1;
 
     fn new(key: &GenericArray<u8, U16>) -> Self {
         let d1 = Des {
@@ -159,6 +172,11 @@ impl BlockCipher for TdesEee2 {
         };
         Self { d1, d2 }
     }
+}
+
+impl BlockCipher for TdesEee2 {
+    type BlockSize = U8;
+    type ParBlocks = U1;
 
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let mut data = BE::read_u64(block);
