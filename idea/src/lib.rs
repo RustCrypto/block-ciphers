@@ -3,18 +3,25 @@
 //! [1]: https://en.wikipedia.org/wiki/International_Data_Encryption_Algorithm
 
 #![no_std]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
+)]
+#![forbid(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
 
-pub extern crate block_cipher_trait;
+pub use block_cipher;
+
 #[macro_use]
 extern crate opaque_debug;
 
-use block_cipher_trait::generic_array::typenum::{U1, U16, U8};
-use block_cipher_trait::generic_array::GenericArray;
-pub use block_cipher_trait::BlockCipher;
+use block_cipher::generic_array::typenum::{U1, U16, U8};
+use block_cipher::generic_array::GenericArray;
+pub use block_cipher::{BlockCipher, NewBlockCipher};
 
 mod consts;
-use consts::{FUYI, LENGTH_SUB_KEYS, MAXIM, ONE, ROUNDS};
+use crate::consts::{FUYI, LENGTH_SUB_KEYS, MAXIM, ONE, ROUNDS};
 
+/// The International Data Encryption Algorithm (IDEA) block cipher.
 #[derive(Copy, Clone)]
 pub struct Idea {
     encryption_sub_keys: [u16; LENGTH_SUB_KEYS],
@@ -170,10 +177,8 @@ impl Idea {
     }
 }
 
-impl BlockCipher for Idea {
+impl NewBlockCipher for Idea {
     type KeySize = U16;
-    type BlockSize = U8;
-    type ParBlocks = U1;
 
     fn new(key: &GenericArray<u8, U16>) -> Self {
         let mut cipher = Self {
@@ -184,6 +189,11 @@ impl BlockCipher for Idea {
         cipher.invert_sub_keys();
         cipher
     }
+}
+
+impl BlockCipher for Idea {
+    type BlockSize = U8;
+    type ParBlocks = U1;
 
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         self.crypt(block, &self.encryption_sub_keys);

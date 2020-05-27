@@ -1,9 +1,7 @@
 #![no_std]
-extern crate block_cipher_trait;
-extern crate idea;
 
-use block_cipher_trait::generic_array::GenericArray;
-use idea::{BlockCipher, Idea};
+use block_cipher::generic_array::GenericArray;
+use idea::{BlockCipher, Idea, NewBlockCipher};
 
 mod data;
 
