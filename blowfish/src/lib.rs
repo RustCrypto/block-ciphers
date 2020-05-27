@@ -12,7 +12,7 @@ extern crate opaque_debug;
 
 pub use block_cipher;
 
-use block_cipher::generic_array::typenum::{U1, U56, U8};
+use block_cipher::consts::{U1, U56, U8};
 use block_cipher::generic_array::GenericArray;
 use block_cipher::InvalidKeyLength;
 use block_cipher::{BlockCipher, NewBlockCipher};
