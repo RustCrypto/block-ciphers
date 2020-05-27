@@ -1,19 +1,20 @@
 //! Threefish
 
 #![no_std]
-
-extern crate block_cipher_trait;
-extern crate byte_tools;
-extern crate generic_array;
-use core::ops::BitXor;
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
+)]
+#![forbid(unsafe_code)]
+#![warn(rust_2018_idioms)]
 
 mod consts;
-use consts::{C240, P_1024, P_256, P_512, R_1024, R_256, R_512};
 
-use block_cipher_trait::BlockCipher;
+use crate::consts::{C240, P_1024, P_256, P_512, R_1024, R_256, R_512};
+use block_cipher::generic_array::typenum::{U1, U128, U32, U64};
+use block_cipher::generic_array::GenericArray;
+use block_cipher::{BlockCipher, NewBlockCipher};
 use byte_tools::{read_u64v_le, write_u64v_le};
-use generic_array::typenum::{U1, U128, U32, U64};
-use generic_array::GenericArray;
+use core::ops::BitXor;
 
 fn mix(r: u32, x: (u64, u64)) -> (u64, u64) {
     let y0 = x.0.wrapping_add(x.1);
@@ -66,16 +67,19 @@ macro_rules! impl_threefish(
             }
         }
 
-        impl BlockCipher for $name {
+        impl NewBlockCipher for $name {
             type KeySize = $block_size;
-            type BlockSize = $block_size;
-            type ParBlocks = U1;
 
             fn new(key: &GenericArray<u8, Self::KeySize>) -> Self {
                 let mut tmp_key = [0u8; $n_w*8];
                 tmp_key.copy_from_slice(key);
                 Self::new_with_tweak(&tmp_key, &Default::default())
             }
+        }
+
+        impl BlockCipher for $name {
+            type BlockSize = $block_size;
+            type ParBlocks = U1;
 
             fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
                 let mut v = [0u64; $n_w];

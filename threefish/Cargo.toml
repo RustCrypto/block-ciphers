@@ -6,10 +6,13 @@ license = "MIT/Apache-2.0"
 description = "Threefish block cipher"
 documentation = "https://docs.rs/threefish"
 readme = "README.md"
+edition = "2018"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "threefish", "gost", "block-cipher"]
 
 [dependencies]
-generic-array = "0.12"
 byte-tools = "0.1"
-block-cipher-trait = "0.6"
+block-cipher = "= 0.7.0-pre"
+
+[dev-dependencies]
+block-cipher = { version = "= 0.7.0-pre", features = ["dev"] }
