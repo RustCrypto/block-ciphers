@@ -1,9 +1,7 @@
 //! Test vectors are from GM/T 0002-2012
 #![no_std]
-extern crate block_cipher_trait;
-extern crate sm4;
 
-use block_cipher_trait::BlockCipher;
+use block_cipher::{BlockCipher, NewBlockCipher};
 use sm4::Sm4;
 
 #[test]
