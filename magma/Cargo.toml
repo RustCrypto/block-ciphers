@@ -1,6 +1,6 @@
 [package]
 name = "magma"
-version = "0.3.0"
+version = "0.4.0-pre"
 description = "Magma (GOST 28147-89 and GOST R 34.12-2015) block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"

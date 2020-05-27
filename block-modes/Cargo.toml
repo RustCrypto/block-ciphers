@@ -1,6 +1,6 @@
 [package]
 name = "block-modes"
-version = "0.3.3"
+version = "0.4.0-pre"
 description = "Block cipher modes of operation"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -15,7 +15,7 @@ block-padding = "0.1"
 block-cipher = "= 0.7.0-pre"
 
 [dev-dependencies]
-aes-soft = { version = "0.3", path = "../aes/aes-soft" }
+aes = { version = "= 0.4.0-pre", path = "../aes" }
 hex-literal = "0.1"
 
 [features]
