@@ -1,16 +1,20 @@
 #[cfg(feature = "std")]
 pub use std::vec::Vec;
 
-use block_cipher_trait::generic_array::typenum::Unsigned;
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::BlockCipher;
+use crate::errors::{BlockModeError, InvalidKeyIvLength};
+use crate::utils::{to_blocks, Block, Key};
+use block_cipher::generic_array::typenum::Unsigned;
+use block_cipher::generic_array::GenericArray;
+use block_cipher::{BlockCipher, NewBlockCipher};
 use block_padding::Padding;
-use errors::{BlockModeError, InvalidKeyIvLength};
-use utils::{to_blocks, Block, Key};
 
 /// Trait for a block cipher mode of operation that is used to apply a block cipher
 /// operation to input data to transform it into a variable-length output message.
-pub trait BlockMode<C: BlockCipher, P: Padding>: Sized {
+pub trait BlockMode<C, P>: Sized
+where
+    C: BlockCipher + NewBlockCipher,
+    P: Padding,
+{
     /// Create a new block mode instance from initialized block cipher and IV.
     fn new(cipher: C, iv: &Block<C>) -> Self;
 

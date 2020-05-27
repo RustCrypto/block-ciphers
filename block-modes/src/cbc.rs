@@ -1,21 +1,25 @@
-use block_cipher_trait::generic_array::typenum::Unsigned;
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::BlockCipher;
+use crate::traits::BlockMode;
+use crate::utils::{get_par_blocks, xor, Block, ParBlocks};
+use block_cipher::generic_array::typenum::Unsigned;
+use block_cipher::generic_array::GenericArray;
+use block_cipher::{BlockCipher, NewBlockCipher};
 use block_padding::Padding;
 use core::marker::PhantomData;
-use traits::BlockMode;
-use utils::{get_par_blocks, xor, Block, ParBlocks};
 
 /// [Cipher Block Chaining][1] (CBC) block cipher mode instance.
 ///
 /// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CBC
-pub struct Cbc<C: BlockCipher, P: Padding> {
+pub struct Cbc<C: BlockCipher + NewBlockCipher, P: Padding> {
     cipher: C,
     iv: GenericArray<u8, C::BlockSize>,
     _p: PhantomData<P>,
 }
 
-impl<C: BlockCipher, P: Padding> Cbc<C, P> {
+impl<C, P> Cbc<C, P>
+where
+    C: BlockCipher + NewBlockCipher,
+    P: Padding,
+{
     #[inline(always)]
     fn single_blocks_decrypt(&mut self, blocks: &mut [Block<C>]) {
         let mut iv = self.iv.clone();
@@ -29,7 +33,11 @@ impl<C: BlockCipher, P: Padding> Cbc<C, P> {
     }
 }
 
-impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Cbc<C, P> {
+impl<C, P> BlockMode<C, P> for Cbc<C, P>
+where
+    C: BlockCipher + NewBlockCipher,
+    P: Padding,
+{
     fn new(cipher: C, iv: &Block<C>) -> Self {
         Self {
             cipher,

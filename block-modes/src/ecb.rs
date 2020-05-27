@@ -1,10 +1,10 @@
-use block_cipher_trait::generic_array::typenum::Unsigned;
-use block_cipher_trait::BlockCipher;
+use crate::errors::InvalidKeyIvLength;
+use crate::traits::BlockMode;
+use crate::utils::{get_par_blocks, Block};
+use block_cipher::generic_array::typenum::Unsigned;
+use block_cipher::{BlockCipher, NewBlockCipher};
 use block_padding::Padding;
 use core::marker::PhantomData;
-use errors::InvalidKeyIvLength;
-use traits::BlockMode;
-use utils::{get_par_blocks, Block};
 
 /// [Electronic Codebook][1] (ECB) block cipher mode instance.
 ///
@@ -12,12 +12,16 @@ use utils::{get_par_blocks, Block};
 /// just pass `Default::default()` instead.
 ///
 /// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB
-pub struct Ecb<C: BlockCipher, P: Padding> {
+pub struct Ecb<C: BlockCipher + BlockCipher, P: Padding> {
     cipher: C,
     _p: PhantomData<P>,
 }
 
-impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Ecb<C, P> {
+impl<C, P> BlockMode<C, P> for Ecb<C, P>
+where
+    C: BlockCipher + NewBlockCipher,
+    P: Padding,
+{
     fn new(cipher: C, _iv: &Block<C>) -> Self {
         Self {
             cipher,

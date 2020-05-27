@@ -1,20 +1,25 @@
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::BlockCipher;
+use crate::traits::BlockMode;
+use crate::utils::{xor, Block};
+use block_cipher::generic_array::GenericArray;
+use block_cipher::{BlockCipher, NewBlockCipher};
 use block_padding::Padding;
 use core::marker::PhantomData;
-use traits::BlockMode;
-use utils::{xor, Block};
 
 /// [Propagating Cipher Block Chaining][1] (PCBC) mode instance.
 ///
 /// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#PCBC
-pub struct Pcbc<C: BlockCipher, P: Padding> {
+pub struct Pcbc<C: BlockCipher + NewBlockCipher, P: Padding> {
     cipher: C,
     iv: GenericArray<u8, C::BlockSize>,
     _p: PhantomData<P>,
 }
 
-impl<C: BlockCipher, P: Padding> Pcbc<C, P> {
+impl<C, P> Pcbc<C, P>
+where
+    C: BlockCipher + NewBlockCipher,
+    P: Padding,
+{
+    /// Initialize PCBC
     pub fn new(cipher: C, iv: &Block<C>) -> Self {
         Self {
             cipher,
@@ -24,7 +29,11 @@ impl<C: BlockCipher, P: Padding> Pcbc<C, P> {
     }
 }
 
-impl<C: BlockCipher, P: Padding> BlockMode<C, P> for Pcbc<C, P> {
+impl<C, P> BlockMode<C, P> for Pcbc<C, P>
+where
+    C: BlockCipher + NewBlockCipher,
+    P: Padding,
+{
     fn new(cipher: C, iv: &GenericArray<u8, C::BlockSize>) -> Self {
         Self {
             cipher,

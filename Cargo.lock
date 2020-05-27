@@ -4,7 +4,7 @@
 name = "aes"
 version = "0.3.2"
 dependencies = [
- "aes-soft 0.3.3",
+ "aes-soft",
  "aesni",
  "block-cipher",
 ]
@@ -14,17 +14,6 @@ name = "aes-soft"
 version = "0.3.3"
 dependencies = [
  "block-cipher",
- "byteorder",
- "opaque-debug",
-]
-
-[[package]]
-name = "aes-soft"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cfd7e7ae3f9a1fb5c03b389fc6bb9a51400d0c13053f0dca698c832bfd893a0d"
-dependencies = [
- "block-cipher-trait",
  "byteorder",
  "opaque-debug",
 ]
@@ -70,8 +59,8 @@ dependencies = [
 name = "block-modes"
 version = "0.3.3"
 dependencies = [
- "aes-soft 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "block-cipher-trait",
+ "aes-soft",
+ "block-cipher",
  "block-padding",
  "hex-literal",
 ]
