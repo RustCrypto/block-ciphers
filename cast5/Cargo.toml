@@ -21,6 +21,3 @@ block-cipher = { version = "= 0.7.0-pre", features = ["dev"] }
 
 [features]
 default = []
-
-[badges]
-travis-ci = { repository = "RustCrypto/block-ciphers" }

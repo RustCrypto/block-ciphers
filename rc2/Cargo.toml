@@ -17,6 +17,3 @@ opaque-debug = "0.2"
 
 [dev-dependencies]
 block-cipher = { version = "0.7.0-pre", features = ["dev"] }
-
-[badges]
-travis-ci = { repository = "RustCrypto/block-ciphers" }
