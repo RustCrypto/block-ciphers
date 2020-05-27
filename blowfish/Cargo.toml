@@ -5,18 +5,19 @@ description = "Blowfish block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
+edition = "2018"
 documentation = "https://docs.rs/blowfish"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "blowfish", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-block-cipher-trait = "0.6"
+block-cipher = "= 0.7.0-pre"
 byteorder = { version = "1", default-features = false }
 opaque-debug = "0.2"
 
 [dev-dependencies]
-block-cipher-trait = { version = "0.6", features = ["dev"] }
+block-cipher = { version = "= 0.7.0-pre", features = ["dev"] }
 
 [features]
 bcrypt = []

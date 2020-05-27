@@ -1,16 +1,23 @@
+//! Blowfish block cipher
+
 #![no_std]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
+)]
 #![forbid(unsafe_code)]
-pub extern crate block_cipher_trait;
-extern crate byteorder;
+#![warn(missing_docs, rust_2018_idioms)]
+
+pub use block_cipher;
+
 #[macro_use]
 extern crate opaque_debug;
 
 use core::marker::PhantomData;
 
-use block_cipher_trait::generic_array::typenum::{U1, U56, U8};
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::BlockCipher;
-use block_cipher_trait::InvalidKeyLength;
+use block_cipher::generic_array::typenum::{U1, U56, U8};
+use block_cipher::generic_array::GenericArray;
+use block_cipher::InvalidKeyLength;
+use block_cipher::{BlockCipher, NewBlockCipher};
 use byteorder::ByteOrder;
 use byteorder::{BE, LE};
 
@@ -103,10 +110,8 @@ impl<T: ByteOrder> Blowfish<T> {
     }
 }
 
-impl<T: ByteOrder> BlockCipher for Blowfish<T> {
+impl<T: ByteOrder> NewBlockCipher for Blowfish<T> {
     type KeySize = U56;
-    type BlockSize = U8;
-    type ParBlocks = U1;
 
     fn new(key: &GenericArray<u8, U56>) -> Self {
         Self::new_varkey(&key).unwrap()
@@ -120,6 +125,11 @@ impl<T: ByteOrder> BlockCipher for Blowfish<T> {
         blowfish.expand_key(key);
         Ok(blowfish)
     }
+}
+
+impl<T: ByteOrder> BlockCipher for Blowfish<T> {
+    type BlockSize = U8;
+    type ParBlocks = U1;
 
     #[inline]
     fn encrypt_block(&self, block: &mut Block) {
