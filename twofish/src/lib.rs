@@ -1,21 +1,29 @@
+//! Twofish block cipher
+
 #![no_std]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
+)]
 #![forbid(unsafe_code)]
-pub extern crate block_cipher_trait;
-extern crate byteorder;
+#![warn(missing_docs, rust_2018_idioms)]
+
 #[macro_use]
 extern crate opaque_debug;
 
-use block_cipher_trait::generic_array::typenum::{U1, U16, U32};
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::BlockCipher;
-use block_cipher_trait::InvalidKeyLength;
+pub use block_cipher;
+
+use block_cipher::generic_array::typenum::{U1, U16, U32};
+use block_cipher::generic_array::GenericArray;
+use block_cipher::InvalidKeyLength;
+use block_cipher::{BlockCipher, NewBlockCipher};
 use byteorder::{ByteOrder, LE};
 
 mod consts;
-use consts::{MDS_POLY, QBOX, QORD, RS, RS_POLY};
+use crate::consts::{MDS_POLY, QBOX, QORD, RS, RS_POLY};
 
 type Block = GenericArray<u8, U16>;
 
+/// Twofish block cipher
 pub struct Twofish {
     s: [u8; 16],  // S-box key
     k: [u32; 40], // Subkeys
@@ -151,10 +159,8 @@ impl Twofish {
     }
 }
 
-impl BlockCipher for Twofish {
+impl NewBlockCipher for Twofish {
     type KeySize = U32;
-    type BlockSize = U16;
-    type ParBlocks = U1;
 
     fn new(key: &GenericArray<u8, U32>) -> Self {
         Self::new_varkey(key).unwrap()
@@ -173,6 +179,11 @@ impl BlockCipher for Twofish {
         twofish.key_schedule(key);
         Ok(twofish)
     }
+}
+
+impl BlockCipher for Twofish {
+    type BlockSize = U16;
+    type ParBlocks = U1;
 
     fn encrypt_block(&self, block: &mut Block) {
         let mut p = [0u32; 4];

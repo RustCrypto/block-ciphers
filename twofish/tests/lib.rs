@@ -1,9 +1,7 @@
 #![no_std]
-extern crate block_cipher_trait;
-extern crate twofish;
 
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::BlockCipher;
+use block_cipher::generic_array::GenericArray;
+use block_cipher::{BlockCipher, NewBlockCipher};
 use twofish::Twofish;
 
 #[test]
