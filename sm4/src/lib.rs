@@ -8,6 +8,7 @@
 )]
 #![forbid(unsafe_code)]
 #![warn(rust_2018_idioms)]
+#![allow(clippy::unreadable_literal)]
 
 pub use block_cipher;
 
@@ -104,11 +105,12 @@ impl NewBlockCipher for Sm4 {
             [mk[0] ^ FK[0], mk[1] ^ FK[1], mk[2] ^ FK[2], mk[3] ^ FK[3]];
 
         for i in 0..8 {
-            k[0] = k[0] ^ t_prime(k[1] ^ k[2] ^ k[3] ^ CK[i * 4]);
-            k[1] = k[1] ^ t_prime(k[2] ^ k[3] ^ k[0] ^ CK[i * 4 + 1]);
-            k[2] = k[2] ^ t_prime(k[3] ^ k[0] ^ k[1] ^ CK[i * 4 + 2]);
-            k[3] = k[3] ^ t_prime(k[0] ^ k[1] ^ k[2] ^ CK[i * 4 + 3]);
-            rk[i * 4 + 0] = k[0];
+            k[0] ^= t_prime(k[1] ^ k[2] ^ k[3] ^ CK[i * 4]);
+            k[1] ^= t_prime(k[2] ^ k[3] ^ k[0] ^ CK[i * 4 + 1]);
+            k[2] ^= t_prime(k[3] ^ k[0] ^ k[1] ^ CK[i * 4 + 2]);
+            k[3] ^= t_prime(k[0] ^ k[1] ^ k[2] ^ CK[i * 4 + 3]);
+
+            rk[i * 4] = k[0];
             rk[i * 4 + 1] = k[1];
             rk[i * 4 + 2] = k[2];
             rk[i * 4 + 3] = k[3];
@@ -127,10 +129,10 @@ impl BlockCipher for Sm4 {
         BE::read_u32_into(block, &mut x);
         let rk = &self.rk;
         for i in 0..8 {
-            x[0] = x[0] ^ t(x[1] ^ x[2] ^ x[3] ^ rk[i * 4]);
-            x[1] = x[1] ^ t(x[2] ^ x[3] ^ x[0] ^ rk[i * 4 + 1]);
-            x[2] = x[2] ^ t(x[3] ^ x[0] ^ x[1] ^ rk[i * 4 + 2]);
-            x[3] = x[3] ^ t(x[0] ^ x[1] ^ x[2] ^ rk[i * 4 + 3]);
+            x[0] ^= t(x[1] ^ x[2] ^ x[3] ^ rk[i * 4]);
+            x[1] ^= t(x[2] ^ x[3] ^ x[0] ^ rk[i * 4 + 1]);
+            x[2] ^= t(x[3] ^ x[0] ^ x[1] ^ rk[i * 4 + 2]);
+            x[3] ^= t(x[0] ^ x[1] ^ x[2] ^ rk[i * 4 + 3]);
         }
         x = [x[3], x[2], x[1], x[0]];
         BE::write_u32_into(&x, block);
@@ -141,10 +143,10 @@ impl BlockCipher for Sm4 {
         BE::read_u32_into(block, &mut x);
         let rk = &self.rk;
         for i in 0..8 {
-            x[0] = x[0] ^ t(x[1] ^ x[2] ^ x[3] ^ rk[31 - i * 4]);
-            x[1] = x[1] ^ t(x[2] ^ x[3] ^ x[0] ^ rk[31 - (i * 4 + 1)]);
-            x[2] = x[2] ^ t(x[3] ^ x[0] ^ x[1] ^ rk[31 - (i * 4 + 2)]);
-            x[3] = x[3] ^ t(x[0] ^ x[1] ^ x[2] ^ rk[31 - (i * 4 + 3)]);
+            x[0] ^= t(x[1] ^ x[2] ^ x[3] ^ rk[31 - i * 4]);
+            x[1] ^= t(x[2] ^ x[3] ^ x[0] ^ rk[31 - (i * 4 + 1)]);
+            x[2] ^= t(x[3] ^ x[0] ^ x[1] ^ rk[31 - (i * 4 + 2)]);
+            x[3] ^= t(x[0] ^ x[1] ^ x[2] ^ rk[31 - (i * 4 + 3)]);
         }
         x = [x[3], x[2], x[1], x[0]];
         BE::write_u32_into(&x, block);

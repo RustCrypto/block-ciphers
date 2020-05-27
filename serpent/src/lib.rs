@@ -10,6 +10,7 @@
 )]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
+#![allow(clippy::needless_range_loop)]
 
 #[macro_use]
 extern crate opaque_debug;
@@ -93,6 +94,7 @@ fn round_bitslice(
     }
 }
 
+#[allow(clippy::useless_let_if_seq)]
 fn round_inverse_bitslice(
     i: usize,
     b_i_next: Block128,
@@ -138,6 +140,7 @@ fn apply_s_bitslice(index: usize, word: Word) -> Word {
                 | get_bit(w3 as usize, i) << 2
                 | get_bit(w4 as usize, i) << 3,
         );
+
         for l in 0..4 {
             words[l] |= u32::from(get_bit(quad as usize, l)) << i;
         }
@@ -189,6 +192,7 @@ fn expand_key(source: &[u8], len_bits: usize, key: &mut [u8; 32]) {
 }
 
 impl Serpent {
+    #[allow(clippy::many_single_char_names)]
     fn key_schedule(key: [u8; 32]) -> Subkeys {
         let mut words = [0u32; 140];
 
@@ -210,7 +214,7 @@ impl Serpent {
         let mut k = [0u32; 132];
         for i in 0..r {
             let sbox_index = (ROUNDS + 3 - i) % ROUNDS;
-            let a = words[(4 * i + 0) as usize];
+            let a = words[(4 * i) as usize];
             let b = words[(4 * i + 1) as usize];
             let c = words[(4 * i + 2) as usize];
             let d = words[(4 * i + 3) as usize];

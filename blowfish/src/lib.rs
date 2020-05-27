@@ -76,6 +76,7 @@ impl<T: ByteOrder> Blowfish<T> {
         }
     }
 
+    #[allow(clippy::many_single_char_names)]
     fn round_function(&self, x: u32) -> u32 {
         let a = self.s[0][(x >> 24) as usize];
         let b = self.s[1][((x >> 16) & 0xff) as usize];
@@ -152,6 +153,7 @@ impl<T: ByteOrder> BlockCipher for Blowfish<T> {
 /// Bcrypt extension of blowfish
 #[cfg(feature = "bcrypt")]
 impl Blowfish<BE> {
+    /// Salted expand key
     pub fn salted_expand_key(&mut self, salt: &[u8], key: &[u8]) {
         let mut key_pos = 0;
         for i in 0..18 {
@@ -186,14 +188,17 @@ impl Blowfish<BE> {
         }
     }
 
+    /// Init state
     pub fn bc_init_state() -> Blowfish<BE> {
         Blowfish::init_state()
     }
 
+    /// Encrypt
     pub fn bc_encrypt(&self, l: u32, r: u32) -> (u32, u32) {
         self.encrypt(l, r)
     }
 
+    /// Expand key
     pub fn bc_expand_key(&mut self, key: &[u8]) {
         self.expand_key(key)
     }

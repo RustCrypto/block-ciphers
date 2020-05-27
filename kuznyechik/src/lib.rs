@@ -6,6 +6,7 @@
 )]
 #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
+#![allow(clippy::needless_range_loop, clippy::transmute_ptr_to_ptr)]
 
 #[macro_use]
 extern crate opaque_debug;

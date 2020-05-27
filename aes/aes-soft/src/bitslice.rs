@@ -1,4 +1,8 @@
-#![allow(clippy::many_single_char_names)]
+#![allow(
+    clippy::many_single_char_names,
+    clippy::needless_range_loop,
+    clippy::unreadable_literal
+)]
 
 use crate::consts::U32X4_1;
 use crate::simd::u32x4;
