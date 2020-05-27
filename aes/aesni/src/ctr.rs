@@ -1,8 +1,7 @@
 #![allow(clippy::unreadable_literal)]
 
 use crate::arch::*;
-use core::cmp;
-use core::mem::{self, MaybeUninit};
+use core::{cmp, mem};
 
 use super::{Aes128, Aes192, Aes256};
 use block_cipher::consts::U16;
@@ -94,7 +93,7 @@ macro_rules! impl_ctr {
             #[inline(always)]
             fn next_block8(&mut self) -> [__m128i; 8] {
                 let mut ctr = self.ctr;
-                let mut block8: [__m128i; 8] = unsafe { MaybeUninit::zeroed().assume_init() };
+                let mut block8: [__m128i; 8] = unsafe { mem::zeroed() };
                 for i in 0..8 {
                     block8[i] = swap_bytes(ctr);
                     ctr = inc_be(ctr);
