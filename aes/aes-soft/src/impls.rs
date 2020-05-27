@@ -1,11 +1,10 @@
 #![allow(clippy::transmute_ptr_to_ptr)] // TODO: replace with casts
 
-use core::mem;
-
-use block_cipher::generic_array::typenum::{U11, U13, U15, U24, U32};
-use block_cipher::generic_array::typenum::{U16, U8};
-use block_cipher::generic_array::GenericArray;
 pub use block_cipher::{BlockCipher, NewBlockCipher};
+
+use block_cipher::consts::{U11, U13, U15, U16, U24, U32, U8};
+use block_cipher::generic_array::GenericArray;
+use core::mem;
 
 use crate::bitslice::{
     bit_slice_1x128_with_u32x4, bit_slice_1x16_with_u16,

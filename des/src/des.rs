@@ -2,8 +2,8 @@
 
 #![allow(clippy::unreadable_literal)]
 
-use crate::generic_array::typenum::{U1, U8};
-use crate::generic_array::GenericArray;
+use block_cipher::consts::{U1, U8};
+use block_cipher::generic_array::GenericArray;
 use block_cipher::{BlockCipher, NewBlockCipher};
 use byteorder::{ByteOrder, BE};
 

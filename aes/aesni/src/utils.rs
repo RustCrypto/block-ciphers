@@ -3,7 +3,7 @@ use crate::arch::__m128i;
 #[cfg(test)]
 use core::mem;
 
-use block_cipher::generic_array::typenum::{U16, U8};
+use block_cipher::consts::{U16, U8};
 use block_cipher::generic_array::GenericArray;
 
 pub type Block128 = GenericArray<u8, U16>;

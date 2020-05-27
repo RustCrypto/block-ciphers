@@ -10,7 +10,7 @@
 mod consts;
 
 use crate::consts::{C240, P_1024, P_256, P_512, R_1024, R_256, R_512};
-use block_cipher::generic_array::typenum::{U1, U128, U32, U64};
+use block_cipher::consts::{U1, U128, U32, U64};
 use block_cipher::generic_array::GenericArray;
 use block_cipher::{BlockCipher, NewBlockCipher};
 use byte_tools::{read_u64v_le, write_u64v_le};

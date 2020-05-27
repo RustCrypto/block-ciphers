@@ -1,10 +1,9 @@
 //! Triple DES (3DES) block cipher.
 
 use crate::des::{gen_keys, Des};
+use block_cipher::consts::{U1, U16, U24, U8};
+use block_cipher::generic_array::GenericArray;
 use block_cipher::{BlockCipher, NewBlockCipher};
-
-use crate::generic_array::typenum::{U1, U16, U24, U8};
-use crate::generic_array::GenericArray;
 use byteorder::{ByteOrder, BE};
 
 /// Triple DES (3DES) block cipher.

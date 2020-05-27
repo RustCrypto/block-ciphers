@@ -1,5 +1,5 @@
 use crate::arch::*;
-use block_cipher::generic_array::typenum::{U16, U32, U8};
+use block_cipher::consts::{U16, U32, U8};
 use block_cipher::generic_array::GenericArray;
 use block_cipher::{BlockCipher, NewBlockCipher};
 

@@ -18,7 +18,5 @@ mod consts;
 mod des;
 mod tdes;
 
-use block_cipher::generic_array;
-
 pub use crate::des::Des;
 pub use crate::tdes::{TdesEde2, TdesEde3, TdesEee2, TdesEee3};

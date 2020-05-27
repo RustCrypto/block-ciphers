@@ -5,7 +5,7 @@ use core::cmp;
 use core::mem::{self, MaybeUninit};
 
 use super::{Aes128, Aes192, Aes256};
-use block_cipher::generic_array::typenum::U16;
+use block_cipher::consts::U16;
 use block_cipher::generic_array::GenericArray;
 use block_cipher::NewBlockCipher;
 use stream_cipher::{
