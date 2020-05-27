@@ -214,7 +214,7 @@ dependencies = [
 name = "serpent"
 version = "0.0.1"
 dependencies = [
- "block-cipher-trait",
+ "block-cipher",
  "byteorder",
  "opaque-debug",
 ]
