@@ -1,6 +1,6 @@
 //! Test vectors generated with OpenSSL
 
-use aes_soft::Aes128;
+use aes::Aes128;
 use block_modes::block_padding::ZeroPadding;
 use block_modes::BlockMode;
 use block_modes::{Cbc, Ecb};

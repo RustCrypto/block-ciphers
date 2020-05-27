@@ -1,6 +1,6 @@
 [package]
 name = "aesni"
-version = "0.6.0"
+version = "0.7.0-pre"
 description = "AES (Rijndael) block ciphers implementation using AES-NI"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"

@@ -8,7 +8,6 @@
 //! # Usage example
 //! ```
 //! # #[macro_use] extern crate hex_literal;
-//! # use aes_soft as aes;
 //! use block_modes::{BlockMode, Cbc};
 //! use block_modes::block_padding::Pkcs7;
 //! use aes::Aes128;
@@ -44,7 +43,6 @@
 //! `encrypt_vec` and `descrypt_vec` methods:
 //! ```
 //! # #[macro_use] extern crate hex_literal;
-//! # use aes_soft as aes;
 //! # use block_modes::{BlockMode, Cbc};
 //! # use block_modes::block_padding::Pkcs7;
 //! # use aes::Aes128;

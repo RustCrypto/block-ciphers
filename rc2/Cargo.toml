@@ -1,6 +1,6 @@
 [package]
 name = "rc2"
-version = "0.3.0"
+version = "0.4.0-pre"
 description = "RC2 block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT/Apache-2.0"

@@ -1,6 +1,6 @@
 [package]
 name = "cast5"
-version = "0.6.0"
+version = "0.7.0-pre"
 description = "CAST5 block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
