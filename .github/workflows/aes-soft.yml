@@ -1,0 +1,36 @@
+name: aes-soft
+
+on:
+  pull_request:
+    paths:
+      - "aes/**"
+      - "Cargo.*"
+  push:
+    branches: master
+    paths:
+      - "aes/**"
+      - "Cargo.*"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - 1.41.0 # MSRV
+          - stable
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+      - working-directory: aes/aes-soft
+        env:
+          CARGO_INCREMENTAL: 0
+        run: |
+          cargo check --all-features
+          cargo test --no-default-features
+          cargo test
+          cargo test --all-features
+
