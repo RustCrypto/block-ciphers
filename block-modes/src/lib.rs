@@ -78,19 +78,19 @@
 #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
-pub use block_padding;
 #[cfg(feature = "std")]
 extern crate std;
 
 mod errors;
 mod traits;
 mod utils;
-pub use crate::errors::{BlockModeError, InvalidKeyIvLength};
-pub use crate::traits::BlockMode;
 
 mod cbc;
-pub use crate::cbc::Cbc;
 mod ecb;
-pub use crate::ecb::Ecb;
 mod pcbc;
-pub use crate::pcbc::Pcbc;
+
+pub use block_padding;
+
+pub use crate::errors::{BlockModeError, InvalidKeyIvLength};
+pub use crate::traits::BlockMode;
+pub use crate::{cbc::Cbc, ecb::Ecb, pcbc::Pcbc};
