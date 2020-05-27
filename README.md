@@ -51,9 +51,8 @@ Some block modes (CTR, CFB, OFV) transform block ciphers into stream ciphers.Suc
 Lets use AES128-CBC with [PKCS7][3] padding to show an example:
 
 ```rust
-#[macro_use] extern crate hex_literal;
-extern crate aes_soft as aes;
-extern crate block_modes;
+#[macro_use]
+extern crate hex_literal;
 
 use block_modes::{BlockMode, Cbc};
 use block_modes::block_padding::Pkcs7;
