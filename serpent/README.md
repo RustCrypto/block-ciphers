@@ -7,7 +7,7 @@
 [![Build Status][build-image]][build-link]
 [![HAZMAT][hazmat-image]][hazmat-link]
 
-Experimental Pure Rust implementation of the [IDEA cipher][1].
+Experimental pure Rust implementation of the [Serpent block cipher][1].
 
 [Documentation][docs-link]
 
