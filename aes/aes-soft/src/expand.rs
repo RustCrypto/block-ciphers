@@ -1,3 +1,9 @@
+#![allow(
+    clippy::explicit_counter_loop,
+    clippy::needless_range_loop,
+    clippy::unreadable_literal
+)]
+
 use block_cipher::generic_array::{ArrayLength, GenericArray};
 
 use crate::bitslice::{

@@ -4,7 +4,6 @@ use block_cipher::generic_array::GenericArray;
 use block_cipher::{BlockCipher, NewBlockCipher};
 
 use crate::utils::{Block128, Block128x8};
-use core::mem;
 
 mod expand;
 #[cfg(test)]
@@ -61,8 +60,10 @@ impl NewBlockCipher for Aes128 {
 
     #[inline]
     fn new(key: &GenericArray<u8, U16>) -> Self {
-        let key = unsafe { mem::transmute(key) };
+        let key = unsafe { &*(key as *const _ as *const [u8; 16]) };
+
         let (encrypt_keys, decrypt_keys) = expand::expand(key);
+
         Self {
             encrypt_keys,
             decrypt_keys,
@@ -76,6 +77,8 @@ impl BlockCipher for Aes128 {
 
     #[inline]
     fn encrypt_block(&self, block: &mut Block128) {
+        // Safety: `loadu` and `storeu` support unaligned access
+        #[allow(clippy::cast_ptr_alignment)]
         unsafe {
             let b = _mm_loadu_si128(block.as_ptr() as *const __m128i);
             let b = self.encrypt(b);
@@ -86,6 +89,9 @@ impl BlockCipher for Aes128 {
     #[inline]
     fn decrypt_block(&self, block: &mut Block128) {
         let keys = self.decrypt_keys;
+
+        // Safety: `loadu` and `storeu` support unaligned access
+        #[allow(clippy::cast_ptr_alignment)]
         unsafe {
             let mut b = _mm_loadu_si128(block.as_ptr() as *const __m128i);
             b = _mm_xor_si128(b, keys[10]);

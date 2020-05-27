@@ -1,3 +1,5 @@
+#![allow(clippy::transmute_ptr_to_ptr)] // TODO: replace with casts
+
 use core::mem;
 
 use block_cipher::generic_array::typenum::{U11, U13, U15, U24, U32};

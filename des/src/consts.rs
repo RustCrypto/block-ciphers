@@ -6,7 +6,7 @@ pub const SHIFTS: [u8; 16] = [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1];
 // rearranged so that the bottom four bits choose the column and the top two
 // bits choose the row. In other words, we can directly index the sbox array
 // with the 6 input bits to get the correct value.
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 pub const SBOXES: [[u8; 64]; 8] = [
     [
         14,  0,  4, 15, 13,  7,  1,  4,  2, 14, 15,  2, 11, 13,  8,  1,

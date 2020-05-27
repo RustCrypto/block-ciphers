@@ -40,6 +40,8 @@ macro_rules! shuffle {
 
 #[inline(always)]
 pub(super) fn expand(key: &[u8; 24]) -> ([__m128i; 13], [__m128i; 13]) {
+    // TODO: eliminate usage of `MaybeUninit` and/or verify soundness
+    #[allow(clippy::uninit_assumed_init)]
     unsafe {
         let mut enc_keys: [__m128i; 13] = MaybeUninit::uninit().assume_init();
         let mut dec_keys: [__m128i; 13] = MaybeUninit::uninit().assume_init();
@@ -61,6 +63,9 @@ pub(super) fn expand(key: &[u8; 24]) -> ([__m128i; 13], [__m128i; 13]) {
         let (k0, k1l) = {
             let mut t = [0u8; 32];
             ptr::write(t.as_mut_ptr() as *mut [u8; 24], *key);
+
+            // Safety: `loadu` supports unaligned loads
+            #[allow(clippy::cast_ptr_alignment)]
             (
                 _mm_loadu_si128(t.as_ptr() as *const __m128i),
                 _mm_loadu_si128(t.as_ptr().offset(16) as *const __m128i),

@@ -8,6 +8,7 @@
 )]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
+#![allow(clippy::many_single_char_names)]
 
 #[macro_use]
 extern crate opaque_debug;
@@ -138,7 +139,7 @@ impl Idea {
             let c: u32 = x * y;
             r = ((c & ONE) as i32) - ((c >> 16) as i32);
             if r < 0 {
-                r = (MAXIM as i32) + r;
+                r += MAXIM as i32;
             }
         }
 

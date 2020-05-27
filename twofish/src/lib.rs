@@ -6,6 +6,7 @@
 )]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
+#![allow(clippy::needless_range_loop, clippy::unreadable_literal)]
 
 #[macro_use]
 extern crate opaque_debug;
@@ -89,19 +90,20 @@ fn rs_mult(m: &[u8], out: &mut [u8]) {
     }
 }
 
+#[allow(clippy::many_single_char_names)]
 fn h(x: u32, m: &[u8], k: usize, offset: usize) -> u32 {
     let mut y = [0u8; 4];
     LE::write_u32(&mut y, x);
 
     if k == 4 {
-        y[0] = sbox(1, y[0]) ^ m[4 * (6 + offset) + 0];
+        y[0] = sbox(1, y[0]) ^ m[4 * (6 + offset)];
         y[1] = sbox(0, y[1]) ^ m[4 * (6 + offset) + 1];
         y[2] = sbox(0, y[2]) ^ m[4 * (6 + offset) + 2];
         y[3] = sbox(1, y[3]) ^ m[4 * (6 + offset) + 3];
     }
 
     if k >= 3 {
-        y[0] = sbox(1, y[0]) ^ m[4 * (4 + offset) + 0];
+        y[0] = sbox(1, y[0]) ^ m[4 * (4 + offset)];
         y[1] = sbox(1, y[1]) ^ m[4 * (4 + offset) + 1];
         y[2] = sbox(0, y[2]) ^ m[4 * (4 + offset) + 2];
         y[3] = sbox(0, y[3]) ^ m[4 * (4 + offset) + 3];
@@ -109,7 +111,7 @@ fn h(x: u32, m: &[u8], k: usize, offset: usize) -> u32 {
 
     let a = 4 * (2 + offset);
     let b = 4 * offset;
-    y[0] = sbox(1, sbox(0, sbox(0, y[0]) ^ m[a + 0]) ^ m[b + 0]);
+    y[0] = sbox(1, sbox(0, sbox(0, y[0]) ^ m[a]) ^ m[b]);
     y[1] = sbox(0, sbox(0, sbox(1, y[1]) ^ m[a + 1]) ^ m[b + 1]);
     y[2] = sbox(1, sbox(1, sbox(0, y[2]) ^ m[a + 2]) ^ m[b + 2]);
     y[3] = sbox(0, sbox(1, sbox(1, y[3]) ^ m[a + 3]) ^ m[b + 3]);

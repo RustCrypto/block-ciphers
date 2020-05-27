@@ -1,3 +1,5 @@
+#![allow(clippy::unreadable_literal)]
+
 use crate::simd::u32x4;
 
 pub const U32X4_0: u32x4 = u32x4(0, 0, 0, 0);

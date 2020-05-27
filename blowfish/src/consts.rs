@@ -1,4 +1,5 @@
-#![cfg_attr(feature="cargo-clippy", allow(unreadable_literal))]
+#![allow(clippy::unreadable_literal)]
+
 pub const P: [u32; 18] = [
     0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344, 0xa4093822, 0x299f31d0,
     0x082efa98, 0xec4e6c89, 0x452821e6, 0x38d01377, 0xbe5466cf, 0x34e90c6c,

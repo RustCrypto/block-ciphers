@@ -1,5 +1,7 @@
 //! Data Encryption Standard (DES) block cipher.
 
+#![allow(clippy::unreadable_literal)]
+
 use crate::generic_array::typenum::{U1, U8};
 use crate::generic_array::GenericArray;
 use block_cipher::{BlockCipher, NewBlockCipher};
@@ -164,11 +166,12 @@ fn f(input: u64, key: u64) -> u64 {
 /// Applies all eight sboxes to the input
 fn apply_sboxes(input: u64) -> u64 {
     let mut output: u64 = 0;
-    for i in 0..8 {
-        let sbox = SBOXES[i];
+
+    for (i, sbox) in SBOXES.iter().enumerate() {
         let val = (input >> (58 - (i * 6))) & 0x3F;
         output |= (sbox[val as usize] as u64) << (60 - (i * 4));
     }
+
     output
 }
 
