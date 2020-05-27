@@ -1,5 +1,5 @@
-use sboxes;
-use sboxes_exp;
+use crate::sboxes;
+use crate::sboxes_exp;
 
 fn gen_exp_sbox(sbox: sboxes::SBox) -> sboxes_exp::SBoxExp {
     let mut out = [[0u8; 256]; 4];

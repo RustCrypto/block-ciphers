@@ -176,7 +176,7 @@ dependencies = [
 name = "magma"
 version = "0.3.0"
 dependencies = [
- "block-cipher-trait",
+ "block-cipher",
  "byteorder",
  "opaque-debug",
 ]
