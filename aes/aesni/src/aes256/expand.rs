@@ -66,15 +66,8 @@ pub(super) fn expand(key: &[u8; 32]) -> ([__m128i; 15], [__m128i; 15]) {
     // Safety: `loadu` and `storeu` support unaligned access
     #[allow(clippy::cast_ptr_alignment)]
     unsafe {
-        // TODO: eliminate usage of `MaybeUninit` and/or verify soundness
-        #[allow(clippy::uninit_assumed_init)]
-        let (mut enc_keys, mut dec_keys): (
-            [__m128i; 15],
-            [__m128i; 15],
-        ) = (
-            MaybeUninit::uninit().assume_init(),
-            MaybeUninit::uninit().assume_init(),
-        );
+        let mut enc_keys: [__m128i; 15] = MaybeUninit::zeroed().assume_init();
+        let mut dec_keys: [__m128i; 15] = MaybeUninit::zeroed().assume_init();
 
         let kp = key.as_ptr() as *const __m128i;
         let k1 = _mm_loadu_si128(kp);

@@ -26,11 +26,9 @@ macro_rules! expand_round {
 
 #[inline(always)]
 pub(super) fn expand(key: &[u8; 16]) -> ([__m128i; 11], [__m128i; 11]) {
-    // TODO: eliminate usage of `MaybeUninit` and/or verify soundness
-    #[allow(clippy::uninit_assumed_init)]
     unsafe {
-        let mut enc_keys: [__m128i; 11] = MaybeUninit::uninit().assume_init();
-        let mut dec_keys: [__m128i; 11] = MaybeUninit::uninit().assume_init();
+        let mut enc_keys: [__m128i; 11] = MaybeUninit::zeroed().assume_init();
+        let mut dec_keys: [__m128i; 11] = MaybeUninit::zeroed().assume_init();
 
         // Safety: `loadu` supports unaligned loads
         #[allow(clippy::cast_ptr_alignment)]
