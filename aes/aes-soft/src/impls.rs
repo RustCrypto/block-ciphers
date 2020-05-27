@@ -1,10 +1,7 @@
-#![allow(clippy::transmute_ptr_to_ptr)] // TODO: replace with casts
-
 pub use block_cipher::{BlockCipher, NewBlockCipher};
 
 use block_cipher::consts::{U11, U13, U15, U16, U24, U32, U8};
 use block_cipher::generic_array::GenericArray;
-use core::mem;
 
 use crate::bitslice::{
     bit_slice_1x128_with_u32x4, bit_slice_1x16_with_u16,
@@ -92,7 +89,7 @@ macro_rules! define_aes_impl {
             fn encrypt_blocks(&self, blocks: &mut Block128x8) {
                 #[allow(unsafe_code)]
                 let blocks: &mut [u8; 16*8] = unsafe {
-                    mem::transmute(blocks)
+                    &mut *(blocks as *mut _ as *mut [u8; 128])
                 };
                 let bs = bit_slice_1x128_with_u32x4(blocks);
                 let bs2 = encrypt_core(&bs, &self.enc_keys8);
@@ -103,7 +100,7 @@ macro_rules! define_aes_impl {
             fn decrypt_blocks(&self, blocks: &mut Block128x8) {
                 #[allow(unsafe_code)]
                 let blocks: &mut [u8; 16*8] = unsafe {
-                    mem::transmute(blocks)
+                    &mut *(blocks as *mut _ as *mut [u8; 128])
                 };
                 let bs = bit_slice_1x128_with_u32x4(blocks);
                 let bs2 = decrypt_core(&bs, &self.dec_keys8);
