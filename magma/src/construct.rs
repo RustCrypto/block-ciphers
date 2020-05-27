@@ -1,14 +1,12 @@
-macro_rules! constuct_cipher {
+macro_rules! construct_cipher {
     ($name:ident, $sbox:expr) => {
         #[derive(Clone, Copy)]
         pub struct $name {
             c: Gost89,
         }
 
-        impl BlockCipher for $name {
+        impl NewBlockCipher for $name {
             type KeySize = U32;
-            type BlockSize = U8;
-            type ParBlocks = U1;
 
             fn new(key: &GenericArray<u8, U32>) -> Self {
                 let mut c = Gost89 {
@@ -18,6 +16,11 @@ macro_rules! constuct_cipher {
                 LE::read_u32_into(key, &mut c.key);
                 Self { c }
             }
+        }
+
+        impl BlockCipher for $name {
+            type BlockSize = U8;
+            type ParBlocks = U1;
 
             #[inline]
             fn encrypt_block(&self, block: &mut Block) {

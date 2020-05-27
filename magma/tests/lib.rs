@@ -1,9 +1,9 @@
 #![no_std]
-extern crate block_cipher_trait;
-extern crate magma;
 
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::BlockCipher;
+use magma;
+
+use block_cipher::generic_array::GenericArray;
+use block_cipher::{BlockCipher, NewBlockCipher};
 
 #[test]
 fn magma_test() {

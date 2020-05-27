@@ -1,7 +1,12 @@
+//! Pure Rust implementation of Magma (GOST 28147-89 and GOST R 34.12-2015) block cipher
+
 #![no_std]
-#![forbid(unsafe_code)]
-pub extern crate block_cipher_trait;
-extern crate byteorder;
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
+)]
+#![deny(unsafe_code)]
+#![warn(rust_2018_idioms)]
+
 #[macro_use]
 extern crate opaque_debug;
 
@@ -9,12 +14,14 @@ mod sboxes_exp;
 #[macro_use]
 mod construct;
 
-use block_cipher_trait::generic_array::typenum::{U1, U32, U8};
-use block_cipher_trait::generic_array::GenericArray;
-use block_cipher_trait::BlockCipher;
+pub use block_cipher;
+
+use block_cipher::generic_array::typenum::{U1, U32, U8};
+use block_cipher::generic_array::GenericArray;
+use block_cipher::{BlockCipher, NewBlockCipher};
 use byteorder::{ByteOrder, LE};
 
-use sboxes_exp::*;
+use crate::sboxes_exp::*;
 
 type Block = GenericArray<u8, U8>;
 
@@ -82,12 +89,12 @@ impl Gost89 {
     }
 }
 
-constuct_cipher!(Magma, S_TC26);
-constuct_cipher!(Gost89Test, S_TEST);
-constuct_cipher!(Gost89CryptoProA, S_CRYPTOPRO_A);
-constuct_cipher!(Gost89CryptoProB, S_CRYPTOPRO_B);
-constuct_cipher!(Gost89CryptoProC, S_CRYPTOPRO_C);
-constuct_cipher!(Gost89CryptoProD, S_CRYPTOPRO_D);
+construct_cipher!(Magma, S_TC26);
+construct_cipher!(Gost89Test, S_TEST);
+construct_cipher!(Gost89CryptoProA, S_CRYPTOPRO_A);
+construct_cipher!(Gost89CryptoProB, S_CRYPTOPRO_B);
+construct_cipher!(Gost89CryptoProC, S_CRYPTOPRO_C);
+construct_cipher!(Gost89CryptoProD, S_CRYPTOPRO_D);
 
 #[cfg(test)]
 mod gen_table;
