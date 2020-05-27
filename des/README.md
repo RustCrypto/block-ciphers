@@ -11,7 +11,7 @@ Pure Rust implementation of the [DES cipher][1], including triple DES (3DES).
 
 [Documentation][docs-link]
 
-<img src="https://raw.githubusercontent.com/RustCrypto/meta/master/img/block-ciphers/des.png" width="480px">
+<img src="https://raw.githubusercontent.com/RustCrypto/meta/master/img/block-ciphers/des.png" width="310px">
 
 ## ⚠️ Security Warning: [Hazmat!][hazmat-link]
 
