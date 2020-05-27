@@ -1,4 +1,4 @@
-# RustCrypto: Data Encryption Standard (DES)
+# RustCrypto: Data Encryption Standard (DES) and 3DES
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
@@ -7,7 +7,7 @@
 [![Build Status][build-image]][build-link]
 [![HAZMAT][hazmat-image]][hazmat-link]
 
-Pure Rust implementation of the [DES cipher][1].
+Pure Rust implementation of the [DES cipher][1], including triple DES (3DES).
 
 [Documentation][docs-link]
 

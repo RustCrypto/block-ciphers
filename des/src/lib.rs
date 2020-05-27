@@ -1,7 +1,16 @@
+//! Pure Rust implementation of the [DES cipher][1], including triple DES (3DES).
+//!
+//! [1]: https://en.wikipedia.org/wiki/Data_Encryption_Standard
+
 #![no_std]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
+)]
 #![forbid(unsafe_code)]
-pub extern crate block_cipher_trait;
-extern crate byteorder;
+#![warn(missing_docs, rust_2018_idioms)]
+
+pub use block_cipher;
+
 #[macro_use]
 extern crate opaque_debug;
 
@@ -9,8 +18,7 @@ mod consts;
 mod des;
 mod tdes;
 
-use block_cipher_trait::generic_array;
-use block_cipher_trait::BlockCipher;
+use block_cipher::generic_array;
 
-pub use des::Des;
-pub use tdes::{TdesEde2, TdesEde3, TdesEee2, TdesEee3};
+pub use crate::des::Des;
+pub use crate::tdes::{TdesEde2, TdesEde3, TdesEee2, TdesEee3};

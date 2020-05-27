@@ -22,13 +22,13 @@
 //! assert_eq!(block, block_copy);
 //! ```
 
+#![no_std]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
 )]
-#![deny(unsafe_code)]
-#![warn(missing_docs, rust_2018_idioms)]
-#![no_std]
 #![forbid(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
+
 pub use block_cipher;
 
 #[macro_use]
