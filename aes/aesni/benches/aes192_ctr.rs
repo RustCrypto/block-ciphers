@@ -1,7 +1,5 @@
 #![cfg(feature = "ctr")]
 #![feature(test)]
-#[macro_use]
-extern crate stream_cipher;
-use aesni;
 
-bench_sync!(aesni::Aes192Ctr);
+#[cfg(feature = "ctr")]
+stream_cipher::bench_sync!(aesni::Aes192Ctr);

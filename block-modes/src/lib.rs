@@ -7,10 +7,10 @@
 //!
 //! # Usage example
 //! ```
-//! # #[macro_use] extern crate hex_literal;
+//! use aes::Aes128;
 //! use block_modes::{BlockMode, Cbc};
 //! use block_modes::block_padding::Pkcs7;
-//! use aes::Aes128;
+//! use hex_literal::hex;
 //!
 //! // create an alias for convenience
 //! type Aes128Cbc = Cbc<Aes128, Pkcs7>;
@@ -42,10 +42,10 @@
 //! With an enabled `std` feature (which is enabled by default) you can use
 //! `encrypt_vec` and `descrypt_vec` methods:
 //! ```
-//! # #[macro_use] extern crate hex_literal;
+//! # use aes::Aes128;
 //! # use block_modes::{BlockMode, Cbc};
 //! # use block_modes::block_padding::Pkcs7;
-//! # use aes::Aes128;
+//! # use hex_literal::hex;
 //! #
 //! # // create an alias for convenience
 //! # type Aes128Cbc = Cbc<Aes128, Pkcs7>;

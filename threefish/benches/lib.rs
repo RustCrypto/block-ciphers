@@ -1,13 +1,10 @@
 #![no_std]
 #![feature(test)]
-//#[macro_use]
-//extern crate crypto_tests;
-use threefish;
 
 extern crate test;
 
-use block_cipher::BlockCipher;
-use generic_array::GenericArray;
+use block_cipher::generic_array::GenericArray;
+use block_cipher::{BlockCipher, NewBlockCipher};
 use test::Bencher;
 
 #[bench]

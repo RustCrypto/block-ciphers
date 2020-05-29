@@ -1,9 +1,8 @@
 //! Test vectors are from Nessie
 //! http://www.cs.technion.ac.il/~biham/Reports/Serpent/Serpent-128-128.verified.test-vectors
 #![no_std]
-use serpent;
-#[macro_use]
-extern crate block_cipher;
+
+use block_cipher::new_test;
 
 new_test!(serpent_test_128, "serpent_key_128bits", serpent::Serpent);
 new_test!(serpent_test_192, "serpent_key_192bits", serpent::Serpent);

@@ -1,6 +1,4 @@
 #![no_std]
 #![feature(test)]
 
-use block_cipher::bench;
-
-bench!(kuznyechik::Kuznyechik, 32);
+block_cipher::bench!(kuznyechik::Kuznyechik, 32);
