@@ -77,11 +77,14 @@
 )]
 #![warn(missing_docs, rust_2018_idioms)]
 
-pub use block_cipher;
 #[macro_use]
 extern crate opaque_debug;
+
+pub use block_cipher;
+
 #[cfg(feature = "ctr")]
-pub extern crate stream_cipher;
+pub use stream_cipher;
+
 #[cfg(not(feature = "nocheck"))]
 mod target_checks;
 #[macro_use]

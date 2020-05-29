@@ -1,6 +1,4 @@
 #![no_std]
 #![feature(test)]
 
-use block_cipher::bench;
-
-bench!(serpent::Serpent, 16);
+block_cipher::bench!(serpent::Serpent, 16);

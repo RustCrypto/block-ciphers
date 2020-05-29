@@ -1,10 +1,7 @@
 #![no_std]
-#[macro_use]
-extern crate block_cipher;
-use cast5;
 
 use block_cipher::generic_array::GenericArray;
-use block_cipher::{BlockCipher, NewBlockCipher};
+use block_cipher::{new_test, BlockCipher, NewBlockCipher};
 use cast5::Cast5;
 
 #[test]
