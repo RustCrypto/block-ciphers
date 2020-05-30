@@ -7,9 +7,14 @@ on:
       - "Cargo.*"
   push:
     branches: master
-    paths:
-      - "aes/**"
-      - "Cargo.*"
+
+defaults:
+  run:
+    working-directory: aes/aesni
+
+env:
+  CARGO_INCREMENTAL: 0
+  RUSTFLAGS: "-Dwarnings"
 
 jobs:
   test:
@@ -27,12 +32,10 @@ jobs:
           toolchain: ${{ matrix.rust }}
       - working-directory: aes/aesni
         env:
-          CARGO_INCREMENTAL: 0
           RUSTDOCFLAGS: "-C target-feature=+aes,+ssse3"
           RUSTFLAGS: "-C target-feature=+aes,+ssse3"
-        run: |
-          cargo check --all-features
-          cargo test --no-default-features
-          cargo test
-          cargo test --all-features
+      - run: cargo check --all-features
+      - run: cargo test --no-default-features
+      - run: cargo test
+      - run: cargo test --all-features
 

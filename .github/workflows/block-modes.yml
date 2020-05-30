@@ -7,9 +7,14 @@ on:
       - "Cargo.*"
   push:
     branches: master
-    paths:
-      - "block-modes/**"
-      - "Cargo.*"
+
+defaults:
+  run:
+    working-directory: block-modes
+
+env:
+  CARGO_INCREMENTAL: 0
+  RUSTFLAGS: "-Dwarnings"
 
 jobs:
   build:
@@ -30,8 +35,7 @@ jobs:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
           override: true
-      - working-directory: block-modes
-        run: cargo build --no-default-features --release --target ${{ matrix.target }}
+      - cargo build --no-default-features --release --target ${{ matrix.target }}
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -45,8 +49,6 @@ jobs:
       with:
         profile: minimal
         toolchain: ${{ matrix.rust }}
-    - run: |
-        cargo check
-        cargo test
-        cargo test --all-features
-      working-directory: block-modes
+    - run: cargo check
+    - run: cargo test
+    - run: cargo test --all-features
