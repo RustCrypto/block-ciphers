@@ -13,8 +13,7 @@ pub fn xor(buf: &mut [u8], key: &[u8]) {
 
 pub(crate) type Key<C> = GenericArray<u8, <C as NewBlockCipher>::KeySize>;
 pub(crate) type Block<C> = GenericArray<u8, <C as BlockCipher>::BlockSize>;
-pub(crate) type ParBlocks<C> =
-    GenericArray<Block<C>, <C as BlockCipher>::ParBlocks>;
+pub(crate) type ParBlocks<C> = GenericArray<Block<C>, <C as BlockCipher>::ParBlocks>;
 
 pub(crate) fn to_blocks<N>(data: &mut [u8]) -> &mut [GenericArray<u8, N>]
 where
@@ -25,10 +24,7 @@ where
 
     #[allow(unsafe_code)]
     unsafe {
-        slice::from_raw_parts_mut(
-            data.as_ptr() as *mut GenericArray<u8, N>,
-            data.len() / n,
-        )
+        slice::from_raw_parts_mut(data.as_ptr() as *mut GenericArray<u8, N>, data.len() / n)
     }
 }
 
@@ -41,8 +37,6 @@ pub(crate) fn get_par_blocks<C: BlockCipher>(
     let (par, single) = blocks.split_at_mut(n_par * pb);
 
     #[allow(unsafe_code)]
-    let par = unsafe {
-        slice::from_raw_parts_mut(par.as_ptr() as *mut ParBlocks<C>, n_par)
-    };
+    let par = unsafe { slice::from_raw_parts_mut(par.as_ptr() as *mut ParBlocks<C>, n_par) };
     (par, single)
 }

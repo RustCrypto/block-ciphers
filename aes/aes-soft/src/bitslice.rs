@@ -528,12 +528,7 @@ pub fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
 
 // Bit slice a set of 4 u32s by filling a full 128 byte data block with those repeated values. This
 // is used as part of bit slicing the round keys.
-pub fn bit_slice_fill_4x4_with_u32x4(
-    a: u32,
-    b: u32,
-    c: u32,
-    d: u32,
-) -> Bs8State<u32x4> {
+pub fn bit_slice_fill_4x4_with_u32x4(a: u32, b: u32, c: u32, d: u32) -> Bs8State<u32x4> {
     let mut tmp = [0u8; 128];
     for i in 0..8 {
         LE::write_u32(&mut tmp[i * 16..i * 16 + 4], a);
@@ -758,9 +753,7 @@ trait Gf8Ops {
     fn inv(&self) -> Self;
 }
 
-impl<T: BitXor<Output = T> + BitAnd<Output = T> + Copy + Default> Gf8Ops
-    for Bs8State<T>
-{
+impl<T: BitXor<Output = T> + BitAnd<Output = T> + Copy + Default> Gf8Ops for Bs8State<T> {
     fn inv(&self) -> Bs8State<T> {
         let (b, a) = self.split();
         let c = a.xor(b).sq_scl();
@@ -820,25 +813,10 @@ impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
         let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = self;
 
         let x0out = x7 ^ x7.ror1() ^ x0.ror1() ^ (x0 ^ x0.ror1()).ror2();
-        let x1out = x0
-            ^ x0.ror1()
-            ^ x7
-            ^ x7.ror1()
-            ^ x1.ror1()
-            ^ (x1 ^ x1.ror1()).ror2();
+        let x1out = x0 ^ x0.ror1() ^ x7 ^ x7.ror1() ^ x1.ror1() ^ (x1 ^ x1.ror1()).ror2();
         let x2out = x1 ^ x1.ror1() ^ x2.ror1() ^ (x2 ^ x2.ror1()).ror2();
-        let x3out = x2
-            ^ x2.ror1()
-            ^ x7
-            ^ x7.ror1()
-            ^ x3.ror1()
-            ^ (x3 ^ x3.ror1()).ror2();
-        let x4out = x3
-            ^ x3.ror1()
-            ^ x7
-            ^ x7.ror1()
-            ^ x4.ror1()
-            ^ (x4 ^ x4.ror1()).ror2();
+        let x3out = x2 ^ x2.ror1() ^ x7 ^ x7.ror1() ^ x3.ror1() ^ (x3 ^ x3.ror1()).ror2();
+        let x4out = x3 ^ x3.ror1() ^ x7 ^ x7.ror1() ^ x4.ror1() ^ (x4 ^ x4.ror1()).ror2();
         let x5out = x4 ^ x4.ror1() ^ x5.ror1() ^ (x5 ^ x5.ror1()).ror2();
         let x6out = x5 ^ x5.ror1() ^ x6.ror1() ^ (x6 ^ x6.ror1()).ror2();
         let x7out = x6 ^ x6.ror1() ^ x7.ror1() ^ (x7 ^ x7.ror1()).ror2();
@@ -850,12 +828,7 @@ impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
     fn inv_mix_columns(self) -> Bs8State<T> {
         let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = self;
 
-        let x0out = x5
-            ^ x6
-            ^ x7
-            ^ (x5 ^ x7 ^ x0).ror1()
-            ^ (x0 ^ x5 ^ x6).ror2()
-            ^ (x5 ^ x0).ror3();
+        let x0out = x5 ^ x6 ^ x7 ^ (x5 ^ x7 ^ x0).ror1() ^ (x0 ^ x5 ^ x6).ror2() ^ (x5 ^ x0).ror3();
         let x1out = x5
             ^ x0
             ^ (x6 ^ x5 ^ x0 ^ x7 ^ x1).ror1()
@@ -896,12 +869,7 @@ impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
             ^ (x3 ^ x7 ^ x5 ^ x6).ror1()
             ^ (x3 ^ x4 ^ x6 ^ x7).ror2()
             ^ (x3 ^ x7 ^ x6).ror3();
-        let x7out = x4
-            ^ x5
-            ^ x6
-            ^ (x4 ^ x6 ^ x7).ror1()
-            ^ (x4 ^ x5 ^ x7).ror2()
-            ^ (x4 ^ x7).ror3();
+        let x7out = x4 ^ x5 ^ x6 ^ (x4 ^ x6 ^ x7).ror1() ^ (x4 ^ x5 ^ x7).ror2() ^ (x4 ^ x7).ror3();
 
         Bs8State(x0out, x1out, x2out, x3out, x4out, x5out, x6out, x7out)
     }
@@ -912,11 +880,7 @@ impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
 }
 
 pub trait AesBitValueOps:
-    BitXor<Output = Self>
-    + BitAnd<Output = Self>
-    + Not<Output = Self>
-    + Default
-    + Sized
+    BitXor<Output = Self> + BitAnd<Output = Self> + Not<Output = Self> + Default + Sized
 {
     fn shift_row(self) -> Self;
     fn inv_shift_row(self) -> Self;

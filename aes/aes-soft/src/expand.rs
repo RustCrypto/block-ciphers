@@ -6,9 +6,7 @@
 
 use block_cipher::generic_array::{ArrayLength, GenericArray};
 
-use crate::bitslice::{
-    bit_slice_4x1_with_u16, un_bit_slice_4x1_with_u16, AesOps,
-};
+use crate::bitslice::{bit_slice_4x1_with_u16, un_bit_slice_4x1_with_u16, AesOps};
 use crate::consts::RCON;
 
 fn ffmulx(x: u32) -> u32 {
@@ -24,11 +22,7 @@ fn inv_mcol(x: u32) -> u32 {
     let f8 = ffmulx(f4);
     let f9 = x ^ f8;
 
-    f2 ^ f4
-        ^ f8
-        ^ (f2 ^ f9).rotate_right(8)
-        ^ (f4 ^ f9).rotate_right(16)
-        ^ f9.rotate_right(24)
+    f2 ^ f4 ^ f8 ^ (f2 ^ f9).rotate_right(8) ^ (f4 ^ f9).rotate_right(16) ^ f9.rotate_right(24)
 }
 
 fn sub_word(x: u32) -> u32 {

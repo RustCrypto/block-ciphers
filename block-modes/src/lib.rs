@@ -70,9 +70,7 @@
 //! [2]: https://github.com/RustCrypto/stream-ciphers
 
 #![no_std]
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
-)]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 

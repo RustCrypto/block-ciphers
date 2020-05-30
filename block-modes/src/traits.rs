@@ -46,11 +46,7 @@ where
     /// `&buffer[..pos]` is used as a message and `&buffer[pos..]` as a reserved
     /// space for padding. The padding space should be big enough for padding,
     /// otherwise method will return `Err(BlockModeError)`.
-    fn encrypt(
-        mut self,
-        buffer: &mut [u8],
-        pos: usize,
-    ) -> Result<&[u8], BlockModeError> {
+    fn encrypt(mut self, buffer: &mut [u8], pos: usize) -> Result<&[u8], BlockModeError> {
         let bs = C::BlockSize::to_usize();
         let buf = P::pad(buffer, pos, bs).map_err(|_| BlockModeError)?;
         self.encrypt_blocks(to_blocks(buf));
@@ -92,10 +88,7 @@ where
 
     /// Encrypt message and store result in vector.
     #[cfg(feature = "std")]
-    fn decrypt_vec(
-        mut self,
-        ciphertext: &[u8],
-    ) -> Result<Vec<u8>, BlockModeError> {
+    fn decrypt_vec(mut self, ciphertext: &[u8]) -> Result<Vec<u8>, BlockModeError> {
         let bs = C::BlockSize::to_usize();
         if ciphertext.len() % bs != 0 {
             Err(BlockModeError)?

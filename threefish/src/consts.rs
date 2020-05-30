@@ -40,5 +40,4 @@ pub const R_1024: [[u32; 8]; 8] = [
 // Permutation tables for the different key lengths
 pub const P_256: [usize; 4] = [0, 3, 2, 1];
 pub const P_512: [usize; 8] = [6, 1, 0, 7, 2, 5, 4, 3];
-pub const P_1024: [usize; 16] =
-    [0, 15, 2, 11, 6, 13, 4, 9, 14, 1, 8, 5, 10, 3, 12, 7];
+pub const P_1024: [usize; 16] = [0, 15, 2, 11, 6, 13, 4, 9, 14, 1, 8, 5, 10, 3, 12, 7];

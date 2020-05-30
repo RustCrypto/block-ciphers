@@ -5,9 +5,7 @@
 //! [3]: https://github.com/efb9-860a-e752-0dac/serpent
 
 #![no_std]
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
-)]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::needless_range_loop)]
@@ -77,12 +75,7 @@ fn linear_transform_inverse_bitslice(input: Block128, output: &mut Block128) {
     LE::write_u32_into(&words, output);
 }
 
-fn round_bitslice(
-    i: usize,
-    b_i: Block128,
-    k: Subkeys,
-    b_output: &mut Block128,
-) {
+fn round_bitslice(i: usize, b_i: Block128, k: Subkeys, b_output: &mut Block128) {
     let xored_block = xor_block(b_i, k[i]);
 
     let s_i = apply_s_bitslice(i, xored_block);
@@ -95,12 +88,7 @@ fn round_bitslice(
 }
 
 #[allow(clippy::useless_let_if_seq)]
-fn round_inverse_bitslice(
-    i: usize,
-    b_i_next: Block128,
-    k: Subkeys,
-    b_output: &mut Block128,
-) {
+fn round_inverse_bitslice(i: usize, b_i_next: Block128, k: Subkeys, b_output: &mut Block128) {
     let mut s_i = [0u8; 16];
 
     if i == ROUNDS - 1 {
@@ -226,8 +214,7 @@ impl Serpent {
                     | get_bit(d as usize, j) << 3;
                 let output = apply_s(sbox_index, input as u8);
                 for l in 0..4 {
-                    k[(4 * i + l) as usize] |=
-                        u32::from(get_bit(output as usize, l)) << j;
+                    k[(4 * i + l) as usize] |= u32::from(get_bit(output as usize, l)) << j;
                 }
             }
         }

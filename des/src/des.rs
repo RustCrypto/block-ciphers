@@ -41,22 +41,16 @@ fn pc2(key: u64) -> u64 {
     let b2 = (key & 0x0008020010080000) << 1;
     let b3 = key & 0x0002200000000000;
     let b4 = (key & 0x0000000000100020) << 19;
-    let b5 = (key.rotate_left(54) & 0x0005312400000011)
-        .wrapping_mul(0x0000000094200201)
+    let b5 = (key.rotate_left(54) & 0x0005312400000011).wrapping_mul(0x0000000094200201)
         & 0xea40100880000000;
-    let b6 = (key.rotate_left(7) & 0x0022110000012001)
-        .wrapping_mul(0x0001000000610006)
+    let b6 = (key.rotate_left(7) & 0x0022110000012001).wrapping_mul(0x0001000000610006)
         & 0x1185004400000000;
-    let b7 = (key.rotate_left(6) & 0x0000520040200002)
-        .wrapping_mul(0x00000080000000c1)
+    let b7 = (key.rotate_left(6) & 0x0000520040200002).wrapping_mul(0x00000080000000c1)
         & 0x0028811000200000;
-    let b8 = (key & 0x01000004c0011100).wrapping_mul(0x0000000000004284)
-        & 0x0400082244400000;
-    let b9 = (key.rotate_left(60) & 0x0000000000820280)
-        .wrapping_mul(0x0000000000089001)
+    let b8 = (key & 0x01000004c0011100).wrapping_mul(0x0000000000004284) & 0x0400082244400000;
+    let b9 = (key.rotate_left(60) & 0x0000000000820280).wrapping_mul(0x0000000000089001)
         & 0x0000000110880000;
-    let b10 = (key.rotate_left(49) & 0x0000000000024084)
-        .wrapping_mul(0x0000000002040005)
+    let b10 = (key.rotate_left(49) & 0x0000000000024084).wrapping_mul(0x0000000002040005)
         & 0x000000000a030000;
     b1 | b2 | b3 | b4 | b5 | b6 | b7 | b8 | b9 | b10
 }
@@ -107,13 +101,10 @@ fn p(block: u64) -> u64 {
     let b5 = (block & 0x0000000442000000) << 14;
     let b6 = (block & 0x0000000001800000) << 37;
     let b7 = (block & 0x0000000004000000) << 24;
-    let b8 = (block & 0x0000020280015000).wrapping_mul(0x0000020080800083)
-        & 0x02000a6400000000;
-    let b9 = (block.rotate_left(29) & 0x01001400000000aa)
-        .wrapping_mul(0x0000210210008081)
+    let b8 = (block & 0x0000020280015000).wrapping_mul(0x0000020080800083) & 0x02000a6400000000;
+    let b9 = (block.rotate_left(29) & 0x01001400000000aa).wrapping_mul(0x0000210210008081)
         & 0x0902c01200000000;
-    let b10 = (block & 0x0000000910040000).wrapping_mul(0x0000000c04000020)
-        & 0x8410010000000000;
+    let b10 = (block & 0x0000000910040000).wrapping_mul(0x0000000c04000020) & 0x8410010000000000;
     b1 | b2 | b3 | b4 | b5 | b6 | b7 | b8 | b9 | b10
 }
 
