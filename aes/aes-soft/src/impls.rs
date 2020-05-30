@@ -4,10 +4,9 @@ use block_cipher::consts::{U11, U13, U15, U16, U24, U32, U8};
 use block_cipher::generic_array::GenericArray;
 
 use crate::bitslice::{
-    bit_slice_1x128_with_u32x4, bit_slice_1x16_with_u16,
-    bit_slice_4x4_with_u16, bit_slice_fill_4x4_with_u32x4, decrypt_core,
-    encrypt_core, un_bit_slice_1x128_with_u32x4, un_bit_slice_1x16_with_u16,
-    Bs8State,
+    bit_slice_1x128_with_u32x4, bit_slice_1x16_with_u16, bit_slice_4x4_with_u16,
+    bit_slice_fill_4x4_with_u32x4, decrypt_core, encrypt_core, un_bit_slice_1x128_with_u32x4,
+    un_bit_slice_1x16_with_u16, Bs8State,
 };
 use crate::consts::U32X4_0;
 use crate::expand::expand_key;

@@ -3,9 +3,7 @@
 //! [1]: https://en.wikipedia.org/wiki/International_Data_Encryption_Algorithm
 
 #![no_std]
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
-)]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::many_single_char_names)]
@@ -33,8 +31,7 @@ impl Idea {
     fn expand_key(&mut self, key: &GenericArray<u8, U16>) {
         let length_key = key.len();
         for i in 0..(length_key / 2) {
-            self.encryption_sub_keys[i] =
-                (u16::from(key[2 * i]) << 8) + u16::from(key[2 * i + 1]);
+            self.encryption_sub_keys[i] = (u16::from(key[2 * i]) << 8) + u16::from(key[2 * i + 1]);
         }
 
         let mut a: u16;
@@ -64,14 +61,10 @@ impl Idea {
 
             let (m, n) = if i > 0 && i < 8 { (2, 1) } else { (1, 2) };
 
-            self.decryption_sub_keys[j] =
-                self.mul_inv(self.encryption_sub_keys[l]);
-            self.decryption_sub_keys[j + 1] =
-                self.add_inv(self.encryption_sub_keys[l + m]);
-            self.decryption_sub_keys[j + 2] =
-                self.add_inv(self.encryption_sub_keys[l + n]);
-            self.decryption_sub_keys[j + 3] =
-                self.mul_inv(self.encryption_sub_keys[l + 3]);
+            self.decryption_sub_keys[j] = self.mul_inv(self.encryption_sub_keys[l]);
+            self.decryption_sub_keys[j + 1] = self.add_inv(self.encryption_sub_keys[l + m]);
+            self.decryption_sub_keys[j + 2] = self.add_inv(self.encryption_sub_keys[l + n]);
+            self.decryption_sub_keys[j + 3] = self.mul_inv(self.encryption_sub_keys[l + 3]);
         }
 
         k = (ROUNDS - 1) * 6;
@@ -83,11 +76,7 @@ impl Idea {
         }
     }
 
-    fn crypt(
-        &self,
-        block: &mut GenericArray<u8, U8>,
-        sub_keys: &[u16; LENGTH_SUB_KEYS],
-    ) {
+    fn crypt(&self, block: &mut GenericArray<u8, U8>, sub_keys: &[u16; LENGTH_SUB_KEYS]) {
         let mut x1 = (u16::from(block[0]) << 8) + (u16::from(block[1]));
         let mut x2 = (u16::from(block[2]) << 8) + (u16::from(block[3]));
         let mut x3 = (u16::from(block[4]) << 8) + (u16::from(block[5]));

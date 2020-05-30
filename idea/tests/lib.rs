@@ -12,8 +12,7 @@ macro_rules! idea_test {
             let user_key = GenericArray::from_slice(&$test_vector.key);
             let cipher = Idea::new(&user_key);
 
-            let mut block =
-                GenericArray::clone_from_slice(&$test_vector.plain_text);
+            let mut block = GenericArray::clone_from_slice(&$test_vector.plain_text);
             cipher.encrypt_block(&mut block);
             assert_eq!(&block[..], &$test_vector.cipher_text[..]);
 

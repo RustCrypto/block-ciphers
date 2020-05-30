@@ -3,9 +3,7 @@
 //! [1]: https://en.wikipedia.org/wiki/RC2
 
 #![no_std]
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
-)]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![forbid(unsafe_code)]
 #![warn(rust_2018_idioms)]
 
@@ -40,21 +38,18 @@ impl Rc2 {
 
         let t8: usize = (t1 + 7) >> 3;
 
-        let tm: usize =
-            (255 % ((2 as u32).pow((8 + t1 - 8 * t8) as u32))) as usize;
+        let tm: usize = (255 % ((2 as u32).pow((8 + t1 - 8 * t8) as u32))) as usize;
 
         let mut key_buffer: [u8; 128] = [0; 128];
         key_buffer[..key_len].copy_from_slice(&key[..key_len]);
 
         for i in key_len..128 {
-            let pos: u32 = (u32::from(key_buffer[i - 1])
-                + u32::from(key_buffer[i - key_len]))
-                & 0xff;
+            let pos: u32 =
+                (u32::from(key_buffer[i - 1]) + u32::from(key_buffer[i - key_len])) & 0xff;
             key_buffer[i] = PI_TABLE[pos as usize];
         }
 
-        key_buffer[128 - t8] =
-            PI_TABLE[(key_buffer[128 - t8] & tm as u8) as usize];
+        key_buffer[128 - t8] = PI_TABLE[(key_buffer[128 - t8] & tm as u8) as usize];
 
         for i in (0..128 - t8).rev() {
             let pos: usize = (key_buffer[i + 1] ^ key_buffer[i + t8]) as usize;
@@ -63,8 +58,7 @@ impl Rc2 {
 
         let mut result: [u16; 64] = [0; 64];
         for i in 0..64 {
-            result[i] = (u16::from(key_buffer[2 * i + 1]) << 8)
-                + u16::from(key_buffer[2 * i])
+            result[i] = (u16::from(key_buffer[2 * i + 1]) << 8) + u16::from(key_buffer[2 * i])
         }
         result
     }

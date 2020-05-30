@@ -1,9 +1,7 @@
 //! Pure Rust implementation of the Kuznyechik (GOST R 34.12-2015) block cipher
 
 #![no_std]
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png"
-)]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::needless_range_loop, clippy::transmute_ptr_to_ptr)]
