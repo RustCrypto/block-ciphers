@@ -14,7 +14,7 @@ Pure Rust implementation of the [Threefish block cipher][1].
 ## ⚠️ Security Warning: [Hazmat!][hazmat-link]
 
 This crate does not ensure ciphertexts are authentic (i.e. by using a MAC to
-verify ciphertext integerity), which can lead to serious vulnerabilities
+verify ciphertext integrity), which can lead to serious vulnerabilities
 if used incorrectly!
 
 No security audits of this crate have ever been performed, and it has not been

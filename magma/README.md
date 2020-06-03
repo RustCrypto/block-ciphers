@@ -14,7 +14,7 @@ Pure Rust implementation of Magma (GOST 28147-89 and GOST R 34.12-2015) block ci
 ## ⚠️ Security Warning: [Hazmat!][hazmat-link]
 
 This crate does not ensure ciphertexts are authentic (i.e. by using a MAC to
-verify ciphertext integerity), which can lead to serious vulnerabilities
+verify ciphertext integrity), which can lead to serious vulnerabilities
 if used incorrectly!
 
 No security audits of this crate have ever been performed, and it has not been
