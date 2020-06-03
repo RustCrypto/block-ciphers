@@ -13,7 +13,7 @@ macro_rules! construct_cipher {
                     sbox: &$sbox,
                     key: Default::default(),
                 };
-                LE::read_u32_into(key, &mut c.key);
+                BE::read_u32_into(key, &mut c.key);
                 Self { c }
             }
         }

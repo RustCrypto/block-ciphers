@@ -18,3 +18,4 @@ opaque-debug = "0.2"
 
 [dev-dependencies]
 block-cipher = { version = "= 0.7.0-pre", features = ["dev"] }
+#block-modes = { version = "=0.4.0-pre", path = "../block-modes/" }
