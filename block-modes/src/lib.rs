@@ -85,14 +85,14 @@ mod traits;
 mod utils;
 
 mod cbc;
-mod ecb;
-mod pcbc;
 mod cfb;
 mod cfb8;
+mod ecb;
 mod ofb;
+mod pcbc;
 
 pub use block_padding;
 
 pub use crate::errors::{BlockModeError, InvalidKeyIvLength};
 pub use crate::traits::BlockMode;
-pub use crate::{cbc::Cbc, ecb::Ecb, pcbc::Pcbc, cfb::Cfb, cfb8::Cfb8, ofb::Ofb};
+pub use crate::{cbc::Cbc, cfb::Cfb, cfb8::Cfb8, ecb::Ecb, ofb::Ofb, pcbc::Pcbc};

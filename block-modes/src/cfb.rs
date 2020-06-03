@@ -1,5 +1,5 @@
 use crate::traits::BlockMode;
-use crate::utils::{Block, ParBlocks, xor};
+use crate::utils::{xor, Block, ParBlocks};
 use block_cipher::generic_array::typenum::Unsigned;
 use block_cipher::generic_array::GenericArray;
 use block_cipher::{BlockCipher, NewBlockCipher};
@@ -39,14 +39,12 @@ where
     fn decrypt_blocks(&mut self, mut blocks: &mut [Block<C>]) {
         let pb = C::ParBlocks::to_usize();
 
-        #[allow(unsafe_code)]
         if blocks.len() >= pb {
             self.cipher.encrypt_block(&mut self.iv);
 
             // SAFETY: we have checked that `blocks` has enough elements
-            let mut par_iv: ParBlocks<C> = unsafe {
-                ptr::read(blocks.as_ptr() as *const ParBlocks<C>)
-            };
+            #[allow(unsafe_code)]
+            let mut par_iv = read_par_block::<C>(blocks);
             self.cipher.encrypt_blocks(&mut par_iv);
 
             let (b, r) = { blocks }.split_at_mut(1);
@@ -54,12 +52,9 @@ where
 
             xor(&mut b[0], &self.iv);
 
-            while blocks.len() >= 2*pb - 1 {
-                // SAFETY: we have checked that `blocks` has enough elements
-                let next_par_iv: ParBlocks<C> = unsafe {
-                    let off = pb as isize - 1;
-                    ptr::read(b.as_ptr().offset(off) as *const ParBlocks<C>)
-                };
+            while blocks.len() >= 2 * pb - 1 {
+                let next_par_iv = read_par_block::<C>(&blocks[pb - 1..]);
+
                 let (par_block, r) = { blocks }.split_at_mut(pb);
                 blocks = r;
 
@@ -69,11 +64,11 @@ where
                 par_iv = next_par_iv;
                 self.cipher.encrypt_blocks(&mut par_iv);
             }
-            
+
             let (par_block, r) = { blocks }.split_at_mut(pb - 1);
             blocks = r;
 
-            for (a, b) in par_block.iter_mut().zip(par_iv[..pb-1].iter()) {
+            for (a, b) in par_block.iter_mut().zip(par_iv[..pb - 1].iter()) {
                 xor(a, b)
             }
             self.iv = par_iv[pb - 1].clone();
@@ -83,6 +78,16 @@ where
             xor_set2(block, self.iv.as_mut_slice());
             self.cipher.encrypt_block(&mut self.iv);
         }
+    }
+}
+
+#[inline(always)]
+fn read_par_block<C: BlockCipher>(blocks: &[Block<C>]) -> ParBlocks<C> {
+    assert!(blocks.len() >= C::ParBlocks::to_usize());
+    // SAFETY: assert checks that `blocks` is long enough
+    #[allow(unsafe_code)]
+    unsafe {
+        ptr::read(blocks.as_ptr() as *const ParBlocks<C>)
     }
 }
 
