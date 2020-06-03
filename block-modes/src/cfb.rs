@@ -40,7 +40,7 @@ where
         let pb = C::ParBlocks::to_usize();
 
         #[allow(unsafe_code)]
-        if blocks.len() >= pb + 1 {
+        if blocks.len() >= pb {
             self.cipher.encrypt_block(&mut self.iv);
 
             // SAFETY: we have checked that `blocks` has enough elements
@@ -70,15 +70,13 @@ where
                 self.cipher.encrypt_blocks(&mut par_iv);
             }
             
-            let (par_block, r) = { blocks }.split_at_mut(pb);
+            let (par_block, r) = { blocks }.split_at_mut(pb - 1);
             blocks = r;
 
-            self.iv = par_block[pb - 1].clone();
-            self.cipher.encrypt_block(&mut self.iv);
-
-            for (a, b) in par_block.iter_mut().zip(par_iv.iter()) {
+            for (a, b) in par_block.iter_mut().zip(par_iv[..pb-1].iter()) {
                 xor(a, b)
             }
+            self.iv = par_iv[pb - 1].clone();
         }
 
         for block in blocks {
