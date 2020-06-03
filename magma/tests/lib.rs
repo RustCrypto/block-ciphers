@@ -1,5 +1,5 @@
 #![no_std]
-#![cfg_attr(rustfmt, rustfmt_skip)]
+
 use magma;
 
 use block_cipher::generic_array::GenericArray;
@@ -7,6 +7,7 @@ use block_cipher::{BlockCipher, NewBlockCipher};
 
 /// Example vectors from GOST 34.12-2018
 #[test]
+#[rustfmt::skip]
 fn magma_test() {
     let key = [
         0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA, 0x99, 0x88,
@@ -30,30 +31,3 @@ fn magma_test() {
     state.decrypt_block(&mut block);
     assert_eq!(&plaintext, block.as_slice());
 }
-
-/*
-// an attempt to test with vectors from
-// https://github.com/gost-engine/engine/blob/master/test/03-encrypt.t
-#[test]
-fn engine_test() {
-    use block_modes::{BlockMode, Cbc, block_padding::Pkcs7};
-
-    type Cipher = Cbc<magma::Gost89CryptoProA, Pkcs7>;
-
-    let key: [u8; 32] = [
-        0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
-        0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
-        0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
-        0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
-    ];
-    let iv: [u8; 8] = [0; 8];
-    let plaintext = b"The quick brown fox jumps over the lazy dog\n";
-
-    let c = Cipher::new_var(&key, &iv).unwrap();
-    let ct = c.encrypt_vec(plaintext);
-    for b in ct {
-        print!("0x{:02X}, ", b);
-    }
-    println!();
-}
-*/
