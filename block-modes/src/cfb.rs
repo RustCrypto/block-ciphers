@@ -22,9 +22,11 @@ where
     P: Padding,
 {
     fn new(cipher: C, iv: &Block<C>) -> Self {
+        let mut iv = iv.clone();
+        cipher.encrypt_block(&mut iv);
         Self {
             cipher,
-            iv: iv.clone(),
+            iv,
             _p: Default::default(),
         }
     }
@@ -40,8 +42,6 @@ where
         let pb = C::ParBlocks::to_usize();
 
         if blocks.len() >= pb {
-            self.cipher.encrypt_block(&mut self.iv);
-
             // SAFETY: we have checked that `blocks` has enough elements
             #[allow(unsafe_code)]
             let mut par_iv = read_par_block::<C>(blocks);
