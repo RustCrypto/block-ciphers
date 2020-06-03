@@ -1,5 +1,5 @@
-#[cfg(feature = "std")]
-pub use std::vec::Vec;
+#[cfg(feature = "alloc")]
+pub use alloc::vec::Vec;
 
 use crate::errors::{BlockModeError, InvalidKeyIvLength};
 use crate::utils::{to_blocks, Block, Key};
@@ -67,7 +67,7 @@ where
     }
 
     /// Encrypt message and store result in vector.
-    #[cfg(feature = "std")]
+    #[cfg(feature = "alloc")]
     fn encrypt_vec(mut self, plaintext: &[u8]) -> Vec<u8> {
         let bs = C::BlockSize::to_usize();
         let pos = plaintext.len();
@@ -87,7 +87,7 @@ where
     }
 
     /// Encrypt message and store result in vector.
-    #[cfg(feature = "std")]
+    #[cfg(feature = "alloc")]
     fn decrypt_vec(mut self, ciphertext: &[u8]) -> Result<Vec<u8>, BlockModeError> {
         let bs = C::BlockSize::to_usize();
         if ciphertext.len() % bs != 0 {

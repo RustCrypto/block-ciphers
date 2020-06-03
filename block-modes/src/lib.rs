@@ -1,9 +1,10 @@
 //! This crate contains generic implementation of [block cipher modes of
 //! operation][1].
 //!
-//! Note that this crate implements only modes which require padding. For CTR,
-//! CFB and OFB modes (i.e. modes which transsform block ciphers into stream
-//! ciphers) see crates in the [RustCrypto/stream-ciphers][2] repository.
+//! Note that some block modes (such as CTR, CFB, and OFB) transform block ciphers
+//! into stream ciphers. Implementations in this crate require padding, so if you
+//! want use those modes as stream ciphers (i.e. without padding), then check out
+//! crates in the [RustCrypto/stream-ciphers][2] repository.
 //!
 //! # Usage example
 //! ```
@@ -39,7 +40,7 @@
 //! # }
 //! ```
 //!
-//! With an enabled `std` feature (which is enabled by default) you can use
+//! With an enabled `alloc` feature (which is enabled by default) you can use
 //! `encrypt_vec` and `descrypt_vec` methods:
 //! ```
 //! # use aes::Aes128;
@@ -74,6 +75,8 @@
 #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
@@ -82,11 +85,14 @@ mod traits;
 mod utils;
 
 mod cbc;
+mod cfb;
+mod cfb8;
 mod ecb;
+mod ofb;
 mod pcbc;
 
 pub use block_padding;
 
 pub use crate::errors::{BlockModeError, InvalidKeyIvLength};
 pub use crate::traits::BlockMode;
-pub use crate::{cbc::Cbc, ecb::Ecb, pcbc::Pcbc};
+pub use crate::{cbc::Cbc, cfb::Cfb, cfb8::Cfb8, ecb::Ecb, ofb::Ofb, pcbc::Pcbc};
