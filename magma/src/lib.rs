@@ -1,6 +1,7 @@
-//! Pure Rust implementation of Magma (GOST 28147-89 and GOST R 34.12-2015) block cipher
-
-//#![no_std]
+//! Pure Rust implementation of the [Magma][1] (GOST 28147-89) block cipher.
+//!
+//! [1]: https://en.wikipedia.org/wiki/GOST_(block_cipher)
+#![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![deny(unsafe_code)]
 #![warn(rust_2018_idioms)]
