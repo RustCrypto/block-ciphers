@@ -14,7 +14,8 @@ defaults:
 
 env:
   CARGO_INCREMENTAL: 0
-  RUSTFLAGS: "-Dwarnings"
+  RUSTDOCFLAGS: "-C target-feature=+aes,+ssse3"
+  RUSTFLAGS: "-Dwarnings -C target-feature=+aes,+ssse3"
 
 jobs:
   test:
@@ -30,12 +31,7 @@ jobs:
         with:
           profile: minimal
           toolchain: ${{ matrix.rust }}
-      - working-directory: aes/aesni
-        env:
-          RUSTDOCFLAGS: "-C target-feature=+aes,+ssse3"
-          RUSTFLAGS: "-C target-feature=+aes,+ssse3"
       - run: cargo check --all-features
       - run: cargo test --no-default-features
       - run: cargo test
       - run: cargo test --all-features
-
