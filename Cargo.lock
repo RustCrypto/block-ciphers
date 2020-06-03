@@ -39,7 +39,7 @@ dependencies = [
 [[package]]
 name = "block-cipher"
 version = "0.7.0-pre"
-source = "git+https://github.com/RustCrypto/traits.git#9cfac08fc7c151122ddebd580e0754c240d23db2"
+source = "git+https://github.com/RustCrypto/traits.git#c2266385dc366383baaf5699b727a27c62d3f446"
 dependencies = [
  "blobby",
  "generic-array",
@@ -130,9 +130,9 @@ dependencies = [
 
 [[package]]
 name = "hex-literal-impl"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d4c5c844e2fee0bf673d54c2c177f1713b3d2af2ff6e666b49cb7572e6cf42d"
+checksum = "853f769599eb31de176303197b7ba4973299c38c7a7604a6bc88c3eef05b9b46"
 dependencies = [
  "proc-macro-hack",
 ]
@@ -203,9 +203,10 @@ dependencies = [
 [[package]]
 name = "stream-cipher"
 version = "0.4.0-pre"
-source = "git+https://github.com/RustCrypto/traits.git#9cfac08fc7c151122ddebd580e0754c240d23db2"
+source = "git+https://github.com/RustCrypto/traits.git#c2266385dc366383baaf5699b727a27c62d3f446"
 dependencies = [
  "blobby",
+ "block-cipher",
  "generic-array",
 ]
 
