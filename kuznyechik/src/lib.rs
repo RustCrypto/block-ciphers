@@ -1,5 +1,6 @@
-//! Pure Rust implementation of the Kuznyechik (GOST R 34.12-2015) block cipher
-
+//! Pure Rust implementation of the [Kuznyechik][1] (GOST R 34.12-2015) block cipher.
+//!
+//! [1]: https://en.wikipedia.org/wiki/Kuznyechik
 #![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![deny(unsafe_code)]
@@ -32,23 +33,30 @@ fn x(a: &mut [u8; 16], b: &[u8; 16]) {
 }
 
 fn l_step(msg: &mut [u8; 16], i: usize) {
-    let mut x = msg[i];
-    x ^= consts::GF[3][msg[(1 + i) & 0xf] as usize];
-    x ^= consts::GF[1][msg[(2 + i) & 0xf] as usize];
-    x ^= consts::GF[2][msg[(3 + i) & 0xf] as usize];
-    x ^= consts::GF[0][msg[(4 + i) & 0xf] as usize];
-    x ^= consts::GF[5][msg[(5 + i) & 0xf] as usize];
-    x ^= consts::GF[4][msg[(6 + i) & 0xf] as usize];
-    x ^= msg[(7 + i) & 0xf];
-    x ^= consts::GF[6][msg[(8 + i) & 0xf] as usize];
-    x ^= msg[(9 + i) & 0xf];
-    x ^= consts::GF[4][msg[(10 + i) & 0xf] as usize];
-    x ^= consts::GF[5][msg[(11 + i) & 0xf] as usize];
-    x ^= consts::GF[0][msg[(12 + i) & 0xf] as usize];
-    x ^= consts::GF[2][msg[(13 + i) & 0xf] as usize];
-    x ^= consts::GF[1][msg[(14 + i) & 0xf] as usize];
-    x ^= consts::GF[3][msg[(15 + i) & 0xf] as usize];
-    msg[i] = x;
+    fn get_idx(b: usize, i: usize) -> usize {
+        b.wrapping_sub(i) & 0x0F
+    }
+    fn get_m(msg: &[u8; 16], b: usize, i: usize) -> usize {
+        msg[get_idx(b, i)] as usize
+    }
+
+    let mut x = msg[get_idx(15, i)];
+    x ^= consts::GF[3][get_m(msg, 14, i)];
+    x ^= consts::GF[1][get_m(msg, 13, i)];
+    x ^= consts::GF[2][get_m(msg, 12, i)];
+    x ^= consts::GF[0][get_m(msg, 11, i)];
+    x ^= consts::GF[5][get_m(msg, 10, i)];
+    x ^= consts::GF[4][get_m(msg, 9, i)];
+    x ^= msg[get_idx(8, i)];
+    x ^= consts::GF[6][get_m(msg, 7, i)];
+    x ^= msg[get_idx(6, i)];
+    x ^= consts::GF[4][get_m(msg, 5, i)];
+    x ^= consts::GF[5][get_m(msg, 4, i)];
+    x ^= consts::GF[0][get_m(msg, 3, i)];
+    x ^= consts::GF[2][get_m(msg, 2, i)];
+    x ^= consts::GF[1][get_m(msg, 1, i)];
+    x ^= consts::GF[3][get_m(msg, 0, i)];
+    msg[get_idx(15, i)] = x;
 }
 
 #[inline(always)]
@@ -78,7 +86,7 @@ fn lsx_inv(msg: &mut [u8; 16], key: &[u8; 16]) {
 
 fn get_c(n: usize) -> [u8; 16] {
     let mut v = [0u8; 16];
-    v[0] = n as u8;
+    v[15] = n as u8;
     for i in 0..16 {
         l_step(&mut v, i);
     }
@@ -102,8 +110,8 @@ impl Kuznyechik {
         let mut k1 = [0u8; 16];
         let mut k2 = [0u8; 16];
 
-        k1.copy_from_slice(&key[16..]);
-        k2.copy_from_slice(&key[..16]);
+        k1.copy_from_slice(&key[..16]);
+        k2.copy_from_slice(&key[16..]);
 
         self.keys[0] = k1;
         self.keys[1] = k2;
