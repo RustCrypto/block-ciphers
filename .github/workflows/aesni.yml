@@ -14,9 +14,8 @@ defaults:
 
 env:
   CARGO_INCREMENTAL: 0
-  RUSTFLAGS: "-Dwarnings"
   RUSTDOCFLAGS: "-C target-feature=+aes,+ssse3"
-  RUSTFLAGS: "-C target-feature=+aes,+ssse3"
+  RUSTFLAGS: "-Dwarnings -C target-feature=+aes,+ssse3"
 
 jobs:
   test:
