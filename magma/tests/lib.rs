@@ -1,3 +1,4 @@
+#![no_std]
 use magma;
 
 use block_cipher::generic_array::GenericArray;
