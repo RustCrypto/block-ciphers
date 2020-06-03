@@ -1,4 +1,5 @@
 #![no_std]
+#![cfg_attr(rustfmt, rustfmt_skip)]
 use magma;
 
 use block_cipher::generic_array::GenericArray;
