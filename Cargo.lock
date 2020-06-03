@@ -158,6 +158,7 @@ name = "magma"
 version = "0.4.0-pre"
 dependencies = [
  "block-cipher",
+ "block-modes",
  "byteorder",
  "opaque-debug",
 ]
@@ -231,4 +232,3 @@ name = "typenum"
 version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "373c8a200f9e67a0c95e62a4f52fbf80c23b4381c05a17845531982fa99e6b33"
-

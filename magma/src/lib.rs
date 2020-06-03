@@ -1,6 +1,6 @@
 //! Pure Rust implementation of Magma (GOST 28147-89 and GOST R 34.12-2015) block cipher
 
-#![no_std]
+//#![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![deny(unsafe_code)]
 #![warn(rust_2018_idioms)]
@@ -17,7 +17,7 @@ pub use block_cipher;
 use block_cipher::consts::{U1, U32, U8};
 use block_cipher::generic_array::GenericArray;
 use block_cipher::{BlockCipher, NewBlockCipher};
-use byteorder::{ByteOrder, LE};
+use byteorder::{ByteOrder, BE};
 
 use crate::sboxes_exp::*;
 
@@ -55,35 +55,34 @@ impl Gost89 {
 
     #[inline]
     fn encrypt(&self, block: &mut Block) {
-        let mut v = (LE::read_u32(&block[0..4]), LE::read_u32(&block[4..8]));
-
+        let mut v = (BE::read_u32(&block[0..4]), BE::read_u32(&block[4..8]));
         for _ in 0..3 {
-            for i in (0..8).rev() {
-                v = (v.1 ^ self.g(v.0, self.key[i]), v.0);
+            for i in 0..8 {
+                v = (v.1, v.0 ^ self.g(v.1, self.key[i]));
             }
         }
-        for i in 0..8 {
-            v = (v.1 ^ self.g(v.0, self.key[i]), v.0);
+        for i in (0..8).rev() {
+            v = (v.1, v.0 ^ self.g(v.1, self.key[i]));
         }
-        LE::write_u32(&mut block[0..4], v.1);
-        LE::write_u32(&mut block[4..8], v.0);
+        BE::write_u32(&mut block[0..4], v.1);
+        BE::write_u32(&mut block[4..8], v.0);
     }
 
     #[inline]
     fn decrypt(&self, block: &mut Block) {
-        let mut v = (LE::read_u32(&block[0..4]), LE::read_u32(&block[4..8]));
+        let mut v = (BE::read_u32(&block[0..4]), BE::read_u32(&block[4..8]));
 
-        for i in (0..8).rev() {
-            v = (v.1 ^ self.g(v.0, self.key[i]), v.0);
+        for i in 0..8 {
+            v = (v.1, v.0 ^ self.g(v.1, self.key[i]));
         }
 
         for _ in 0..3 {
-            for i in 0..8 {
-                v = (v.1 ^ self.g(v.0, self.key[i]), v.0);
+            for i in (0..8).rev() {
+                v = (v.1, v.0 ^ self.g(v.1, self.key[i]));
             }
         }
-        LE::write_u32(&mut block[0..4], v.1);
-        LE::write_u32(&mut block[4..8], v.0);
+        BE::write_u32(&mut block[0..4], v.1);
+        BE::write_u32(&mut block[4..8], v.0);
     }
 }
 
