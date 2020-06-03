@@ -30,8 +30,4 @@ impl fmt::Display for InvalidKeyIvLength {
 }
 
 #[cfg(feature = "std")]
-impl error::Error for InvalidKeyIvLength {
-    fn description(&self) -> &str {
-        "invalid key or IV length during block cipher mode initialization"
-    }
-}
+impl error::Error for InvalidKeyIvLength {}

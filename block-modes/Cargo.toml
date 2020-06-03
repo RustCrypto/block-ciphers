@@ -20,4 +20,5 @@ hex-literal = "0.2"
 
 [features]
 default = ["std"]
-std = []
+alloc = []
+std = ["alloc"]
