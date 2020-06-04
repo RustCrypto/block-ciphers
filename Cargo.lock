@@ -38,8 +38,8 @@ dependencies = [
 
 [[package]]
 name = "block-cipher"
-version = "0.7.0-pre"
-source = "git+https://github.com/RustCrypto/traits.git#c2266385dc366383baaf5699b727a27c62d3f446"
+version = "0.7.0"
+source = "git+https://github.com/RustCrypto/traits.git#b7a2165d1bcc8e57ae485d0217d55fd7d154ddf0"
 dependencies = [
  "blobby",
  "generic-array",
@@ -202,8 +202,8 @@ dependencies = [
 
 [[package]]
 name = "stream-cipher"
-version = "0.4.0-pre"
-source = "git+https://github.com/RustCrypto/traits.git#c2266385dc366383baaf5699b727a27c62d3f446"
+version = "0.4.0"
+source = "git+https://github.com/RustCrypto/traits.git#b7a2165d1bcc8e57ae485d0217d55fd7d154ddf0"
 dependencies = [
  "blobby",
  "block-cipher",
