@@ -11,13 +11,13 @@ keywords = ["crypto", "aes", "rijndael", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-block-cipher = "= 0.7.0-pre"
+block-cipher = "0.7"
 opaque-debug = "0.2"
-stream-cipher = { version = "= 0.4.0-pre", optional = true, features = ["block-cipher"] }
+stream-cipher = { version = "0.4", optional = true, features = ["block-cipher"] }
 
 [dev-dependencies]
-block-cipher = { version = "0.7.0-pre", features = ["dev"] }
-stream-cipher = { version = "= 0.4.0-pre", features = ["dev"] }
+block-cipher = { version = "0.7", features = ["dev"] }
+stream-cipher = { version = "0.4", features = ["dev"] }
 
 [features]
 default = ["ctr"]

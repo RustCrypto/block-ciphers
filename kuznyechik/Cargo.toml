@@ -12,8 +12,8 @@ keywords = ["crypto", "kuznyechik", "gost", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-block-cipher = "= 0.7.0-pre"
+block-cipher = "0.7"
 opaque-debug = "0.2"
 
 [dev-dependencies]
-block-cipher = { version = "0.7.0-pre", features = ["dev"] }
+block-cipher = { version = "0.7", features = ["dev"] }

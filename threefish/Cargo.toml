@@ -12,7 +12,7 @@ keywords = ["crypto", "threefish", "gost", "block-cipher"]
 
 [dependencies]
 byte-tools = "0.1"
-block-cipher = "= 0.7.0-pre"
+block-cipher = "0.7"
 
 [dev-dependencies]
-block-cipher = { version = "= 0.7.0-pre", features = ["dev"] }
+block-cipher = { version = "0.7", features = ["dev"] }
