@@ -15,7 +15,7 @@ categories = ["cryptography", "no-std"]
 block-cipher = "0.7"
 
 [target.'cfg(not(all(target_feature="aes", target_feature = "sse2", any(target_arch = "x86_64", target_arch = "x86"))))'.dependencies]
-aes-soft = { version = "= 0.4.0-pre", path = "aes-soft" }
+aes-soft = { version = "0.4", path = "aes-soft" }
 
 [target.'cfg(all(target_feature="aes", target_feature = "sse2", any(target_arch = "x86_64", target_arch = "x86")))'.dependencies]
 aesni = { version = "= 0.7.0-pre", default-features = false, path = "aesni" }
