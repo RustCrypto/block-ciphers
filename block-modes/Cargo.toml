@@ -15,7 +15,7 @@ block-padding = "0.1"
 block-cipher = "0.7"
 
 [dev-dependencies]
-aes = { version = "= 0.4.0-pre", path = "../aes" }
+aes = { version = "0.4", path = "../aes" }
 hex-literal = "0.2"
 
 [features]
