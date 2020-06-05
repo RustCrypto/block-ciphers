@@ -16,7 +16,3 @@ members = [
     "twofish",
     "threefish",
 ]
-
-[patch.crates-io]
-block-cipher = { git = "https://github.com/RustCrypto/traits.git" }
-stream-cipher = { git = "https://github.com/RustCrypto/traits.git" }
