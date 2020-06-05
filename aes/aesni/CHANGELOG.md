@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.8.0 (2020-06-05)
+### Added
+- Impl `FromBlockCipher` for AES-CTR types ([#121])
+
+### Changed
+- Bump `block-cipher` dependency to v0.7 ([#86], [#122])
+- Update to Rust 2018 edition ([#86])
+
+[#121]: https://github.com/RustCrypto/block-ciphers/pull/122 
+[#122]: https://github.com/RustCrypto/block-ciphers/pull/122
+[#86]: https://github.com/RustCrypto/block-ciphers/pull/86
+
 ## 0.6.0 (2018-11-01)
 
 ## 0.5.1 (2018-10-04)
@@ -41,4 +53,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.1.1 (2017-07-31)
 
-## 0.1.0 (2017-07-21)
+## 0.1.0 (2017-07-21)~~~~
