@@ -12,9 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Bump `block-cipher` dependency to v0.7 ([#86], [#122])
 - Update to Rust 2018 edition ([#86])
+- Use `mem::zeroed` instead of `mem::uninitialized` on XMM registers ([#109], [#110])
 
-[#121]: https://github.com/RustCrypto/block-ciphers/pull/122 
 [#122]: https://github.com/RustCrypto/block-ciphers/pull/122
+[#121]: https://github.com/RustCrypto/block-ciphers/pull/121
+[#110]: https://github.com/RustCrypto/block-ciphers/pull/110
+[#109]: https://github.com/RustCrypto/block-ciphers/pull/109
 [#86]: https://github.com/RustCrypto/block-ciphers/pull/86
 
 ## 0.6.0 (2018-11-01)

@@ -1,6 +1,6 @@
 [package]
 name = "serpent"
-version = "0.1.0-pre"
+version = "0.1.0"
 description = "Serpent block cipher: candidate for the Advanced Encryption Standard (AES)"
 authors = ["Blocs <jonathan@cryptoblocs.fr>"]
 license = "Apache-2.0 AND MIT"
