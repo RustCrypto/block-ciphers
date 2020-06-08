@@ -1,6 +1,6 @@
 [package]
 name = "threefish"
-version = "0.1.0-pre"
+version = "0.1.0"
 authors = ["The Rust-Crypto Project Developers"]
 license = "MIT/Apache-2.0"
 description = "Threefish block cipher"
