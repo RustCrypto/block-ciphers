@@ -1,7 +1,8 @@
 use crate::errors::InvalidKeyIvLength;
 use crate::traits::BlockMode;
 use crate::utils::{get_par_blocks, Block};
-use block_cipher::generic_array::typenum::Unsigned;
+use block_cipher::generic_array::GenericArray;
+use block_cipher::generic_array::typenum::{Unsigned, U0};
 use block_cipher::{BlockCipher, NewBlockCipher};
 use block_padding::Padding;
 use core::marker::PhantomData;
@@ -22,7 +23,9 @@ where
     C: BlockCipher + NewBlockCipher,
     P: Padding,
 {
-    fn new(cipher: C, _iv: &Block<C>) -> Self {
+    type IvSize = U0;
+    
+    fn new(cipher: C, _iv: &GenericArray<u8, U0>) -> Self {
         Self {
             cipher,
             _p: Default::default(),

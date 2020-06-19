@@ -21,6 +21,8 @@ where
     C: BlockCipher + NewBlockCipher,
     P: Padding,
 {
+    type IvSize = C::BlockSize;
+    
     fn new(cipher: C, iv: &Block<C>) -> Self {
         let mut iv = iv.clone();
         cipher.encrypt_block(&mut iv);

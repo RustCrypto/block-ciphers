@@ -120,6 +120,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "gost-modes"
+version = "0.1.0"
+dependencies = [
+ "block-modes",
+ "generic-array",
+ "hex-literal",
+ "stream-cipher",
+]
+
+[[package]]
 name = "hex-literal"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

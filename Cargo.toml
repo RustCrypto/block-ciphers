@@ -5,6 +5,7 @@ members = [
     "aes/aesni",
     "blowfish",
     "block-modes",
+    "gost-modes",
     "cast5",
     "des",
     "idea",

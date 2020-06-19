@@ -92,6 +92,7 @@ mod ofb;
 mod pcbc;
 
 pub use block_padding;
+pub use block_cipher;
 
 pub use crate::errors::{BlockModeError, InvalidKeyIvLength};
 pub use crate::traits::BlockMode;
