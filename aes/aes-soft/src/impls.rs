@@ -66,28 +66,6 @@ macro_rules! define_aes_impl {
                 bs = decrypt_core(&bs, &self.dec_keys);
                 un_bit_slice_1x16_with_u16(&bs, block);
             }
-
-            // #[inline]
-            // fn encrypt_blocks(&self, blocks: &mut Block128x8) {
-            //     #[allow(unsafe_code)]
-            //     let blocks: &mut [u8; 16*8] = unsafe {
-            //         &mut *(blocks as *mut _ as *mut [u8; 128])
-            //     };
-            //     let bs = bit_slice_1x128_with_u32x4(blocks);
-            //     let bs2 = encrypt_core(&bs, &self.enc_keys8);
-            //     un_bit_slice_1x128_with_u32x4(bs2, blocks);
-            // }
-
-            // #[inline]
-            // fn decrypt_blocks(&self, blocks: &mut Block128x8) {
-            //     #[allow(unsafe_code)]
-            //     let blocks: &mut [u8; 16*8] = unsafe {
-            //         &mut *(blocks as *mut _ as *mut [u8; 128])
-            //     };
-            //     let bs = bit_slice_1x128_with_u32x4(blocks);
-            //     let bs2 = decrypt_core(&bs, &self.dec_keys8);
-            //     un_bit_slice_1x128_with_u32x4(bs2, blocks);
-            // }
         }
 
         impl_opaque_debug!($name);

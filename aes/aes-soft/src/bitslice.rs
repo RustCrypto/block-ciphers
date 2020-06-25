@@ -3,8 +3,8 @@
     clippy::needless_range_loop,
     clippy::unreadable_literal
 )]
-use byteorder::{ByteOrder, LE};
 use core::ops::{BitAnd, BitXor, Not};
+use core::convert::TryInto;
 
 // This trait defines all of the operations needed for a type to be processed as part of an AES
 // encryption or decryption operation.
@@ -337,7 +337,9 @@ pub fn bit_slice_4x1_with_u16(a: u32) -> Bs8State<u16> {
 // Bit slice a 16 byte array in column major order
 pub fn bit_slice_1x16_with_u16(data: &[u8]) -> Bs8State<u16> {
     let mut n = [0u32; 4];
-    LE::read_u32_into(data, &mut n);
+    for (v, chunk) in n.iter_mut().zip(data.chunks_exact(4)) {
+        *v = u32::from_le_bytes(chunk.try_into().unwrap())
+    }
 
     let a = n[0];
     let b = n[1];
@@ -408,10 +410,10 @@ pub fn un_bit_slice_4x1_with_u16(bs: &Bs8State<u16>) -> u32 {
 pub fn un_bit_slice_1x16_with_u16(bs: &Bs8State<u16>, output: &mut [u8]) {
     let (a, b, c, d) = un_bit_slice_4x4_with_u16(bs);
 
-    LE::write_u32(&mut output[0..4], a);
-    LE::write_u32(&mut output[4..8], b);
-    LE::write_u32(&mut output[8..12], c);
-    LE::write_u32(&mut output[12..16], d);
+    output[0..4].copy_from_slice(&a.to_le_bytes());
+    output[4..8].copy_from_slice(&b.to_le_bytes());
+    output[8..12].copy_from_slice(&c.to_le_bytes());
+    output[12..16].copy_from_slice(&d.to_le_bytes());
 }
 
 // The Gf2Ops, Gf4Ops, and Gf8Ops traits specify the functions needed to calculate the AES S-Box
