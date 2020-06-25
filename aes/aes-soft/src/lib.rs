@@ -47,6 +47,5 @@ mod bitslice;
 mod consts;
 mod expand;
 mod impls;
-mod simd;
 
 pub use crate::impls::{Aes128, Aes192, Aes256};
