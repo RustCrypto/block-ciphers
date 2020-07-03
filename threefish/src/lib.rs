@@ -61,7 +61,7 @@ macro_rules! impl_threefish(
                     }
                 }
 
-                $name { sk: sk }
+                $name { sk }
             }
         }
 
