@@ -5,7 +5,7 @@ use core::ops::Sub;
 use generic_array::typenum::type_operators::{IsGreater, IsGreaterOrEqual, IsLessOrEqual};
 use generic_array::typenum::{Diff, Unsigned, U0, U255};
 use generic_array::{ArrayLength, GenericArray};
-use stream_cipher::{LoopError, NewStreamCipher, SyncStreamCipher};
+use stream_cipher::{FromBlockCipher, LoopError, SyncStreamCipher};
 
 type BlockSize<C> = <C as BlockCipher>::BlockSize;
 
@@ -42,20 +42,6 @@ where
     S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
-    pub fn from_block_cipher(cipher: C, nonce: &GenericArray<u8, M>) -> Self {
-        let bs = C::BlockSize::USIZE;
-        let mut block = GenericArray::clone_from_slice(&nonce[..bs]);
-        cipher.encrypt_block(&mut block);
-        let tail = GenericArray::clone_from_slice(&nonce[bs..]);
-        Self {
-            cipher,
-            block,
-            tail,
-            pos: 0,
-            _p: Default::default(),
-        }
-    }
-
     fn gen_block(&mut self) {
         let s = S::USIZE;
         let ts = self.tail.len();
@@ -78,7 +64,7 @@ where
     }
 }
 
-impl<C, M, S> NewStreamCipher for GostCfb<C, M, S>
+impl<C, M, S> FromBlockCipher for GostCfb<C, M, S>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
@@ -86,14 +72,21 @@ where
     S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
-    type KeySize = C::KeySize;
+    type BlockCipher = C;
     type NonceSize = M;
 
-    fn new(
-        key: &GenericArray<u8, Self::KeySize>,
-        nonce: &GenericArray<u8, Self::NonceSize>,
-    ) -> Self {
-        Self::from_block_cipher(C::new(key), nonce)
+    fn from_block_cipher(cipher: C, nonce: &GenericArray<u8, M>) -> Self {
+        let bs = C::BlockSize::USIZE;
+        let mut block = GenericArray::clone_from_slice(&nonce[..bs]);
+        cipher.encrypt_block(&mut block);
+        let tail = GenericArray::clone_from_slice(&nonce[bs..]);
+        Self {
+            cipher,
+            block,
+            tail,
+            pos: 0,
+            _p: Default::default(),
+        }
     }
 }
 

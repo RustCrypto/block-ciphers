@@ -6,7 +6,7 @@ use core::ops::{Div, Rem};
 use generic_array::typenum::type_operators::{IsEqual, IsGreater, IsLessOrEqual};
 use generic_array::typenum::{Mod, Quot, Unsigned, U0, U2, U255, U8};
 use generic_array::{ArrayLength, GenericArray};
-use stream_cipher::{LoopError, NewStreamCipher, SyncStreamCipher};
+use stream_cipher::{FromBlockCipher, LoopError, SyncStreamCipher};
 
 /// Counter (CTR) block mode instance as defined in GOST R 34.13-2015.
 ///
@@ -30,8 +30,6 @@ where
     _p: PhantomData<S>,
 }
 
-type NonceSize<C> = Quot<<C as BlockCipher>::BlockSize, U2>;
-
 impl<C, S> GostCtr<C, S>
 where
     C: BlockCipher + NewBlockCipher,
@@ -41,7 +39,39 @@ where
     Quot<C::BlockSize, U8>: ArrayLength<u64>,
     Quot<C::BlockSize, U2>: ArrayLength<u8>,
 {
-    pub fn from_block_cipher(cipher: C, nonce: &GenericArray<u8, NonceSize<C>>) -> Self {
+    fn gen_block(&mut self) {
+        for (c, v) in self.block.chunks_mut(8).zip(self.ctr.iter()) {
+            c.copy_from_slice(&v.to_be_bytes());
+        }
+        self.cipher.encrypt_block(&mut self.block);
+    }
+
+    fn next_block(&mut self) {
+        let mut carry = true;
+        for v in self.ctr.iter_mut().rev() {
+            if carry {
+                let (t, f) = (*v).overflowing_add(1);
+                *v = t;
+                carry = f;
+            }
+        }
+        self.gen_block();
+    }
+}
+
+impl<C, S> FromBlockCipher for GostCtr<C, S>
+where
+    C: BlockCipher + NewBlockCipher,
+    C::BlockSize: Div<U8> + Rem<U8> + Div<U2> + IsLessOrEqual<U255>,
+    Mod<C::BlockSize, U8>: IsEqual<U0>,
+    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
+    Quot<C::BlockSize, U8>: ArrayLength<u64>,
+    Quot<C::BlockSize, U2>: ArrayLength<u8>,
+{
+    type BlockCipher = C;
+    type NonceSize = Quot<<C as BlockCipher>::BlockSize, U2>;
+
+    fn from_block_cipher(cipher: C, nonce: &GenericArray<u8, Self::NonceSize>) -> Self {
         let mut ctr = GenericArray::<u64, Quot<C::BlockSize, U8>>::default();
 
         for (c, n) in ctr.iter_mut().zip(nonce.chunks(8)) {
@@ -63,45 +93,6 @@ where
         };
         s.gen_block();
         s
-    }
-
-    fn gen_block(&mut self) {
-        for (c, v) in self.block.chunks_mut(8).zip(self.ctr.iter()) {
-            c.copy_from_slice(&v.to_be_bytes());
-        }
-        self.cipher.encrypt_block(&mut self.block);
-    }
-
-    fn next_block(&mut self) {
-        let mut carry = true;
-        for v in self.ctr.iter_mut().rev() {
-            if carry {
-                let (t, f) = (*v).overflowing_add(1);
-                *v = t;
-                carry = f;
-            }
-        }
-        self.gen_block();
-    }
-}
-
-impl<C, S> NewStreamCipher for GostCtr<C, S>
-where
-    C: BlockCipher + NewBlockCipher,
-    C::BlockSize: Div<U8> + Rem<U8> + Div<U2> + IsLessOrEqual<U255>,
-    Mod<C::BlockSize, U8>: IsEqual<U0>,
-    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
-    Quot<C::BlockSize, U8>: ArrayLength<u64>,
-    Quot<C::BlockSize, U2>: ArrayLength<u8>,
-{
-    type KeySize = C::KeySize;
-    type NonceSize = NonceSize<C>;
-
-    fn new(
-        key: &GenericArray<u8, Self::KeySize>,
-        nonce: &GenericArray<u8, Self::NonceSize>,
-    ) -> Self {
-        Self::from_block_cipher(C::new(key), nonce)
     }
 }
 

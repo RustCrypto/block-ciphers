@@ -5,7 +5,7 @@ use core::ops::Mul;
 use generic_array::typenum::type_operators::{IsGreater, IsLessOrEqual};
 use generic_array::typenum::{Prod, Unsigned, U0, U1, U255};
 use generic_array::{ArrayLength, GenericArray};
-use stream_cipher::{LoopError, NewStreamCipher, SyncStreamCipher};
+use stream_cipher::{FromBlockCipher, LoopError, SyncStreamCipher};
 
 /// Output feedback (OFB) block mode instance as defined in GOST R 34.13-2015.
 ///
@@ -33,7 +33,7 @@ where
 }
 
 // TODO: replace with FromBlockCipher trait impl
-impl<C, Z, S> GostOfb<C, Z, S>
+impl<C, Z, S> FromBlockCipher for GostOfb<C, Z, S>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
@@ -41,10 +41,10 @@ where
     Z: ArrayLength<Block<C>> + Unsigned + Mul<C::BlockSize> + IsGreater<U0> + IsLessOrEqual<U255>,
     Prod<Z, C::BlockSize>: ArrayLength<u8>,
 {
-    pub fn from_block_cipher(
-        cipher: C,
-        nonce: &GenericArray<u8, <Self as NewStreamCipher>::NonceSize>,
-    ) -> Self {
+    type BlockCipher = C;
+    type NonceSize = Prod<Z, C::BlockSize>;
+
+    fn from_block_cipher(cipher: C, nonce: &GenericArray<u8, Self::NonceSize>) -> Self {
         let bs = C::BlockSize::to_usize();
         let mut state: GenericArray<Block<C>, Z> = Default::default();
         for (chunk, block) in nonce.chunks_exact(bs).zip(state.iter_mut()) {
@@ -61,26 +61,6 @@ where
             _p: Default::default(),
         }
     }
-}
-
-impl<C, Z, S> NewStreamCipher for GostOfb<C, Z, S>
-where
-    C: BlockCipher + NewBlockCipher,
-    C::BlockSize: IsLessOrEqual<U255>,
-    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
-    Z: ArrayLength<Block<C>> + Unsigned + Mul<C::BlockSize> + IsGreater<U0> + IsLessOrEqual<U255>,
-    Prod<Z, C::BlockSize>: ArrayLength<u8>,
-{
-    type KeySize = C::KeySize;
-    type NonceSize = Prod<Z, C::BlockSize>;
-
-    fn new(
-        key: &GenericArray<u8, Self::KeySize>,
-        nonce: &GenericArray<u8, Self::NonceSize>,
-    ) -> Self {
-        Self::from_block_cipher(C::new(key), nonce)
-    }
-    // TODO re-define new_var
 }
 
 impl<C, Z, S> SyncStreamCipher for GostOfb<C, Z, S>
