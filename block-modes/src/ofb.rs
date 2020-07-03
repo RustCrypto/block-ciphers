@@ -5,7 +5,7 @@ use block_cipher::{BlockCipher, NewBlockCipher};
 use block_padding::Padding;
 use core::marker::PhantomData;
 
-/// [Output feedback][1] (CFB) block mode instance with a full block feedback.
+/// [Output feedback][1] (OFB) block mode instance with a full block feedback.
 ///
 /// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Cipher_feedback_(CFB)
 pub struct Ofb<C: BlockCipher + NewBlockCipher, P: Padding> {
@@ -19,6 +19,8 @@ where
     C: BlockCipher + NewBlockCipher,
     P: Padding,
 {
+    type IvSize = C::BlockSize;
+
     fn new(cipher: C, iv: &Block<C>) -> Self {
         Self {
             cipher,

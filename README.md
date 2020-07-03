@@ -27,13 +27,14 @@ cryptographic and security reviews.
 | [Serpent](https://en.wikipedia.org/wiki/Serpent_(cipher)) | `serpent` | [![crates.io](https://img.shields.io/crates/v/serpent.svg)](https://crates.io/crates/serpent) | [![Documentation](https://docs.rs/serpent/badge.svg)](https://docs.rs/serpent) | [![build](https://github.com/RustCrypto/block-ciphers/workflows/serpent/badge.svg?branch=master&event=push)](https://github.com/RustCrypto/block-ciphers/actions?query=workflow:rc2+branch:master)
 | [SM4](https://en.wikipedia.org/wiki/SM4_(cipher)) | `sm4` | [![crates.io](https://img.shields.io/crates/v/sm4.svg)](https://crates.io/crates/sm4) | [![Documentation](https://docs.rs/sm4/badge.svg)](https://docs.rs/sm4) | [![build](https://github.com/RustCrypto/block-ciphers/workflows/sm4/badge.svg?branch=master&event=push)](https://github.com/RustCrypto/block-ciphers/actions?query=workflow:sm4+branch:master)
 | [Twofish](https://en.wikipedia.org/wiki/Twofish) | `twofish` | [![crates.io](https://img.shields.io/crates/v/twofish.svg)](https://crates.io/crates/twofish) | [![Documentation](https://docs.rs/twofish/badge.svg)](https://docs.rs/twofish) | [![build](https://github.com/RustCrypto/block-ciphers/workflows/twofish/badge.svg?branch=master&event=push)](https://github.com/RustCrypto/block-ciphers/actions?query=workflow:twofish+branch:master)
-| [Threefish](https://en.wikipedia.org/wiki/Threefish) | `threefish` | [![crates.io](https://img.shields.io/crates/v/threefish.svg)](https://crates.io/crates/threefish) | [![Documentation](https://docs.rs/threefish/badge.svg)](https://docs.rs/threefish) | [![build](https://github.com/RustCrypto/block-ciphers/workflows/threefish/badge.svg?branch=master&event=push)]((https://github.com/RustCrypto/block-ciphers/actions?query=workflow:threefish+branch:master))
+| [Threefish](https://en.wikipedia.org/wiki/Threefish) | `threefish` | [![crates.io](https://img.shields.io/crates/v/threefish.svg)](https://crates.io/crates/threefish) | [![Documentation](https://docs.rs/threefish/badge.svg)](https://docs.rs/threefish) | [![build](https://github.com/RustCrypto/block-ciphers/workflows/threefish/badge.svg?branch=master&event=push)](https://github.com/RustCrypto/block-ciphers/actions?query=workflow:threefish+branch:master)
 
 ### Additional crates
 
 | Crate name | crates.io |  Docs  | Build Status |
 |------------|-----------|--------|--------------|
-| `block-modes` | [![crates.io](https://img.shields.io/crates/v/block-modes.svg)](https://crates.io/crates/block-modes) | [![Documentation](https://docs.rs/block-modes/badge.svg)](https://docs.rs/block-modes) | ![build](https://github.com/RustCrypto/block-ciphers/workflows/block-modes/badge.svg?branch=master&event=push)
+| `block-modes` | [![crates.io](https://img.shields.io/crates/v/block-modes.svg)](https://crates.io/crates/block-modes) | [![Documentation](https://docs.rs/block-modes/badge.svg)](https://docs.rs/block-modes) | [![build](https://github.com/RustCrypto/block-ciphers/workflows/block-modes/badge.svg?branch=master&event=push)](https://github.com/RustCrypto/block-ciphers/actions?query=workflow:block-modes+branch:master)
+| `gost-modes` | [![crates.io](https://img.shields.io/crates/v/gost-modes.svg)](https://crates.io/crates/gost-modes) | [![Documentation](https://docs.rs/gost-modes/badge.svg)](https://docs.rs/gost-modes) | [![build](https://github.com/RustCrypto/block-ciphers/workflows/gost-modes/badge.svg?branch=master&event=push)](https://github.com/RustCrypto/block-ciphers/actions?query=workflow:gost-modes+branch:master)
 
 ### Minimum Supported Rust Version
 All crates in this repository support Rust 1.22 or higher. (except `aesni` and
@@ -82,7 +83,7 @@ assert_eq!(decrypted_ciphertext, plaintext);
 ```
 
 With an enabled `std` feature (which is enabled by default) you can use
-`encrypt_vec` and `descrypt_vec` methods:
+`encrypt_vec` and `decrypt_vec` methods:
 
 ```rust
 let cipher = Aes128Cbc::new_var(&key, &iv).unwrap();
