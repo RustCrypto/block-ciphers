@@ -30,7 +30,7 @@ where
     ///
     /// Returns an error if key or IV have unsupported length.
     fn new_var(key: &[u8], iv: &[u8]) -> Result<Self, InvalidKeyIvLength> {
-        if iv.len() != C::BlockSize::to_usize() {
+        if iv.len() != Self::IvSize::USIZE {
             return Err(InvalidKeyIvLength);
         }
         let iv = GenericArray::from_slice(iv);
