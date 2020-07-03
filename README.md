@@ -34,6 +34,7 @@ cryptographic and security reviews.
 | Crate name | crates.io |  Docs  | Build Status |
 |------------|-----------|--------|--------------|
 | `block-modes` | [![crates.io](https://img.shields.io/crates/v/block-modes.svg)](https://crates.io/crates/block-modes) | [![Documentation](https://docs.rs/block-modes/badge.svg)](https://docs.rs/block-modes) | ![build](https://github.com/RustCrypto/block-ciphers/workflows/block-modes/badge.svg?branch=master&event=push)
+| `gost-modes` | [![crates.io](https://img.shields.io/crates/v/gost-modes.svg)](https://crates.io/crates/gost-modes) | [![Documentation](https://docs.rs/gost-modes/badge.svg)](https://docs.rs/gost-modes) | ![build](https://github.com/RustCrypto/block-ciphers/workflows/gost-modes/badge.svg?branch=master&event=push)
 
 ### Minimum Supported Rust Version
 All crates in this repository support Rust 1.22 or higher. (except `aesni` and
