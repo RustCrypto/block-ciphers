@@ -23,4 +23,4 @@ hex-literal = "0.2"
 [features]
 default = ["std"]
 alloc = ["block-modes/alloc"]
-std = ["alloc", "block-modes/std", "block-cipher/std", "stream-cipher/std"]
+std = ["alloc", "block-modes/std", "stream-cipher/std"]
