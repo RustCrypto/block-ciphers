@@ -8,6 +8,11 @@ use generic_array::typenum::{Mod, Quot, Unsigned, U0, U2, U255, U8};
 use generic_array::{ArrayLength, GenericArray};
 use stream_cipher::{LoopError, NewStreamCipher, SyncStreamCipher};
 
+/// Counter (CTR) block mode instance as defined in GOST R 34.13-2015.
+///
+/// Type parameters:
+/// - `C`: block cipher.
+/// - `S`: number of block bytes used for message encryption. Default: block size.
 #[derive(Clone)]
 pub struct GostCtr<C, S = <C as BlockCipher>::BlockSize>
 where

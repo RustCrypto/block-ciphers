@@ -11,11 +11,9 @@ use magma::{block_cipher::NewBlockCipher, Magma};
 fn test_sync_cipher(cipher: impl SyncStreamCipher + Clone, pt: &[u8], ct: &[u8]) {
     let mut buf = pt.to_vec();
     cipher.clone().apply_keystream(&mut buf);
-    println!("full");
     assert_eq!(buf, &ct[..]);
 
     for i in 1..32 {
-        println!("part: {}", i);
         let mut c = cipher.clone();
         let mut buf = pt.to_vec();
         for chunk in buf.chunks_mut(i) {

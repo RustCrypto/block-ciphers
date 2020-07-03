@@ -2,11 +2,10 @@
 //! operation][1] defined in GOST R 34.13-2015.
 //!
 //! [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation
-
-//#![no_std]
+#![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
-//#![deny(unsafe_code)]
-//#![warn(missing_docs, rust_2018_idioms)]
+#![deny(unsafe_code)]
+#![warn(rust_2018_idioms)]
 
 pub use block_modes;
 pub use block_modes::block_cipher::consts;
