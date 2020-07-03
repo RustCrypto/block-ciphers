@@ -12,7 +12,7 @@ keywords = ["crypto", "block-cipher", "ciphers"]
 
 [dependencies]
 block-modes = { version = "0.4", path = "../block-modes" }
-stream-cipher = { version = "0.4", features = ["block-cipher"] }
+stream-cipher = { version = "0.5", features = ["block-cipher"] }
 generic-array = "0.14"
 
 [dev-dependencies]
