@@ -127,8 +127,8 @@ dependencies = [
  "block-modes",
  "generic-array",
  "hex-literal",
- "kuznyechik 0.4.0",
- "magma 0.4.0",
+ "kuznyechik 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "magma 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "stream-cipher 0.5.0",
 ]
 
