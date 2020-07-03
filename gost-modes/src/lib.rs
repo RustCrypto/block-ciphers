@@ -21,12 +21,12 @@
 //!     23344556677889901213141516171819
 //! ");
 //! let pt = b"my secret message";
-//! 
+//!
 //! type Cipher = GostCbc<Kuznyechik, GostPadding, U2>;
 //!
 //! let cipher = Cipher::new_var(&key, &iv).unwrap();
 //! let ct = cipher.encrypt_vec(pt);
-//! 
+//!
 //! let cipher = Cipher::new_var(&key, &iv).unwrap();
 //! let buf = cipher.decrypt_vec(&ct).unwrap();
 //!
@@ -40,7 +40,7 @@
 //! cipher.apply_keystream(&mut buf);
 //! assert_eq!(buf, hex!("fddb196e81812e4174d1c9f741a3457a88"));
 //! ```
-//! 
+//!
 //! [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation
 //! [GOST R 34.13-2015]: https://tc26.ru/standard/gost/GOST_R_3413-2015.pdf
 //! [`stream-cipher`]: https://docs.rs/stream-cipher/
