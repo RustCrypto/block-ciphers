@@ -1,4 +1,5 @@
-//! Test vectors generated with OpenSSL
+//! Test vectors from GOST R 34.13-2015:
+//! https://tc26.ru/standard/gost/GOST_R_3413-2015.pdf
 use gost_modes::block_padding::ZeroPadding;
 use gost_modes::consts::{U16, U2, U3, U32};
 use gost_modes::generic_array::GenericArray;
