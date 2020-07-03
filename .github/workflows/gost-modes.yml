@@ -49,4 +49,5 @@ jobs:
       with:
         profile: minimal
         toolchain: ${{ matrix.rust }}
+    - run: cargo test -- no-default-features
     - run: cargo test
