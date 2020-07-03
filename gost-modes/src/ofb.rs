@@ -1,11 +1,11 @@
 use crate::utils::xor;
-use generic_array::{ArrayLength, GenericArray};
-use generic_array::typenum::{U0, U1, U255, Unsigned, Prod};
-use generic_array::typenum::type_operators::{IsLessOrEqual, IsGreater};
-use block_modes::block_cipher::{BlockCipher, NewBlockCipher, Block};
-use stream_cipher::{NewStreamCipher, SyncStreamCipher, LoopError};
+use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
 use core::marker::PhantomData;
 use core::ops::Mul;
+use generic_array::typenum::type_operators::{IsGreater, IsLessOrEqual};
+use generic_array::typenum::{Prod, Unsigned, U0, U1, U255};
+use generic_array::{ArrayLength, GenericArray};
+use stream_cipher::{LoopError, NewStreamCipher, SyncStreamCipher};
 
 /// Output feedback (OFB) block mode instance as defined in GOST R 34.13-2015.
 ///
@@ -13,7 +13,7 @@ use core::ops::Mul;
 /// - `C`: block cipher.
 /// - `Z`: nonce length in block sizes. Default: 1.
 /// - `S`: number of block bytes used for message encryption. Default: block size.
-/// 
+///
 /// With default parameters this mode is fully equivalent to the `Ofb` mode defined
 /// in the `block-modes` crate.
 #[derive(Clone)]
@@ -33,7 +33,7 @@ where
 }
 
 // TODO: replace with FromBlockCipher trait impl
-impl <C, Z, S> GostOfb<C, Z, S>
+impl<C, Z, S> GostOfb<C, Z, S>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
@@ -45,7 +45,6 @@ where
         cipher: C,
         nonce: &GenericArray<u8, <Self as NewStreamCipher>::NonceSize>,
     ) -> Self {
-
         let bs = C::BlockSize::to_usize();
         let mut state: GenericArray<Block<C>, Z> = Default::default();
         for (chunk, block) in nonce.chunks_exact(bs).zip(state.iter_mut()) {
@@ -107,14 +106,16 @@ where
             data = r;
             xor(l, &self.state[block_pos][pos..s]);
             self.pos = 0;
-            self.cipher.encrypt_block(&mut self.state[self.block_pos as usize]);
+            self.cipher
+                .encrypt_block(&mut self.state[self.block_pos as usize]);
             self.block_pos = (self.block_pos + 1) % Z::U8;
         }
 
         let mut iter = data.chunks_exact_mut(s);
         for chunk in &mut iter {
             xor(chunk, &self.state[self.block_pos as usize][..s]);
-            self.cipher.encrypt_block(&mut self.state[self.block_pos as usize]);
+            self.cipher
+                .encrypt_block(&mut self.state[self.block_pos as usize]);
             self.block_pos = (self.block_pos + 1) % Z::U8;
         }
         let rem = iter.into_remainder();

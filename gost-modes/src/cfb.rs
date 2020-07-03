@@ -1,11 +1,11 @@
 use crate::utils::xor2;
-use generic_array::{ArrayLength, GenericArray};
-use generic_array::typenum::{U0, U255, Unsigned, Diff,};
-use generic_array::typenum::type_operators::{IsLessOrEqual, IsGreater, IsGreaterOrEqual};
-use block_modes::block_cipher::{BlockCipher, NewBlockCipher, Block};
-use stream_cipher::{NewStreamCipher, SyncStreamCipher, LoopError};
+use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
 use core::marker::PhantomData;
 use core::ops::Sub;
+use generic_array::typenum::type_operators::{IsGreater, IsGreaterOrEqual, IsLessOrEqual};
+use generic_array::typenum::{Diff, Unsigned, U0, U255};
+use generic_array::{ArrayLength, GenericArray};
+use stream_cipher::{LoopError, NewStreamCipher, SyncStreamCipher};
 
 type BlockSize<C> = <C as BlockCipher>::BlockSize;
 
@@ -15,7 +15,7 @@ type BlockSize<C> = <C as BlockCipher>::BlockSize;
 /// - `C`: block cipher.
 /// - `M`: nonce length in bytes. Default: block size.
 /// - `S`: number of block bytes used for message encryption. Default: block size.
-/// 
+///
 /// With default parameters this mode is fully equivalent to the `Cfb` mode defined
 /// in the `block-modes` crate.
 #[derive(Clone)]
@@ -42,15 +42,18 @@ where
     S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
-    pub fn from_block_cipher(
-        cipher: C,
-        nonce: &GenericArray<u8, M>,
-    ) -> Self {
+    pub fn from_block_cipher(cipher: C, nonce: &GenericArray<u8, M>) -> Self {
         let bs = C::BlockSize::USIZE;
         let mut block = GenericArray::clone_from_slice(&nonce[..bs]);
         cipher.encrypt_block(&mut block);
         let tail = GenericArray::clone_from_slice(&nonce[bs..]);
-        Self { cipher, block, tail, pos: 0, _p: Default::default() }
+        Self {
+            cipher,
+            block,
+            tail,
+            pos: 0,
+            _p: Default::default(),
+        }
     }
 
     fn gen_block(&mut self) {

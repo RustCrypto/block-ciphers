@@ -20,7 +20,7 @@ where
     P: Padding,
 {
     type IvSize = C::BlockSize;
-    
+
     fn new(cipher: C, iv: &Block<C>) -> Self {
         Self {
             cipher,

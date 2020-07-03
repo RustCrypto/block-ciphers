@@ -1,18 +1,14 @@
 //! Test vectors generated with OpenSSL
 use gost_modes::block_padding::ZeroPadding;
-use gost_modes::{GostOfb, GostCfb, GostCbc, GostCtr, Ecb};
-use gost_modes::{BlockMode, NewStreamCipher, SyncStreamCipher};
-use gost_modes::consts::{U2, U3, U16, U32};
+use gost_modes::consts::{U16, U2, U3, U32};
 use gost_modes::generic_array::GenericArray;
-use kuznyechik::Kuznyechik;
-use magma::{Magma, block_cipher::NewBlockCipher};
+use gost_modes::{BlockMode, NewStreamCipher, SyncStreamCipher};
+use gost_modes::{Ecb, GostCbc, GostCfb, GostCtr, GostOfb};
 use hex_literal::hex;
+use kuznyechik::Kuznyechik;
+use magma::{block_cipher::NewBlockCipher, Magma};
 
-fn test_sync_cipher(
-    cipher: impl SyncStreamCipher + Clone,
-    pt: &[u8],
-    ct: &[u8],
-) {
+fn test_sync_cipher(cipher: impl SyncStreamCipher + Clone, pt: &[u8], ct: &[u8]) {
     let mut buf = pt.to_vec();
     cipher.clone().apply_keystream(&mut buf);
     println!("full");
@@ -30,6 +26,7 @@ fn test_sync_cipher(
 }
 
 #[test]
+#[rustfmt::skip]
 fn kuznyechik_modes() {
     let key = GenericArray::from_slice(&hex!("
         8899aabbccddeeff0011223344556677
@@ -106,6 +103,7 @@ fn kuznyechik_modes() {
 }
 
 #[test]
+#[rustfmt::skip]
 fn magma_modes() {
     let key = GenericArray::from_slice(&hex!("
         ffeeddccbbaa99887766554433221100

@@ -9,10 +9,10 @@
 //#![warn(missing_docs, rust_2018_idioms)]
 
 pub use block_modes;
-pub use stream_cipher;
-pub use generic_array;
-pub use block_modes::block_padding;
 pub use block_modes::block_cipher::consts;
+pub use block_modes::block_padding;
+pub use generic_array;
+pub use stream_cipher;
 
 pub use block_modes::{BlockMode, Ecb};
 pub use stream_cipher::{NewStreamCipher, SyncStreamCipher};
@@ -28,7 +28,7 @@ mod utils;
 /// Fully equivalent to ISO 7816.
 pub type GostPadding = block_padding::Iso7816;
 
-pub use cfb::GostCfb;
-pub use ofb::GostOfb;
 pub use cbc::GostCbc;
+pub use cfb::GostCfb;
 pub use ctr::GostCtr;
+pub use ofb::GostOfb;

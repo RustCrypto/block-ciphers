@@ -1,12 +1,12 @@
 use crate::utils::xor;
-use generic_array::{ArrayLength, GenericArray};
-use generic_array::typenum::{U0, U2, U8, U255, Unsigned, Quot, Mod};
-use generic_array::typenum::type_operators::{IsLessOrEqual, IsGreater, IsEqual};
-use block_modes::block_cipher::{BlockCipher, NewBlockCipher, Block};
-use stream_cipher::{NewStreamCipher, SyncStreamCipher, LoopError};
+use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
+use core::convert::TryInto;
 use core::marker::PhantomData;
 use core::ops::{Div, Rem};
-use core::convert::TryInto;
+use generic_array::typenum::type_operators::{IsEqual, IsGreater, IsLessOrEqual};
+use generic_array::typenum::{Mod, Quot, Unsigned, U0, U2, U255, U8};
+use generic_array::{ArrayLength, GenericArray};
+use stream_cipher::{LoopError, NewStreamCipher, SyncStreamCipher};
 
 #[derive(Clone)]
 pub struct GostCtr<C, S = <C as BlockCipher>::BlockSize>
@@ -36,10 +36,7 @@ where
     Quot<C::BlockSize, U8>: ArrayLength<u64>,
     Quot<C::BlockSize, U2>: ArrayLength<u8>,
 {
-    pub fn from_block_cipher(
-        cipher: C,
-        nonce: &GenericArray<u8, NonceSize<C>>,
-    ) -> Self {
+    pub fn from_block_cipher(cipher: C, nonce: &GenericArray<u8, NonceSize<C>>) -> Self {
         let mut ctr = GenericArray::<u64, Quot<C::BlockSize, U8>>::default();
 
         for (c, n) in ctr.iter_mut().zip(nonce.chunks(8)) {
@@ -52,7 +49,13 @@ where
 
         let block = Default::default();
 
-        let mut s = Self { cipher, block, ctr, pos: 0, _p: Default::default() };
+        let mut s = Self {
+            cipher,
+            block,
+            ctr,
+            pos: 0,
+            _p: Default::default(),
+        };
         s.gen_block();
         s
     }
@@ -97,7 +100,6 @@ where
     }
 }
 
-
 impl<C, S> SyncStreamCipher for GostCtr<C, S>
 where
     C: BlockCipher + NewBlockCipher,
@@ -136,4 +138,3 @@ where
         Ok(())
     }
 }
-

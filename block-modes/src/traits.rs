@@ -4,7 +4,7 @@ pub use alloc::vec::Vec;
 use crate::errors::{BlockModeError, InvalidKeyIvLength};
 use crate::utils::{to_blocks, Block, Key};
 use block_cipher::generic_array::typenum::Unsigned;
-use block_cipher::generic_array::{GenericArray, ArrayLength};
+use block_cipher::generic_array::{ArrayLength, GenericArray};
 use block_cipher::{BlockCipher, NewBlockCipher};
 use block_padding::Padding;
 
@@ -15,6 +15,7 @@ where
     C: BlockCipher + NewBlockCipher,
     P: Padding,
 {
+    /// Initialization Vector size.
     type IvSize: ArrayLength<u8>;
 
     /// Create a new block mode instance from initialized block cipher and IV.
