@@ -11,7 +11,7 @@ repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "block-cipher", "ciphers"]
 
 [dependencies]
-block-modes = { version = "0.4", path = "../block-modes", default-features = false }
+block-modes = { version = "0.5", path = "../block-modes", default-features = false }
 stream-cipher = { version = "0.5", features = ["block-cipher"], default-features = false }
 generic-array = "0.14"
 
