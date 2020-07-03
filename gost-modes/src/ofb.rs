@@ -1,24 +1,34 @@
-use block_modes::BlockMode;
-use crate::utils::{xor, Block};
+use crate::utils::xor;
 use generic_array::{ArrayLength, GenericArray};
-use generic_array::typenum::{U0, U1, Greater, Unsigned, Prod,};
+use generic_array::typenum::{U0, U1, U255, Unsigned, Prod};
 use generic_array::typenum::type_operators::{IsLessOrEqual, IsGreater};
-use block_modes::block_cipher::{BlockCipher, NewBlockCipher};
+use block_modes::block_cipher::{BlockCipher, NewBlockCipher, Block};
 use stream_cipher::{NewStreamCipher, SyncStreamCipher, LoopError};
 use core::marker::PhantomData;
 use core::ops::Mul;
 
 /// Output feedback (OFB) block mode instance as defined in GOST R 34.13-2015.
+///
+/// Type parameters:
+/// - `C`: block cipher.
+/// - `Z`: nonce length in block sizes. Default: 1.
+/// - `S`: number of block bytes used for message encryption. Default: block size.
+/// 
+/// With default parameters this mode is fully equivalent to the `Ofb` mode defined
+/// in the `block-modes` crate.
+#[derive(Clone)]
 pub struct GostOfb<C, Z = U1, S = <C as BlockCipher>::BlockSize>
 where
     C: BlockCipher + NewBlockCipher,
+    C::BlockSize: IsLessOrEqual<U255>,
     S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
-    Z: Mul<C::BlockSize> + IsGreater<U0>,
+    Z: ArrayLength<Block<C>> + Unsigned + Mul<C::BlockSize> + IsGreater<U0> + IsLessOrEqual<U255>,
     Prod<Z, C::BlockSize>: ArrayLength<u8>,
 {
     cipher: C,
-    nonce: GenericArray<u8, <Z as Mul<C::BlockSize>>::Output>,
-    pos: usize,
+    state: GenericArray<Block<C>, Z>,
+    block_pos: u8,
+    pos: u8,
     _p: PhantomData<(S, Z)>,
 }
 
@@ -26,21 +36,28 @@ where
 impl <C, Z, S> GostOfb<C, Z, S>
 where
     C: BlockCipher + NewBlockCipher,
+    C::BlockSize: IsLessOrEqual<U255>,
     S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
-    Z: Mul<C::BlockSize> + IsGreater<U0>,
+    Z: ArrayLength<Block<C>> + Unsigned + Mul<C::BlockSize> + IsGreater<U0> + IsLessOrEqual<U255>,
     Prod<Z, C::BlockSize>: ArrayLength<u8>,
 {
     pub fn from_block_cipher(
         cipher: C,
         nonce: &GenericArray<u8, <Self as NewStreamCipher>::NonceSize>,
     ) -> Self {
-        let n = C::BlockSize::to_usize();
-        let mut nonce = nonce.clone();
-        let block = GenericArray::from_mut_slice(&mut nonce[..n]);
-        cipher.encrypt_block(block);
+
+        let bs = C::BlockSize::to_usize();
+        let mut state: GenericArray<Block<C>, Z> = Default::default();
+        for (chunk, block) in nonce.chunks_exact(bs).zip(state.iter_mut()) {
+            let mut t = GenericArray::clone_from_slice(chunk);
+            cipher.encrypt_block(&mut t);
+            *block = t;
+        }
+
         Self {
             cipher,
-            nonce,
+            state,
+            block_pos: 0,
             pos: 0,
             _p: Default::default(),
         }
@@ -50,12 +67,13 @@ where
 impl<C, Z, S> NewStreamCipher for GostOfb<C, Z, S>
 where
     C: BlockCipher + NewBlockCipher,
+    C::BlockSize: IsLessOrEqual<U255>,
     S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
-    Z: Mul<C::BlockSize> + IsGreater<U0>,
+    Z: ArrayLength<Block<C>> + Unsigned + Mul<C::BlockSize> + IsGreater<U0> + IsLessOrEqual<U255>,
     Prod<Z, C::BlockSize>: ArrayLength<u8>,
 {
     type KeySize = C::KeySize;
-    type NonceSize = <Z as Mul<C::BlockSize>>::Output;
+    type NonceSize = Prod<Z, C::BlockSize>;
 
     fn new(
         key: &GenericArray<u8, Self::KeySize>,
@@ -63,45 +81,46 @@ where
     ) -> Self {
         Self::from_block_cipher(C::new(key), nonce)
     }
-
     // TODO re-define new_var
 }
 
 impl<C, Z, S> SyncStreamCipher for GostOfb<C, Z, S>
 where
     C: BlockCipher + NewBlockCipher,
+    C::BlockSize: IsLessOrEqual<U255>,
     S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
-    Z: Mul<C::BlockSize> + IsGreater<U0>,
+    Z: ArrayLength<Block<C>> + Unsigned + Mul<C::BlockSize> + IsGreater<U0> + IsLessOrEqual<U255>,
     Prod<Z, C::BlockSize>: ArrayLength<u8>,
 {
     fn try_apply_keystream(&mut self, mut data: &mut [u8]) -> Result<(), LoopError> {
-        let s = S::to_usize();
+        let s = S::USIZE;
+        let pos = self.pos as usize;
+        let block_pos = self.block_pos as usize;
 
-        if data.len() >= s - self.pos {
-            let (l, r) = { data }.split_at_mut(s - self.pos);
-            data = r;
-            xor(l, &self.nonce[self.pos..s]);
-            self.cipher.encrypt_block(&mut self.block);
-        } else {
+        if data.len() < s - pos {
             let n = data.len();
-            xor(data, &self.block[self.pos..self.pos + n]);
-            self.pos += n;
+            xor(data, &self.state[block_pos][pos..pos + n]);
+            self.pos += n as u8;
             return Ok(());
+        } else if pos != 0 {
+            let (l, r) = { data }.split_at_mut(s - pos);
+            data = r;
+            xor(l, &self.state[block_pos][pos..s]);
+            self.pos = 0;
+            self.cipher.encrypt_block(&mut self.state[self.block_pos as usize]);
+            self.block_pos = (self.block_pos + 1) % Z::U8;
         }
 
-        /*
-        let mut block = self.block.clone();
-        while data.len() >= bs {
-            let (l, r) = { data }.split_at_mut(bs);
-            data = r;
-            xor(l, &block);
-            self.cipher.encrypt_block(&mut block);
+        let mut iter = data.chunks_exact_mut(s);
+        for chunk in &mut iter {
+            xor(chunk, &self.state[self.block_pos as usize][..s]);
+            self.cipher.encrypt_block(&mut self.state[self.block_pos as usize]);
+            self.block_pos = (self.block_pos + 1) % Z::U8;
         }
-        self.block = block;
-        let n = data.len();
-        self.pos = n;
-        xor(data, &self.block[..n]);
-        */
+        let rem = iter.into_remainder();
+        xor(rem, &self.state[self.block_pos as usize][..rem.len()]);
+        self.pos += rem.len() as u8;
+
         Ok(())
     }
 }

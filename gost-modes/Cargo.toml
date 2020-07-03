@@ -16,6 +16,8 @@ stream-cipher = { version = "0.4", features = ["block-cipher"] }
 generic-array = "0.14"
 
 [dev-dependencies]
+kuznyechik = "0.4"
+magma = "0.4.0"
 hex-literal = "0.2"
 
 [features]
