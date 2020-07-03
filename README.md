@@ -83,7 +83,7 @@ assert_eq!(decrypted_ciphertext, plaintext);
 ```
 
 With an enabled `std` feature (which is enabled by default) you can use
-`encrypt_vec` and `descrypt_vec` methods:
+`encrypt_vec` and `decrypt_vec` methods:
 
 ```rust
 let cipher = Aes128Cbc::new_var(&key, &iv).unwrap();
