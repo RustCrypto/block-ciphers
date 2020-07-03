@@ -2,7 +2,7 @@
 name = "threefish"
 version = "0.1.0"
 authors = ["The Rust-Crypto Project Developers"]
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 description = "Threefish block cipher"
 documentation = "https://docs.rs/threefish"
 readme = "README.md"
