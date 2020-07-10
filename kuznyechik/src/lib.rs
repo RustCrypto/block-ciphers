@@ -68,18 +68,18 @@ fn l_step(msg: &mut [u8; 16], i: usize) {
 fn lsx(msg: &mut [u8; 16], key: &[u8; 16]) {
     x(msg, key);
     // s
-    unroll16!{i, { msg[i] = consts::P[msg[i] as usize]; }};
+    unroll16! {i, { msg[i] = consts::P[msg[i] as usize]; }};
     // l
-    unroll16!{i, { l_step(msg, i) }};
+    unroll16! {i, { l_step(msg, i) }};
 }
 
 #[inline(always)]
 fn lsx_inv(msg: &mut [u8; 16], key: &[u8; 16]) {
     x(msg, key);
     // l_inv
-    unroll16!{i, { l_step(msg, 15 - i) }};
+    unroll16! {i, { l_step(msg, 15 - i) }};
     // s_inv
-    unroll16!{i, { msg[15 - i] = consts::P_INV[msg[15 - i] as usize]; }};
+    unroll16! {i, { msg[15 - i] = consts::P_INV[msg[15 - i] as usize]; }};
 }
 
 fn get_c(n: usize) -> [u8; 16] {

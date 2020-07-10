@@ -1,3 +1,5 @@
+#![cfg_attr(rustfmt, rustfmt_skip)]
+
 #[cfg(not(feature = "no_unroll"))]
 macro_rules! unroll9 {
     ($var:ident, $body:block) => {
