@@ -1,7 +1,7 @@
-use magma;
 use block_cipher::generic_array::GenericArray;
 use block_cipher::{BlockCipher, NewBlockCipher};
 use hex_literal::hex;
+use magma;
 
 /// Example vectors from GOST 34.12-2018
 #[test]

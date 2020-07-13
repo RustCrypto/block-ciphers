@@ -4,7 +4,7 @@ use crate::arch::*;
 use core::{cmp, mem};
 
 use super::{Aes128, Aes192, Aes256};
-use block_cipher::{BlockCipher, consts::U16, generic_array::GenericArray};
+use block_cipher::{consts::U16, generic_array::GenericArray, BlockCipher};
 use stream_cipher::{FromBlockCipher, LoopError, SyncStreamCipher, SyncStreamCipherSeek};
 
 const BLOCK_SIZE: usize = 16;

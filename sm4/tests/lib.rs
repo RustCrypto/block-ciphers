@@ -1,8 +1,8 @@
 //! Test vectors are from GM/T 0002-2012
 
 use block_cipher::{BlockCipher, NewBlockCipher};
-use sm4::Sm4;
 use hex_literal::hex;
+use sm4::Sm4;
 
 #[test]
 fn sm4_example_1() {

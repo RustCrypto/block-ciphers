@@ -1,7 +1,7 @@
 use block_cipher::generic_array::GenericArray;
 use block_cipher::{BlockCipher, NewBlockCipher};
-use twofish::Twofish;
 use hex_literal::hex;
+use twofish::Twofish;
 
 macro_rules! new_test {
     (
@@ -45,7 +45,8 @@ macro_rules! new_test {
 }
 
 new_test!(
-    encrypt_ecb128, 16,
+    encrypt_ecb128,
+    16,
     "9F589F5CF6122C32B6BFEC2F2AE8C35A",
     "D491DB16E7B1C39E86CB086B789F5419",
     "019F9809DE1711858FAAC3A3BA20FBC3",
@@ -55,7 +56,8 @@ new_test!(
 );
 
 new_test!(
-    encrypt_ecb192, 24,
+    encrypt_ecb192,
+    24,
     "EFA71F788965BD4453F860178FC19101",
     "88B2B2706B105E36B446BB6D731A1E88",
     "39DA69D6BA4997D585B6DC073CA341B2",
@@ -65,7 +67,8 @@ new_test!(
 );
 
 new_test!(
-    encrypt_ecb256, 32,
+    encrypt_ecb256,
+    32,
     "57FF739D4DC92C1BD7FC01700CC8216F",
     "D43BB7556EA32E46F2A282B7D45B4E0D",
     "90AFE91BB288544F2C32DC239B2635E6",
