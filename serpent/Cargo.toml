@@ -1,9 +1,9 @@
 [package]
 name = "serpent"
 version = "0.2.0"
-description = "Serpent block cipher: candidate for the Advanced Encryption Standard (AES)"
-authors = ["Blocs <jonathan@cryptoblocs.fr>"]
-license = "Apache-2.0 AND MIT"
+description = "Serpent block cipher"
+authors = ["RustCrypto Developers"]
+license = "Apache-2.0 OR MIT"
 readme = "README.md"
 edition = "2018"
 documentation = "https://docs.rs/serpent"
