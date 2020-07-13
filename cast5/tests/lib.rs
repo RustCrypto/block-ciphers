@@ -78,6 +78,6 @@ fn full_maintance_test() {
     assert_eq!(&br[..], &verify_b[8..]);
 }
 
-/// Test vectors from NESSIE:
-/// https://www.cosic.esat.kuleuven.be/nessie/testvectors/bc/cast-128/Cast-128-128-64.verified.test-vectors
-new_test!(cast5_tests, "cast5", cast5::Cast5);
+// Test vectors from NESSIE:
+// https://www.cosic.esat.kuleuven.be/nessie/testvectors/bc/cast-128/Cast-128-128-64.verified.test-vectors
+new_test!(cast5_nessie, "cast5", cast5::Cast5);
