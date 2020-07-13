@@ -1,5 +1,3 @@
-#![no_std]
-#![cfg(any(target_arch = "x86_64", target_arch = "x86"))]
 #![feature(test)]
 
 extern crate test;

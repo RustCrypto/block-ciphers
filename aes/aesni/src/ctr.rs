@@ -4,7 +4,7 @@ use crate::arch::*;
 use core::{cmp, mem};
 
 use super::{Aes128, Aes192, Aes256};
-use block_cipher::{consts::U16, generic_array::GenericArray};
+use block_cipher::{BlockCipher, consts::U16, generic_array::GenericArray};
 use stream_cipher::{FromBlockCipher, LoopError, SyncStreamCipher, SyncStreamCipherSeek};
 
 const BLOCK_SIZE: usize = 16;
@@ -128,8 +128,12 @@ macro_rules! impl_ctr {
 
         impl FromBlockCipher for $name {
             type BlockCipher = $cipher;
+            type NonceSize = <$cipher as BlockCipher>::BlockSize;
 
-            fn from_block_cipher(cipher: $cipher, nonce: &GenericArray<u8, U16>) -> Self {
+            fn from_block_cipher(
+                cipher: $cipher,
+                nonce: &GenericArray<u8, Self::NonceSize>,
+            ) -> Self {
                 let nonce = swap_bytes(load(nonce));
 
                 Self {
