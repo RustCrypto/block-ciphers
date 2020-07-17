@@ -1,102 +1,50 @@
-#![no_std]
-
 use block_cipher::generic_array::GenericArray;
 use block_cipher::{new_test, BlockCipher, NewBlockCipher};
 use cast5::Cast5;
+use hex_literal::hex;
 
+/// Test vectors from RFC 2144 Appendix B.1
+/// https://tools.ietf.org/html/rfc2144#appendix-B.1
 #[test]
-fn single_plaintext_key_ciphertext_sets_128bit() {
-    // Test based on RFC 2144 Appendix B.1
-    // https://tools.ietf.org/html/rfc2144#appendix-B.1
+fn rfc2144_b1() {
+    let key128 = hex!("0123456712345678234567893456789A");
+    let key80 = hex!("01234567123456782345");
+    let key40 = hex!("0123456712");
+    let ct128 = GenericArray::clone_from_slice(&hex!("238B4FE5847E44B2"));
+    let ct80 = GenericArray::clone_from_slice(&hex!("EB6A711A2C02271B"));
+    let ct40 = GenericArray::clone_from_slice(&hex!("7AC816D16E9B302E"));
+    let pt = GenericArray::clone_from_slice(&hex!("0123456789ABCDEF"));
 
-    let key = [
-        0x01, 0x23, 0x45, 0x67, 0x12, 0x34, 0x56, 0x78, 0x23, 0x45, 0x67, 0x89, 0x34, 0x56, 0x78,
-        0x9A,
-    ];
-    let key = GenericArray::clone_from_slice(&key);
-    let plain = [0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF];
-    let plain = GenericArray::clone_from_slice(&plain);
-    let cipher_expected = [0x23, 0x8B, 0x4F, 0xE5, 0x84, 0x7E, 0x44, 0xB2];
+    let mut buf = pt.clone();
 
-    for _ in 1..50 {
-        let cast5 = Cast5::new(&key);
-        let mut cipher = plain.clone();
-        cast5.encrypt_block(&mut cipher);
-        assert_eq!(&cipher[..], &cipher_expected[..]);
+    let c = Cast5::new_varkey(&key128).unwrap();
+    c.encrypt_block(&mut buf);
+    assert_eq!(buf, ct128);
+    c.decrypt_block(&mut buf);
+    assert_eq!(buf, pt);
 
-        let mut decrypted = cipher.clone();
-        cast5.decrypt_block(&mut decrypted);
+    let c = Cast5::new_varkey(&key80).unwrap();
+    c.encrypt_block(&mut buf);
+    assert_eq!(buf, ct80);
+    c.decrypt_block(&mut buf);
+    assert_eq!(buf, pt);
 
-        assert_eq!(&plain[..], &decrypted[..]);
-    }
+    let c = Cast5::new_varkey(&key40).unwrap();
+    c.encrypt_block(&mut buf);
+    assert_eq!(buf, ct40);
+    c.decrypt_block(&mut buf);
+    assert_eq!(buf, pt);
 }
 
-#[test]
-fn single_plaintext_key_ciphertext_sets_80bit() {
-    // Test based on RFC 2144 Appendix B.1
-    // https://tools.ietf.org/html/rfc2144#appendix-B.1
-
-    let key = [0x01, 0x23, 0x45, 0x67, 0x12, 0x34, 0x56, 0x78, 0x23, 0x45];
-    let plain = GenericArray::clone_from_slice(&[0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF]);
-    let cipher_expected = [0xEB, 0x6A, 0x71, 0x1A, 0x2C, 0x02, 0x27, 0x1B];
-
-    for _ in 1..50 {
-        let cast5 = Cast5::new_varkey(&key).unwrap();
-        let mut cipher = plain.clone();
-        cast5.encrypt_block(&mut cipher);
-        assert_eq!(&cipher[..], &cipher_expected[..]);
-
-        let mut decrypted = cipher.clone();
-        cast5.decrypt_block(&mut decrypted);
-
-        assert_eq!(&plain[..], &decrypted[..]);
-    }
-}
-
-#[test]
-fn single_plaintext_key_ciphertext_sets_40bit() {
-    // Test based on RFC 2144 Appendix B.1
-    // https://tools.ietf.org/html/rfc2144#appendix-B.1
-
-    let key = [0x01, 0x23, 0x45, 0x67, 0x12];
-    let plain = GenericArray::clone_from_slice(&[0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF]);
-    let cipher_expected = [0x7A, 0xC8, 0x16, 0xD1, 0x6E, 0x9B, 0x30, 0x2E];
-
-    for _ in 1..50 {
-        let cast5 = Cast5::new_varkey(&key).unwrap();
-        let mut cipher = plain.clone();
-        cast5.encrypt_block(&mut cipher);
-        assert_eq!(&cipher[..], &cipher_expected[..]);
-
-        let mut decrypted = cipher.clone();
-        cast5.decrypt_block(&mut decrypted);
-
-        assert_eq!(&plain[..], &decrypted[..]);
-    }
-}
-
+/// Test based on RFC 2144 Appendix B.2
+/// https://tools.ietf.org/html/rfc2144#appendix-B.1
 #[test]
 fn full_maintance_test() {
-    // Test based on RFC 2144 Appendix B.2
-    // https://tools.ietf.org/html/rfc2144#appendix-B.1
+    let mut a = hex!("0123456712345678234567893456789A");
+    let mut b = hex!("0123456712345678234567893456789A");
 
-    let mut a = [
-        0x01, 0x23, 0x45, 0x67, 0x12, 0x34, 0x56, 0x78, 0x23, 0x45, 0x67, 0x89, 0x34, 0x56, 0x78,
-        0x9A,
-    ];
-    let mut b = [
-        0x01, 0x23, 0x45, 0x67, 0x12, 0x34, 0x56, 0x78, 0x23, 0x45, 0x67, 0x89, 0x34, 0x56, 0x78,
-        0x9A,
-    ];
-
-    let verify_a = [
-        0xEE, 0xA9, 0xD0, 0xA2, 0x49, 0xFD, 0x3B, 0xA6, 0xB3, 0x43, 0x6F, 0xB8, 0x9D, 0x6D, 0xCA,
-        0x92,
-    ];
-    let verify_b = [
-        0xB2, 0xC9, 0x5E, 0xB0, 0x0C, 0x31, 0xAD, 0x71, 0x80, 0xAC, 0x05, 0xB8, 0xE8, 0x3D, 0x69,
-        0x6E,
-    ];
+    let verify_a = hex!("EEA9D0A249FD3BA6B3436FB89D6DCA92");
+    let verify_b = hex!("B2C95EB00C31AD7180AC05B8E83D696E");
 
     let count = 1_000_000;
 
@@ -130,11 +78,6 @@ fn full_maintance_test() {
     assert_eq!(&br[..], &verify_b[8..]);
 }
 
-new_test!(vectors_set01_test, "set1", cast5::Cast5);
-new_test!(vectors_set02_test, "set2", cast5::Cast5);
-new_test!(vectors_set03_test, "set3", cast5::Cast5);
-new_test!(vectors_set04_test, "set4", cast5::Cast5);
-new_test!(vectors_set05_test, "set5", cast5::Cast5);
-new_test!(vectors_set06_test, "set6", cast5::Cast5);
-new_test!(vectors_set07_test, "set7", cast5::Cast5);
-new_test!(vectors_set08_test, "set8", cast5::Cast5);
+// Test vectors from NESSIE:
+// https://www.cosic.esat.kuleuven.be/nessie/testvectors/bc/cast-128/Cast-128-128-64.verified.test-vectors
+new_test!(cast5_nessie, "cast5", cast5::Cast5);

@@ -1,6 +1,6 @@
 [package]
 name = "threefish"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["The Rust-Crypto Project Developers"]
 license = "MIT OR Apache-2.0"
 description = "Threefish block cipher"
@@ -12,7 +12,7 @@ keywords = ["crypto", "threefish", "gost", "block-cipher"]
 
 [dependencies]
 byte-tools = "0.1"
-block-cipher = "0.7"
+block-cipher = "0.8"
 
 [dev-dependencies]
-block-cipher = { version = "0.7", features = ["dev"] }
+block-cipher = { version = "0.8", features = ["dev"] }

@@ -1,26 +1,18 @@
-#![no_std]
-
-use magma;
-
 use block_cipher::generic_array::GenericArray;
 use block_cipher::{BlockCipher, NewBlockCipher};
+use hex_literal::hex;
+use magma;
 
 /// Example vectors from GOST 34.12-2018
 #[test]
 #[rustfmt::skip]
 fn magma_test() {
-    let key = [
-        0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA, 0x99, 0x88,
-        0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00,
-        0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7,
-        0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF,
-    ];
-    let plaintext = [
-        0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-    ];
-    let ciphertext = [
-        0x4E, 0xE9, 0x01, 0xE5, 0xC2, 0xD8, 0xCA, 0x3D,
-    ];
+    let key = hex!("
+        FFEEDDCCBBAA99887766554433221100
+        F0F1F2F3F4F5F6F7F8F9FAFBFCFDFEFF
+    ");
+    let plaintext = hex!("FEDCBA9876543210");
+    let ciphertext = hex!("4EE901E5C2D8CA3D");
 
     let state = magma::Magma::new_varkey(&key).unwrap();
 
