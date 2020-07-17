@@ -50,6 +50,9 @@
 #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
+#[cfg(feature = "std")]
+extern crate std;
+
 pub use block_modes;
 pub use block_modes::block_cipher::consts;
 pub use block_modes::block_padding;
@@ -64,6 +67,7 @@ mod cfb;
 mod ctr;
 mod ofb;
 mod utils;
+mod errors;
 
 /// Block padding procedure number 2 as defined in GOST R 34.13-2015.
 ///
@@ -74,3 +78,4 @@ pub use cbc::GostCbc;
 pub use cfb::GostCfb;
 pub use ctr::GostCtr;
 pub use ofb::GostOfb;
+pub use errors::InvalidS;
