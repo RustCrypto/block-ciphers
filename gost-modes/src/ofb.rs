@@ -1,6 +1,6 @@
+use crate::errors::InvalidS;
 use crate::utils::xor;
 use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
-use core::marker::PhantomData;
 use core::ops::Mul;
 use generic_array::typenum::type_operators::{IsGreater, IsLessOrEqual};
 use generic_array::typenum::{Prod, Unsigned, U0, U1, U255};
@@ -12,16 +12,14 @@ use stream_cipher::{FromBlockCipher, LoopError, SyncStreamCipher};
 /// Type parameters:
 /// - `C`: block cipher.
 /// - `Z`: nonce length in block sizes. Default: 1.
-/// - `S`: number of block bytes used for message encryption. Default: block size.
 ///
 /// With default parameters this mode is fully equivalent to the `Ofb` mode defined
 /// in the `block-modes` crate.
 #[derive(Clone)]
-pub struct GostOfb<C, Z = U1, S = <C as BlockCipher>::BlockSize>
+pub struct GostOfb<C, Z = U1>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
-    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Z: ArrayLength<Block<C>> + Unsigned + Mul<C::BlockSize> + IsGreater<U0> + IsLessOrEqual<U255>,
     Prod<Z, C::BlockSize>: ArrayLength<u8>,
 {
@@ -29,15 +27,34 @@ where
     state: GenericArray<Block<C>, Z>,
     block_pos: u8,
     pos: u8,
-    _p: PhantomData<(S, Z)>,
+    s: u8,
 }
 
-// TODO: replace with FromBlockCipher trait impl
-impl<C, Z, S> FromBlockCipher for GostOfb<C, Z, S>
+impl<C, Z> GostOfb<C, Z>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
-    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
+    Z: ArrayLength<Block<C>> + Unsigned + Mul<C::BlockSize> + IsGreater<U0> + IsLessOrEqual<U255>,
+    Prod<Z, C::BlockSize>: ArrayLength<u8>,
+{
+    /// Set number of block bytes used for message encryption.
+    ///
+    /// This method should be only used right after cipher initialization,
+    /// before any data processing.
+    pub fn set_s(&mut self, s: u8) -> Result<(), InvalidS> {
+        if s > 0 && s <= C::BlockSize::U8 {
+            self.s = s;
+            Ok(())
+        } else {
+            Err(InvalidS)
+        }
+    }
+}
+
+impl<C, Z> FromBlockCipher for GostOfb<C, Z>
+where
+    C: BlockCipher + NewBlockCipher,
+    C::BlockSize: IsLessOrEqual<U255>,
     Z: ArrayLength<Block<C>> + Unsigned + Mul<C::BlockSize> + IsGreater<U0> + IsLessOrEqual<U255>,
     Prod<Z, C::BlockSize>: ArrayLength<u8>,
 {
@@ -58,21 +75,20 @@ where
             state,
             block_pos: 0,
             pos: 0,
-            _p: Default::default(),
+            s: C::BlockSize::U8,
         }
     }
 }
 
-impl<C, Z, S> SyncStreamCipher for GostOfb<C, Z, S>
+impl<C, Z> SyncStreamCipher for GostOfb<C, Z>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
-    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Z: ArrayLength<Block<C>> + Unsigned + Mul<C::BlockSize> + IsGreater<U0> + IsLessOrEqual<U255>,
     Prod<Z, C::BlockSize>: ArrayLength<u8>,
 {
     fn try_apply_keystream(&mut self, mut data: &mut [u8]) -> Result<(), LoopError> {
-        let s = S::USIZE;
+        let s = self.s as usize;
         let pos = self.pos as usize;
         let block_pos = self.block_pos as usize;
 
