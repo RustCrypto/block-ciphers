@@ -1,6 +1,7 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 
 #[cfg(not(feature = "no_unroll"))]
+#[rustfmt::skip]
 macro_rules! unroll9 {
     ($var:ident, $body:block) => {
         { let $var: usize = 0; $body; }
@@ -23,6 +24,7 @@ macro_rules! unroll9 {
 }
 
 #[cfg(not(feature = "no_unroll"))]
+#[rustfmt::skip]
 macro_rules! unroll16 {
     ($var:ident, $body:block) => {
         { let $var: usize = 0; $body; }
