@@ -1,6 +1,6 @@
 [package]
 name = "aes-soft"
-version = "0.4.0"
+version = "0.5.0"
 description = "AES (Rijndael) block ciphers bit-sliced implementation"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -11,8 +11,8 @@ keywords = ["crypto", "aes", "rijndael", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-block-cipher = "0.7"
+block-cipher = "0.8"
 opaque-debug = "0.2"
 
 [dev-dependencies]
-block-cipher = { version = "0.7", features = ["dev"] }
+block-cipher = { version = "0.8", features = ["dev"] }

@@ -1,6 +1,6 @@
 [package]
 name = "sm4"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["andelf <andelf@gmail.com>"]
 license = "Apache-2.0 OR MIT"
 description = "SM4 block cipher algorithm"
@@ -12,9 +12,10 @@ keywords = ["crypto", "sm4", "block-cipher"]
 categories = ["cryptography"]
 
 [dependencies]
-block-cipher = "0.7"
+block-cipher = "0.8"
 byteorder = { version = "1", default-features = false }
 opaque-debug = "0.2"
 
 [dev-dependencies]
-block-cipher = { version = "0.7", features = ["dev"] }
+block-cipher = { version = "0.8", features = ["dev"] }
+hex-literal = "0.2"

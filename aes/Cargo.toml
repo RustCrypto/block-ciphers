@@ -1,6 +1,6 @@
 [package]
 name = "aes"
-version = "0.4.0"
+version = "0.5.0"
 description = "Facade for AES (Rijndael) block ciphers implementations"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -12,13 +12,13 @@ keywords = ["crypto", "aes", "rijndael", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-block-cipher = "0.7"
+block-cipher = "0.8"
 
 [target.'cfg(not(all(target_feature="aes", target_feature = "sse2", any(target_arch = "x86_64", target_arch = "x86"))))'.dependencies]
-aes-soft = { version = "0.4", path = "aes-soft" }
+aes-soft = { version = "0.5", path = "aes-soft" }
 
 [target.'cfg(all(target_feature="aes", target_feature = "sse2", any(target_arch = "x86_64", target_arch = "x86")))'.dependencies]
-aesni = { version = "0.7", default-features = false, path = "aesni" }
+aesni = { version = "0.8", default-features = false, path = "aesni" }
 
 [dev-dependencies]
-block-cipher = { version = "0.7", features = ["dev"] }
+block-cipher = { version = "0.8", features = ["dev"] }

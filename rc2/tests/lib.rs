@@ -1,5 +1,3 @@
-#![no_std]
-
 use block_cipher::generic_array::GenericArray;
 use block_cipher::{BlockCipher, NewBlockCipher};
 

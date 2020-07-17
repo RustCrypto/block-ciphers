@@ -4,7 +4,7 @@ pub use alloc::vec::Vec;
 use crate::errors::{BlockModeError, InvalidKeyIvLength};
 use crate::utils::{to_blocks, Block, Key};
 use block_cipher::generic_array::typenum::Unsigned;
-use block_cipher::generic_array::GenericArray;
+use block_cipher::generic_array::{ArrayLength, GenericArray};
 use block_cipher::{BlockCipher, NewBlockCipher};
 use block_padding::Padding;
 
@@ -15,11 +15,14 @@ where
     C: BlockCipher + NewBlockCipher,
     P: Padding,
 {
+    /// Initialization Vector size.
+    type IvSize: ArrayLength<u8>;
+
     /// Create a new block mode instance from initialized block cipher and IV.
-    fn new(cipher: C, iv: &Block<C>) -> Self;
+    fn new(cipher: C, iv: &GenericArray<u8, Self::IvSize>) -> Self;
 
     /// Create a new block mode instance from fixed sized key and IV.
-    fn new_fix(key: &Key<C>, iv: &Block<C>) -> Self {
+    fn new_fix(key: &Key<C>, iv: &GenericArray<u8, Self::IvSize>) -> Self {
         Self::new(C::new(key), iv)
     }
 
@@ -27,7 +30,7 @@ where
     ///
     /// Returns an error if key or IV have unsupported length.
     fn new_var(key: &[u8], iv: &[u8]) -> Result<Self, InvalidKeyIvLength> {
-        if iv.len() != C::BlockSize::to_usize() {
+        if iv.len() != Self::IvSize::USIZE {
             return Err(InvalidKeyIvLength);
         }
         let iv = GenericArray::from_slice(iv);

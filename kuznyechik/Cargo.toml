@@ -1,9 +1,9 @@
 [package]
 name = "kuznyechik"
-version = "0.4.0-pre"
+version = "0.5.0"
 description = "Kuznyechik (GOST R 34.12-2015) block cipher"
 authors = ["RustCrypto Developers"]
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 readme = "README.md"
 edition = "2018"
 documentation = "https://docs.rs/kuznyechik"
@@ -12,8 +12,14 @@ keywords = ["crypto", "kuznyechik", "gost", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-block-cipher = "0.7"
+block-cipher = "0.8"
 opaque-debug = "0.2"
 
 [dev-dependencies]
-block-cipher = { version = "0.7", features = ["dev"] }
+block-cipher = { version = "0.8", features = ["dev"] }
+hex-literal = "0.2"
+
+[features]
+# disables loop unrolling, which reduces resulting binary size,
+# but degrades performance in return
+no_unroll = []

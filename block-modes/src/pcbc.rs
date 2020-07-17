@@ -34,6 +34,8 @@ where
     C: BlockCipher + NewBlockCipher,
     P: Padding,
 {
+    type IvSize = C::BlockSize;
+
     fn new(cipher: C, iv: &GenericArray<u8, C::BlockSize>) -> Self {
         Self {
             cipher,

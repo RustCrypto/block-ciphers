@@ -17,6 +17,8 @@ use block_cipher::generic_array::GenericArray;
 use block_cipher::{BlockCipher, NewBlockCipher};
 
 mod consts;
+#[macro_use]
+mod macros;
 
 type Block = GenericArray<u8, U16>;
 
@@ -26,6 +28,7 @@ pub struct Kuznyechik {
     keys: [[u8; 16]; 10],
 }
 
+#[inline(always)]
 fn x(a: &mut [u8; 16], b: &[u8; 16]) {
     for i in 0..16 {
         a[i] ^= b[i];
@@ -33,9 +36,11 @@ fn x(a: &mut [u8; 16], b: &[u8; 16]) {
 }
 
 fn l_step(msg: &mut [u8; 16], i: usize) {
+    #[inline(always)]
     fn get_idx(b: usize, i: usize) -> usize {
         b.wrapping_sub(i) & 0x0F
     }
+    #[inline(always)]
     fn get_m(msg: &[u8; 16], b: usize, i: usize) -> usize {
         msg[get_idx(b, i)] as usize
     }
@@ -63,25 +68,18 @@ fn l_step(msg: &mut [u8; 16], i: usize) {
 fn lsx(msg: &mut [u8; 16], key: &[u8; 16]) {
     x(msg, key);
     // s
-    for i in 0..16 {
-        msg[i] = consts::P[msg[i] as usize];
-    }
+    unroll16! {i, { msg[i] = consts::P[msg[i] as usize]; }};
     // l
-    for i in 0..16 {
-        l_step(msg, i);
-    }
+    unroll16! {i, { l_step(msg, i) }};
 }
 
+#[inline(always)]
 fn lsx_inv(msg: &mut [u8; 16], key: &[u8; 16]) {
     x(msg, key);
     // l_inv
-    for i in (0..16).rev() {
-        l_step(msg, i);
-    }
+    unroll16! {i, { l_step(msg, 15 - i) }};
     // s_inv
-    for i in 0..16 {
-        msg[i] = consts::P_INV[msg[i] as usize];
-    }
+    unroll16! {i, { msg[15 - i] = consts::P_INV[msg[15 - i] as usize]; }};
 }
 
 fn get_c(n: usize) -> [u8; 16] {
@@ -124,15 +122,15 @@ impl Kuznyechik {
     }
 
     fn encrypt(&self, msg: &mut [u8; 16]) {
-        for k in &self.keys[..9] {
-            lsx(msg, k);
+        unroll9! {
+            i, { lsx(msg, &self.keys[i]) ; }
         }
         x(msg, &self.keys[9])
     }
 
     fn decrypt(&self, msg: &mut [u8; 16]) {
-        for k in self.keys[1..].iter().rev() {
-            lsx_inv(msg, k);
+        unroll9! {
+            i, { lsx_inv(msg, &self.keys[9 - i]) ; }
         }
         x(msg, &self.keys[0])
     }

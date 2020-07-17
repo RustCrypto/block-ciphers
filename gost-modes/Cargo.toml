@@ -1,0 +1,26 @@
+[package]
+name = "gost-modes"
+version = "0.2.0"
+description = "Block cipher modes of operation"
+authors = ["RustCrypto Developers"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+edition = "2018"
+documentation = "https://docs.rs/block-modes"
+repository = "https://github.com/RustCrypto/block-ciphers"
+keywords = ["crypto", "block-cipher", "ciphers"]
+
+[dependencies]
+block-modes = { version = "0.6", path = "../block-modes", default-features = false }
+stream-cipher = { version = "0.6", features = ["block-cipher"], default-features = false }
+generic-array = "0.14"
+
+[dev-dependencies]
+kuznyechik = { version = "0.5", path = "../kuznyechik" }
+magma = { version = "0.5", path = "../magma" }
+hex-literal = "0.2"
+
+[features]
+default = ["std"]
+alloc = ["block-modes/alloc"]
+std = ["alloc", "block-modes/std", "stream-cipher/std"]
