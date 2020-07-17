@@ -1,5 +1,5 @@
-use crate::utils::xor2;
 use crate::errors::InvalidS;
+use crate::utils::xor2;
 use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
 use core::ops::Sub;
 use generic_array::typenum::type_operators::{IsGreaterOrEqual, IsLessOrEqual};

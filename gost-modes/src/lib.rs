@@ -65,9 +65,9 @@ pub use stream_cipher::{NewStreamCipher, SyncStreamCipher};
 mod cbc;
 mod cfb;
 mod ctr;
+mod errors;
 mod ofb;
 mod utils;
-mod errors;
 
 /// Block padding procedure number 2 as defined in GOST R 34.13-2015.
 ///
@@ -77,5 +77,5 @@ pub type GostPadding = block_padding::Iso7816;
 pub use cbc::GostCbc;
 pub use cfb::GostCfb;
 pub use ctr::GostCtr;
-pub use ofb::GostOfb;
 pub use errors::InvalidS;
+pub use ofb::GostOfb;

@@ -1,5 +1,5 @@
-use crate::utils::xor;
 use crate::errors::InvalidS;
+use crate::utils::xor;
 use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
 use core::convert::TryInto;
 use core::ops::{Div, Rem};
