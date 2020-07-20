@@ -10,9 +10,6 @@
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::needless_range_loop)]
 
-#[macro_use]
-extern crate opaque_debug;
-
 pub use block_cipher;
 
 use block_cipher::consts::{U1, U16};
@@ -282,4 +279,4 @@ impl BlockCipher for Serpent {
     }
 }
 
-impl_opaque_debug!(Serpent);
+opaque_debug::implement!(Serpent);

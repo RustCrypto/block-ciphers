@@ -144,4 +144,4 @@ impl BlockCipher for Aes192 {
     }
 }
 
-impl_opaque_debug!(Aes192);
+opaque_debug::implement!(Aes192);

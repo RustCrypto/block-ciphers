@@ -14,7 +14,7 @@ categories = ["cryptography", "no-std"]
 [dependencies]
 byteorder = { version = "1", default-features = false }
 block-cipher = "0.8"
-opaque-debug = "0.2"
+opaque-debug = "0.3"
 
 [dev-dependencies]
 block-cipher = { version = "0.8", features = ["dev"] }

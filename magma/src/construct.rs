@@ -33,6 +33,6 @@ macro_rules! construct_cipher {
             }
         }
 
-        impl_opaque_debug!($name);
+        opaque_debug::implement!($name);
     };
 }

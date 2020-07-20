@@ -209,4 +209,4 @@ impl BlockCipher for Des {
     }
 }
 
-impl_opaque_debug!(Des);
+opaque_debug::implement!(Des);

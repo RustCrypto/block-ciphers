@@ -235,7 +235,7 @@ macro_rules! impl_ctr {
             }
         }
 
-        impl_opaque_debug!($name);
+        opaque_debug::implement!($name);
     }
 }
 

@@ -6,9 +6,6 @@
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::needless_range_loop, clippy::unreadable_literal)]
 
-#[macro_use]
-extern crate opaque_debug;
-
 pub use block_cipher;
 
 use block_cipher::consts::{U1, U16, U32};
@@ -249,7 +246,7 @@ impl BlockCipher for Twofish {
     }
 }
 
-impl_opaque_debug!(Twofish);
+opaque_debug::implement!(Twofish);
 
 #[cfg(test)]
 mod tests;

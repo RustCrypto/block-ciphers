@@ -190,4 +190,4 @@ impl BlockCipher for Cast5 {
     }
 }
 
-impl_opaque_debug!(Cast5);
+opaque_debug::implement!(Cast5);

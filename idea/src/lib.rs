@@ -8,9 +8,6 @@
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::many_single_char_names)]
 
-#[macro_use]
-extern crate opaque_debug;
-
 pub use block_cipher;
 
 use block_cipher::consts::{U1, U16, U8};
@@ -194,7 +191,7 @@ impl BlockCipher for Idea {
     }
 }
 
-impl_opaque_debug!(Idea);
+opaque_debug::implement!(Idea);
 
 #[cfg(test)]
 mod tests;

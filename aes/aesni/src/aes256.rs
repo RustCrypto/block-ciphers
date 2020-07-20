@@ -152,4 +152,4 @@ impl BlockCipher for Aes256 {
     }
 }
 
-impl_opaque_debug!(Aes256);
+opaque_debug::implement!(Aes256);
