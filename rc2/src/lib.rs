@@ -7,9 +7,6 @@
 #![forbid(unsafe_code)]
 #![warn(rust_2018_idioms)]
 
-#[macro_use]
-extern crate opaque_debug;
-
 pub use block_cipher;
 
 use block_cipher::consts::{U1, U32, U8};
@@ -221,4 +218,4 @@ impl BlockCipher for Rc2 {
     }
 }
 
-impl_opaque_debug!(Rc2);
+opaque_debug::implement!(Rc2);

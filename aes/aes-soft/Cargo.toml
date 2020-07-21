@@ -12,7 +12,7 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 block-cipher = "0.8"
-opaque-debug = "0.2"
+opaque-debug = "0.3"
 byteorder = { version = "1", default-features = false }
 
 [dev-dependencies]

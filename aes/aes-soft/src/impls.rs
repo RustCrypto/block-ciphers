@@ -107,7 +107,7 @@ macro_rules! define_aes_impl {
             }
         }
 
-        impl_opaque_debug!($name);
+        opaque_debug::implement!($name);
     }
 }
 

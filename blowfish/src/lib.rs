@@ -5,9 +5,6 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
-#[macro_use]
-extern crate opaque_debug;
-
 pub use block_cipher;
 
 use block_cipher::consts::{U1, U56, U8};
@@ -202,4 +199,4 @@ impl Blowfish<BE> {
     }
 }
 
-impl_opaque_debug!(Blowfish);
+opaque_debug::implement!(Blowfish);

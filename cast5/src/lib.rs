@@ -27,9 +27,6 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
-#[macro_use]
-extern crate opaque_debug;
-
 pub use block_cipher::{self, BlockCipher};
 
 mod cast5;

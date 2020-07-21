@@ -138,4 +138,4 @@ impl BlockCipher for Aes128 {
     }
 }
 
-impl_opaque_debug!(Aes128);
+opaque_debug::implement!(Aes128);

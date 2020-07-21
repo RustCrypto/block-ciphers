@@ -40,9 +40,6 @@
 
 pub use block_cipher;
 
-#[macro_use]
-extern crate opaque_debug;
-
 mod bitslice;
 mod consts;
 mod expand;

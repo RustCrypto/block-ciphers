@@ -6,9 +6,6 @@
 #![deny(unsafe_code)]
 #![warn(rust_2018_idioms)]
 
-#[macro_use]
-extern crate opaque_debug;
-
 mod sboxes_exp;
 #[macro_use]
 mod construct;

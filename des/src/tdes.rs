@@ -198,7 +198,7 @@ impl BlockCipher for TdesEee2 {
     }
 }
 
-impl_opaque_debug!(TdesEde3);
-impl_opaque_debug!(TdesEee3);
-impl_opaque_debug!(TdesEde2);
-impl_opaque_debug!(TdesEee2);
+opaque_debug::implement!(TdesEde3);
+opaque_debug::implement!(TdesEee3);
+opaque_debug::implement!(TdesEde2);
+opaque_debug::implement!(TdesEee2);
