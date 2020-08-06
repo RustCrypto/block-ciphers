@@ -15,13 +15,13 @@
 //! let plaintext = hex!("FEDCBA9876543210");
 //! let ciphertext = hex!("4EE901E5C2D8CA3D");
 //!
-//! let state = Magma::new(GenericArray::from_slice(&key));
+//! let cipher = Magma::new(GenericArray::from_slice(&key));
 //!
 //! let mut block = GenericArray::clone_from_slice(&plaintext);
-//! state.encrypt_block(&mut block);
+//! cipher.encrypt_block(&mut block);
 //! assert_eq!(&ciphertext, block.as_slice());
 //!
-//! state.decrypt_block(&mut block);
+//! cipher.decrypt_block(&mut block);
 //! assert_eq!(&plaintext, block.as_slice());
 //! ```
 //!
