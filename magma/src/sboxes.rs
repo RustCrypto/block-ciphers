@@ -40,6 +40,7 @@ pub trait Sbox {
     }
 }
 
+#[derive(Clone, Copy)]
 pub enum Tc26 {}
 
 impl Sbox for Tc26 {
@@ -122,6 +123,7 @@ impl Sbox for Tc26 {
     ];
 }
 
+#[derive(Clone, Copy)]
 pub enum TestSbox {}
 
 impl Sbox for TestSbox {
@@ -204,6 +206,7 @@ impl Sbox for TestSbox {
     ];
 }
 
+#[derive(Clone, Copy)]
 pub enum CryptoProA {}
 
 impl Sbox for CryptoProA {
@@ -286,6 +289,7 @@ impl Sbox for CryptoProA {
     ];
 }
 
+#[derive(Clone, Copy)]
 pub enum CryptoProB {}
 
 impl Sbox for CryptoProB {
@@ -368,6 +372,7 @@ impl Sbox for CryptoProB {
     ];
 }
 
+#[derive(Clone, Copy)]
 pub enum CryptoProC {}
 
 impl Sbox for CryptoProC {
@@ -450,6 +455,7 @@ impl Sbox for CryptoProC {
     ];
 }
 
+#[derive(Clone, Copy)]
 pub enum CryptoProD {}
 
 impl Sbox for CryptoProD {
