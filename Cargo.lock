@@ -162,7 +162,6 @@ name = "magma"
 version = "0.5.0"
 dependencies = [
  "block-cipher",
- "byteorder",
  "hex-literal",
  "opaque-debug",
 ]
