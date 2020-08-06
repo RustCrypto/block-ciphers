@@ -1,5 +1,4 @@
 use crate::utils::xor;
-use crate::GostPadding;
 use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
 use block_modes::block_padding::Padding;
 use block_modes::BlockMode;
@@ -13,13 +12,12 @@ use generic_array::{ArrayLength, GenericArray};
 ///
 /// Type parameters:
 /// - `C`: block cipher.
-/// - `P`: padding algorithm. Default: `GostPadding`.
 /// - `Z`: nonce length in block sizes. Default: 1.
 ///
 /// With default parameters this mode is fully equivalent to the `Cbc` mode defined
 /// in the `block-modes` crate.
 #[derive(Clone)]
-pub struct GostCbc<C, P = GostPadding, Z = U1>
+pub struct GostCbc<C, P, Z = U1>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
@@ -30,7 +28,7 @@ where
     cipher: C,
     state: GenericArray<Block<C>, Z>,
     pos: u8,
-    _p: PhantomData<P>,
+    _p: PhantomData<(Z, P)>,
 }
 
 impl<C, P, Z> BlockMode<C, P> for GostCbc<C, P, Z>

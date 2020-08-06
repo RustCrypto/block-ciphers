@@ -50,9 +50,6 @@
 #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
-#[cfg(feature = "std")]
-extern crate std;
-
 pub use block_modes;
 pub use block_modes::block_cipher::consts;
 pub use block_modes::block_padding;
@@ -65,7 +62,6 @@ pub use stream_cipher::{NewStreamCipher, SyncStreamCipher};
 mod cbc;
 mod cfb;
 mod ctr;
-mod errors;
 mod ofb;
 mod utils;
 
@@ -77,5 +73,4 @@ pub type GostPadding = block_padding::Iso7816;
 pub use cbc::GostCbc;
 pub use cfb::GostCfb;
 pub use ctr::GostCtr;
-pub use errors::InvalidS;
 pub use ofb::GostOfb;

@@ -1,9 +1,9 @@
-use crate::errors::InvalidS;
 use crate::utils::xor2;
 use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
+use core::marker::PhantomData;
 use core::ops::Sub;
-use generic_array::typenum::type_operators::{IsGreaterOrEqual, IsLessOrEqual};
-use generic_array::typenum::{Diff, Unsigned, U255};
+use generic_array::typenum::type_operators::{IsGreater, IsGreaterOrEqual, IsLessOrEqual};
+use generic_array::typenum::{Diff, Unsigned, U0, U255};
 use generic_array::{ArrayLength, GenericArray};
 use stream_cipher::{FromBlockCipher, LoopError, SyncStreamCipher};
 
@@ -14,46 +14,36 @@ type BlockSize<C> = <C as BlockCipher>::BlockSize;
 /// Type parameters:
 /// - `C`: block cipher.
 /// - `M`: nonce length in bytes. Default: block size.
+/// - `S`: number of block bytes used for message encryption. Default: block size.
 ///
 /// With default parameters this mode is fully equivalent to the `Cfb` mode defined
 /// in the `block-modes` crate.
 #[derive(Clone)]
-pub struct GostCfb<C, M = BlockSize<C>>
+pub struct GostCfb<C, M = BlockSize<C>, S = BlockSize<C>>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
+    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
     cipher: C,
     block: Block<C>,
     tail: GenericArray<u8, Diff<M, C::BlockSize>>,
     pos: u8,
-    s: u8,
+    _p: PhantomData<(M, S)>,
 }
 
-impl<C, M> GostCfb<C, M>
+impl<C, M, S> GostCfb<C, M, S>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
+    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
-    /// Set number of block bytes used for message encryption.
-    ///
-    /// This method should be only used right after cipher initialization,
-    /// before any data processing.
-    pub fn set_s(&mut self, s: u8) -> Result<(), InvalidS> {
-        if s > 0 && s <= C::BlockSize::U8 {
-            self.s = s;
-            Ok(())
-        } else {
-            Err(InvalidS)
-        }
-    }
-
     fn gen_block(&mut self) {
-        let s = self.s as usize;
+        let s = S::USIZE;
         let ts = self.tail.len();
         if ts <= s {
             let d = s - ts;
@@ -74,11 +64,12 @@ where
     }
 }
 
-impl<C, M> FromBlockCipher for GostCfb<C, M>
+impl<C, M, S> FromBlockCipher for GostCfb<C, M, S>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
+    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
     type BlockCipher = C;
@@ -94,20 +85,21 @@ where
             block,
             tail,
             pos: 0,
-            s: C::BlockSize::U8,
+            _p: Default::default(),
         }
     }
 }
 
-impl<C, M> SyncStreamCipher for GostCfb<C, M>
+impl<C, M, S> SyncStreamCipher for GostCfb<C, M, S>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
+    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
     fn try_apply_keystream(&mut self, mut data: &mut [u8]) -> Result<(), LoopError> {
-        let s = self.s as usize;
+        let s = S::USIZE;
         let pos = self.pos as usize;
 
         if data.len() < s - pos {

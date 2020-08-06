@@ -1,20 +1,25 @@
-use crate::errors::InvalidS;
 use crate::utils::xor;
 use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
 use core::convert::TryInto;
+use core::marker::PhantomData;
 use core::ops::{Div, Rem};
-use generic_array::typenum::type_operators::{IsEqual, IsLessOrEqual};
+use generic_array::typenum::type_operators::{IsEqual, IsGreater, IsLessOrEqual};
 use generic_array::typenum::{Mod, Quot, Unsigned, U0, U2, U255, U8};
 use generic_array::{ArrayLength, GenericArray};
 use stream_cipher::{FromBlockCipher, LoopError, SyncStreamCipher};
 
 /// Counter (CTR) block mode instance as defined in GOST R 34.13-2015.
+///
+/// Type parameters:
+/// - `C`: block cipher.
+/// - `S`: number of block bytes used for message encryption. Default: block size.
 #[derive(Clone)]
-pub struct GostCtr<C>
+pub struct GostCtr<C, S = <C as BlockCipher>::BlockSize>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: Div<U8> + Rem<U8> + Div<U2> + IsLessOrEqual<U255>,
     Mod<C::BlockSize, U8>: IsEqual<U0>,
+    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Quot<C::BlockSize, U8>: ArrayLength<u64>,
     Quot<C::BlockSize, U2>: ArrayLength<u8>,
 {
@@ -22,30 +27,18 @@ where
     block: Block<C>,
     ctr: GenericArray<u64, Quot<C::BlockSize, U8>>,
     pos: u8,
-    s: u8,
+    _p: PhantomData<S>,
 }
 
-impl<C> GostCtr<C>
+impl<C, S> GostCtr<C, S>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: Div<U8> + Rem<U8> + Div<U2> + IsLessOrEqual<U255>,
     Mod<C::BlockSize, U8>: IsEqual<U0>,
+    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Quot<C::BlockSize, U8>: ArrayLength<u64>,
     Quot<C::BlockSize, U2>: ArrayLength<u8>,
 {
-    /// Set number of block bytes used for message encryption.
-    ///
-    /// This method should be only used right after cipher initialization,
-    /// before any data processing.
-    pub fn set_s(&mut self, s: u8) -> Result<(), InvalidS> {
-        if s > 0 && s <= C::BlockSize::U8 {
-            self.s = s;
-            Ok(())
-        } else {
-            Err(InvalidS)
-        }
-    }
-
     fn gen_block(&mut self) {
         for (c, v) in self.block.chunks_mut(8).zip(self.ctr.iter()) {
             c.copy_from_slice(&v.to_be_bytes());
@@ -66,11 +59,12 @@ where
     }
 }
 
-impl<C> FromBlockCipher for GostCtr<C>
+impl<C, S> FromBlockCipher for GostCtr<C, S>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: Div<U8> + Rem<U8> + Div<U2> + IsLessOrEqual<U255>,
     Mod<C::BlockSize, U8>: IsEqual<U0>,
+    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Quot<C::BlockSize, U8>: ArrayLength<u64>,
     Quot<C::BlockSize, U2>: ArrayLength<u8>,
 {
@@ -95,23 +89,24 @@ where
             block,
             ctr,
             pos: 0,
-            s: C::BlockSize::U8,
+            _p: Default::default(),
         };
         s.gen_block();
         s
     }
 }
 
-impl<C> SyncStreamCipher for GostCtr<C>
+impl<C, S> SyncStreamCipher for GostCtr<C, S>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: Div<U8> + Rem<U8> + Div<U2> + IsLessOrEqual<U255>,
     Mod<C::BlockSize, U8>: IsEqual<U0>,
+    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Quot<C::BlockSize, U8>: ArrayLength<u64>,
     Quot<C::BlockSize, U2>: ArrayLength<u8>,
 {
     fn try_apply_keystream(&mut self, mut data: &mut [u8]) -> Result<(), LoopError> {
-        let s = self.s as usize;
+        let s = S::USIZE;
         let pos = self.pos as usize;
 
         if data.len() < s - pos {
