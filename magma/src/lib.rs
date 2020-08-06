@@ -7,7 +7,7 @@
 //! use magma::block_cipher::generic_array::GenericArray;
 //! use hex_literal::hex;
 //!
-//! // Example vectors from GOST 34.12-2018
+//! // Example vector from GOST 34.12-2018
 //! let key = hex!("
 //!     FFEEDDCCBBAA99887766554433221100
 //!     F0F1F2F3F4F5F6F7F8F9FAFBFCFDFEFF
