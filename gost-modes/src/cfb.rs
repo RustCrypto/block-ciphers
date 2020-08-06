@@ -31,7 +31,7 @@ where
     block: Block<C>,
     tail: GenericArray<u8, Diff<M, C::BlockSize>>,
     pos: u8,
-    _p: PhantomData<(M, S)>,
+    _p: PhantomData<S>,
 }
 
 impl<C, M, S> GostCfb<C, M, S>

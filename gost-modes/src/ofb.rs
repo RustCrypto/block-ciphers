@@ -29,7 +29,7 @@ where
     state: GenericArray<Block<C>, Z>,
     block_pos: u8,
     pos: u8,
-    _p: PhantomData<(S, Z)>,
+    _p: PhantomData<S>,
 }
 
 // TODO: replace with FromBlockCipher trait impl
