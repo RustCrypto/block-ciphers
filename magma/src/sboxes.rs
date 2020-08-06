@@ -11,6 +11,7 @@ pub trait Sbox {
     /// Unexpanded S-box
     const SBOX: SmallSbox;
 
+    #[allow(clippy::needless_range_loop)]
     fn gen_exp_sbox() -> ExpSbox {
         let mut out = [[0u8; 256]; 4];
         for i in 0..4 {
