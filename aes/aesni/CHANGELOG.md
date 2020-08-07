@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.8.0 (2020-08-07)
 ### Changed
-- Bump `block-cipher` dependency to v0.8 ([#138])
+- Bump `block-cipher` dependency to v0.8 and `stream-cipher` to v0.6 ([#138])
 - Bump `opaque-debug` dependency to v0.3 ([#140])
 
 [#138]: https://github.com/RustCrypto/block-ciphers/pull/138
