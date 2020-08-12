@@ -1,5 +1,4 @@
-use crate::utils::xor;
-use crate::GostPadding;
+use crate::{utils::xor, GostPadding};
 use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
 use block_modes::block_padding::Padding;
 use block_modes::BlockMode;
@@ -9,7 +8,7 @@ use generic_array::typenum::type_operators::{IsGreater, IsLessOrEqual};
 use generic_array::typenum::{Prod, Unsigned, U0, U1, U255};
 use generic_array::{ArrayLength, GenericArray};
 
-/// Cipher Block Chaining (CBC) block mode instance as defined in GOST R 34.13-2015.
+/// Cipher Block Chaining (CBC) mode of operation as defined in GOST R 34.13-2015
 ///
 /// Type parameters:
 /// - `C`: block cipher.
@@ -46,7 +45,7 @@ where
     fn new(cipher: C, iv: &GenericArray<u8, Self::IvSize>) -> Self {
         let bs = C::BlockSize::USIZE;
         let mut state = GenericArray::<Block<C>, Z>::default();
-        for (block, chunk) in state.iter_mut().zip(iv.chunks(bs)) {
+        for (block, chunk) in state.iter_mut().zip(iv.chunks_exact(bs)) {
             *block = GenericArray::clone_from_slice(chunk);
         }
         Self {

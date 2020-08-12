@@ -1,84 +1,75 @@
-use crate::errors::InvalidS;
-use crate::utils::xor2;
+use crate::utils::{xor_set1, xor_set2};
 use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
 use core::ops::Sub;
-use generic_array::typenum::type_operators::{IsGreaterOrEqual, IsLessOrEqual};
-use generic_array::typenum::{Diff, Unsigned, U255};
+use generic_array::typenum::type_operators::{IsGreater, IsGreaterOrEqual, IsLessOrEqual};
+use generic_array::typenum::{Diff, Unsigned, U0, U255};
 use generic_array::{ArrayLength, GenericArray};
-use stream_cipher::{FromBlockCipher, LoopError, SyncStreamCipher};
+use stream_cipher::{FromBlockCipher, StreamCipher};
 
 type BlockSize<C> = <C as BlockCipher>::BlockSize;
 
-/// Cipher feedback (CFB) block mode instance as defined in GOST R 34.13-2015.
+type Tail<C, M> = GenericArray<u8, Diff<M, <C as BlockCipher>::BlockSize>>;
+
+/// Cipher feedback (CFB) mode of operation as defined in GOST R 34.13-2015
 ///
 /// Type parameters:
 /// - `C`: block cipher.
 /// - `M`: nonce length in bytes. Default: block size.
+/// - `S`: number of block bytes used for message encryption. Default: block size.
 ///
 /// With default parameters this mode is fully equivalent to the `Cfb` mode defined
-/// in the `block-modes` crate.
+/// in the `cfb-mode` crate.
 #[derive(Clone)]
-pub struct GostCfb<C, M = BlockSize<C>>
+pub struct GostCfb<C, M = BlockSize<C>, S = BlockSize<C>>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
+    S: Unsigned + ArrayLength<u8> + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
     cipher: C,
-    block: Block<C>,
-    tail: GenericArray<u8, Diff<M, C::BlockSize>>,
+    block: GenericArray<u8, S>,
+    tail: Tail<C, M>,
     pos: u8,
-    s: u8,
 }
 
-impl<C, M> GostCfb<C, M>
+impl<C, M, S> GostCfb<C, M, S>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
+    S: Unsigned + ArrayLength<u8> + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
-    /// Set number of block bytes used for message encryption.
-    ///
-    /// This method should be only used right after cipher initialization,
-    /// before any data processing.
-    pub fn set_s(&mut self, s: u8) -> Result<(), InvalidS> {
-        if s > 0 && s <= C::BlockSize::U8 {
-            self.s = s;
-            Ok(())
-        } else {
-            Err(InvalidS)
-        }
-    }
-
     fn gen_block(&mut self) {
-        let s = self.s as usize;
+        let s = S::USIZE;
         let ts = self.tail.len();
+        let mut block: Block<C> = Default::default();
         if ts <= s {
             let d = s - ts;
-            let mut block = Block::<C>::default();
             block[..ts].copy_from_slice(&self.tail);
             block[ts..].copy_from_slice(&self.block[..d]);
             self.tail = GenericArray::clone_from_slice(&self.block[d..]);
-            self.block = block;
         } else {
             let d = ts - s;
-            let mut tail = GenericArray::<u8, Diff<M, C::BlockSize>>::default();
+            let mut tail: Tail<C, M> = Default::default();
             tail[..d].copy_from_slice(&self.tail[s..]);
             tail[d..].copy_from_slice(&self.block);
-            self.block = GenericArray::clone_from_slice(&self.tail[..s]);
+            block = GenericArray::clone_from_slice(&self.tail[..s]);
             self.tail = tail;
         }
-        self.cipher.encrypt_block(&mut self.block);
+        self.cipher.encrypt_block(&mut block);
+        self.block.copy_from_slice(&block[..s]);
     }
 }
 
-impl<C, M> FromBlockCipher for GostCfb<C, M>
+impl<C, M, S> FromBlockCipher for GostCfb<C, M, S>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
+    S: Unsigned + ArrayLength<u8> + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
     type BlockCipher = C;
@@ -86,52 +77,74 @@ where
 
     fn from_block_cipher(cipher: C, nonce: &GenericArray<u8, M>) -> Self {
         let bs = C::BlockSize::USIZE;
-        let mut block = GenericArray::clone_from_slice(&nonce[..bs]);
-        cipher.encrypt_block(&mut block);
-        let tail = GenericArray::clone_from_slice(&nonce[bs..]);
+        let mut full_block = Block::<C>::clone_from_slice(&nonce[..bs]);
+        cipher.encrypt_block(&mut full_block);
         Self {
             cipher,
-            block,
-            tail,
+            block: GenericArray::clone_from_slice(&full_block[..S::USIZE]),
+            tail: GenericArray::clone_from_slice(&nonce[bs..]),
             pos: 0,
-            s: C::BlockSize::U8,
         }
     }
 }
 
-impl<C, M> SyncStreamCipher for GostCfb<C, M>
+impl<C, M, S> StreamCipher for GostCfb<C, M, S>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
+    S: Unsigned + ArrayLength<u8> + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
-    fn try_apply_keystream(&mut self, mut data: &mut [u8]) -> Result<(), LoopError> {
-        let s = self.s as usize;
+    fn encrypt(&mut self, mut data: &mut [u8]) {
+        let s = S::USIZE;
         let pos = self.pos as usize;
 
         if data.len() < s - pos {
             let n = data.len();
-            xor2(data, &mut self.block[pos..pos + n]);
+            xor_set1(data, &mut self.block[pos..pos + n]);
             self.pos += n as u8;
-            return Ok(());
+            return;
         } else if pos != 0 {
             let (l, r) = { data }.split_at_mut(s - pos);
             data = r;
-            xor2(l, &mut self.block[pos..s]);
-            self.pos = 0;
+            xor_set1(l, &mut self.block[pos..s]);
             self.gen_block()
         }
 
         let mut iter = data.chunks_exact_mut(s);
         for chunk in &mut iter {
-            xor2(chunk, &mut self.block[..s]);
+            xor_set1(chunk, &mut self.block[..s]);
             self.gen_block();
         }
         let rem = iter.into_remainder();
-        xor2(rem, &mut self.block[..rem.len()]);
+        xor_set1(rem, &mut self.block[..rem.len()]);
         self.pos = rem.len() as u8;
+    }
 
-        Ok(())
+    fn decrypt(&mut self, mut data: &mut [u8]) {
+        let s = S::USIZE;
+        let pos = self.pos as usize;
+
+        if data.len() < s - pos {
+            let n = data.len();
+            xor_set2(data, &mut self.block[pos..pos + n]);
+            self.pos += n as u8;
+            return;
+        } else if pos != 0 {
+            let (l, r) = { data }.split_at_mut(s - pos);
+            data = r;
+            xor_set2(l, &mut self.block[pos..]);
+            self.gen_block()
+        }
+
+        let mut iter = data.chunks_exact_mut(s);
+        for chunk in &mut iter {
+            xor_set2(chunk, &mut self.block);
+            self.gen_block();
+        }
+        let rem = iter.into_remainder();
+        xor_set2(rem, &mut self.block[..rem.len()]);
+        self.pos = rem.len() as u8;
     }
 }
