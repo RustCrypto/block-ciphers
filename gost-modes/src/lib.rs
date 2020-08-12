@@ -57,7 +57,7 @@ pub use generic_array;
 pub use stream_cipher;
 
 pub use block_modes::{BlockMode, Ecb};
-pub use stream_cipher::{NewStreamCipher, StreamCipher, SyncStreamCipher};
+pub use stream_cipher::{NewStreamCipher, StreamCipher, SyncStreamCipher, SyncStreamCipherSeek};
 
 mod cbc;
 mod cfb;
