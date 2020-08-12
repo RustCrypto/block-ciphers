@@ -80,12 +80,10 @@ where
         let bs = C::BlockSize::USIZE;
         let mut full_block = Block::<C>::clone_from_slice(&nonce[..bs]);
         cipher.encrypt_block(&mut full_block);
-        let block = GenericArray::clone_from_slice(&full_block[..S::USIZE]);
-        let tail = GenericArray::clone_from_slice(&nonce[bs..]);
         Self {
             cipher,
-            block,
-            tail,
+            block: GenericArray::clone_from_slice(&full_block[..S::USIZE]),
+            tail: GenericArray::clone_from_slice(&nonce[bs..]),
             pos: 0,
         }
     }

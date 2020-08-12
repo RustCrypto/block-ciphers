@@ -45,7 +45,7 @@ where
     fn new(cipher: C, iv: &GenericArray<u8, Self::IvSize>) -> Self {
         let bs = C::BlockSize::USIZE;
         let mut state = GenericArray::<Block<C>, Z>::default();
-        for (block, chunk) in state.iter_mut().zip(iv.chunks(bs)) {
+        for (block, chunk) in state.iter_mut().zip(iv.chunks_exact(bs)) {
             *block = GenericArray::clone_from_slice(chunk);
         }
         Self {
