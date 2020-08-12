@@ -32,7 +32,6 @@ where
     _p: PhantomData<S>,
 }
 
-// TODO: replace with FromBlockCipher trait impl
 impl<C, Z, S> FromBlockCipher for GostOfb<C, Z, S>
 where
     C: BlockCipher + NewBlockCipher,

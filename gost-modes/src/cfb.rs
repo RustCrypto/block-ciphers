@@ -1,13 +1,15 @@
-use crate::utils::xor2;
+use crate::utils::{xor_set1, xor_set2};
 use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
 use core::marker::PhantomData;
 use core::ops::Sub;
 use generic_array::typenum::type_operators::{IsGreater, IsGreaterOrEqual, IsLessOrEqual};
 use generic_array::typenum::{Diff, Unsigned, U0, U255};
 use generic_array::{ArrayLength, GenericArray};
-use stream_cipher::{FromBlockCipher, LoopError, SyncStreamCipher};
+use stream_cipher::{FromBlockCipher, StreamCipher};
 
 type BlockSize<C> = <C as BlockCipher>::BlockSize;
+
+type Tail<C, M> = GenericArray<u8, Diff<M, <C as BlockCipher>::BlockSize>>;
 
 /// Cipher feedback (CFB) block mode instance as defined in GOST R 34.13-2015.
 ///
@@ -17,7 +19,7 @@ type BlockSize<C> = <C as BlockCipher>::BlockSize;
 /// - `S`: number of block bytes used for message encryption. Default: block size.
 ///
 /// With default parameters this mode is fully equivalent to the `Cfb` mode defined
-/// in the `block-modes` crate.
+/// in the `cfb-mode` crate.
 #[derive(Clone)]
 pub struct GostCfb<C, M = BlockSize<C>, S = BlockSize<C>>
 where
@@ -29,7 +31,7 @@ where
 {
     cipher: C,
     block: Block<C>,
-    tail: GenericArray<u8, Diff<M, C::BlockSize>>,
+    tail: Tail<C, M>,
     pos: u8,
     _p: PhantomData<S>,
 }
@@ -42,8 +44,9 @@ where
     S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
+    // chunk has length of `s`
     fn gen_block(&mut self) {
-        let s = S::USIZE;
+        let s = S::to_usize();
         let ts = self.tail.len();
         if ts <= s {
             let d = s - ts;
@@ -54,7 +57,7 @@ where
             self.block = block;
         } else {
             let d = ts - s;
-            let mut tail = GenericArray::<u8, Diff<M, C::BlockSize>>::default();
+            let mut tail: Tail<C, M> = Default::default();
             tail[..d].copy_from_slice(&self.tail[s..]);
             tail[d..].copy_from_slice(&self.block);
             self.block = GenericArray::clone_from_slice(&self.tail[..s]);
@@ -90,7 +93,7 @@ where
     }
 }
 
-impl<C, M, S> SyncStreamCipher for GostCfb<C, M, S>
+impl<C, M, S> StreamCipher for GostCfb<C, M, S>
 where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
@@ -98,32 +101,55 @@ where
     S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
-    fn try_apply_keystream(&mut self, mut data: &mut [u8]) -> Result<(), LoopError> {
+    fn encrypt(&mut self, mut data: &mut [u8]) {
         let s = S::USIZE;
         let pos = self.pos as usize;
 
         if data.len() < s - pos {
             let n = data.len();
-            xor2(data, &mut self.block[pos..pos + n]);
+            xor_set1(data, &mut self.block[pos..pos + n]);
             self.pos += n as u8;
-            return Ok(());
+            return;
         } else if pos != 0 {
             let (l, r) = { data }.split_at_mut(s - pos);
             data = r;
-            xor2(l, &mut self.block[pos..s]);
-            self.pos = 0;
+            xor_set1(l, &mut self.block[pos..s]);
             self.gen_block()
         }
 
         let mut iter = data.chunks_exact_mut(s);
         for chunk in &mut iter {
-            xor2(chunk, &mut self.block[..s]);
+            xor_set1(chunk, &mut self.block[..s]);
             self.gen_block();
         }
         let rem = iter.into_remainder();
-        xor2(rem, &mut self.block[..rem.len()]);
+        xor_set1(rem, &mut self.block[..rem.len()]);
         self.pos = rem.len() as u8;
+    }
 
-        Ok(())
+    fn decrypt(&mut self, mut data: &mut [u8]) {
+        let s = S::USIZE;
+        let pos = self.pos as usize;
+
+        if data.len() < s - pos {
+            let n = data.len();
+            xor_set2(data, &mut self.block[pos..pos + n]);
+            self.pos += n as u8;
+            return;
+        } else if pos != 0 {
+            let (l, r) = { data }.split_at_mut(s - pos);
+            data = r;
+            xor_set2(l, &mut self.block[pos..s]);
+            self.gen_block()
+        }
+
+        let mut iter = data.chunks_exact_mut(s);
+        for chunk in &mut iter {
+            xor_set2(chunk, &mut self.block[..s]);
+            self.gen_block();
+        }
+        let rem = iter.into_remainder();
+        xor_set2(rem, &mut self.block[..rem.len()]);
+        self.pos = rem.len() as u8;
     }
 }

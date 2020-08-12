@@ -1,4 +1,4 @@
-use crate::{GostPadding, utils::xor};
+use crate::{utils::xor, GostPadding};
 use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
 use block_modes::block_padding::Padding;
 use block_modes::BlockMode;

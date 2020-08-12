@@ -3,24 +3,32 @@
 use gost_modes::block_padding::ZeroPadding;
 use gost_modes::consts::{U16, U2, U3, U32};
 use gost_modes::generic_array::GenericArray;
-use gost_modes::{BlockMode, NewStreamCipher, SyncStreamCipher};
-use gost_modes::{Ecb, GostCbc, GostCfb, GostCtr, GostOfb};
+use gost_modes::{BlockMode, NewStreamCipher, StreamCipher};
+use gost_modes::{Ecb, GostCbc, GostCfb, GostCtr128, GostCtr64, GostOfb};
 use hex_literal::hex;
 use kuznyechik::Kuznyechik;
 use magma::{block_cipher::NewBlockCipher, Magma};
 
-fn test_sync_cipher(cipher: impl SyncStreamCipher + Clone, pt: &[u8], ct: &[u8]) {
+fn test_stream_cipher(cipher: impl StreamCipher + Clone, pt: &[u8], ct: &[u8]) {
     let mut buf = pt.to_vec();
-    cipher.clone().apply_keystream(&mut buf);
+    cipher.clone().encrypt(&mut buf);
     assert_eq!(buf, &ct[..]);
+    cipher.clone().decrypt(&mut buf);
+    assert_eq!(buf, &pt[..]);
 
     for i in 1..32 {
         let mut c = cipher.clone();
         let mut buf = pt.to_vec();
         for chunk in buf.chunks_mut(i) {
-            c.apply_keystream(chunk);
+            c.encrypt(chunk);
         }
         assert_eq!(buf, &ct[..]);
+
+        let mut c = cipher.clone();
+        for chunk in buf.chunks_mut(i) {
+            c.decrypt(chunk);
+        }
+        assert_eq!(buf, &pt[..]);
     }
 }
 
@@ -76,13 +84,13 @@ fn kuznyechik_modes() {
     ");
 
     let c = GostOfb::<Kuznyechik, U2>::new(&key, &iv);
-    test_sync_cipher(c, &pt, &ofb_ct);
+    test_stream_cipher(c, &pt, &ofb_ct);
 
     let c = GostCfb::<Kuznyechik, U32>::new(&key, &iv);
-    test_sync_cipher(c, &pt, &cfb_ct);
+    test_stream_cipher(c, &pt, &cfb_ct);
 
-    let c = GostCtr::<Kuznyechik>::new(&key, &ctr_iv);
-    test_sync_cipher(c, &pt, &ctr_ct);
+    let c = GostCtr128::<Kuznyechik>::new(&key, &ctr_iv);
+    test_stream_cipher(c, &pt, &ctr_ct);
 
     type EcbCipher = Ecb<Kuznyechik, ZeroPadding>;
     let cipher = Kuznyechik::new(&key);
@@ -143,13 +151,13 @@ fn magma_modes() {
     ");
 
     let c = GostOfb::<Magma, U2>::new(&key, &iv);
-    test_sync_cipher(c, &pt, &ofb_ct);
+    test_stream_cipher(c, &pt, &ofb_ct);
 
     let c = GostCfb::<Magma, U16>::new(&key, &iv);
-    test_sync_cipher(c, &pt, &cfb_ct);
+    test_stream_cipher(c, &pt, &cfb_ct);
 
-    let c = GostCtr::<Magma>::new(&key, &ctr_iv);
-    test_sync_cipher(c, &pt, &ctr_ct);
+    let c = GostCtr64::<Magma>::new(&key, &ctr_iv);
+    test_stream_cipher(c, &pt, &ctr_ct);
 
     type EcbCipher = Ecb<Magma, ZeroPadding>;
     let cipher = Magma::new(&key);

@@ -57,11 +57,12 @@ pub use generic_array;
 pub use stream_cipher;
 
 pub use block_modes::{BlockMode, Ecb};
-pub use stream_cipher::{NewStreamCipher, SyncStreamCipher};
+pub use stream_cipher::{NewStreamCipher, StreamCipher, SyncStreamCipher};
 
 mod cbc;
 mod cfb;
-mod ctr;
+mod ctr128;
+mod ctr64;
 mod ofb;
 mod utils;
 
@@ -72,5 +73,6 @@ pub type GostPadding = block_padding::Iso7816;
 
 pub use cbc::GostCbc;
 pub use cfb::GostCfb;
-pub use ctr::GostCtr;
+pub use ctr128::GostCtr128;
+pub use ctr64::GostCtr64;
 pub use ofb::GostOfb;
