@@ -6,7 +6,8 @@ use generic_array::typenum::{Unsigned, U0, U4, U8};
 use generic_array::{ArrayLength, GenericArray};
 use stream_cipher::{FromBlockCipher, LoopError, SyncStreamCipher, SyncStreamCipherSeek};
 
-/// Counter (CTR) mode for 64-bit block ciphers as defined in GOST R 34.13-2015.
+/// Counter (CTR) mode of operation for 64-bit block ciphers as defined in
+/// GOST R 34.13-2015
 ///
 /// Type parameters:
 /// - `C`: block cipher.

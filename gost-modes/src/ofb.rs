@@ -7,7 +7,7 @@ use generic_array::typenum::{Prod, Unsigned, U0, U1, U255};
 use generic_array::{ArrayLength, GenericArray};
 use stream_cipher::{FromBlockCipher, LoopError, SyncStreamCipher};
 
-/// Output feedback (OFB) block mode instance as defined in GOST R 34.13-2015.
+/// Output feedback (OFB) mode of operation as defined in GOST R 34.13-2015
 ///
 /// Type parameters:
 /// - `C`: block cipher.

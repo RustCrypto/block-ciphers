@@ -8,7 +8,7 @@ use generic_array::typenum::type_operators::{IsGreater, IsLessOrEqual};
 use generic_array::typenum::{Prod, Unsigned, U0, U1, U255};
 use generic_array::{ArrayLength, GenericArray};
 
-/// Cipher Block Chaining (CBC) block mode instance as defined in GOST R 34.13-2015.
+/// Cipher Block Chaining (CBC) mode of operation as defined in GOST R 34.13-2015
 ///
 /// Type parameters:
 /// - `C`: block cipher.

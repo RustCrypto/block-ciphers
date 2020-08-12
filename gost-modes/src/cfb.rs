@@ -11,7 +11,7 @@ type BlockSize<C> = <C as BlockCipher>::BlockSize;
 
 type Tail<C, M> = GenericArray<u8, Diff<M, <C as BlockCipher>::BlockSize>>;
 
-/// Cipher feedback (CFB) block mode instance as defined in GOST R 34.13-2015.
+/// Cipher feedback (CFB) mode of operation as defined in GOST R 34.13-2015
 ///
 /// Type parameters:
 /// - `C`: block cipher.

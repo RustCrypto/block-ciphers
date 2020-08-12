@@ -66,7 +66,7 @@ mod ctr64;
 mod ofb;
 mod utils;
 
-/// Block padding procedure number 2 as defined in GOST R 34.13-2015.
+/// Block padding procedure number 2 as defined in GOST R 34.13-2015
 ///
 /// Fully equivalent to ISO 7816.
 pub type GostPadding = block_padding::Iso7816;
