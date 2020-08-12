@@ -42,7 +42,6 @@ where
     S: Unsigned + ArrayLength<u8> + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
-    // chunk has length of `s`
     fn gen_block(&mut self) {
         let s = S::USIZE;
         let ts = self.tail.len();
