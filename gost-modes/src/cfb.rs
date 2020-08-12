@@ -1,6 +1,5 @@
 use crate::utils::{xor_set1, xor_set2};
 use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
-use core::marker::PhantomData;
 use core::ops::Sub;
 use generic_array::typenum::type_operators::{IsGreater, IsGreaterOrEqual, IsLessOrEqual};
 use generic_array::typenum::{Diff, Unsigned, U0, U255};
@@ -26,14 +25,13 @@ where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
-    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
+    S: Unsigned + ArrayLength<u8> + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
     cipher: C,
-    block: Block<C>,
+    block: GenericArray<u8, S>,
     tail: Tail<C, M>,
     pos: u8,
-    _p: PhantomData<S>,
 }
 
 impl<C, M, S> GostCfb<C, M, S>
@@ -41,29 +39,29 @@ where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
-    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
+    S: Unsigned + ArrayLength<u8> + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
     // chunk has length of `s`
     fn gen_block(&mut self) {
-        let s = S::to_usize();
+        let s = S::USIZE;
         let ts = self.tail.len();
+        let mut block: Block<C> = Default::default();
         if ts <= s {
             let d = s - ts;
-            let mut block = Block::<C>::default();
             block[..ts].copy_from_slice(&self.tail);
             block[ts..].copy_from_slice(&self.block[..d]);
             self.tail = GenericArray::clone_from_slice(&self.block[d..]);
-            self.block = block;
         } else {
             let d = ts - s;
             let mut tail: Tail<C, M> = Default::default();
             tail[..d].copy_from_slice(&self.tail[s..]);
             tail[d..].copy_from_slice(&self.block);
-            self.block = GenericArray::clone_from_slice(&self.tail[..s]);
+            block = GenericArray::clone_from_slice(&self.tail[..s]);
             self.tail = tail;
         }
-        self.cipher.encrypt_block(&mut self.block);
+        self.cipher.encrypt_block(&mut block);
+        self.block.copy_from_slice(&block[..s]);
     }
 }
 
@@ -72,7 +70,7 @@ where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
-    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
+    S: Unsigned + ArrayLength<u8> + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
     type BlockCipher = C;
@@ -80,15 +78,15 @@ where
 
     fn from_block_cipher(cipher: C, nonce: &GenericArray<u8, M>) -> Self {
         let bs = C::BlockSize::USIZE;
-        let mut block = GenericArray::clone_from_slice(&nonce[..bs]);
-        cipher.encrypt_block(&mut block);
+        let mut full_block = Block::<C>::clone_from_slice(&nonce[..bs]);
+        cipher.encrypt_block(&mut full_block);
+        let block = GenericArray::clone_from_slice(&full_block[..S::USIZE]);
         let tail = GenericArray::clone_from_slice(&nonce[bs..]);
         Self {
             cipher,
             block,
             tail,
             pos: 0,
-            _p: Default::default(),
         }
     }
 }
@@ -98,7 +96,7 @@ where
     C: BlockCipher + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
-    S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
+    S: Unsigned + ArrayLength<u8> + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Diff<M, C::BlockSize>: ArrayLength<u8>,
 {
     fn encrypt(&mut self, mut data: &mut [u8]) {
@@ -139,13 +137,13 @@ where
         } else if pos != 0 {
             let (l, r) = { data }.split_at_mut(s - pos);
             data = r;
-            xor_set2(l, &mut self.block[pos..s]);
+            xor_set2(l, &mut self.block[pos..]);
             self.gen_block()
         }
 
         let mut iter = data.chunks_exact_mut(s);
         for chunk in &mut iter {
-            xor_set2(chunk, &mut self.block[..s]);
+            xor_set2(chunk, &mut self.block);
             self.gen_block();
         }
         let rem = iter.into_remainder();

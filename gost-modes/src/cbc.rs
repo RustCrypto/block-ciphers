@@ -29,7 +29,7 @@ where
     cipher: C,
     state: GenericArray<Block<C>, Z>,
     pos: u8,
-    _p: PhantomData<(Z, P)>,
+    _p: PhantomData<P>,
 }
 
 impl<C, P, Z> BlockMode<C, P> for GostCbc<C, P, Z>
