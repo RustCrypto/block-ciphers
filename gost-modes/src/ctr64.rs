@@ -1,6 +1,5 @@
 use crate::utils::xor;
 use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
-use core::marker::PhantomData;
 use generic_array::typenum::type_operators::{IsGreater, IsLessOrEqual};
 use generic_array::typenum::{Unsigned, U0, U4, U8};
 use generic_array::{ArrayLength, GenericArray};
@@ -24,7 +23,6 @@ where
     ctr: u32,
     block: GenericArray<u8, S>,
     pos: u8,
-    _p: PhantomData<S>,
 }
 
 impl<C, S> GostCtr64<C, S>
@@ -64,7 +62,6 @@ where
             ctr: 0,
             block: Default::default(),
             pos: 0,
-            _p: Default::default(),
         };
         s.gen_block();
         s
