@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.6.1 (2020-08-14)
 ### Added
-- `Clone` trait implementations ([#140])
+- `Clone` trait implementations ([#145])
 
-[#140]: https://github.com/RustCrypto/block-ciphers/pull/140
+[#145]: https://github.com/RustCrypto/block-ciphers/pull/145
 
 ## 0.6.0 (2020-08-07)
 ### Changed
