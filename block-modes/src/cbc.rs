@@ -9,6 +9,7 @@ use core::marker::PhantomData;
 /// [Cipher Block Chaining][1] (CBC) block cipher mode instance.
 ///
 /// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CBC
+#[derive(Clone)]
 pub struct Cbc<C: BlockCipher + NewBlockCipher, P: Padding> {
     cipher: C,
     iv: GenericArray<u8, C::BlockSize>,

@@ -8,6 +8,7 @@ use core::marker::PhantomData;
 /// [Propagating Cipher Block Chaining][1] (PCBC) mode instance.
 ///
 /// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#PCBC
+#[derive(Clone)]
 pub struct Pcbc<C: BlockCipher + NewBlockCipher, P: Padding> {
     cipher: C,
     iv: GenericArray<u8, C::BlockSize>,
