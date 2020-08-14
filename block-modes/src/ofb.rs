@@ -8,6 +8,7 @@ use core::marker::PhantomData;
 /// [Output feedback][1] (OFB) block mode instance with a full block feedback.
 ///
 /// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Cipher_feedback_(CFB)
+#[derive(Clone)]
 pub struct Ofb<C: BlockCipher + NewBlockCipher, P: Padding> {
     cipher: C,
     iv: GenericArray<u8, C::BlockSize>,

@@ -13,6 +13,7 @@ use core::marker::PhantomData;
 /// just pass `Default::default()` instead.
 ///
 /// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB
+#[derive(Clone)]
 pub struct Ecb<C: BlockCipher + BlockCipher, P: Padding> {
     cipher: C,
     _p: PhantomData<P>,
