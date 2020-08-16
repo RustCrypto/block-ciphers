@@ -110,7 +110,7 @@ fn p(block: u64) -> u64 {
 
 /// Generate the 16 subkeys
 pub(crate) fn gen_keys(key: u64) -> [u64; 16] {
-    let mut keys: [u64; 16] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    let mut keys: [u64; 16] = [0; 16];
     let key = pc1(key);
 
     // The most significant bit is bit zero, and there are only 56 bits in
@@ -160,7 +160,7 @@ fn apply_sboxes(input: u64) -> u64 {
 
     for (i, sbox) in SBOXES.iter().enumerate() {
         let val = (input >> (58 - (i * 6))) & 0x3F;
-        output |= (sbox[val as usize] as u64) << (60 - (i * 4));
+        output |= u64::from(sbox[val as usize]) << (60 - (i * 4));
     }
 
     output
@@ -169,7 +169,7 @@ fn apply_sboxes(input: u64) -> u64 {
 impl Des {
     pub(crate) fn encrypt(&self, mut data: u64) -> u64 {
         data = ip(data);
-        for key in self.keys.iter() {
+        for key in &self.keys {
             data = round(data, *key);
         }
         fp((data << 32) | (data >> 32))
