@@ -169,7 +169,7 @@ fn apply_sboxes(input: u64) -> u64 {
 impl Des {
     pub(crate) fn encrypt(&self, mut data: u64) -> u64 {
         data = ip(data);
-        for key in self.keys.iter() {
+        for key in &self.keys {
             data = round(data, *key);
         }
         fp((data << 32) | (data >> 32))
