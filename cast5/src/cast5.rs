@@ -4,7 +4,7 @@ use block_cipher::generic_array::GenericArray;
 use block_cipher::{BlockCipher, InvalidKeyLength, NewBlockCipher};
 use byteorder::{BigEndian, ByteOrder};
 
-use crate::consts::*;
+use crate::consts::{S1, S2, S3, S4};
 use crate::schedule::key_schedule;
 
 type Block = GenericArray<u8, U8>;
