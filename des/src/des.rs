@@ -110,7 +110,7 @@ fn p(block: u64) -> u64 {
 
 /// Generate the 16 subkeys
 pub(crate) fn gen_keys(key: u64) -> [u64; 16] {
-    let mut keys: [u64; 16] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    let mut keys: [u64; 16] = [0; 16];
     let key = pc1(key);
 
     // The most significant bit is bit zero, and there are only 56 bits in
