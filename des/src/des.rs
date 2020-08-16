@@ -160,7 +160,7 @@ fn apply_sboxes(input: u64) -> u64 {
 
     for (i, sbox) in SBOXES.iter().enumerate() {
         let val = (input >> (58 - (i * 6))) & 0x3F;
-        output |= (sbox[val as usize] as u64) << (60 - (i * 4));
+        output |= u64::from(sbox[val as usize]) << (60 - (i * 4));
     }
 
     output
