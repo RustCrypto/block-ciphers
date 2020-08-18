@@ -11,8 +11,7 @@ use crate::consts::{C240, P_1024, P_256, P_512, R_1024, R_256, R_512};
 use block_cipher::consts::{U1, U128, U32, U64};
 use block_cipher::generic_array::GenericArray;
 use block_cipher::{BlockCipher, NewBlockCipher};
-use byte_tools::{read_u64v_le, write_u64v_le};
-use core::ops::BitXor;
+use core::{convert::TryInto, ops::BitXor};
 
 fn mix(r: u32, x: (u64, u64)) -> (u64, u64) {
     let y0 = x.0.wrapping_add(x.1);
@@ -40,12 +39,14 @@ macro_rules! impl_threefish(
         impl $name {
             pub fn new_with_tweak(key: &[u8; $n_w*8], tweak: &[u8; 16]) -> $name {
                 let mut k = [0u64; $n_w + 1];
-                read_u64v_le(&mut k[..$n_w], key);
+                for (kv, chunk) in k[..$n_w].iter_mut().zip(key.chunks_exact(8)) {
+                    *kv = u64::from_le_bytes(chunk.try_into().unwrap());
+                }
                 k[$n_w] = k[..$n_w].iter().fold(C240, BitXor::bitxor);
 
-                let mut t = [0u64; 3];
-                read_u64v_le(&mut t[..2], tweak);
-                t[2] = t[0] ^ t[1];
+                let t0 = u64::from_le_bytes(tweak[..8].try_into().unwrap());
+                let t1 = u64::from_le_bytes(tweak[8..].try_into().unwrap());
+                let t = [t0, t1, t0 ^ t1];
 
                 let mut sk = [[0u64; $n_w]; $rounds / 4 + 1];
                 for s in 0..($rounds / 4 + 1) {
@@ -81,7 +82,9 @@ macro_rules! impl_threefish(
 
             fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
                 let mut v = [0u64; $n_w];
-                read_u64v_le(&mut v, block.as_slice());
+                for (vv, chunk) in v.iter_mut().zip(block.chunks_exact(8)) {
+                    *vv = u64::from_le_bytes(chunk.try_into().unwrap());
+                }
 
                 for d in 0..$rounds {
                     let v_tmp = v.clone();
@@ -107,12 +110,16 @@ macro_rules! impl_threefish(
                     v[i] = v[i].wrapping_add(self.sk[$rounds / 4][i]);
                 }
 
-                write_u64v_le(block.as_mut_slice(), &v);
+                for (chunk, vv) in block.chunks_exact_mut(8).zip(v.iter()) {
+                    chunk.copy_from_slice(&vv.to_le_bytes());
+                }
             }
 
             fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
                 let mut v = [0u64; $n_w];
-                read_u64v_le(&mut v, block.as_slice());
+                for (vv, chunk) in v.iter_mut().zip(block.chunks_exact(8)) {
+                    *vv = u64::from_le_bytes(chunk.try_into().unwrap());
+                }
 
                 for i in 0..$n_w {
                     v[i] = v[i].wrapping_sub(self.sk[$rounds / 4][i]);
@@ -138,7 +145,9 @@ macro_rules! impl_threefish(
                     }
                 }
 
-                write_u64v_le(block.as_mut_slice(), &v);
+                for (chunk, vv) in block.chunks_exact_mut(8).zip(v.iter()) {
+                    chunk.copy_from_slice(&vv.to_le_bytes());
+                }
             }
         }
     )
