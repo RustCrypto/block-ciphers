@@ -16,7 +16,7 @@ block-cipher = "0.8"
 
 [dev-dependencies]
 aes = { version = "0.5", path = "../aes" }
-hex-literal = "0.2"
+hex-literal = "0.3"
 
 [features]
 default = ["std"]
