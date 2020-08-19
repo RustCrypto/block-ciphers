@@ -12,7 +12,7 @@ compile_error!("crate can only be used on x86 and x86_64 architectures");
 ))]
 compile_error!(
     "enable aes and ssse3 target features, e.g. with \
-    RUSTFLAGS=\"-C target-feature=+aes,+ssse3\" enviromental variable. \
+    RUSTFLAGS=\"-C target-feature=+aes,+ssse3\" environment variable. \
     For x86 target arch additionally enable sse2 target feature."
 );
 
@@ -22,6 +22,6 @@ compile_error!(
 ))]
 compile_error!(
     "enable aes target feature, e.g. with \
-    RUSTFLAGS=\"-C target-feature=+aes\" enviromental variable. \
+    RUSTFLAGS=\"-C target-feature=+aes\" environment variable. \
     For x86 target arch additionally enable sse2 target feature."
 );
