@@ -1,6 +1,6 @@
 [package]
 name = "gost-modes"
-version = "0.2.0"
+version = "0.3.0"
 description = "Block cipher modes of operation"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
