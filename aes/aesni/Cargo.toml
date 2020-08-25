@@ -1,6 +1,6 @@
 [package]
 name = "aesni"
-version = "0.8.0"
+version = "0.9.0"
 description = "AES (Rijndael) block ciphers implementation using AES-NI"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -13,11 +13,11 @@ categories = ["cryptography", "no-std"]
 [dependencies]
 block-cipher = "0.8"
 opaque-debug = "0.3"
-stream-cipher = { version = "0.6", optional = true, features = ["block-cipher"] }
+stream-cipher = { version = "0.7", optional = true, features = ["block-cipher"] }
 
 [dev-dependencies]
 block-cipher = { version = "0.8", features = ["dev"] }
-stream-cipher = { version = "0.6", features = ["dev"] }
+stream-cipher = { version = "0.7", features = ["dev"] }
 
 [features]
 default = ["ctr"]
