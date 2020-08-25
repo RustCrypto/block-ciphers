@@ -4,7 +4,7 @@ use generic_array::typenum::type_operators::{IsGreater, IsLessOrEqual};
 use generic_array::typenum::{Unsigned, U0, U16, U8};
 use generic_array::{ArrayLength, GenericArray};
 use stream_cipher::{
-    FromBlockCipher, LoopError, SyncStreamCipher, SyncStreamCipherSeek, OverflowError, SeekNum,
+    FromBlockCipher, LoopError, OverflowError, SeekNum, SyncStreamCipher, SyncStreamCipherSeek,
 };
 
 /// Counter (CTR) mode of operation for 128-bit block ciphers as defined in
