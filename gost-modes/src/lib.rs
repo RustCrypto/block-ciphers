@@ -47,9 +47,9 @@
 //! [`cmac`]: https://docs.rs/cmac/
 #![no_std]
 #![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
-// /#![deny(unsafe_code)]
+#![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
-extern crate std;
+
 pub use block_modes;
 pub use block_modes::block_cipher::consts;
 pub use block_modes::block_padding;
