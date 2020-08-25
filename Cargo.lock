@@ -201,9 +201,9 @@ dependencies = [
 
 [[package]]
 name = "stream-cipher"
-version = "0.6.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fa7a9adbc5572d9cb8f9d1e85b8f450038852bc88ed87527b8ce207bc9baaa3"
+checksum = "c1e6079ef5bde141fb7c88fc8e6010218f00051b17fa6dd6b816f10c243c34d5"
 dependencies = [
  "blobby",
  "block-cipher",
