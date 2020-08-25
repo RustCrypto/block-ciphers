@@ -1,6 +1,6 @@
 [package]
 name = "gost-modes"
-version = "0.2.0"
+version = "0.3.0"
 description = "Block cipher modes of operation"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -12,12 +12,13 @@ keywords = ["crypto", "block-cipher", "ciphers"]
 
 [dependencies]
 block-modes = { version = "0.6", path = "../block-modes", default-features = false }
-stream-cipher = { version = "0.6", features = ["block-cipher"], default-features = false }
+stream-cipher = { version = "0.7", features = ["block-cipher"], default-features = false }
 generic-array = "0.14"
 
 [dev-dependencies]
 kuznyechik = { version = "0.5", path = "../kuznyechik" }
 magma = { version = "0.5", path = "../magma" }
+stream-cipher = { version = "0.7", features = ["block-cipher", "dev"] }
 hex-literal = "0.2"
 
 [features]

@@ -5,10 +5,10 @@ use gost_modes::consts::{U14, U16, U2, U3, U32, U5};
 use gost_modes::generic_array::GenericArray;
 use gost_modes::{BlockMode, NewStreamCipher, StreamCipher};
 use gost_modes::{Ecb, GostCbc, GostCfb, GostCtr128, GostCtr64, GostOfb};
-use gost_modes::{SyncStreamCipher, SyncStreamCipherSeek};
 use hex_literal::hex;
 use kuznyechik::Kuznyechik;
 use magma::{block_cipher::NewBlockCipher, Magma};
+use stream_cipher::new_seek_test;
 
 fn test_stream_cipher(cipher: impl StreamCipher + Clone, pt: &[u8], ct: &[u8]) {
     let mut buf = pt.to_vec();
@@ -177,40 +177,5 @@ fn magma_modes() {
     assert_eq!(buf, &pt[..]);
 }
 
-#[test]
-fn kuznyechik_ctr_seek() {
-    let mut buf = [0u8; 60];
-    buf.iter_mut().enumerate().for_each(|(i, v)| *v = i as u8);
-    let key = Default::default();
-    let iv = Default::default();
-    let mut cipher = GostCtr128::<Kuznyechik, U14>::new(&key, &iv);
-
-    cipher.apply_keystream(&mut buf);
-    assert_eq!(cipher.current_pos(), 60);
-    cipher.seek(20);
-    cipher.apply_keystream(&mut buf[20..]);
-    assert_eq!(cipher.current_pos(), 60);
-    cipher.seek(0);
-    cipher.apply_keystream(&mut buf[..20]);
-    assert_eq!(cipher.current_pos(), 20);
-    buf.iter().enumerate().all(|(i, &v)| v == i as u8);
-}
-
-#[test]
-fn magma_ctr_seek() {
-    let mut buf = [0u8; 60];
-    buf.iter_mut().enumerate().for_each(|(i, v)| *v = i as u8);
-    let key = Default::default();
-    let iv = Default::default();
-    let mut cipher = GostCtr64::<Magma, U5>::new(&key, &iv);
-
-    cipher.apply_keystream(&mut buf);
-    assert_eq!(cipher.current_pos(), 60);
-    cipher.seek(20);
-    cipher.apply_keystream(&mut buf[20..]);
-    assert_eq!(cipher.current_pos(), 60);
-    cipher.seek(0);
-    cipher.apply_keystream(&mut buf[..20]);
-    assert_eq!(cipher.current_pos(), 20);
-    buf.iter().enumerate().all(|(i, &v)| v == i as u8);
-}
+new_seek_test!(kuznyechik_ctr_seek, GostCtr128::<Kuznyechik, U14>);
+new_seek_test!(magma_ctr_seek, GostCtr64::<Magma, U5>);

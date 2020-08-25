@@ -1,11 +1,13 @@
 #![allow(clippy::unreadable_literal)]
 
 use crate::arch::*;
-use core::{cmp, mem};
+use core::mem;
 
 use super::{Aes128, Aes192, Aes256};
 use block_cipher::{consts::U16, generic_array::GenericArray, BlockCipher};
-use stream_cipher::{FromBlockCipher, LoopError, SyncStreamCipher, SyncStreamCipherSeek};
+use stream_cipher::{
+    FromBlockCipher, LoopError, OverflowError, SeekNum, SyncStreamCipher, SyncStreamCipherSeek,
+};
 
 const BLOCK_SIZE: usize = 16;
 const PAR_BLOCKS: usize = 8;
@@ -66,19 +68,17 @@ macro_rules! impl_ctr {
             nonce: __m128i,
             ctr: __m128i,
             cipher: $cipher,
-
-            // if `leftover_pos` is `None` it means that leftover_buf is not
-            // filled with data and current position of the stream cipher
-            // can be calculated as counter*BLOCK_SIZE. If it's equal to
-            // `Some(pos)`, then buffer is filled with leftover keystream data
-            // and current position of the cipher equals to:
-            // `(counter - 1)*BLOCK_SIZE + pos`
-            // In other words counter is set for the next block calculation
-            leftover_buf: [u8; BLOCK_SIZE],
-            leftover_pos: Option<u8>,
+            block: [u8; BLOCK_SIZE],
+            pos: u8,
         }
 
         impl $name {
+            #[inline(always)]
+            fn gen_block(&mut self) {
+                let block = self.cipher.encrypt(swap_bytes(self.ctr));
+                self.block = unsafe { mem::transmute(block) }
+            }
+
             #[inline(always)]
             fn next_block(&mut self) -> __m128i {
                 let block = swap_bytes(self.ctr);
@@ -102,8 +102,8 @@ macro_rules! impl_ctr {
             #[inline(always)]
             fn get_u64_ctr(&self) -> u64 {
                 let (ctr, nonce) = unsafe {(
-                    mem::transmute::<__m128i, [u64; 2]>(self.ctr)[0],
-                    mem::transmute::<__m128i, [u64; 2]>(self.nonce)[0],
+                    mem::transmute::<__m128i, [u64; 2]>(self.ctr)[1],
+                    mem::transmute::<__m128i, [u64; 2]>(self.nonce)[1],
                 )};
                 ctr.wrapping_sub(nonce)
             }
@@ -111,18 +111,16 @@ macro_rules! impl_ctr {
             /// Check if provided data will not overflow counter
             #[inline(always)]
             fn check_data_len(&self, data: &[u8]) -> Result<(), LoopError> {
-                let dlen = data.len() - match self.leftover_pos {
-                    Some(pos) => cmp::min(BLOCK_SIZE - pos as usize, data.len()),
-                    None => 0,
-                };
-                let data_blocks = dlen/BLOCK_SIZE +
-                    if data.len() % BLOCK_SIZE != 0 { 1 } else { 0 };
-                let counter = self.get_u64_ctr();
-                if counter.checked_add(data_blocks as u64).is_some() {
-                    Ok(())
-                } else {
-                    Err(LoopError)
+                let bs = BLOCK_SIZE;
+                let leftover_bytes = bs - self.pos as usize;
+                if data.len() < leftover_bytes {
+                    return Ok(());
                 }
+                let blocks = 1 + (data.len() - leftover_bytes) / bs;
+                self.get_u64_ctr()
+                    .checked_add(blocks as u64)
+                    .ok_or(LoopError)
+                    .map(|_| ())
             }
         }
 
@@ -135,13 +133,12 @@ macro_rules! impl_ctr {
                 nonce: &GenericArray<u8, Self::NonceSize>,
             ) -> Self {
                 let nonce = swap_bytes(load(nonce));
-
                 Self {
                     nonce,
                     ctr: nonce,
                     cipher,
-                    leftover_pos: None,
-                    leftover_buf: [0u8; BLOCK_SIZE],
+                    block: [0u8; BLOCK_SIZE],
+                    pos: 0,
                 }
             }
         }
@@ -152,86 +149,69 @@ macro_rules! impl_ctr {
                 -> Result<(), LoopError>
             {
                 self.check_data_len(data)?;
-                // process leftover bytes from the last call if any
-                if let Some(pos) = self.leftover_pos {
-                    let pos = pos as usize;
-                    // check if input buffer is large enough to be xor'ed
-                    // with all leftover bytes
-                    if data.len() >= BLOCK_SIZE - pos {
-                        let buf = &self.leftover_buf[pos..];
-                        let (r, l) = {data}.split_at_mut(buf.len());
-                        data = l;
-                        xor(r, buf);
-                        self.leftover_pos = None;
-                    } else {
-                        let buf = &self.leftover_buf[pos..pos + data.len()];
-                        xor(data, buf);
-                        self.leftover_pos = Some((pos + data.len()) as u8);
+                let bs = BLOCK_SIZE;
+                let pos = self.pos as usize;
+                debug_assert!(bs > pos);
+
+                if pos != 0 {
+                    if data.len() < bs - pos {
+                        let n = pos + data.len();
+                        xor(data, &self.block[pos..n]);
+                        self.pos = n as u8;
                         return Ok(());
+                    } else {
+                        let (l, r) = data.split_at_mut(bs - pos);
+                        data = r;
+                        xor(l, &self.block[pos..]);
+                        self.ctr = inc_be(self.ctr);
                     }
                 }
 
-                // process 8 blocks at a time
-                while data.len() >= PAR_BLOCKS_SIZE {
-                    let (r, l) = {data}.split_at_mut(PAR_BLOCKS_SIZE);
-                    data = l;
-                    xor_block8(r, self.next_block8());
+                let mut chunks = data.chunks_exact_mut(PAR_BLOCKS_SIZE);
+                for chunk in &mut chunks {
+                    xor_block8(chunk, self.next_block8());
                 }
+                data = chunks.into_remainder();
 
-                // process one block at a time
-                while data.len() >= BLOCK_SIZE {
-                    let (r, l) = {data}.split_at_mut(BLOCK_SIZE);
-                    data = l;
-
+                let mut chunks = data.chunks_exact_mut(bs);
+                for chunk in &mut chunks {
                     let block = self.next_block();
 
                     unsafe {
-                        let t = _mm_loadu_si128(r.as_ptr() as *const __m128i);
+                        let t = _mm_loadu_si128(chunk.as_ptr() as *const __m128i);
                         let res = _mm_xor_si128(block, t);
-                        _mm_storeu_si128(r.as_mut_ptr() as *mut __m128i, res);
+                        _mm_storeu_si128(chunk.as_mut_ptr() as *mut __m128i, res);
                     }
                 }
 
-                // process leftover bytes
-                if data.len() != 0 {
-                    let block = self.next_block();
-                    self.leftover_buf = unsafe {
-                         mem::transmute::<__m128i, [u8; BLOCK_SIZE]>(block)
-                    };
-                    let n = data.len();
-                    self.leftover_pos = Some(n as u8);
-                    for (a, b) in data.iter_mut().zip(&self.leftover_buf[..n]) {
+                let rem = chunks.into_remainder();
+                self.pos = rem.len() as u8;
+                if !rem.is_empty() {
+                    self.gen_block();
+                    for (a, b) in rem.iter_mut().zip(&self.block) {
                         *a ^= *b;
                     }
                 }
+
                 Ok(())
             }
         }
 
         impl SyncStreamCipherSeek for $name {
-            fn current_pos(&self) -> u64 {
-                let bs = BLOCK_SIZE as u64;
-                let ctr = self.get_u64_ctr();
-                match self.leftover_pos {
-                    Some(pos) => ctr.wrapping_sub(1)*bs + pos as u64,
-                    None => ctr*bs,
-                }
+            fn try_current_pos<T: SeekNum>(&self) -> Result<T, OverflowError> {
+                T::from_block_byte(self.get_u64_ctr(), self.pos, BLOCK_SIZE as u8)
             }
 
-            fn seek(&mut self, pos: u64) {
-                let n = pos / BLOCK_SIZE as u64;
-                let l = pos % BLOCK_SIZE as u64;
+            fn try_seek<T: SeekNum>(&mut self, pos: T) -> Result<(), LoopError> {
+                let res: (u64, u8) = pos.to_block_byte(BLOCK_SIZE as u8)?;
                 self.ctr = unsafe {
-                    _mm_add_epi64(self.nonce, _mm_set_epi64x(n as i64, 0))
+                    _mm_add_epi64(self.nonce, _mm_set_epi64x(res.0 as i64, 0))
                 };
-                if l == 0 {
-                    self.leftover_pos = None;
-                } else {
-                    self.leftover_buf = unsafe {
-                        mem::transmute(self.next_block())
-                    };
-                    self.leftover_pos = Some(l as u8);
+                self.pos = res.1;
+                if self.pos != 0 {
+                    self.gen_block()
                 }
+                Ok(())
             }
         }
 
