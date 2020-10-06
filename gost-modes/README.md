@@ -3,6 +3,7 @@
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
 ![Apache2/MIT licensed][license-image]
+[![Project Chat][chat-image]][chat-link]
 ![Rust Version][rustc-image]
 [![Build Status][build-image]][build-link]
 
@@ -46,6 +47,8 @@ dual licensed as above, without any additional terms or conditions.
 [docs-link]: https://docs.rs/gost-modes/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
+[chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
+[chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260039-block-ciphers
 [build-image]: https://github.com/RustCrypto/block-ciphers/workflows/gost-modes/badge.svg?branch=master&event=push
 [build-link]: https://github.com/RustCrypto/block-ciphers/actions?query=workflow%3Agost-modes
 
