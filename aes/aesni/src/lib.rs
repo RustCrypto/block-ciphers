@@ -19,7 +19,7 @@
 //! CTR mode implementation. This functionality requires additionall `ssse3`
 //! target feature and feature-gated behind `ctr` feature flag, which is enabled
 //! by default. If you only need block ciphers, disable default features with
-//! `default-features = false` in your `Cargro.toml`.
+//! `default-features = false` in your `Cargo.toml`.
 //!
 //! AES-CTR functionality is accessed using traits from
 //! [`stream-cipher`](https://docs.rs/stream-cipher) crate.
