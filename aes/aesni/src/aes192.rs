@@ -19,8 +19,9 @@ pub struct Aes192 {
 impl Aes192 {
     #[inline(always)]
     pub(crate) fn encrypt8(&self, mut blocks: [__m128i; 8]) -> [__m128i; 8] {
-        let keys = self.encrypt_keys;
-        unsafe {
+        #[inline]
+        #[target_feature(enable = "aes")]
+        unsafe fn aesni192_encrypt8(keys: &[__m128i; 13], blocks: &mut [__m128i; 8]) {
             xor8!(blocks, keys[0]);
             aesenc8!(blocks, keys[1]);
             aesenc8!(blocks, keys[2]);
@@ -35,13 +36,15 @@ impl Aes192 {
             aesenc8!(blocks, keys[11]);
             aesenclast8!(blocks, keys[12]);
         }
+        unsafe { aesni192_encrypt8(&self.encrypt_keys, &mut blocks) };
         blocks
     }
 
     #[inline(always)]
-    pub(crate) fn encrypt(&self, mut block: __m128i) -> __m128i {
-        let keys = self.encrypt_keys;
-        unsafe {
+    pub(crate) fn encrypt(&self, block: __m128i) -> __m128i {
+        #[inline]
+        #[target_feature(enable = "aes")]
+        unsafe fn aesni192_encrypt1(keys: &[__m128i; 13], mut block: __m128i) -> __m128i {
             block = _mm_xor_si128(block, keys[0]);
             block = _mm_aesenc_si128(block, keys[1]);
             block = _mm_aesenc_si128(block, keys[2]);
@@ -56,6 +59,7 @@ impl Aes192 {
             block = _mm_aesenc_si128(block, keys[11]);
             _mm_aesenclast_si128(block, keys[12])
         }
+        unsafe { aesni192_encrypt1(&self.encrypt_keys, block) }
     }
 }
 
