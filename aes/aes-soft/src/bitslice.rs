@@ -809,13 +809,28 @@ impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
     }
 
     // See "Faster and Timing-Attack Resistant AES-GCM". Emilia Kaesper and Peter Schwabe.
+    #[rustfmt::skip]
     fn mix_columns(self) -> Bs8State<T> {
         let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = self;
         let (t0, t1, t2, t3, t4, t5, t6, t7) = (
-            x0.ror1(), x1.ror1(), x2.ror1(), x3.ror1(), x4.ror1(), x5.ror1(), x6.ror1(), x7.ror1()
+            x0.ror1(),
+            x1.ror1(),
+            x2.ror1(),
+            x3.ror1(),
+            x4.ror1(),
+            x5.ror1(),
+            x6.ror1(),
+            x7.ror1(),
         );
         let (u0, u1, u2, u3, u4, u5, u6, u7) = (
-            x0 ^ t0, x1 ^ t1, x2 ^ t2, x3 ^ t3, x4 ^ t4, x5 ^ t5, x6 ^ t6, x7 ^ t7
+            x0 ^ t0,
+            x1 ^ t1,
+            x2 ^ t2,
+            x3 ^ t3,
+            x4 ^ t4,
+            x5 ^ t5,
+            x6 ^ t6,
+            x7 ^ t7,
         );
         Bs8State(
             t0      ^ u7 ^ u0.ror2(),
@@ -830,13 +845,28 @@ impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
     }
 
     // Formula derived using same approach as for 'mix_columns'
+    #[rustfmt::skip]
     fn inv_mix_columns(self) -> Bs8State<T> {
         let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = self;
         let (t0, t1, t2, t3, t4, t5, t6, t7) = (
-            x0.ror1(), x1.ror1(), x2.ror1(), x3.ror1(), x4.ror1(), x5.ror1(), x6.ror1(), x7.ror1()
+            x0.ror1(),
+            x1.ror1(),
+            x2.ror1(),
+            x3.ror1(),
+            x4.ror1(),
+            x5.ror1(),
+            x6.ror1(),
+            x7.ror1(),
         );
         let (u0, u1, u2, u3, u4, u5, u6, u7) = (
-            x0 ^ t0, x1 ^ t1, x2 ^ t2, x3 ^ t3, x4 ^ t4, x5 ^ t5, x6 ^ t6, x7 ^ t7
+            x0 ^ t0,
+            x1 ^ t1,
+            x2 ^ t2,
+            x3 ^ t3,
+            x4 ^ t4,
+            x5 ^ t5,
+            x6 ^ t6,
+            x7 ^ t7,
         );
         let (v0, v1, v2, v3, v4, v5, v6, v7) = (
             x0      ^ u7,
@@ -846,7 +876,7 @@ impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
             x4 ^ u3 ^ u7,
             x5 ^ u4,
             x6 ^ u5,
-            x7 ^ u6
+            x7 ^ u6,
         );
         let (w0, w1, w2, w3, w4, w5, w6, w7) = (
             u0      ^ v6,
@@ -856,7 +886,7 @@ impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
             u4 ^ v2 ^ v6 ^ v7,
             u5 ^ v3      ^ v7,
             u6 ^ v4,
-            u7 ^ v5
+            u7 ^ v5,
         );
         Bs8State(
             v0 ^ w0 ^ w0.ror2(),
@@ -866,7 +896,7 @@ impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
             v4 ^ w4 ^ w4.ror2(),
             v5 ^ w5 ^ w5.ror2(),
             v6 ^ w6 ^ w6.ror2(),
-            v7 ^ w7 ^ w7.ror2()
+            v7 ^ w7 ^ w7.ror2(),
         )
     }
 
@@ -888,18 +918,18 @@ pub trait AesBitValueOps:
 // Requires that 'm & (m << s) == 0' (no overlap) and '((m << s) >> s) == m' (no loss).
 fn delta_swap(x: u16, m: u16, s: u16) -> u16 {
     let t = (x ^ (x >> s)) & m;
-        x ^ (t ^ (t << s))
+    x ^ (t ^ (t << s))
 }
 
 impl AesBitValueOps for u16 {
     fn shift_row(self) -> u16 {
         let temp = delta_swap(self, 0x2310, 2);
-                   delta_swap(temp, 0x5050, 1)
+        delta_swap(temp, 0x5050, 1)
     }
 
     fn inv_shift_row(self) -> u16 {
         let temp = delta_swap(self, 0x5050, 1);
-                   delta_swap(temp, 0x2310, 2)
+        delta_swap(temp, 0x2310, 2)
     }
 
     fn ror1(self) -> u16 {
@@ -954,7 +984,7 @@ impl AesBitValueOps for u32x4 {
             a0,
             a1.rotate_right(8),
             a2.rotate_right(16),
-            a3.rotate_right(24)
+            a3.rotate_right(24),
         )
     }
 
@@ -964,7 +994,7 @@ impl AesBitValueOps for u32x4 {
             a0,
             a1.rotate_left(8),
             a2.rotate_left(16),
-            a3.rotate_left(24)
+            a3.rotate_left(24),
         )
     }
 
