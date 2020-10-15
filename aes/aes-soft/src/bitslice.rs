@@ -808,70 +808,66 @@ impl<T: AesBitValueOps + Copy + 'static> AesOps for Bs8State<T> {
         )
     }
 
-    // Formula from [5]
+    // See "Faster and Timing-Attack Resistant AES-GCM". Emilia Kaesper and Peter Schwabe.
     fn mix_columns(self) -> Bs8State<T> {
         let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = self;
-
-        let x0out = x7 ^ x7.ror1() ^ x0.ror1() ^ (x0 ^ x0.ror1()).ror2();
-        let x1out = x0 ^ x0.ror1() ^ x7 ^ x7.ror1() ^ x1.ror1() ^ (x1 ^ x1.ror1()).ror2();
-        let x2out = x1 ^ x1.ror1() ^ x2.ror1() ^ (x2 ^ x2.ror1()).ror2();
-        let x3out = x2 ^ x2.ror1() ^ x7 ^ x7.ror1() ^ x3.ror1() ^ (x3 ^ x3.ror1()).ror2();
-        let x4out = x3 ^ x3.ror1() ^ x7 ^ x7.ror1() ^ x4.ror1() ^ (x4 ^ x4.ror1()).ror2();
-        let x5out = x4 ^ x4.ror1() ^ x5.ror1() ^ (x5 ^ x5.ror1()).ror2();
-        let x6out = x5 ^ x5.ror1() ^ x6.ror1() ^ (x6 ^ x6.ror1()).ror2();
-        let x7out = x6 ^ x6.ror1() ^ x7.ror1() ^ (x7 ^ x7.ror1()).ror2();
-
-        Bs8State(x0out, x1out, x2out, x3out, x4out, x5out, x6out, x7out)
+        let (t0, t1, t2, t3, t4, t5, t6, t7) = (
+            x0.ror1(), x1.ror1(), x2.ror1(), x3.ror1(), x4.ror1(), x5.ror1(), x6.ror1(), x7.ror1()
+        );
+        let (u0, u1, u2, u3, u4, u5, u6, u7) = (
+            x0 ^ t0, x1 ^ t1, x2 ^ t2, x3 ^ t3, x4 ^ t4, x5 ^ t5, x6 ^ t6, x7 ^ t7
+        );
+        Bs8State(
+            t0      ^ u7 ^ u0.ror2(),
+            t1 ^ u0 ^ u7 ^ u1.ror2(),
+            t2 ^ u1      ^ u2.ror2(),
+            t3 ^ u2 ^ u7 ^ u3.ror2(),
+            t4 ^ u3 ^ u7 ^ u4.ror2(),
+            t5 ^ u4      ^ u5.ror2(),
+            t6 ^ u5      ^ u6.ror2(),
+            t7 ^ u6      ^ u7.ror2(),
+        )
     }
 
-    // Formula from [6]
+    // Formula derived using same approach as for 'mix_columns'
     fn inv_mix_columns(self) -> Bs8State<T> {
         let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = self;
-
-        let x0out = x5 ^ x6 ^ x7 ^ (x5 ^ x7 ^ x0).ror1() ^ (x0 ^ x5 ^ x6).ror2() ^ (x5 ^ x0).ror3();
-        let x1out = x5
-            ^ x0
-            ^ (x6 ^ x5 ^ x0 ^ x7 ^ x1).ror1()
-            ^ (x1 ^ x7 ^ x5).ror2()
-            ^ (x6 ^ x5 ^ x1).ror3();
-        let x2out = x6
-            ^ x0
-            ^ x1
-            ^ (x7 ^ x6 ^ x1 ^ x2).ror1()
-            ^ (x0 ^ x2 ^ x6).ror2()
-            ^ (x7 ^ x6 ^ x2).ror3();
-        let x3out = x0
-            ^ x5
-            ^ x1
-            ^ x6
-            ^ x2
-            ^ (x0 ^ x5 ^ x2 ^ x3).ror1()
-            ^ (x0 ^ x1 ^ x3 ^ x5 ^ x6 ^ x7).ror2()
-            ^ (x0 ^ x5 ^ x7 ^ x3).ror3();
-        let x4out = x1
-            ^ x5
-            ^ x2
-            ^ x3
-            ^ (x1 ^ x6 ^ x5 ^ x3 ^ x7 ^ x4).ror1()
-            ^ (x1 ^ x2 ^ x4 ^ x5 ^ x7).ror2()
-            ^ (x1 ^ x5 ^ x6 ^ x4).ror3();
-        let x5out = x2
-            ^ x6
-            ^ x3
-            ^ x4
-            ^ (x2 ^ x7 ^ x6 ^ x4 ^ x5).ror1()
-            ^ (x2 ^ x3 ^ x5 ^ x6).ror2()
-            ^ (x2 ^ x6 ^ x7 ^ x5).ror3();
-        let x6out = x3
-            ^ x7
-            ^ x4
-            ^ x5
-            ^ (x3 ^ x7 ^ x5 ^ x6).ror1()
-            ^ (x3 ^ x4 ^ x6 ^ x7).ror2()
-            ^ (x3 ^ x7 ^ x6).ror3();
-        let x7out = x4 ^ x5 ^ x6 ^ (x4 ^ x6 ^ x7).ror1() ^ (x4 ^ x5 ^ x7).ror2() ^ (x4 ^ x7).ror3();
-
-        Bs8State(x0out, x1out, x2out, x3out, x4out, x5out, x6out, x7out)
+        let (t0, t1, t2, t3, t4, t5, t6, t7) = (
+            x0.ror1(), x1.ror1(), x2.ror1(), x3.ror1(), x4.ror1(), x5.ror1(), x6.ror1(), x7.ror1()
+        );
+        let (u0, u1, u2, u3, u4, u5, u6, u7) = (
+            x0 ^ t0, x1 ^ t1, x2 ^ t2, x3 ^ t3, x4 ^ t4, x5 ^ t5, x6 ^ t6, x7 ^ t7
+        );
+        let (v0, v1, v2, v3, v4, v5, v6, v7) = (
+            x0      ^ u7,
+            x1 ^ u0 ^ u7,
+            x2 ^ u1,
+            x3 ^ u2 ^ u7,
+            x4 ^ u3 ^ u7,
+            x5 ^ u4,
+            x6 ^ u5,
+            x7 ^ u6
+        );
+        let (w0, w1, w2, w3, w4, w5, w6, w7) = (
+            u0      ^ v6,
+            u1      ^ v6 ^ v7,
+            u2 ^ v0      ^ v7,
+            u3 ^ v1 ^ v6,
+            u4 ^ v2 ^ v6 ^ v7,
+            u5 ^ v3      ^ v7,
+            u6 ^ v4,
+            u7 ^ v5
+        );
+        Bs8State(
+            v0 ^ w0 ^ w0.ror2(),
+            v1 ^ w1 ^ w1.ror2(),
+            v2 ^ w2 ^ w2.ror2(),
+            v3 ^ w3 ^ w3.ror2(),
+            v4 ^ w4 ^ w4.ror2(),
+            v5 ^ w5 ^ w5.ror2(),
+            v6 ^ w6 ^ w6.ror2(),
+            v7 ^ w7 ^ w7.ror2()
+        )
     }
 
     fn add_round_key(self, rk: &Bs8State<T>) -> Bs8State<T> {
@@ -886,42 +882,32 @@ pub trait AesBitValueOps:
     fn inv_shift_row(self) -> Self;
     fn ror1(self) -> Self;
     fn ror2(self) -> Self;
-    fn ror3(self) -> Self;
+}
+
+// The bits of 'x' selected by 'm' are swapped with those selected by '(m << s)'.
+// Requires that 'm & (m << s) == 0' (no overlap) and '((m << s) >> s) == m' (no loss).
+fn delta_swap(x: u16, m: u16, s: u16) -> u16 {
+    let t = (x ^ (x >> s)) & m;
+        x ^ (t ^ (t << s))
 }
 
 impl AesBitValueOps for u16 {
     fn shift_row(self) -> u16 {
-        // first 4 bits represent first row - don't shift
-        (self & 0x000f) |
-        // next 4 bits represent 2nd row - left rotate 1 bit
-        ((self & 0x00e0) >> 1) | ((self & 0x0010) << 3) |
-        // next 4 bits represent 3rd row - left rotate 2 bits
-        ((self & 0x0c00) >> 2) | ((self & 0x0300) << 2) |
-        // next 4 bits represent 4th row - left rotate 3 bits
-        ((self & 0x8000) >> 3) | ((self & 0x7000) << 1)
+        let temp = delta_swap(self, 0x2310, 2);
+                   delta_swap(temp, 0x5050, 1)
     }
 
     fn inv_shift_row(self) -> u16 {
-        // first 4 bits represent first row - don't shift
-        (self & 0x000f) |
-        // next 4 bits represent 2nd row - right rotate 1 bit
-        ((self & 0x0080) >> 3) | ((self & 0x0070) << 1) |
-        // next 4 bits represent 3rd row - right rotate 2 bits
-        ((self & 0x0c00) >> 2) | ((self & 0x0300) << 2) |
-        // next 4 bits represent 4th row - right rotate 3 bits
-        ((self & 0xe000) >> 1) | ((self & 0x1000) << 3)
+        let temp = delta_swap(self, 0x5050, 1);
+                   delta_swap(temp, 0x2310, 2)
     }
 
     fn ror1(self) -> u16 {
-        self >> 4 | self << 12
+        self.rotate_right(4)
     }
 
     fn ror2(self) -> u16 {
-        self >> 8 | self << 8
-    }
-
-    fn ror3(self) -> u16 {
-        self >> 12 | self << 4
+        self.rotate_right(8)
     }
 }
 
@@ -966,9 +952,9 @@ impl AesBitValueOps for u32x4 {
         let u32x4(a0, a1, a2, a3) = self;
         u32x4(
             a0,
-            a1 >> 8 | a1 << 24,
-            a2 >> 16 | a2 << 16,
-            a3 >> 24 | a3 << 8,
+            a1.rotate_right(8),
+            a2.rotate_right(16),
+            a3.rotate_right(24)
         )
     }
 
@@ -976,9 +962,9 @@ impl AesBitValueOps for u32x4 {
         let u32x4(a0, a1, a2, a3) = self;
         u32x4(
             a0,
-            a1 >> 24 | a1 << 8,
-            a2 >> 16 | a2 << 16,
-            a3 >> 8 | a3 << 24,
+            a1.rotate_left(8),
+            a2.rotate_left(16),
+            a3.rotate_left(24)
         )
     }
 
@@ -990,10 +976,5 @@ impl AesBitValueOps for u32x4 {
     fn ror2(self) -> u32x4 {
         let u32x4(a0, a1, a2, a3) = self;
         u32x4(a2, a3, a0, a1)
-    }
-
-    fn ror3(self) -> u32x4 {
-        let u32x4(a0, a1, a2, a3) = self;
-        u32x4(a3, a0, a1, a2)
     }
 }
