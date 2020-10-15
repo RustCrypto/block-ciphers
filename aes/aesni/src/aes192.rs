@@ -19,8 +19,9 @@ pub struct Aes192 {
 impl Aes192 {
     #[inline(always)]
     pub(crate) fn encrypt8(&self, mut blocks: [__m128i; 8]) -> [__m128i; 8] {
-        let keys = self.encrypt_keys;
-        unsafe {
+        #[inline]
+        #[target_feature(enable = "aes")]
+        unsafe fn aesni192_encrypt8(keys: &[__m128i; 13], blocks: &mut [__m128i; 8]) {
             xor8!(blocks, keys[0]);
             aesenc8!(blocks, keys[1]);
             aesenc8!(blocks, keys[2]);
@@ -35,13 +36,15 @@ impl Aes192 {
             aesenc8!(blocks, keys[11]);
             aesenclast8!(blocks, keys[12]);
         }
+        unsafe { aesni192_encrypt8(&self.encrypt_keys, &mut blocks) };
         blocks
     }
 
     #[inline(always)]
-    pub(crate) fn encrypt(&self, mut block: __m128i) -> __m128i {
-        let keys = self.encrypt_keys;
-        unsafe {
+    pub(crate) fn encrypt(&self, block: __m128i) -> __m128i {
+        #[inline]
+        #[target_feature(enable = "aes")]
+        unsafe fn aesni192_encrypt1(keys: &[__m128i; 13], mut block: __m128i) -> __m128i {
             block = _mm_xor_si128(block, keys[0]);
             block = _mm_aesenc_si128(block, keys[1]);
             block = _mm_aesenc_si128(block, keys[2]);
@@ -56,6 +59,7 @@ impl Aes192 {
             block = _mm_aesenc_si128(block, keys[11]);
             _mm_aesenclast_si128(block, keys[12])
         }
+        unsafe { aesni192_encrypt1(&self.encrypt_keys, block) }
     }
 }
 
@@ -90,11 +94,11 @@ impl BlockCipher for Aes192 {
 
     #[inline]
     fn decrypt_block(&self, block: &mut Block128) {
-        let keys = self.decrypt_keys;
-
-        // Safety: `loadu` and `storeu` support unaligned access
-        #[allow(clippy::cast_ptr_alignment)]
-        unsafe {
+        #[inline]
+        #[target_feature(enable = "aes")]
+        unsafe fn aes192_decrypt1(block: &mut Block128, keys: &[__m128i; 13]) {
+            // Safety: `loadu` and `storeu` support unaligned access
+            #[allow(clippy::cast_ptr_alignment)]
             let mut b = _mm_loadu_si128(block.as_ptr() as *const __m128i);
             b = _mm_xor_si128(b, keys[12]);
             b = _mm_aesdec_si128(b, keys[11]);
@@ -111,6 +115,8 @@ impl BlockCipher for Aes192 {
             b = _mm_aesdeclast_si128(b, keys[0]);
             _mm_storeu_si128(block.as_mut_ptr() as *mut __m128i, b);
         }
+
+        unsafe { aes192_decrypt1(block, &self.decrypt_keys) }
     }
 
     #[inline]
@@ -123,8 +129,9 @@ impl BlockCipher for Aes192 {
 
     #[inline]
     fn decrypt_blocks(&self, blocks: &mut Block128x8) {
-        let keys = self.decrypt_keys;
-        unsafe {
+        #[inline]
+        #[target_feature(enable = "aes")]
+        unsafe fn aes192_decrypt8(blocks: &mut Block128x8, keys: &[__m128i; 13]) {
             let mut b = load8!(blocks);
             xor8!(b, keys[12]);
             aesdec8!(b, keys[11]);
@@ -141,6 +148,8 @@ impl BlockCipher for Aes192 {
             aesdeclast8!(b, keys[0]);
             store8!(blocks, b);
         }
+
+        unsafe { aes192_decrypt8(blocks, &self.decrypt_keys) }
     }
 }
 
