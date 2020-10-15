@@ -94,11 +94,11 @@ impl BlockCipher for Aes192 {
 
     #[inline]
     fn decrypt_block(&self, block: &mut Block128) {
-        let keys = self.decrypt_keys;
-
-        // Safety: `loadu` and `storeu` support unaligned access
-        #[allow(clippy::cast_ptr_alignment)]
-        unsafe {
+        #[inline]
+        #[target_feature(enable = "aes")]
+        unsafe fn aes192_decrypt1(block: &mut Block128, keys: &[__m128i; 13]) {
+            // Safety: `loadu` and `storeu` support unaligned access
+            #[allow(clippy::cast_ptr_alignment)]
             let mut b = _mm_loadu_si128(block.as_ptr() as *const __m128i);
             b = _mm_xor_si128(b, keys[12]);
             b = _mm_aesdec_si128(b, keys[11]);
@@ -115,6 +115,8 @@ impl BlockCipher for Aes192 {
             b = _mm_aesdeclast_si128(b, keys[0]);
             _mm_storeu_si128(block.as_mut_ptr() as *mut __m128i, b);
         }
+
+        unsafe { aes192_decrypt1(block, &self.decrypt_keys) }
     }
 
     #[inline]
@@ -127,8 +129,9 @@ impl BlockCipher for Aes192 {
 
     #[inline]
     fn decrypt_blocks(&self, blocks: &mut Block128x8) {
-        let keys = self.decrypt_keys;
-        unsafe {
+        #[inline]
+        #[target_feature(enable = "aes")]
+        unsafe fn aes192_decrypt8(blocks: &mut Block128x8, keys: &[__m128i; 13]) {
             let mut b = load8!(blocks);
             xor8!(b, keys[12]);
             aesdec8!(b, keys[11]);
@@ -145,6 +148,8 @@ impl BlockCipher for Aes192 {
             aesdeclast8!(b, keys[0]);
             store8!(blocks, b);
         }
+
+        unsafe { aes192_decrypt8(blocks, &self.decrypt_keys) }
     }
 }
 
