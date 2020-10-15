@@ -63,7 +63,7 @@ where
     fn decrypt(mut self, buffer: &mut [u8]) -> Result<&[u8], BlockModeError> {
         let bs = C::BlockSize::to_usize();
         if buffer.len() % bs != 0 {
-            Err(BlockModeError)?
+            return Err(BlockModeError);
         }
         self.decrypt_blocks(to_blocks(buffer));
         P::unpad(buffer).map_err(|_| BlockModeError)
@@ -94,7 +94,7 @@ where
     fn decrypt_vec(mut self, ciphertext: &[u8]) -> Result<Vec<u8>, BlockModeError> {
         let bs = C::BlockSize::to_usize();
         if ciphertext.len() % bs != 0 {
-            Err(BlockModeError)?
+            return Err(BlockModeError);
         }
         let mut buf = ciphertext.to_vec();
         self.decrypt_blocks(to_blocks(&mut buf));

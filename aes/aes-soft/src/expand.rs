@@ -16,13 +16,22 @@ fn ffmulx(x: u32) -> u32 {
     ((x & m2) << 1) ^ (((x & m1) >> 7) * m3)
 }
 
-fn inv_mcol(x: u32) -> u32 {
-    let f2 = ffmulx(x);
-    let f4 = ffmulx(f2);
-    let f8 = ffmulx(f4);
-    let f9 = x ^ f8;
+// ffmulx applied twice
+fn ffmulx2(x: u32) -> u32 {
+    let m4: u32 = 0xC0C0C0C0;
+    let m5: u32 = 0x3f3f3f3f;
+    let t0 = (x & m5) << 2;
+    let t1 = x & m4;
+    let t2 = t1 ^ (t1 >> 1);
+    t0 ^ (t2 >> 2) ^ (t2 >> 5)
+}
 
-    f2 ^ f4 ^ f8 ^ (f2 ^ f9).rotate_right(8) ^ (f4 ^ f9).rotate_right(16) ^ f9.rotate_right(24)
+fn inv_mcol(x: u32) -> u32 {
+    let t0 = x;
+    let t1 = t0 ^ t0.rotate_right(8);
+    let t2 = t0 ^ ffmulx(t1);
+    let t3 = t1 ^ ffmulx2(t2);
+    t2 ^ t3 ^ t3.rotate_right(16)
 }
 
 fn sub_word(x: u32) -> u32 {
