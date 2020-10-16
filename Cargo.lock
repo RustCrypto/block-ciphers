@@ -2,7 +2,7 @@
 # It is not intended for manual editing.
 [[package]]
 name = "aes"
-version = "0.6.0-pre"
+version = "0.6.0"
 dependencies = [
  "aes-soft",
  "aesni",
@@ -11,7 +11,7 @@ dependencies = [
 
 [[package]]
 name = "aes-soft"
-version = "0.6.0-pre"
+version = "0.6.0"
 dependencies = [
  "byteorder",
  "cipher",
@@ -20,7 +20,7 @@ dependencies = [
 
 [[package]]
 name = "aesni"
-version = "0.10.0-pre"
+version = "0.10.0"
 dependencies = [
  "cipher",
  "opaque-debug",
@@ -34,7 +34,7 @@ checksum = "fc52553543ecb104069b0ff9e0fcc5c739ad16202935528a112d974e8f1a4ee8"
 
 [[package]]
 name = "block-modes"
-version = "0.7.0-pre"
+version = "0.7.0"
 dependencies = [
  "aes",
  "block-padding",
@@ -50,7 +50,7 @@ checksum = "8d696c370c750c948ada61c69a0ee2cbbb9c50b1019ddb86d9317157a99c2cae"
 
 [[package]]
 name = "blowfish"
-version = "0.7.0-pre"
+version = "0.7.0"
 dependencies = [
  "byteorder",
  "cipher",
@@ -65,7 +65,7 @@ checksum = "08c48aae112d48ed9f069b33538ea9e3e90aa263cfa3d1c24309612b1f7472de"
 
 [[package]]
 name = "cast5"
-version = "0.9.0-pre"
+version = "0.9.0"
 dependencies = [
  "byteorder",
  "cipher",
@@ -85,7 +85,7 @@ dependencies = [
 
 [[package]]
 name = "des"
-version = "0.6.0-pre"
+version = "0.6.0"
 dependencies = [
  "byteorder",
  "cipher",
@@ -104,7 +104,7 @@ dependencies = [
 
 [[package]]
 name = "gost-modes"
-version = "0.4.0-pre"
+version = "0.4.0"
 dependencies = [
  "block-modes",
  "cipher",
@@ -135,7 +135,7 @@ dependencies = [
 
 [[package]]
 name = "idea"
-version = "0.3.0-pre"
+version = "0.3.0"
 dependencies = [
  "cipher",
  "opaque-debug",
@@ -143,7 +143,7 @@ dependencies = [
 
 [[package]]
 name = "kuznyechik"
-version = "0.6.0-pre"
+version = "0.6.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -152,7 +152,7 @@ dependencies = [
 
 [[package]]
 name = "magma"
-version = "0.6.0-pre"
+version = "0.6.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -173,7 +173,7 @@ checksum = "99c605b9a0adc77b7211c6b1f722dcb613d68d66859a44f3d485a6da332b0598"
 
 [[package]]
 name = "rc2"
-version = "0.6.0-pre"
+version = "0.6.0"
 dependencies = [
  "cipher",
  "opaque-debug",
@@ -181,7 +181,7 @@ dependencies = [
 
 [[package]]
 name = "serpent"
-version = "0.3.0-pre"
+version = "0.3.0"
 dependencies = [
  "byteorder",
  "cipher",
@@ -190,7 +190,7 @@ dependencies = [
 
 [[package]]
 name = "sm4"
-version = "0.3.0-pre"
+version = "0.3.0"
 dependencies = [
  "byteorder",
  "cipher",
@@ -200,14 +200,14 @@ dependencies = [
 
 [[package]]
 name = "threefish"
-version = "0.3.0-pre"
+version = "0.3.0"
 dependencies = [
  "cipher",
 ]
 
 [[package]]
 name = "twofish"
-version = "0.3.0-pre"
+version = "0.5.0"
 dependencies = [
  "byteorder",
  "cipher",
