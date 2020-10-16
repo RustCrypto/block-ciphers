@@ -1,8 +1,7 @@
 //! This crate contains generic implementation of [block cipher modes of
 //! operation][1] defined in [GOST R 34.13-2015].
 //!
-//! Note that CTR, CFB and OFB modes are implemented in terms of traits from
-//! the [`stream-cipher`] crate.
+//! CTR, CFB and OFB modes are implemented in terms of traits from the [`cipher`] crate.
 //!
 //! MAC function defined in the GOST is implemented in the [`cmac`] crate.
 //!
@@ -43,7 +42,7 @@
 //!
 //! [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation
 //! [GOST R 34.13-2015]: https://tc26.ru/standard/gost/GOST_R_3413-2015.pdf
-//! [`stream-cipher`]: https://docs.rs/stream-cipher/
+//! [`cipher`]: https://docs.rs/cipher/
 //! [`cmac`]: https://docs.rs/cmac/
 #![no_std]
 #![doc(

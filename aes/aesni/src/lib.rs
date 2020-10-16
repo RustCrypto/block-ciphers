@@ -11,8 +11,8 @@
 //! otherwise you will get a compilation error. You can do it either by using
 //! `RUSTFLAGS="-C target-feature=+aes"` or by editing your `.cargo/config`.
 //!
-//! Ciphers functionality is accessed using `BlockCipher` trait from
-//! [`block-cipher-trait`](https://docs.rs/block-cipher-trait) crate.
+//! Ciphers functionality is accessed using `BlockCipher` trait from the
+//! [`cipher`](https://docs.rs/cipher) crate.
 //!
 //! # CTR mode
 //! In addition to core block cipher functionality this crate provides optimized
@@ -22,7 +22,7 @@
 //! `default-features = false` in your `Cargo.toml`.
 //!
 //! AES-CTR functionality is accessed using traits from
-//! [`stream-cipher`](https://docs.rs/stream-cipher) crate.
+//! [`cipher`](https://docs.rs/cipher) crate.
 //!
 //! # Vulnerability
 //! Lazy FP state restory vulnerability can allow local process to leak content
