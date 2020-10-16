@@ -54,13 +54,12 @@
 #![warn(missing_docs, rust_2018_idioms)]
 
 pub use block_modes;
-pub use block_modes::block_cipher::consts;
 pub use block_modes::block_padding;
+pub use cipher::{self, consts};
 pub use generic_array;
-pub use stream_cipher;
 
 pub use block_modes::{BlockMode, Ecb};
-pub use stream_cipher::{NewStreamCipher, StreamCipher, SyncStreamCipher, SyncStreamCipherSeek};
+pub use cipher::stream::{NewStreamCipher, StreamCipher, SyncStreamCipher, SyncStreamCipherSeek};
 
 mod cbc;
 mod cfb;

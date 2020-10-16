@@ -13,8 +13,8 @@
 //!
 //! # Usage example
 //! ```
-//! use aes::block_cipher::generic_array::GenericArray;
-//! use aes::block_cipher::{BlockCipher, NewBlockCipher};
+//! use aes::cipher::generic_array::GenericArray;
+//! use aes::cipher::{BlockCipher, NewBlockCipher};
 //! use aes::Aes128;
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
@@ -49,7 +49,7 @@
 #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
-pub use block_cipher::{self, BlockCipher, NewBlockCipher};
+pub use cipher::{self, BlockCipher, NewBlockCipher};
 
 #[cfg(not(all(
     target_feature = "aes",

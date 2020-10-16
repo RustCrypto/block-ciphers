@@ -1,6 +1,6 @@
 [package]
 name = "twofish"
-version = "0.4.0"
+version = "0.3.0-pre"
 description = "Twofish block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -13,9 +13,9 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 byteorder = { version = "1", default-features = false }
-block-cipher = "0.8"
+cipher = "0.2"
 opaque-debug = "0.3"
 
 [dev-dependencies]
-block-cipher = { version = "0.8", features = ["dev"] }
+cipher = { version = "0.2", features = ["dev"] }
 hex-literal = "0.2"

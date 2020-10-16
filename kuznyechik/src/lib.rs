@@ -10,11 +10,13 @@
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::needless_range_loop, clippy::transmute_ptr_to_ptr)]
 
-pub use block_cipher;
+pub use cipher;
 
-use block_cipher::consts::{U1, U16, U32};
-use block_cipher::generic_array::GenericArray;
-use block_cipher::{BlockCipher, NewBlockCipher};
+use cipher::{
+    consts::{U1, U16, U32},
+    generic_array::GenericArray,
+    BlockCipher, NewBlockCipher,
+};
 
 mod consts;
 #[macro_use]

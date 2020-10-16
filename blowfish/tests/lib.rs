@@ -1,1 +1,1 @@
-block_cipher::new_test!(blowfish_test, "blowfish", blowfish::Blowfish);
+cipher::new_test!(blowfish_test, "blowfish", blowfish::Blowfish);

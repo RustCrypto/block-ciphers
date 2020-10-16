@@ -1,11 +1,13 @@
 use crate::utils::xor;
-use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
+use cipher::{
+    block::{Block, BlockCipher, NewBlockCipher},
+    stream::{
+        FromBlockCipher, LoopError, OverflowError, SeekNum, SyncStreamCipher, SyncStreamCipherSeek,
+    },
+};
 use generic_array::typenum::type_operators::{IsGreater, IsLessOrEqual};
 use generic_array::typenum::{Unsigned, U0, U16, U8};
 use generic_array::{ArrayLength, GenericArray};
-use stream_cipher::{
-    FromBlockCipher, LoopError, OverflowError, SeekNum, SyncStreamCipher, SyncStreamCipherSeek,
-};
 
 /// Counter (CTR) mode of operation for 128-bit block ciphers as defined in
 /// GOST R 34.13-2015

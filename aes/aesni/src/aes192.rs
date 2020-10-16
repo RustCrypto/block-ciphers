@@ -1,7 +1,9 @@
 use crate::arch::*;
-use block_cipher::consts::{U16, U24, U8};
-use block_cipher::generic_array::GenericArray;
-use block_cipher::{BlockCipher, NewBlockCipher};
+use cipher::{
+    consts::{U16, U24, U8},
+    generic_array::GenericArray,
+    BlockCipher, NewBlockCipher,
+};
 
 use crate::utils::{Block128, Block128x8};
 

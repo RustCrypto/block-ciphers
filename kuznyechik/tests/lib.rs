@@ -1,7 +1,7 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 
-use block_cipher::generic_array::GenericArray;
-use block_cipher::{BlockCipher, NewBlockCipher};
+use cipher::generic_array::GenericArray;
+use cipher::block::{BlockCipher, NewBlockCipher};
 use hex_literal::hex;
 
 /// Example vectors from GOST 34.12-2018

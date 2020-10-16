@@ -1,5 +1,5 @@
-use block_cipher::generic_array::GenericArray;
-use block_cipher::{BlockCipher, NewBlockCipher};
+use cipher::block::{BlockCipher, NewBlockCipher};
+use cipher::generic_array::GenericArray;
 
 struct Test {
     key: &'static [u8],

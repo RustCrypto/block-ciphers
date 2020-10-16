@@ -1,11 +1,15 @@
-use block_cipher::consts::{U1, U16, U8};
-use block_cipher::generic_array::GenericArray;
+use cipher::{
+    consts::{U1, U16, U8},
+    generic_array::GenericArray,
+};
 
-use block_cipher::{BlockCipher, InvalidKeyLength, NewBlockCipher};
 use byteorder::{BigEndian, ByteOrder};
+use cipher::block::{BlockCipher, InvalidKeyLength, NewBlockCipher};
 
-use crate::consts::{S1, S2, S3, S4};
-use crate::schedule::key_schedule;
+use crate::{
+    consts::{S1, S2, S3, S4},
+    schedule::key_schedule,
+};
 
 type Block = GenericArray<u8, U8>;
 

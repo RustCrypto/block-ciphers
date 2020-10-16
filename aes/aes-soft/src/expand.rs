@@ -4,7 +4,7 @@
     clippy::unreadable_literal
 )]
 
-use block_cipher::generic_array::{ArrayLength, GenericArray};
+use cipher::generic_array::{ArrayLength, GenericArray};
 
 use crate::bitslice::{bit_slice_4x1_with_u16, un_bit_slice_4x1_with_u16, AesOps};
 use crate::consts::RCON;

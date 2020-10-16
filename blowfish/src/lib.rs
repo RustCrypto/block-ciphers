@@ -8,14 +8,14 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
-pub use block_cipher;
+pub use cipher;
 
-use block_cipher::consts::{U1, U56, U8};
-use block_cipher::generic_array::GenericArray;
-use block_cipher::InvalidKeyLength;
-use block_cipher::{BlockCipher, NewBlockCipher};
 use byteorder::ByteOrder;
 use byteorder::{BE, LE};
+use cipher::block::consts::{U1, U56, U8};
+use cipher::block::InvalidKeyLength;
+use cipher::block::{BlockCipher, NewBlockCipher};
+use cipher::generic_array::GenericArray;
 use core::marker::PhantomData;
 
 mod consts;

@@ -3,10 +3,10 @@ pub use alloc::vec::Vec;
 
 use crate::errors::{BlockModeError, InvalidKeyIvLength};
 use crate::utils::{to_blocks, Block, Key};
-use block_cipher::generic_array::typenum::Unsigned;
-use block_cipher::generic_array::{ArrayLength, GenericArray};
-use block_cipher::{BlockCipher, NewBlockCipher};
 use block_padding::Padding;
+use cipher::block::{BlockCipher, NewBlockCipher};
+use cipher::generic_array::typenum::Unsigned;
+use cipher::generic_array::{ArrayLength, GenericArray};
 
 /// Trait for a block cipher mode of operation that is used to apply a block cipher
 /// operation to input data to transform it into a variable-length output message.

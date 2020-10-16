@@ -1,9 +1,9 @@
 use crate::traits::BlockMode;
 use crate::utils::{get_par_blocks, xor, Block, ParBlocks};
-use block_cipher::generic_array::typenum::Unsigned;
-use block_cipher::generic_array::GenericArray;
-use block_cipher::{BlockCipher, NewBlockCipher};
 use block_padding::Padding;
+use cipher::block::{BlockCipher, NewBlockCipher};
+use cipher::generic_array::typenum::Unsigned;
+use cipher::generic_array::GenericArray;
 use core::marker::PhantomData;
 
 /// [Cipher Block Chaining][1] (CBC) block cipher mode instance.

@@ -1,6 +1,6 @@
-use block_cipher::generic_array::GenericArray;
-use block_cipher::{new_test, BlockCipher, NewBlockCipher};
 use cast5::Cast5;
+use cipher::block::{BlockCipher, NewBlockCipher};
+use cipher::generic_array::GenericArray;
 use hex_literal::hex;
 
 /// Test vectors from RFC 2144 Appendix B.1
@@ -80,4 +80,4 @@ fn full_maintance_test() {
 
 // Test vectors from NESSIE:
 // https://www.cosic.esat.kuleuven.be/nessie/testvectors/bc/cast-128/Cast-128-128-64.verified.test-vectors
-new_test!(cast5_nessie, "cast5", cast5::Cast5);
+cipher::new_test!(cast5_nessie, "cast5", cast5::Cast5);
