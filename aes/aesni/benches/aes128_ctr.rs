@@ -2,4 +2,4 @@
 #![feature(test)]
 
 #[cfg(feature = "ctr")]
-stream_cipher::bench_sync!(aesni::Aes128Ctr);
+cipher::bench_sync!(aesni::Aes128Ctr);

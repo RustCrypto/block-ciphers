@@ -2,7 +2,7 @@
 
 extern crate test;
 
-use aesni::block_cipher::{BlockCipher, NewBlockCipher};
+use aesni::cipher::{BlockCipher, NewBlockCipher};
 use aesni::Aes256;
 
 #[bench]

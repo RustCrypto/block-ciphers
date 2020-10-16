@@ -34,8 +34,8 @@
 //!
 //! # Usage example
 //! ```
-//! use aesni::block_cipher::generic_array::GenericArray;
-//! use aesni::block_cipher::{BlockCipher, NewBlockCipher};
+//! use aesni::cipher::generic_array::GenericArray;
+//! use aesni::cipher::{BlockCipher, NewBlockCipher};
 //! use aesni::Aes128;
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
@@ -78,10 +78,10 @@
 )]
 #![warn(missing_docs, rust_2018_idioms)]
 
-pub use block_cipher;
+pub use cipher;
 
 #[cfg(feature = "ctr")]
-pub use stream_cipher;
+pub use cipher::stream;
 
 #[cfg(not(feature = "nocheck"))]
 mod target_checks;

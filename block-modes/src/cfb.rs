@@ -1,9 +1,9 @@
 use crate::traits::BlockMode;
 use crate::utils::{xor, Block, ParBlocks};
-use block_cipher::generic_array::typenum::Unsigned;
-use block_cipher::generic_array::GenericArray;
-use block_cipher::{BlockCipher, NewBlockCipher};
 use block_padding::Padding;
+use cipher::block::{BlockCipher, NewBlockCipher};
+use cipher::generic_array::typenum::Unsigned;
+use cipher::generic_array::GenericArray;
 use core::marker::PhantomData;
 use core::ptr;
 

@@ -2,10 +2,12 @@
 
 #![allow(clippy::unreadable_literal)]
 
-use block_cipher::consts::{U1, U8};
-use block_cipher::generic_array::GenericArray;
-use block_cipher::{BlockCipher, NewBlockCipher};
 use byteorder::{ByteOrder, BE};
+use cipher::{
+    consts::{U1, U8},
+    generic_array::GenericArray,
+    BlockCipher, NewBlockCipher,
+};
 
 use crate::consts::{SBOXES, SHIFTS};
 

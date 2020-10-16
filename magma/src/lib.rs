@@ -4,7 +4,7 @@
 //! # Examples
 //! ```
 //! use magma::{Magma, BlockCipher, NewBlockCipher};
-//! use magma::block_cipher::generic_array::GenericArray;
+//! use magma::cipher::generic_array::GenericArray;
 //! use hex_literal::hex;
 //!
 //! // Example vector from GOST 34.12-2018
@@ -34,10 +34,12 @@
 #![deny(unsafe_code)]
 #![warn(rust_2018_idioms)]
 
-pub use block_cipher;
-use block_cipher::consts::{U1, U32, U8};
-use block_cipher::generic_array::GenericArray;
-pub use block_cipher::{BlockCipher, NewBlockCipher};
+pub use cipher::{self, BlockCipher, NewBlockCipher};
+
+use cipher::{
+    consts::{U1, U32, U8},
+    generic_array::GenericArray,
+};
 use core::{convert::TryInto, marker::PhantomData};
 
 mod sboxes;

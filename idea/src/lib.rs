@@ -11,11 +11,12 @@
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::many_single_char_names)]
 
-pub use block_cipher;
+pub use cipher::{self, BlockCipher, NewBlockCipher};
 
-use block_cipher::consts::{U1, U16, U8};
-use block_cipher::generic_array::GenericArray;
-pub use block_cipher::{BlockCipher, NewBlockCipher};
+use cipher::{
+    consts::{U1, U16, U8},
+    generic_array::GenericArray,
+};
 
 mod consts;
 use crate::consts::{FUYI, LENGTH_SUB_KEYS, MAXIM, ONE, ROUNDS};

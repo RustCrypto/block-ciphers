@@ -1,7 +1,7 @@
 #![feature(test)]
 extern crate test;
 
-use aes_soft::block_cipher::{BlockCipher, NewBlockCipher};
+use aes_soft::cipher::{BlockCipher, NewBlockCipher};
 use aes_soft::Aes256;
 
 #[bench]

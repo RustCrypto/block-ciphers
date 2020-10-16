@@ -7,8 +7,8 @@
 //!
 //! # Usage example
 //! ```
-//! use aes_soft::block_cipher::generic_array::GenericArray;
-//! use aes_soft::block_cipher::{BlockCipher, NewBlockCipher};
+//! use aes_soft::cipher::generic_array::GenericArray;
+//! use aes_soft::cipher::{BlockCipher, NewBlockCipher};
 //! use aes_soft::Aes128;
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
@@ -41,7 +41,7 @@
 #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
-pub use block_cipher;
+pub use cipher;
 
 mod bitslice;
 mod consts;

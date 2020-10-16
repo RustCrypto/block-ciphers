@@ -1,10 +1,10 @@
 use crate::errors::InvalidKeyIvLength;
 use crate::traits::BlockMode;
 use crate::utils::{get_par_blocks, Block};
-use block_cipher::generic_array::typenum::{Unsigned, U0};
-use block_cipher::generic_array::GenericArray;
-use block_cipher::{BlockCipher, NewBlockCipher};
 use block_padding::Padding;
+use cipher::block::{BlockCipher, NewBlockCipher};
+use cipher::generic_array::typenum::{Unsigned, U0};
+use cipher::generic_array::GenericArray;
 use core::marker::PhantomData;
 
 /// [Electronic Codebook][1] (ECB) block cipher mode instance.

@@ -1,8 +1,8 @@
 use crate::traits::BlockMode;
 use crate::utils::{xor, Block};
-use block_cipher::generic_array::GenericArray;
-use block_cipher::{BlockCipher, NewBlockCipher};
 use block_padding::Padding;
+use cipher::block::{BlockCipher, NewBlockCipher};
+use cipher::generic_array::GenericArray;
 use core::marker::PhantomData;
 
 /// [Propagating Cipher Block Chaining][1] (PCBC) mode instance.

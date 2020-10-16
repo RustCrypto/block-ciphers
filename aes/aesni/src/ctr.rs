@@ -4,10 +4,10 @@ use crate::arch::*;
 use core::mem;
 
 use super::{Aes128, Aes192, Aes256};
-use block_cipher::{consts::U16, generic_array::GenericArray, BlockCipher};
-use stream_cipher::{
+use cipher::stream::{
     FromBlockCipher, LoopError, OverflowError, SeekNum, SyncStreamCipher, SyncStreamCipherSeek,
 };
+use cipher::{consts::U16, generic_array::GenericArray, BlockCipher};
 
 const BLOCK_SIZE: usize = 16;
 const PAR_BLOCKS: usize = 8;

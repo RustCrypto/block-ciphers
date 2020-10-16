@@ -94,9 +94,16 @@ mod ecb;
 mod ofb;
 mod pcbc;
 
-pub use block_cipher;
 pub use block_padding;
+pub use cipher;
 
-pub use crate::errors::{BlockModeError, InvalidKeyIvLength};
-pub use crate::traits::BlockMode;
-pub use crate::{cbc::Cbc, cfb::Cfb, cfb8::Cfb8, ecb::Ecb, ofb::Ofb, pcbc::Pcbc};
+pub use crate::{
+    cbc::Cbc,
+    cfb::Cfb,
+    cfb8::Cfb8,
+    ecb::Ecb,
+    errors::{BlockModeError, InvalidKeyIvLength},
+    ofb::Ofb,
+    pcbc::Pcbc,
+    traits::BlockMode,
+};

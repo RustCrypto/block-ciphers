@@ -1,14 +1,16 @@
 //! Test vectors from GOST R 34.13-2015:
 //! https://tc26.ru/standard/gost/GOST_R_3413-2015.pdf
-use gost_modes::block_padding::ZeroPadding;
-use gost_modes::consts::{U14, U16, U2, U3, U32, U5};
-use gost_modes::generic_array::GenericArray;
-use gost_modes::{BlockMode, NewStreamCipher, StreamCipher};
-use gost_modes::{Ecb, GostCbc, GostCfb, GostCtr128, GostCtr64, GostOfb};
+
+use gost_modes::{
+    block_padding::ZeroPadding,
+    consts::{U14, U16, U2, U3, U32, U5},
+    generic_array::GenericArray,
+    BlockMode, Ecb, GostCbc, GostCfb, GostCtr128, GostCtr64, GostOfb, NewStreamCipher,
+    StreamCipher,
+};
 use hex_literal::hex;
 use kuznyechik::Kuznyechik;
-use magma::{block_cipher::NewBlockCipher, Magma};
-use stream_cipher::new_seek_test;
+use magma::{cipher::NewBlockCipher, Magma};
 
 fn test_stream_cipher(cipher: impl StreamCipher + Clone, pt: &[u8], ct: &[u8]) {
     let mut buf = pt.to_vec();
@@ -177,5 +179,5 @@ fn magma_modes() {
     assert_eq!(buf, &pt[..]);
 }
 
-new_seek_test!(kuznyechik_ctr_seek, GostCtr128::<Kuznyechik, U14>);
-new_seek_test!(magma_ctr_seek, GostCtr64::<Magma, U5>);
+cipher::new_seek_test!(kuznyechik_ctr_seek, GostCtr128::<Kuznyechik, U14>);
+cipher::new_seek_test!(magma_ctr_seek, GostCtr64::<Magma, U5>);

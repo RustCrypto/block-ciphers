@@ -1,7 +1,7 @@
 use crate::{utils::xor, GostPadding};
-use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
 use block_modes::block_padding::Padding;
 use block_modes::BlockMode;
+use cipher::block::{Block, BlockCipher, NewBlockCipher};
 use core::marker::PhantomData;
 use core::ops::Mul;
 use generic_array::typenum::type_operators::{IsGreater, IsLessOrEqual};

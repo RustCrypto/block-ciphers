@@ -1,6 +1,6 @@
 [package]
 name = "idea"
-version = "0.2.0"
+version = "0.3.0-pre"
 description = "IDEA block cipher"
 authors = ["RustCrypto Developers"]
 license = "Apache-2.0 AND MIT"
@@ -12,11 +12,8 @@ keywords = ["crypto", "idea", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-block-cipher = "0.8"
+cipher = "0.2"
 opaque-debug = "0.3"
 
 [dev-dependencies]
-block-cipher = { version = "0.8", features = ["dev"] }
-
-[badges]
-maintenance = { status = "experimental" }
+cipher = { version = "0.2", features = ["dev"] }

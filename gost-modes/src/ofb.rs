@@ -1,11 +1,13 @@
 use crate::utils::xor;
-use block_modes::block_cipher::{Block, BlockCipher, NewBlockCipher};
+use cipher::{
+    block::{Block, BlockCipher, NewBlockCipher},
+    stream::{FromBlockCipher, LoopError, SyncStreamCipher},
+};
 use core::marker::PhantomData;
 use core::ops::Mul;
 use generic_array::typenum::type_operators::{IsGreater, IsLessOrEqual};
 use generic_array::typenum::{Prod, Unsigned, U0, U1, U255};
 use generic_array::{ArrayLength, GenericArray};
-use stream_cipher::{FromBlockCipher, LoopError, SyncStreamCipher};
 
 /// Output feedback (OFB) mode of operation as defined in GOST R 34.13-2015
 ///

@@ -1,3 +1,3 @@
 #![feature(test)]
 
-block_cipher::bench!(idea::Idea, 16);
+cipher::bench!(idea::Idea, 16);

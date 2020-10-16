@@ -11,12 +11,14 @@
 #![warn(rust_2018_idioms)]
 #![allow(clippy::unreadable_literal)]
 
-pub use block_cipher;
+pub use cipher;
 
-use block_cipher::consts::{U1, U16};
-use block_cipher::generic_array::GenericArray;
-use block_cipher::{BlockCipher, NewBlockCipher};
 use byteorder::{ByteOrder, BE};
+use cipher::{
+    consts::{U1, U16},
+    generic_array::GenericArray,
+    BlockCipher, NewBlockCipher,
+};
 
 pub const SBOX: [u8; 256] = [
     0xd6, 0x90, 0xe9, 0xfe, 0xcc, 0xe1, 0x3d, 0xb7, 0x16, 0xb6, 0x14, 0xc2, 0x28, 0xfb, 0x2c, 0x05,

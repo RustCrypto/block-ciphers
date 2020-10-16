@@ -5,8 +5,8 @@
 //!
 //! # Usage example
 //! ```
-//! use cast5::block_cipher::generic_array::GenericArray;
-//! use cast5::block_cipher::{BlockCipher, NewBlockCipher};
+//! use cast5::cipher::generic_array::GenericArray;
+//! use cast5::cipher::{BlockCipher, NewBlockCipher};
 //! use cast5::Cast5;
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
@@ -30,7 +30,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
-pub use block_cipher::{self, BlockCipher};
+pub use cipher::{self, BlockCipher};
 
 mod cast5;
 mod consts;

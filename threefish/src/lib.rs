@@ -11,9 +11,11 @@
 mod consts;
 
 use crate::consts::{C240, P_1024, P_256, P_512, R_1024, R_256, R_512};
-use block_cipher::consts::{U1, U128, U32, U64};
-use block_cipher::generic_array::GenericArray;
-use block_cipher::{BlockCipher, NewBlockCipher};
+use cipher::{
+    consts::{U1, U128, U32, U64},
+    generic_array::GenericArray,
+    BlockCipher, NewBlockCipher,
+};
 use core::{convert::TryInto, ops::BitXor};
 
 fn mix(r: u32, x: (u64, u64)) -> (u64, u64) {
