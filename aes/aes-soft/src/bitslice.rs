@@ -459,7 +459,7 @@ pub fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
     let mut t6 = read_transposed(&data[96..112]);
     let mut t7 = read_transposed(&data[112..128]);
 
-    fn delta_swap(a: &mut u32x4, b: &mut u32x4, shift: u32, mask: u32x4) {
+    fn delta_swap(a: &mut u32x4, b: &mut u32x4, shift: u32, mask: u32) {
         // Per-u32-element shifts are sufficient for actual masks used
         let t = (((*b) >> shift) ^ *a) & mask;
         *a = *a ^ t;
@@ -468,7 +468,7 @@ pub fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
 
     // Bit Index Swap 7 <-> 0:
     //     __ __ b0 __ __ __ __ __ __ p0 => __ __ p0 __ __ __ __ __ __ b0
-    let m0 = u32x4(0x55555555, 0x55555555, 0x55555555, 0x55555555);
+    let m0 = 0x55555555;
     delta_swap(&mut t1, &mut t0, 1, m0);
     delta_swap(&mut t3, &mut t2, 1, m0);
     delta_swap(&mut t5, &mut t4, 1, m0);
@@ -476,7 +476,7 @@ pub fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
 
     // Bit Index Swap 8 <-> 1:
     //     __ b1 __ __ __ __ __ __ p1 __ => __ p1 __ __ __ __ __ __ b1 __
-    let m1 = u32x4(0x33333333, 0x33333333, 0x33333333, 0x33333333);
+    let m1 = 0x33333333;
     delta_swap(&mut t2, &mut t0, 2, m1);
     delta_swap(&mut t3, &mut t1, 2, m1);
     delta_swap(&mut t6, &mut t4, 2, m1);
@@ -484,7 +484,7 @@ pub fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
 
     // Bit Index Swap 9 <-> 2:
     //     b2 __ __ __ __ __ __ p2 __ __ => p2 __ __ __ __ __ __ b2 __ __
-    let m2 = u32x4(0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F);
+    let m2 = 0x0F0F0F0F;
     delta_swap(&mut t4, &mut t0, 4, m2);
     delta_swap(&mut t5, &mut t1, 4, m2);
     delta_swap(&mut t6, &mut t2, 4, m2);
@@ -520,7 +520,7 @@ pub fn un_bit_slice_1x128_with_u32x4(bs: Bs8State<u32x4>, output: &mut [u8]) {
 
     let Bs8State(mut t0, mut t1, mut t2, mut t3, mut t4, mut t5, mut t6, mut t7) = bs;
 
-    fn delta_swap(a: &mut u32x4, b: &mut u32x4, shift: u32, mask: u32x4) {
+    fn delta_swap(a: &mut u32x4, b: &mut u32x4, shift: u32, mask: u32) {
         // Per-u32-element shifts are sufficient for the actual masks used
         let t = (((*b) >> shift) ^ *a) & mask;
         *a = *a ^ t;
@@ -531,7 +531,7 @@ pub fn un_bit_slice_1x128_with_u32x4(bs: Bs8State<u32x4>, output: &mut [u8]) {
 
     // Bit Index Swap 7 <-> 0:
     //     __ __ p0 __ __ __ __ __ __ b0 => __ __ b0 __ __ __ __ __ __ p0
-    let m0 = u32x4(0x55555555, 0x55555555, 0x55555555, 0x55555555);
+    let m0 = 0x55555555;
     delta_swap(&mut t1, &mut t0, 1, m0);
     delta_swap(&mut t3, &mut t2, 1, m0);
     delta_swap(&mut t5, &mut t4, 1, m0);
@@ -539,7 +539,7 @@ pub fn un_bit_slice_1x128_with_u32x4(bs: Bs8State<u32x4>, output: &mut [u8]) {
 
     // Bit Index Swap 8 <-> 1:
     //     __ p1 __ __ __ __ __ __ b1 __ => __ b1 __ __ __ __ __ __ p1 __
-    let m1 = u32x4(0x33333333, 0x33333333, 0x33333333, 0x33333333);
+    let m1 = 0x33333333;
     delta_swap(&mut t2, &mut t0, 2, m1);
     delta_swap(&mut t3, &mut t1, 2, m1);
     delta_swap(&mut t6, &mut t4, 2, m1);
@@ -547,7 +547,7 @@ pub fn un_bit_slice_1x128_with_u32x4(bs: Bs8State<u32x4>, output: &mut [u8]) {
 
     // Bit Index Swap 9 <-> 2:
     //     p2 __ __ __ __ __ __ b2 __ __ => b2 __ __ __ __ __ __ p2 __ __
-    let m2 = u32x4(0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F);
+    let m2 = 0x0F0F0F0F;
     delta_swap(&mut t4, &mut t0, 4, m2);
     delta_swap(&mut t5, &mut t1, 4, m2);
     delta_swap(&mut t6, &mut t2, 4, m2);

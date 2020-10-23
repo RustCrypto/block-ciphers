@@ -32,6 +32,15 @@ impl BitAnd for u32x4 {
     }
 }
 
+impl BitAnd<u32> for u32x4 {
+    type Output = u32x4;
+
+    #[inline(always)]
+    fn bitand(self, rhs: u32) -> u32x4 {
+        u32x4(self.0 & rhs, self.1 & rhs, self.2 & rhs, self.3 & rhs)
+    }
+}
+
 impl BitOr for u32x4 {
     type Output = u32x4;
 
