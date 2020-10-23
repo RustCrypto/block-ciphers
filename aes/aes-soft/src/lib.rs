@@ -46,7 +46,11 @@ pub use cipher;
 mod bitslice;
 mod consts;
 mod expand;
+mod fixslice;
 mod impls;
 mod simd;
 
-pub use crate::impls::{Aes128, Aes192, Aes256};
+pub use crate::{
+    fixslice::{Aes128Fixsliced, Aes256Fixsliced},
+    impls::{Aes128, Aes192, Aes256},
+};
