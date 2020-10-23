@@ -461,6 +461,7 @@ pub fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
 
     fn delta_swap(a: &mut u32x4, b: &mut u32x4, shift: u32, mask: u32) {
         // Per-u32-element shifts are sufficient for actual masks used
+        debug_assert_eq!(mask, (mask << shift) >> shift);
         let t = (((*b) >> shift) ^ *a) & mask;
         *a = *a ^ t;
         *b = *b ^ (t << shift);
@@ -522,6 +523,7 @@ pub fn un_bit_slice_1x128_with_u32x4(bs: Bs8State<u32x4>, output: &mut [u8]) {
 
     fn delta_swap(a: &mut u32x4, b: &mut u32x4, shift: u32, mask: u32) {
         // Per-u32-element shifts are sufficient for the actual masks used
+        debug_assert_eq!(mask, (mask << shift) >> shift);
         let t = (((*b) >> shift) ^ *a) & mask;
         *a = *a ^ t;
         *b = *b ^ (t << shift);
