@@ -419,16 +419,15 @@ pub fn un_bit_slice_1x16_with_u16(bs: &Bs8State<u16>, output: &mut [u8]) {
 
 // Bit Slice a 128 byte array of eight 16 byte blocks. Each block is in column major order.
 pub fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
-    let bit0 = u32x4(0x01010101, 0x01010101, 0x01010101, 0x01010101);
-    let bit1 = u32x4(0x02020202, 0x02020202, 0x02020202, 0x02020202);
-    let bit2 = u32x4(0x04040404, 0x04040404, 0x04040404, 0x04040404);
-    let bit3 = u32x4(0x08080808, 0x08080808, 0x08080808, 0x08080808);
-    let bit4 = u32x4(0x10101010, 0x10101010, 0x10101010, 0x10101010);
-    let bit5 = u32x4(0x20202020, 0x20202020, 0x20202020, 0x20202020);
-    let bit6 = u32x4(0x40404040, 0x40404040, 0x40404040, 0x40404040);
-    let bit7 = u32x4(0x80808080, 0x80808080, 0x80808080, 0x80808080);
+    // Bitslicing is a bit index manipulation. 1024 bits of data means each bit is positioned at a
+    // 10-bit index. AES data is 8 blocks, each one a 4x4 column-major matrix of bytes, so the
+    // index is initially:
+    //     b2 b1 b0 c1 c0 r1 r0 p2 p1 p0
+    //
+    // The desired bitsliced data groups first by bit position, then row, column, block:
+    //     p2 p1 p0 r1 r0 c1 c0 b2 b1 b0
 
-    fn read_row_major(data: &[u8]) -> u32x4 {
+    fn read_transposed(data: &[u8]) -> u32x4 {
         u32x4(
             u32::from(data[0])
                 | (u32::from(data[4]) << 8)
@@ -449,81 +448,51 @@ pub fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
         )
     }
 
-    let t0 = read_row_major(&data[0..16]);
-    let t1 = read_row_major(&data[16..32]);
-    let t2 = read_row_major(&data[32..48]);
-    let t3 = read_row_major(&data[48..64]);
-    let t4 = read_row_major(&data[64..80]);
-    let t5 = read_row_major(&data[80..96]);
-    let t6 = read_row_major(&data[96..112]);
-    let t7 = read_row_major(&data[112..128]);
+    // Transpose the bytes of each block on input
+    //     __ __ __ c1 c0 r1 r0 __ __ __ => __ __ __ r1 r0 c1 c0 __ __ __
+    let mut t0 = read_transposed(&data[0..16]);
+    let mut t1 = read_transposed(&data[16..32]);
+    let mut t2 = read_transposed(&data[32..48]);
+    let mut t3 = read_transposed(&data[48..64]);
+    let mut t4 = read_transposed(&data[64..80]);
+    let mut t5 = read_transposed(&data[80..96]);
+    let mut t6 = read_transposed(&data[96..112]);
+    let mut t7 = read_transposed(&data[112..128]);
 
-    let x0 = (t0 & bit0)
-        | (t1.lsh(1) & bit1)
-        | (t2.lsh(2) & bit2)
-        | (t3.lsh(3) & bit3)
-        | (t4.lsh(4) & bit4)
-        | (t5.lsh(5) & bit5)
-        | (t6.lsh(6) & bit6)
-        | (t7.lsh(7) & bit7);
-    let x1 = (t0.rsh(1) & bit0)
-        | (t1 & bit1)
-        | (t2.lsh(1) & bit2)
-        | (t3.lsh(2) & bit3)
-        | (t4.lsh(3) & bit4)
-        | (t5.lsh(4) & bit5)
-        | (t6.lsh(5) & bit6)
-        | (t7.lsh(6) & bit7);
-    let x2 = (t0.rsh(2) & bit0)
-        | (t1.rsh(1) & bit1)
-        | (t2 & bit2)
-        | (t3.lsh(1) & bit3)
-        | (t4.lsh(2) & bit4)
-        | (t5.lsh(3) & bit5)
-        | (t6.lsh(4) & bit6)
-        | (t7.lsh(5) & bit7);
-    let x3 = (t0.rsh(3) & bit0)
-        | (t1.rsh(2) & bit1)
-        | (t2.rsh(1) & bit2)
-        | (t3 & bit3)
-        | (t4.lsh(1) & bit4)
-        | (t5.lsh(2) & bit5)
-        | (t6.lsh(3) & bit6)
-        | (t7.lsh(4) & bit7);
-    let x4 = (t0.rsh(4) & bit0)
-        | (t1.rsh(3) & bit1)
-        | (t2.rsh(2) & bit2)
-        | (t3.rsh(1) & bit3)
-        | (t4 & bit4)
-        | (t5.lsh(1) & bit5)
-        | (t6.lsh(2) & bit6)
-        | (t7.lsh(3) & bit7);
-    let x5 = (t0.rsh(5) & bit0)
-        | (t1.rsh(4) & bit1)
-        | (t2.rsh(3) & bit2)
-        | (t3.rsh(2) & bit3)
-        | (t4.rsh(1) & bit4)
-        | (t5 & bit5)
-        | (t6.lsh(1) & bit6)
-        | (t7.lsh(2) & bit7);
-    let x6 = (t0.rsh(6) & bit0)
-        | (t1.rsh(5) & bit1)
-        | (t2.rsh(4) & bit2)
-        | (t3.rsh(3) & bit3)
-        | (t4.rsh(2) & bit4)
-        | (t5.rsh(1) & bit5)
-        | (t6 & bit6)
-        | (t7.lsh(1) & bit7);
-    let x7 = (t0.rsh(7) & bit0)
-        | (t1.rsh(6) & bit1)
-        | (t2.rsh(5) & bit2)
-        | (t3.rsh(4) & bit3)
-        | (t4.rsh(3) & bit4)
-        | (t5.rsh(2) & bit5)
-        | (t6.rsh(1) & bit6)
-        | (t7 & bit7);
+    fn delta_swap(a: &mut u32x4, b: &mut u32x4, shift: u32, mask: u32x4) {
+        // Per-u32-element shifts are sufficient for actual masks used
+        let t = (((*b) >> shift) ^ *a) & mask;
+        *a = *a ^ t;
+        *b = *b ^ (t << shift);
+    }
 
-    Bs8State(x0, x1, x2, x3, x4, x5, x6, x7)
+    // Bit Index Swap 7 <-> 0:
+    //     __ __ b0 __ __ __ __ __ __ p0 => __ __ p0 __ __ __ __ __ __ b0
+    let m0 = u32x4(0x55555555, 0x55555555, 0x55555555, 0x55555555);
+    delta_swap(&mut t1, &mut t0, 1, m0);
+    delta_swap(&mut t3, &mut t2, 1, m0);
+    delta_swap(&mut t5, &mut t4, 1, m0);
+    delta_swap(&mut t7, &mut t6, 1, m0);
+
+    // Bit Index Swap 8 <-> 1:
+    //     __ b1 __ __ __ __ __ __ p1 __ => __ p1 __ __ __ __ __ __ b1 __
+    let m1 = u32x4(0x33333333, 0x33333333, 0x33333333, 0x33333333);
+    delta_swap(&mut t2, &mut t0, 2, m1);
+    delta_swap(&mut t3, &mut t1, 2, m1);
+    delta_swap(&mut t6, &mut t4, 2, m1);
+    delta_swap(&mut t7, &mut t5, 2, m1);
+
+    // Bit Index Swap 9 <-> 2:
+    //     b2 __ __ __ __ __ __ p2 __ __ => p2 __ __ __ __ __ __ b2 __ __
+    let m2 = u32x4(0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F);
+    delta_swap(&mut t4, &mut t0, 4, m2);
+    delta_swap(&mut t5, &mut t1, 4, m2);
+    delta_swap(&mut t6, &mut t2, 4, m2);
+    delta_swap(&mut t7, &mut t3, 4, m2);
+
+    // Final bitsliced bit index, as desired:
+    //     p2 p1 p0 r1 r0 c1 c0 b2 b1 b0
+    Bs8State(t0, t1, t2, t3, t4, t5, t6, t7)
 }
 
 // Bit slice a set of 4 u32s by filling a full 128 byte data block with those repeated values. This
@@ -541,85 +510,50 @@ pub fn bit_slice_fill_4x4_with_u32x4(a: u32, b: u32, c: u32, d: u32) -> Bs8State
 
 // Un bit slice into a 128 byte buffer.
 pub fn un_bit_slice_1x128_with_u32x4(bs: Bs8State<u32x4>, output: &mut [u8]) {
-    let Bs8State(t0, t1, t2, t3, t4, t5, t6, t7) = bs;
+    // Unbitslicing is a bit index manipulation. 1024 bits of data means each bit is positioned at
+    // a 10-bit index. AES data is 8 blocks, each one a 4x4 column-major matrix of bytes, so the
+    // desired index for the output is:
+    //     b2 b1 b0 c1 c0 r1 r0 p2 p1 p0
+    //
+    // The initially bitsliced data groups first by bit position, then row, column, block:
+    //     p2 p1 p0 r1 r0 c1 c0 b2 b1 b0
 
-    let bit0 = u32x4(0x01010101, 0x01010101, 0x01010101, 0x01010101);
-    let bit1 = u32x4(0x02020202, 0x02020202, 0x02020202, 0x02020202);
-    let bit2 = u32x4(0x04040404, 0x04040404, 0x04040404, 0x04040404);
-    let bit3 = u32x4(0x08080808, 0x08080808, 0x08080808, 0x08080808);
-    let bit4 = u32x4(0x10101010, 0x10101010, 0x10101010, 0x10101010);
-    let bit5 = u32x4(0x20202020, 0x20202020, 0x20202020, 0x20202020);
-    let bit6 = u32x4(0x40404040, 0x40404040, 0x40404040, 0x40404040);
-    let bit7 = u32x4(0x80808080, 0x80808080, 0x80808080, 0x80808080);
+    let Bs8State(mut t0, mut t1, mut t2, mut t3, mut t4, mut t5, mut t6, mut t7) = bs;
 
-    // decode the individual blocks, in row-major order
-    // TODO: this is identical to the same block in bit_slice_1x128_with_u32x4
-    let x0 = (t0 & bit0)
-        | (t1.lsh(1) & bit1)
-        | (t2.lsh(2) & bit2)
-        | (t3.lsh(3) & bit3)
-        | (t4.lsh(4) & bit4)
-        | (t5.lsh(5) & bit5)
-        | (t6.lsh(6) & bit6)
-        | (t7.lsh(7) & bit7);
-    let x1 = (t0.rsh(1) & bit0)
-        | (t1 & bit1)
-        | (t2.lsh(1) & bit2)
-        | (t3.lsh(2) & bit3)
-        | (t4.lsh(3) & bit4)
-        | (t5.lsh(4) & bit5)
-        | (t6.lsh(5) & bit6)
-        | (t7.lsh(6) & bit7);
-    let x2 = (t0.rsh(2) & bit0)
-        | (t1.rsh(1) & bit1)
-        | (t2 & bit2)
-        | (t3.lsh(1) & bit3)
-        | (t4.lsh(2) & bit4)
-        | (t5.lsh(3) & bit5)
-        | (t6.lsh(4) & bit6)
-        | (t7.lsh(5) & bit7);
-    let x3 = (t0.rsh(3) & bit0)
-        | (t1.rsh(2) & bit1)
-        | (t2.rsh(1) & bit2)
-        | (t3 & bit3)
-        | (t4.lsh(1) & bit4)
-        | (t5.lsh(2) & bit5)
-        | (t6.lsh(3) & bit6)
-        | (t7.lsh(4) & bit7);
-    let x4 = (t0.rsh(4) & bit0)
-        | (t1.rsh(3) & bit1)
-        | (t2.rsh(2) & bit2)
-        | (t3.rsh(1) & bit3)
-        | (t4 & bit4)
-        | (t5.lsh(1) & bit5)
-        | (t6.lsh(2) & bit6)
-        | (t7.lsh(3) & bit7);
-    let x5 = (t0.rsh(5) & bit0)
-        | (t1.rsh(4) & bit1)
-        | (t2.rsh(3) & bit2)
-        | (t3.rsh(2) & bit3)
-        | (t4.rsh(1) & bit4)
-        | (t5 & bit5)
-        | (t6.lsh(1) & bit6)
-        | (t7.lsh(2) & bit7);
-    let x6 = (t0.rsh(6) & bit0)
-        | (t1.rsh(5) & bit1)
-        | (t2.rsh(4) & bit2)
-        | (t3.rsh(3) & bit3)
-        | (t4.rsh(2) & bit4)
-        | (t5.rsh(1) & bit5)
-        | (t6 & bit6)
-        | (t7.lsh(1) & bit7);
-    let x7 = (t0.rsh(7) & bit0)
-        | (t1.rsh(6) & bit1)
-        | (t2.rsh(5) & bit2)
-        | (t3.rsh(4) & bit3)
-        | (t4.rsh(3) & bit4)
-        | (t5.rsh(2) & bit5)
-        | (t6.rsh(1) & bit6)
-        | (t7 & bit7);
+    fn delta_swap(a: &mut u32x4, b: &mut u32x4, shift: u32, mask: u32x4) {
+        // Per-u32-element shifts are sufficient for the actual masks used
+        let t = (((*b) >> shift) ^ *a) & mask;
+        *a = *a ^ t;
+        *b = *b ^ (t << shift);
+    }
 
-    fn write_row_major(block: u32x4, output: &mut [u8]) {
+    // TODO: these bit index swaps are identical to those in bit_slice_1x128_with_u32x4
+
+    // Bit Index Swap 7 <-> 0:
+    //     __ __ p0 __ __ __ __ __ __ b0 => __ __ b0 __ __ __ __ __ __ p0
+    let m0 = u32x4(0x55555555, 0x55555555, 0x55555555, 0x55555555);
+    delta_swap(&mut t1, &mut t0, 1, m0);
+    delta_swap(&mut t3, &mut t2, 1, m0);
+    delta_swap(&mut t5, &mut t4, 1, m0);
+    delta_swap(&mut t7, &mut t6, 1, m0);
+
+    // Bit Index Swap 8 <-> 1:
+    //     __ p1 __ __ __ __ __ __ b1 __ => __ b1 __ __ __ __ __ __ p1 __
+    let m1 = u32x4(0x33333333, 0x33333333, 0x33333333, 0x33333333);
+    delta_swap(&mut t2, &mut t0, 2, m1);
+    delta_swap(&mut t3, &mut t1, 2, m1);
+    delta_swap(&mut t6, &mut t4, 2, m1);
+    delta_swap(&mut t7, &mut t5, 2, m1);
+
+    // Bit Index Swap 9 <-> 2:
+    //     p2 __ __ __ __ __ __ b2 __ __ => b2 __ __ __ __ __ __ p2 __ __
+    let m2 = u32x4(0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F, 0x0F0F0F0F);
+    delta_swap(&mut t4, &mut t0, 4, m2);
+    delta_swap(&mut t5, &mut t1, 4, m2);
+    delta_swap(&mut t6, &mut t2, 4, m2);
+    delta_swap(&mut t7, &mut t3, 4, m2);
+
+    fn write_transposed(block: u32x4, output: &mut [u8]) {
         let u32x4(a0, a1, a2, a3) = block;
         output[0] = a0 as u8;
         output[1] = a1 as u8;
@@ -639,14 +573,19 @@ pub fn un_bit_slice_1x128_with_u32x4(bs: Bs8State<u32x4>, output: &mut [u8]) {
         output[15] = (a3 >> 24) as u8;
     }
 
-    write_row_major(x0, &mut output[0..16]);
-    write_row_major(x1, &mut output[16..32]);
-    write_row_major(x2, &mut output[32..48]);
-    write_row_major(x3, &mut output[48..64]);
-    write_row_major(x4, &mut output[64..80]);
-    write_row_major(x5, &mut output[80..96]);
-    write_row_major(x6, &mut output[96..112]);
-    write_row_major(x7, &mut output[112..128])
+    // Transpose the bytes of each block on output
+    //     __ __ __ r1 r0 c1 c0 __ __ __ => __ __ __ c1 c0 r1 r0 __ __ __
+    write_transposed(t0, &mut output[0..16]);
+    write_transposed(t1, &mut output[16..32]);
+    write_transposed(t2, &mut output[32..48]);
+    write_transposed(t3, &mut output[48..64]);
+    write_transposed(t4, &mut output[64..80]);
+    write_transposed(t5, &mut output[80..96]);
+    write_transposed(t6, &mut output[96..112]);
+    write_transposed(t7, &mut output[112..128])
+
+    // Final AES bit index, as desired:
+    //     b2 b1 b0 c1 c0 r1 r0 p2 p1 p0
 }
 
 // The Gf2Ops, Gf4Ops, and Gf8Ops traits specify the functions needed to calculate the AES S-Box
@@ -938,28 +877,6 @@ impl AesBitValueOps for u16 {
 
     fn ror2(self) -> u16 {
         self.rotate_right(8)
-    }
-}
-
-impl u32x4 {
-    fn lsh(self, s: u32) -> u32x4 {
-        let u32x4(a0, a1, a2, a3) = self;
-        u32x4(
-            a0 << s,
-            (a1 << s) | (a0 >> (32 - s)),
-            (a2 << s) | (a1 >> (32 - s)),
-            (a3 << s) | (a2 >> (32 - s)),
-        )
-    }
-
-    fn rsh(self, s: u32) -> u32x4 {
-        let u32x4(a0, a1, a2, a3) = self;
-        u32x4(
-            (a0 >> s) | (a1 << (32 - s)),
-            (a1 >> s) | (a2 << (32 - s)),
-            (a2 >> s) | (a3 << (32 - s)),
-            a3 >> s,
-        )
     }
 }
 
