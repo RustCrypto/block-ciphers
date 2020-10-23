@@ -421,7 +421,7 @@ pub fn un_bit_slice_1x16_with_u16(bs: &Bs8State<u16>, output: &mut [u8]) {
 pub fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
     // Bitslicing is a bit index manipulation. 1024 bits of data means each bit is positioned at a
     // 10-bit index. AES data is 8 blocks, each one a 4x4 column-major matrix of bytes, so the
-    // index is initially:
+    // index is initially ([b]lock, [c]olumn, [r]ow, [p]osition):
     //     b2 b1 b0 c1 c0 r1 r0 p2 p1 p0
     //
     // The desired bitsliced data groups first by bit position, then row, column, block:
@@ -512,7 +512,7 @@ pub fn bit_slice_fill_4x4_with_u32x4(a: u32, b: u32, c: u32, d: u32) -> Bs8State
 pub fn un_bit_slice_1x128_with_u32x4(bs: Bs8State<u32x4>, output: &mut [u8]) {
     // Unbitslicing is a bit index manipulation. 1024 bits of data means each bit is positioned at
     // a 10-bit index. AES data is 8 blocks, each one a 4x4 column-major matrix of bytes, so the
-    // desired index for the output is:
+    // desired index for the output is ([b]lock, [c]olumn, [r]ow, [p]osition):
     //     b2 b1 b0 c1 c0 r1 r0 p2 p1 p0
     //
     // The initially bitsliced data groups first by bit position, then row, column, block:
