@@ -4,8 +4,8 @@
     clippy::unreadable_literal
 )]
 
-use crate::consts::U32X4_1;
-use crate::simd::u32x4;
+//use crate::consts::U32X4_1;
+//use crate::simd::u32x4;
 use byteorder::{ByteOrder, LE};
 use core::ops::{BitAnd, BitXor, Not};
 
@@ -417,6 +417,77 @@ pub fn un_bit_slice_1x16_with_u16(bs: &Bs8State<u16>, output: &mut [u8]) {
     LE::write_u32(&mut output[12..16], d);
 }
 
+// Bit Slice a 64 byte array of four 16 byte blocks. Each block is in column major order.
+pub fn bit_slice_1x64_with_u64(input: &[u8]) -> Bs8State<u64> {
+    // Bitslicing is a bit index manipulation. 512 bits of data means each bit is positioned at a
+    // 9-bit index. AES data is 4 blocks, each one a 4x4 column-major matrix of bytes, so the
+    // index is initially ([b]lock, [c]olumn, [r]ow, [p]osition):
+    //     b1 b0 c1 c0 r1 r0 p2 p1 p0
+    //
+    // The desired bitsliced data groups first by bit position, then row, column, block:
+    //     p2 p1 p0 r1 r0 c1 c0 b1 b0
+
+    #[rustfmt::skip]
+    fn read_reordered(input: &[u8]) -> u64 {
+        (u64::from(input[0x0])        ) |
+        (u64::from(input[0x1]) << 0x10) |
+        (u64::from(input[0x2]) << 0x20) |
+        (u64::from(input[0x3]) << 0x30) |
+        (u64::from(input[0x8]) << 0x08) |
+        (u64::from(input[0x9]) << 0x18) |
+        (u64::from(input[0xA]) << 0x28) |
+        (u64::from(input[0xB]) << 0x38)
+    }
+
+    // Reorder each block's bytes on input
+    //     __ __ c1 c0 r1 r0 __ __ __ => __ __ c0 r1 r0 c1 __ __ __
+    // Reorder by relabeling (note the order of input)
+    //     b1 b0 c0 __ __ __ __ __ __ => c0 b1 b0 __ __ __ __ __ __
+    let mut t0 = read_reordered(&input[0x00..0x0C]);
+    let mut t4 = read_reordered(&input[0x04..0x10]);
+    let mut t1 = read_reordered(&input[0x10..0x1C]);
+    let mut t5 = read_reordered(&input[0x14..0x20]);
+    let mut t2 = read_reordered(&input[0x20..0x2C]);
+    let mut t6 = read_reordered(&input[0x24..0x30]);
+    let mut t3 = read_reordered(&input[0x30..0x3C]);
+    let mut t7 = read_reordered(&input[0x34..0x40]);
+
+    fn delta_swap(a: &mut u64, b: &mut u64, shift: u64, mask: u64) {
+        let t = (*a ^ ((*b) >> shift)) & mask;
+        *a ^= t;
+        *b ^= t << shift;
+    }
+
+    // Bit Index Swap 6 <-> 0:
+    //     __ __ b0 __ __ __ __ __ p0 => __ __ p0 __ __ __ __ __ b0
+    let m0 = 0x5555555555555555;
+    delta_swap(&mut t1, &mut t0, 1, m0);
+    delta_swap(&mut t3, &mut t2, 1, m0);
+    delta_swap(&mut t5, &mut t4, 1, m0);
+    delta_swap(&mut t7, &mut t6, 1, m0);
+
+    // Bit Index Swap 7 <-> 1:
+    //     __ b1 __ __ __ __ __ p1 __ => __ p1 __ __ __ __ __ b1 __
+    let m1 = 0x3333333333333333;
+    delta_swap(&mut t2, &mut t0, 2, m1);
+    delta_swap(&mut t3, &mut t1, 2, m1);
+    delta_swap(&mut t6, &mut t4, 2, m1);
+    delta_swap(&mut t7, &mut t5, 2, m1);
+
+    // Bit Index Swap 8 <-> 2:
+    //     c0 __ __ __ __ __ p2 __ __ => p2 __ __ __ __ __ c0 __ __
+    let m2 = 0x0F0F0F0F0F0F0F0F;
+    delta_swap(&mut t4, &mut t0, 4, m2);
+    delta_swap(&mut t5, &mut t1, 4, m2);
+    delta_swap(&mut t6, &mut t2, 4, m2);
+    delta_swap(&mut t7, &mut t3, 4, m2);
+
+    // Final bitsliced bit index, as desired:
+    //     p2 p1 p0 r1 r0 c1 c0 b1 b0
+    Bs8State(t0, t1, t2, t3, t4, t5, t6, t7)
+}
+
+/*
 // Bit Slice a 128 byte array of eight 16 byte blocks. Each block is in column major order.
 pub fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
     let bit0 = u32x4(0x01010101, 0x01010101, 0x01010101, 0x01010101);
@@ -525,7 +596,22 @@ pub fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
 
     Bs8State(x0, x1, x2, x3, x4, x5, x6, x7)
 }
+*/
 
+// Bit slice a set of 4 u32s by filling a full 32 byte data block with those repeated values. This
+// is used as part of bit slicing the round keys.
+pub fn bit_slice_fill_4x4_with_u64(a: u32, b: u32, c: u32, d: u32) -> Bs8State<u64> {
+    let mut tmp = [0u8; 64];
+    for i in 0..4 {
+        LE::write_u32(&mut tmp[i * 16..i * 16 + 4], a);
+        LE::write_u32(&mut tmp[i * 16 + 4..i * 16 + 8], b);
+        LE::write_u32(&mut tmp[i * 16 + 8..i * 16 + 12], c);
+        LE::write_u32(&mut tmp[i * 16 + 12..i * 16 + 16], d);
+    }
+    bit_slice_1x64_with_u64(&tmp)
+}
+
+/*
 // Bit slice a set of 4 u32s by filling a full 128 byte data block with those repeated values. This
 // is used as part of bit slicing the round keys.
 pub fn bit_slice_fill_4x4_with_u32x4(a: u32, b: u32, c: u32, d: u32) -> Bs8State<u32x4> {
@@ -538,7 +624,82 @@ pub fn bit_slice_fill_4x4_with_u32x4(a: u32, b: u32, c: u32, d: u32) -> Bs8State
     }
     bit_slice_1x128_with_u32x4(&tmp)
 }
+*/
 
+// Un bit slice into a 64 byte buffer.
+pub fn un_bit_slice_1x64_with_u64(bs: Bs8State<u64>, output: &mut [u8]) {
+    // Unbitslicing is a bit index manipulation. 512 bits of data means each bit is positioned at
+    // a 9-bit index. AES data is 4 blocks, each one a 4x4 column-major matrix of bytes, so the
+    // desired index for the output is ([b]lock, [c]olumn, [r]ow, [p]osition):
+    //     b1 b0 c1 c0 r1 r0 p2 p1 p0
+    //
+    // The initially bitsliced data groups first by bit position, then row, column, block:
+    //     p2 p1 p0 r1 r0 c1 c0 b1 b0
+
+    let Bs8State(mut t0, mut t1, mut t2, mut t3, mut t4, mut t5, mut t6, mut t7) = bs;
+
+    fn delta_swap(a: &mut u64, b: &mut u64, shift: u64, mask: u64) {
+        let t = (*a ^ ((*b) >> shift)) & mask;
+        *a ^= t;
+        *b ^= t << shift;
+    }
+
+    // TODO: these bit index swaps are identical to those in bit_slice_1x64_with_u64
+
+    // Bit Index Swap 6 <-> 0:
+    //     __ __ p0 __ __ __ __ __ b0 => __ __ b0 __ __ __ __ __ p0
+    let m0 = 0x5555555555555555;
+    delta_swap(&mut t1, &mut t0, 1, m0);
+    delta_swap(&mut t3, &mut t2, 1, m0);
+    delta_swap(&mut t5, &mut t4, 1, m0);
+    delta_swap(&mut t7, &mut t6, 1, m0);
+
+    // Bit Index Swap 7 <-> 1:
+    //     __ p1 __ __ __ __ __ b1 __ => __ b1 __ __ __ __ __ p1 __
+    let m1 = 0x3333333333333333;
+    delta_swap(&mut t2, &mut t0, 2, m1);
+    delta_swap(&mut t3, &mut t1, 2, m1);
+    delta_swap(&mut t6, &mut t4, 2, m1);
+    delta_swap(&mut t7, &mut t5, 2, m1);
+
+    // Bit Index Swap 8 <-> 2:
+    //     p2 __ __ __ __ __ c0 __ __ => c0 __ __ __ __ __ p2 __ __
+    let m2 = 0x0F0F0F0F0F0F0F0F;
+    delta_swap(&mut t4, &mut t0, 4, m2);
+    delta_swap(&mut t5, &mut t1, 4, m2);
+    delta_swap(&mut t6, &mut t2, 4, m2);
+    delta_swap(&mut t7, &mut t3, 4, m2);
+
+    #[rustfmt::skip]
+    fn write_reordered(columns: u64, output: &mut [u8]) {
+        output[0x0] = (columns        ) as u8;
+        output[0x1] = (columns >> 0x10) as u8;
+        output[0x2] = (columns >> 0x20) as u8;
+        output[0x3] = (columns >> 0x30) as u8;
+        output[0x8] = (columns >> 0x08) as u8;
+        output[0x9] = (columns >> 0x18) as u8;
+        output[0xA] = (columns >> 0x28) as u8;
+        output[0xB] = (columns >> 0x38) as u8;
+    }
+
+    // Reorder by relabeling (note the order of output)
+    //     c0 b1 b0 __ __ __ __ __ __ => b1 b0 c0 __ __ __ __ __ __
+    // Reorder each block's bytes on output
+    //     __ __ c0 r1 r0 c1 __ __ __ => __ __ c1 c0 r1 r0 __ __ __
+    write_reordered(t0, &mut output[0x00..0x0C]);
+    write_reordered(t4, &mut output[0x04..0x10]);
+    write_reordered(t1, &mut output[0x10..0x1C]);
+    write_reordered(t5, &mut output[0x14..0x20]);
+    write_reordered(t2, &mut output[0x20..0x2C]);
+    write_reordered(t6, &mut output[0x24..0x30]);
+    write_reordered(t3, &mut output[0x30..0x3C]);
+    write_reordered(t7, &mut output[0x34..0x40]);
+
+    // Final AES bit index, as desired:
+    //     b1 b0 c1 c0 r1 r0 p2 p1 p0
+}
+
+/*
 // Un bit slice into a 128 byte buffer.
 pub fn un_bit_slice_1x128_with_u32x4(bs: Bs8State<u32x4>, output: &mut [u8]) {
     let Bs8State(t0, t1, t2, t3, t4, t5, t6, t7) = bs;
@@ -648,6 +809,7 @@ pub fn un_bit_slice_1x128_with_u32x4(bs: Bs8State<u32x4>, output: &mut [u8]) {
     write_row_major(x6, &mut output[96..112]);
     write_row_major(x7, &mut output[112..128])
 }
+*/
 
 // The Gf2Ops, Gf4Ops, and Gf8Ops traits specify the functions needed to calculate the AES S-Box
 // values. This particuar implementation of those S-Box values is taken from [7], so that is where
@@ -916,20 +1078,20 @@ pub trait AesBitValueOps:
 
 // The bits of 'x' selected by 'm' are swapped with those selected by '(m << s)'.
 // Requires that 'm & (m << s) == 0' (no overlap) and '((m << s) >> s) == m' (no loss).
-fn delta_swap(x: u16, m: u16, s: u16) -> u16 {
+fn delta_swap_u16(x: u16, m: u16, s: u16) -> u16 {
     let t = (x ^ (x >> s)) & m;
     x ^ (t ^ (t << s))
 }
 
 impl AesBitValueOps for u16 {
     fn shift_row(self) -> u16 {
-        let temp = delta_swap(self, 0x2310, 2);
-        delta_swap(temp, 0x5050, 1)
+        let temp = delta_swap_u16(self, 0x2310, 2);
+        delta_swap_u16(temp, 0x5050, 1)
     }
 
     fn inv_shift_row(self) -> u16 {
-        let temp = delta_swap(self, 0x5050, 1);
-        delta_swap(temp, 0x2310, 2)
+        let temp = delta_swap_u16(self, 0x5050, 1);
+        delta_swap_u16(temp, 0x2310, 2)
     }
 
     fn ror1(self) -> u16 {
@@ -941,6 +1103,34 @@ impl AesBitValueOps for u16 {
     }
 }
 
+// The bits of 'x' selected by 'm' are swapped with those selected by '(m << s)'.
+// Requires that 'm & (m << s) == 0' (no overlap) and '((m << s) >> s) == m' (no loss).
+fn delta_swap_u64(x: u64, m: u64, s: u64) -> u64 {
+    let t = (x ^ (x >> s)) & m;
+    x ^ (t ^ (t << s))
+}
+
+impl AesBitValueOps for u64 {
+    fn shift_row(self) -> u64 {
+        let temp = delta_swap_u64(self, 0x00F000FF000F0000, 8);
+        delta_swap_u64(temp, 0x0F0F00000F0F0000, 4)
+    }
+
+    fn inv_shift_row(self) -> u64 {
+        let temp = delta_swap_u64(self, 0x0F0F00000F0F0000, 4);
+        delta_swap_u64(temp, 0x00F000FF000F0000, 8)
+    }
+
+    fn ror1(self) -> u64 {
+        self.rotate_right(16)
+    }
+
+    fn ror2(self) -> u64 {
+        self.rotate_right(32)
+    }
+}
+
+/*
 impl u32x4 {
     fn lsh(self, s: u32) -> u32x4 {
         let u32x4(a0, a1, a2, a3) = self;
@@ -1008,3 +1198,4 @@ impl AesBitValueOps for u32x4 {
         u32x4(a2, a3, a0, a1)
     }
 }
+*/
