@@ -1,9 +1,9 @@
 #![allow(clippy::unreadable_literal)]
 
-use crate::simd::u32x4;
+//use crate::simd::u32x4;
 
-pub const U32X4_0: u32x4 = u32x4(0, 0, 0, 0);
-pub const U32X4_1: u32x4 = u32x4(0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff);
+//pub const U32X4_0: u32x4 = u32x4(0, 0, 0, 0);
+//pub const U32X4_1: u32x4 = u32x4(0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff);
 
 // This array is not accessed in any key-dependant way, so there are no timing problems inherent in
 // using it.
