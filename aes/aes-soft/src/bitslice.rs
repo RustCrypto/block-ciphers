@@ -329,10 +329,10 @@ pub fn bit_slice_4x4_with_u16(a: u32, b: u32, c: u32, d: u32) -> Bs8State<u16> {
     delta_swap_2(&mut t3, &mut t1, 2, m3);
 
     Bs8State(
-        (t0      ) as u16,
-        (t1      ) as u16,
-        (t2      ) as u16,
-        (t3      ) as u16,
+        t0 as u16,
+        t1 as u16,
+        t2 as u16,
+        t3 as u16,
         (t0 >> 16) as u16,
         (t1 >> 16) as u16,
         (t2 >> 16) as u16,
