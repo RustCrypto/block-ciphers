@@ -296,39 +296,48 @@ impl<T: BitXor<Output = T> + Copy> Bs2State<T> {
 // Bit Slice data in the form of 4 u32s in column-major order
 #[inline(always)]
 pub fn bit_slice_4x4_with_u16(a: u32, b: u32, c: u32, d: u32) -> Bs8State<u16> {
-    fn pb(x: u32, bit: u32, shift: u32) -> u16 {
-        (((x >> bit) & 1) as u16) << shift
+    fn delta_swap_1(a: &mut u32, shift: u32, mask: u32) {
+        let t = (*a ^ ((*a) >> shift)) & mask;
+        *a ^= t ^ (t << shift);
+    }
+    fn delta_swap_2(a: &mut u32, b: &mut u32, shift: u32, mask: u32) {
+        let t = (*a ^ ((*b) >> shift)) & mask;
+        *a ^= t;
+        *b ^= t << shift;
     }
 
-    fn construct(a: u32, b: u32, c: u32, d: u32, bit: u32) -> u16 {
-        pb(a, bit, 0)
-            | pb(b, bit, 1)
-            | pb(c, bit, 2)
-            | pb(d, bit, 3)
-            | pb(a, bit + 8, 4)
-            | pb(b, bit + 8, 5)
-            | pb(c, bit + 8, 6)
-            | pb(d, bit + 8, 7)
-            | pb(a, bit + 16, 8)
-            | pb(b, bit + 16, 9)
-            | pb(c, bit + 16, 10)
-            | pb(d, bit + 16, 11)
-            | pb(a, bit + 24, 12)
-            | pb(b, bit + 24, 13)
-            | pb(c, bit + 24, 14)
-            | pb(d, bit + 24, 15)
-    }
+    let (mut t0, mut t1, mut t2, mut t3) = (a, b, c, d);
 
-    let x0 = construct(a, b, c, d, 0);
-    let x1 = construct(a, b, c, d, 1);
-    let x2 = construct(a, b, c, d, 2);
-    let x3 = construct(a, b, c, d, 3);
-    let x4 = construct(a, b, c, d, 4);
-    let x5 = construct(a, b, c, d, 5);
-    let x6 = construct(a, b, c, d, 6);
-    let x7 = construct(a, b, c, d, 7);
+    let m0 = 0x00F000F0;
+    delta_swap_1(&mut t0, 4, m0);
+    delta_swap_1(&mut t1, 4, m0);
+    delta_swap_1(&mut t2, 4, m0);
+    delta_swap_1(&mut t3, 4, m0);
 
-    Bs8State(x0, x1, x2, x3, x4, x5, x6, x7)
+    let m1 = 0x0000FF00;
+    delta_swap_1(&mut t0, 8, m1);
+    delta_swap_1(&mut t1, 8, m1);
+    delta_swap_1(&mut t2, 8, m1);
+    delta_swap_1(&mut t3, 8, m1);
+
+    let m2 = 0x55555555;
+    delta_swap_2(&mut t1, &mut t0, 1, m2);
+    delta_swap_2(&mut t3, &mut t2, 1, m2);
+
+    let m3 = 0x33333333;
+    delta_swap_2(&mut t2, &mut t0, 2, m3);
+    delta_swap_2(&mut t3, &mut t1, 2, m3);
+
+    Bs8State(
+        (t0      ) as u16,
+        (t1      ) as u16,
+        (t2      ) as u16,
+        (t3      ) as u16,
+        (t0 >> 16) as u16,
+        (t1 >> 16) as u16,
+        (t2 >> 16) as u16,
+        (t3 >> 16) as u16,
+    )
 }
 
 // Bit slice a single u32 value - this is used to calculate the SubBytes step when creating the
@@ -339,66 +348,56 @@ pub fn bit_slice_4x1_with_u16(a: u32) -> Bs8State<u16> {
 
 // Bit slice a 16 byte array in column major order
 pub fn bit_slice_1x16_with_u16(data: &[u8]) -> Bs8State<u16> {
-    let mut n = [0u32; 4];
-    LE::read_u32_into(data, &mut n);
-
-    let a = n[0];
-    let b = n[1];
-    let c = n[2];
-    let d = n[3];
+    let a = LE::read_u32(&data[0..4]);
+    let b = LE::read_u32(&data[4..8]);
+    let c = LE::read_u32(&data[8..12]);
+    let d = LE::read_u32(&data[12..16]);
 
     bit_slice_4x4_with_u16(a, b, c, d)
 }
 
 // Un Bit Slice into a set of 4 u32s
 pub fn un_bit_slice_4x4_with_u16(bs: &Bs8State<u16>) -> (u32, u32, u32, u32) {
-    fn pb(x: u16, bit: u32, shift: u32) -> u32 {
-        u32::from((x >> bit) & 1) << shift
+    let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = *bs;
+
+    let (mut t0, mut t1, mut t2, mut t3) = (
+        u32::from(x0) | (u32::from(x4) << 16),
+        u32::from(x1) | (u32::from(x5) << 16),
+        u32::from(x2) | (u32::from(x6) << 16),
+        u32::from(x3) | (u32::from(x7) << 16),
+    );
+
+    fn delta_swap_1(a: &mut u32, shift: u32, mask: u32) {
+        let t = (*a ^ ((*a) >> shift)) & mask;
+        *a ^= t ^ (t << shift);
+    }
+    fn delta_swap_2(a: &mut u32, b: &mut u32, shift: u32, mask: u32) {
+        let t = (*a ^ ((*b) >> shift)) & mask;
+        *a ^= t;
+        *b ^= t << shift;
     }
 
-    fn deconstruct(bs: &Bs8State<u16>, bit: u32) -> u32 {
-        let Bs8State(x0, x1, x2, x3, x4, x5, x6, x7) = *bs;
+    let m3 = 0x33333333;
+    delta_swap_2(&mut t2, &mut t0, 2, m3);
+    delta_swap_2(&mut t3, &mut t1, 2, m3);
 
-        pb(x0, bit, 0)
-            | pb(x1, bit, 1)
-            | pb(x2, bit, 2)
-            | pb(x3, bit, 3)
-            | pb(x4, bit, 4)
-            | pb(x5, bit, 5)
-            | pb(x6, bit, 6)
-            | pb(x7, bit, 7)
-            | pb(x0, bit + 4, 8)
-            | pb(x1, bit + 4, 9)
-            | pb(x2, bit + 4, 10)
-            | pb(x3, bit + 4, 11)
-            | pb(x4, bit + 4, 12)
-            | pb(x5, bit + 4, 13)
-            | pb(x6, bit + 4, 14)
-            | pb(x7, bit + 4, 15)
-            | pb(x0, bit + 8, 16)
-            | pb(x1, bit + 8, 17)
-            | pb(x2, bit + 8, 18)
-            | pb(x3, bit + 8, 19)
-            | pb(x4, bit + 8, 20)
-            | pb(x5, bit + 8, 21)
-            | pb(x6, bit + 8, 22)
-            | pb(x7, bit + 8, 23)
-            | pb(x0, bit + 12, 24)
-            | pb(x1, bit + 12, 25)
-            | pb(x2, bit + 12, 26)
-            | pb(x3, bit + 12, 27)
-            | pb(x4, bit + 12, 28)
-            | pb(x5, bit + 12, 29)
-            | pb(x6, bit + 12, 30)
-            | pb(x7, bit + 12, 31)
-    }
+    let m2 = 0x55555555;
+    delta_swap_2(&mut t1, &mut t0, 1, m2);
+    delta_swap_2(&mut t3, &mut t2, 1, m2);
 
-    let a = deconstruct(bs, 0);
-    let b = deconstruct(bs, 1);
-    let c = deconstruct(bs, 2);
-    let d = deconstruct(bs, 3);
+    let m1 = 0x0000FF00;
+    delta_swap_1(&mut t0, 8, m1);
+    delta_swap_1(&mut t1, 8, m1);
+    delta_swap_1(&mut t2, 8, m1);
+    delta_swap_1(&mut t3, 8, m1);
 
-    (a, b, c, d)
+    let m0 = 0x00F000F0;
+    delta_swap_1(&mut t0, 4, m0);
+    delta_swap_1(&mut t1, 4, m0);
+    delta_swap_1(&mut t2, 4, m0);
+    delta_swap_1(&mut t3, 4, m0);
+
+    (t0, t1, t2, t3)
 }
 
 // Un Bit Slice into a single u32. This is used when creating the round keys.
