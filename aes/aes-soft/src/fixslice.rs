@@ -13,551 +13,452 @@
 //!
 //! Originally licensed MIT. Relicensed as Apache 2.0+MIT with permission.
 
+use crate::Block;
 use cipher::{
-    block::Key,
-    consts::{U16, U2, U24, U32},
+    consts::{U16, U24, U32},
     generic_array::GenericArray,
-    BlockCipher, NewBlockCipher,
 };
 use core::convert::TryInto;
 
-/// 128-bit AES block
-// TODO(tarcieri): unify with other `Block` type aliases
-type Block = GenericArray<u8, U16>;
-
-/// 2x128-bit AES blocks
-// TODO(tarcieri): unify with other `ParBlocks` type aliases
-type ParBlocks = GenericArray<Block, U2>;
-
 /// AES-128 round keys
-type RKeys128 = [u32; 88];
+pub(crate) type FixsliceKeys128 = [u32; 88];
 
 /// AES-192 round keys
-type RKeys192 = [u32; 104];
+pub(crate) type FixsliceKeys192 = [u32; 104];
 
 /// AES-256 round keys
-type RKeys256 = [u32; 120];
+pub(crate) type FixsliceKeys256 = [u32; 120];
 
 /// 256-bit internal state
 type State = [u32; 8];
 
-/// AES-128 with a fully fixsliced implementation
-#[derive(Clone)]
-pub struct Aes128Fixsliced {
-    /// Round keys
-    rkeys: RKeys128,
+/// Fully bitsliced AES-128 key schedule to match the fully-fixsliced
+/// representation.
+pub(crate) fn aes128_key_schedule(key: &GenericArray<u8, U16>) -> FixsliceKeys128 {
+    // TODO(tarcieri): use `::default()` after MSRV 1.47+
+    let mut rkeys = [0u32; 88];
+
+    // Pack the keys into the bitsliced state
+    packing(&mut rkeys[..8], key, key);
+    memshift32(&mut rkeys, 0);
+    sbox(&mut rkeys[8..16]);
+
+    rkeys[15] ^= 0x00000300; // 1st rconst
+    xor_columns(&mut rkeys, 8, 8, 2); // Rotword and XOR between the columns
+    memshift32(&mut rkeys, 8);
+    sbox(&mut rkeys[16..24]);
+
+    rkeys[22] ^= 0x00000300; // 2nd rconst
+    xor_columns(&mut rkeys, 16, 8, 2); // Rotword and XOR between the columns
+    inv_shiftrows_1(&mut rkeys[8..16]); // to match fixslicing
+    memshift32(&mut rkeys, 16);
+    sbox(&mut rkeys[24..32]);
+
+    rkeys[29] ^= 0x00000300; // 3rd rconst
+    xor_columns(&mut rkeys, 24, 8, 2); // Rotword and XOR between the columns
+    inv_shiftrows_2(&mut rkeys[16..24]); // to match fixslicing
+    memshift32(&mut rkeys, 24);
+    sbox(&mut rkeys[32..40]);
+
+    rkeys[36] ^= 0x00000300; // 4th rconst
+    xor_columns(&mut rkeys, 32, 8, 2); // Rotword and XOR between the columns
+    inv_shiftrows_3(&mut rkeys[24..32]); // to match fixslicing
+    memshift32(&mut rkeys, 32);
+    sbox(&mut rkeys[40..48]);
+
+    rkeys[43] ^= 0x00000300; // 5th rconst
+    xor_columns(&mut rkeys, 40, 8, 2); // Rotword and XOR between the columns
+    memshift32(&mut rkeys, 40);
+    sbox(&mut rkeys[48..56]);
+
+    rkeys[50] ^= 0x00000300; // 6th rconst
+    xor_columns(&mut rkeys, 48, 8, 2); // Rotword and XOR between the columns
+    inv_shiftrows_1(&mut rkeys[40..48]); // to match fixslicing
+    memshift32(&mut rkeys, 48);
+    sbox(&mut rkeys[56..64]);
+
+    rkeys[57] ^= 0x00000300; // 7th rconst
+    xor_columns(&mut rkeys, 56, 8, 2); // Rotword and XOR between the columns
+    inv_shiftrows_2(&mut rkeys[48..56]); // to match fixslicing
+    memshift32(&mut rkeys, 56);
+    sbox(&mut rkeys[64..72]);
+
+    rkeys[64] ^= 0x00000300; // 8th rconst
+    xor_columns(&mut rkeys, 64, 8, 2); // Rotword and XOR between the columns
+    inv_shiftrows_3(&mut rkeys[56..64]); // to match fixslicing
+    memshift32(&mut rkeys, 64);
+    sbox(&mut rkeys[72..80]);
+
+    rkeys[79] ^= 0x00000300; // 9th rconst
+    rkeys[78] ^= 0x00000300; // 9th rconst
+    rkeys[76] ^= 0x00000300; // 9th rconst
+    rkeys[75] ^= 0x00000300; // 9th rconst
+    xor_columns(&mut rkeys, 72, 8, 2); // Rotword and XOR between the columns
+    memshift32(&mut rkeys, 72);
+    sbox(&mut rkeys[80..]);
+
+    rkeys[86] ^= 0x00000300; // 10th rconst
+    rkeys[85] ^= 0x00000300; // 10th rconst
+    rkeys[83] ^= 0x00000300; // 10th rconst
+    rkeys[82] ^= 0x00000300; // 10th rconst
+    xor_columns(&mut rkeys, 80, 8, 2); // Rotword and XOR between the columns
+    inv_shiftrows_1(&mut rkeys[72..80]);
+
+    // Bitwise NOT to speed up SBox calculations
+    for i in 1..11 {
+        rkeys[i * 8 + 1] ^= 0xffffffff;
+        rkeys[i * 8 + 2] ^= 0xffffffff;
+        rkeys[i * 8 + 6] ^= 0xffffffff;
+        rkeys[i * 8 + 7] ^= 0xffffffff;
+    }
+
+    rkeys
 }
 
-impl NewBlockCipher for Aes128Fixsliced {
-    type KeySize = U16;
+/// Fully bitsliced AES-192 key schedule to match the fully-fixsliced
+/// representation.
+pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys192 {
+    // TODO(tarcieri): use `::default()` after MSRV 1.47+
+    let mut rkeys = [0u32; 104];
+    let mut tmp = [0u32; 8];
 
-    #[inline]
-    fn new(key: &Key<Self>) -> Self {
-        // TODO(tarcieri): use `::default()` after MSRV 1.47+
-        let mut rkeys = [0u32; 88];
+    // Pack the keys into the bitsliced state
+    packing(&mut rkeys[..8], &key[..16], &key[..16]);
+    packing(&mut tmp, &key[8..], &key[8..]);
 
-        // Pack the keys into the bitsliced state
-        packing(&mut rkeys[..8], key, key);
-        memshift32(&mut rkeys, 0);
-        sbox(&mut rkeys[8..16]);
+    let mut rcon = 8;
+    let mut rk_off = 8;
 
-        rkeys[15] ^= 0x00000300; // 1st rconst
-        xor_columns(&mut rkeys, 8, 8, 2); // Rotword and XOR between the columns
-        memshift32(&mut rkeys, 8);
-        sbox(&mut rkeys[16..24]);
-
-        rkeys[22] ^= 0x00000300; // 2nd rconst
-        xor_columns(&mut rkeys, 16, 8, 2); // Rotword and XOR between the columns
-        inv_shiftrows_1(&mut rkeys[8..16]); // to match fixslicing
-        memshift32(&mut rkeys, 16);
-        sbox(&mut rkeys[24..32]);
-
-        rkeys[29] ^= 0x00000300; // 3rd rconst
-        xor_columns(&mut rkeys, 24, 8, 2); // Rotword and XOR between the columns
-        inv_shiftrows_2(&mut rkeys[16..24]); // to match fixslicing
-        memshift32(&mut rkeys, 24);
-        sbox(&mut rkeys[32..40]);
-
-        rkeys[36] ^= 0x00000300; // 4th rconst
-        xor_columns(&mut rkeys, 32, 8, 2); // Rotword and XOR between the columns
-        inv_shiftrows_3(&mut rkeys[24..32]); // to match fixslicing
-        memshift32(&mut rkeys, 32);
-        sbox(&mut rkeys[40..48]);
-
-        rkeys[43] ^= 0x00000300; // 5th rconst
-        xor_columns(&mut rkeys, 40, 8, 2); // Rotword and XOR between the columns
-        memshift32(&mut rkeys, 40);
-        sbox(&mut rkeys[48..56]);
-
-        rkeys[50] ^= 0x00000300; // 6th rconst
-        xor_columns(&mut rkeys, 48, 8, 2); // Rotword and XOR between the columns
-        inv_shiftrows_1(&mut rkeys[40..48]); // to match fixslicing
-        memshift32(&mut rkeys, 48);
-        sbox(&mut rkeys[56..64]);
-
-        rkeys[57] ^= 0x00000300; // 7th rconst
-        xor_columns(&mut rkeys, 56, 8, 2); // Rotword and XOR between the columns
-        inv_shiftrows_2(&mut rkeys[48..56]); // to match fixslicing
-        memshift32(&mut rkeys, 56);
-        sbox(&mut rkeys[64..72]);
-
-        rkeys[64] ^= 0x00000300; // 8th rconst
-        xor_columns(&mut rkeys, 64, 8, 2); // Rotword and XOR between the columns
-        inv_shiftrows_3(&mut rkeys[56..64]); // to match fixslicing
-        memshift32(&mut rkeys, 64);
-        sbox(&mut rkeys[72..80]);
-
-        rkeys[79] ^= 0x00000300; // 9th rconst
-        rkeys[78] ^= 0x00000300; // 9th rconst
-        rkeys[76] ^= 0x00000300; // 9th rconst
-        rkeys[75] ^= 0x00000300; // 9th rconst
-        xor_columns(&mut rkeys, 72, 8, 2); // Rotword and XOR between the columns
-        memshift32(&mut rkeys, 72);
-        sbox(&mut rkeys[80..]);
-
-        rkeys[86] ^= 0x00000300; // 10th rconst
-        rkeys[85] ^= 0x00000300; // 10th rconst
-        rkeys[83] ^= 0x00000300; // 10th rconst
-        rkeys[82] ^= 0x00000300; // 10th rconst
-        xor_columns(&mut rkeys, 80, 8, 2); // Rotword and XOR between the columns
-        inv_shiftrows_1(&mut rkeys[72..80]);
-
-        // Bitwise NOT to speed up SBox calculations
-        for i in 1..11 {
-            rkeys[i * 8 + 1] ^= 0xffffffff;
-            rkeys[i * 8 + 2] ^= 0xffffffff;
-            rkeys[i * 8 + 6] ^= 0xffffffff;
-            rkeys[i * 8 + 7] ^= 0xffffffff;
+    loop {
+        for i in 0..8 {
+            rkeys[rk_off + i] =
+                (0xf0f0f0f0 & (tmp[i] << 4)) | (0x0f0f0f0f & (rkeys[(rk_off - 8) + i] >> 4));
         }
 
-        Self { rkeys }
+        sbox(&mut tmp);
+
+        // NOT operations that are omitted in S-box
+        tmp[1] ^= 0xffffffff;
+        tmp[2] ^= 0xffffffff;
+        tmp[6] ^= 0xffffffff;
+        tmp[7] ^= 0xffffffff;
+
+        rcon -= 1;
+        tmp[rcon] ^= 0x00000300;
+
+        for i in 0..8 {
+            let mut ti = rkeys[rk_off + i];
+            ti ^= 0x0c0c0c0c & ror(tmp[i], 8 - 2);
+            ti ^= 0x03030303 & (ti >> 2);
+            tmp[i] = ti;
+        }
+        rkeys[rk_off..(rk_off + 8)].copy_from_slice(&tmp);
+        rk_off += 8;
+
+        for i in 0..8 {
+            let ui = tmp[i];
+            let mut ti = (0xf0f0f0f0 & (rkeys[(rk_off - 16) + i] << 4)) | (0x0f0f0f0f & (ui >> 4));
+            ti ^= 0xc0c0c0c0 & (ui << 6);
+            ti ^= 0x30303030 & (ti >> 2);
+            ti ^= 0x0c0c0c0c & (ti >> 2);
+            ti ^= 0x03030303 & (ti >> 2);
+            tmp[i] = ti;
+        }
+        rkeys[rk_off..(rk_off + 8)].copy_from_slice(&tmp);
+        rk_off += 8;
+
+        sbox(&mut tmp);
+
+        // NOT operations that are omitted in S-box
+        tmp[1] ^= 0xffffffff;
+        tmp[2] ^= 0xffffffff;
+        tmp[6] ^= 0xffffffff;
+        tmp[7] ^= 0xffffffff;
+
+        rcon -= 1;
+        tmp[rcon] ^= 0x00000300;
+
+        for i in 0..8 {
+            let mut ti = (0xf0f0f0f0 & (rkeys[(rk_off - 16) + i] << 4))
+                | (0x0f0f0f0f & (rkeys[(rk_off - 8) + i] >> 4));
+            ti ^= 0xc0c0c0c0 & ror(tmp[i], 8 - 6);
+            ti ^= 0x30303030 & (ti >> 2);
+            ti ^= 0x0c0c0c0c & (ti >> 2);
+            ti ^= 0x03030303 & (ti >> 2);
+            rkeys[rk_off + i] = ti;
+        }
+        rk_off += 8;
+
+        if rcon == 0 {
+            break;
+        }
+
+        for i in 0..8 {
+            let ui = rkeys[(rk_off - 8) + i];
+            let mut ti = rkeys[(rk_off - 16) + i];
+            ti ^= 0x0c0c0c0c & (ui << 2);
+            ti ^= 0x03030303 & (ti >> 2);
+            tmp[i] = ti;
+        }
     }
+
+    // to match fixslicing
+    for i in (0..96).step_by(32) {
+        inv_shiftrows_1(&mut rkeys[(i + 8)..(i + 16)]);
+        inv_shiftrows_2(&mut rkeys[(i + 16)..(i + 24)]);
+        inv_shiftrows_3(&mut rkeys[(i + 24)..(i + 32)]);
+    }
+
+    // Bitwise NOT to speed up SBox calculations
+    for i in 1..13 {
+        rkeys[i * 8 + 1] ^= 0xffffffff;
+        rkeys[i * 8 + 2] ^= 0xffffffff;
+        rkeys[i * 8 + 6] ^= 0xffffffff;
+        rkeys[i * 8 + 7] ^= 0xffffffff;
+    }
+
+    rkeys
 }
 
-impl BlockCipher for Aes128Fixsliced {
-    type BlockSize = U16;
-    type ParBlocks = U2;
+/// Fully bitsliced AES-256 key schedule to match the fully-fixsliced
+/// representation.
+pub(crate) fn aes256_key_schedule(key: &GenericArray<u8, U32>) -> FixsliceKeys256 {
+    // TODO(tarcieri): use `::default()` after MSRV 1.47+
+    let mut rkeys = [0u32; 120];
 
-    #[inline]
-    fn encrypt_block(&self, block: &mut Block) {
-        let mut blocks = ParBlocks::default();
-        blocks[0].copy_from_slice(&block);
-        self.encrypt_blocks(&mut blocks);
-        block.copy_from_slice(&blocks[0]);
+    // Pack the keys into the bitsliced state
+    packing(&mut rkeys[..8], &key[..16], &key[..16]);
+    packing(&mut rkeys[8..16], &key[16..], &key[16..]);
+    memshift32(&mut rkeys, 8);
+    sbox(&mut rkeys[16..24]);
+
+    rkeys[23] ^= 0x00000300; // 1st rconst
+    xor_columns(&mut rkeys, 16, 16, 2); // Rotword and XOR between the columns
+    memshift32(&mut rkeys, 16);
+    sbox(&mut rkeys[24..32]);
+    xor_columns(&mut rkeys, 24, 16, 26); // XOR between the columns
+    inv_shiftrows_1(&mut rkeys[8..16]); // to match fixslicing
+    memshift32(&mut rkeys, 24);
+    sbox(&mut rkeys[32..40]);
+
+    rkeys[38] ^= 0x00000300; // 2nd rconst
+    xor_columns(&mut rkeys, 32, 16, 2); // Rotword and XOR between the columns
+    inv_shiftrows_2(&mut rkeys[16..24]); // to match fixslicing
+    memshift32(&mut rkeys, 32);
+    sbox(&mut rkeys[40..48]);
+    xor_columns(&mut rkeys, 40, 16, 26); // XOR between the columns
+    inv_shiftrows_3(&mut rkeys[24..32]); // to match fixslicing
+    memshift32(&mut rkeys, 40);
+    sbox(&mut rkeys[48..56]);
+
+    rkeys[53] ^= 0x00000300; // 3rd rconst
+    xor_columns(&mut rkeys, 48, 16, 2); // Rotword and XOR between the columns
+    memshift32(&mut rkeys, 48);
+    sbox(&mut rkeys[56..64]);
+    xor_columns(&mut rkeys, 56, 16, 26); // XOR between the columns
+    inv_shiftrows_1(&mut rkeys[40..48]); // to match fixslicing
+    memshift32(&mut rkeys, 56);
+    sbox(&mut rkeys[64..72]);
+
+    rkeys[68] ^= 0x00000300; // 4th rconst
+    xor_columns(&mut rkeys, 64, 16, 2); // Rotword and XOR between the columns
+    inv_shiftrows_2(&mut rkeys[48..56]); // to match fixslicing
+    memshift32(&mut rkeys, 64);
+    sbox(&mut rkeys[72..80]);
+    xor_columns(&mut rkeys, 72, 16, 26); // XOR between the columns
+    inv_shiftrows_3(&mut rkeys[56..64]); // to match fixslicing
+    memshift32(&mut rkeys, 72);
+    sbox(&mut rkeys[80..88]);
+
+    rkeys[83] ^= 0x00000300; // 5th rconst
+    xor_columns(&mut rkeys, 80, 16, 2); // Rotword and XOR between the columns
+    memshift32(&mut rkeys, 80);
+    sbox(&mut rkeys[88..96]);
+    xor_columns(&mut rkeys, 88, 16, 26); // XOR between the columns
+    inv_shiftrows_1(&mut rkeys[72..80]); // to match fixslicing
+    memshift32(&mut rkeys, 88);
+    sbox(&mut rkeys[96..104]);
+
+    rkeys[98] ^= 0x00000300; // 6th rconst
+    xor_columns(&mut rkeys, 96, 16, 2); // Rotword and XOR between the columns
+    inv_shiftrows_2(&mut rkeys[80..88]); // to match fixslicing
+    memshift32(&mut rkeys, 96);
+    sbox(&mut rkeys[104..112]);
+    xor_columns(&mut rkeys, 104, 16, 26); // XOR between the columns
+    inv_shiftrows_3(&mut rkeys[88..96]); // to match fixslicing
+    memshift32(&mut rkeys, 104);
+    sbox(&mut rkeys[112..]);
+
+    rkeys[113] ^= 0x00000300; // 7th rconst
+    xor_columns(&mut rkeys, 112, 16, 2); // Rotword and XOR between the columns
+    inv_shiftrows_1(&mut rkeys[104..112]); // to match fixslicing
+
+    // Bitwise NOT to speed up SBox calculations
+    for i in 1..15 {
+        rkeys[i * 8 + 1] ^= 0xffffffff;
+        rkeys[i * 8 + 2] ^= 0xffffffff;
+        rkeys[i * 8 + 6] ^= 0xffffffff;
+        rkeys[i * 8 + 7] ^= 0xffffffff;
     }
 
-    #[inline]
-    fn decrypt_block(&self, _block: &mut Block) {
-        todo!()
-    }
+    rkeys
+}
 
-    #[inline]
-    fn encrypt_blocks(&self, blocks: &mut ParBlocks) {
-        let mut state = State::default();
+/// Fully-fixsliced AES-128 encryption (the ShiftRows is completely omitted).
+///
+/// Encrypts two blocks in-place and in parallel.
+pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
+    debug_assert_eq!(blocks.len(), 2);
+    let mut state = State::default();
 
-        // packs into bitsliced representation
-        packing(&mut state, blocks[0].as_ref(), blocks[1].as_ref());
-        ark(&mut state, &self.rkeys[..8]);
+    // packs into bitsliced representation
+    packing(&mut state, blocks[0].as_ref(), blocks[1].as_ref());
+    ark(&mut state, &rkeys[..8]);
 
-        // 1st round
+    // 1st round
+    sbox(&mut state);
+    mixcolumns_0(&mut state);
+    ark(&mut state, &rkeys[8..16]);
+
+    // 2nd round
+    sbox(&mut state);
+    mixcolumns_1(&mut state);
+    ark(&mut state, &rkeys[16..24]);
+
+    // 3rd round
+    sbox(&mut state);
+    mixcolumns_2(&mut state);
+    ark(&mut state, &rkeys[24..32]);
+
+    // 4th round
+    sbox(&mut state);
+    mixcolumns_3(&mut state);
+    ark(&mut state, &rkeys[32..40]);
+
+    // 5th round
+    sbox(&mut state);
+    mixcolumns_0(&mut state);
+    ark(&mut state, &rkeys[40..48]);
+
+    // 6th round
+    sbox(&mut state);
+    mixcolumns_1(&mut state);
+    ark(&mut state, &rkeys[48..56]);
+
+    // 7th round
+    sbox(&mut state);
+    mixcolumns_2(&mut state);
+    ark(&mut state, &rkeys[56..64]);
+
+    // 8th round
+    sbox(&mut state);
+    mixcolumns_3(&mut state);
+    ark(&mut state, &rkeys[64..72]);
+
+    // 9th round
+    sbox(&mut state);
+    mixcolumns_0(&mut state);
+    ark(&mut state, &rkeys[72..80]);
+
+    // 10th round
+    sbox(&mut state);
+    double_shiftrows(&mut state); // resynchronization
+    ark(&mut state, &rkeys[80..]);
+
+    // Unpack state into output
+    unpacking(&mut state, blocks);
+}
+
+/// Fully-fixsliced AES-192 encryption (the ShiftRows is completely omitted).
+///
+/// Encrypts two blocks in-place and in parallel.
+pub(crate) fn aes192_encrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
+    debug_assert_eq!(blocks.len(), 2);
+    let mut state = State::default();
+
+    // Pack into bitsliced representation
+    packing(&mut state, &blocks[0], &blocks[1]);
+
+    // Loop over quadruple rounds
+    for i in (0..64).step_by(32) {
+        ark(&mut state, &rkeys[i..(i + 8)]);
         sbox(&mut state);
         mixcolumns_0(&mut state);
-        ark(&mut state, &self.rkeys[8..16]);
 
-        // 2nd round
+        ark(&mut state, &rkeys[(i + 8)..(i + 16)]);
         sbox(&mut state);
         mixcolumns_1(&mut state);
-        ark(&mut state, &self.rkeys[16..24]);
 
-        // 3rd round
+        ark(&mut state, &rkeys[(i + 16)..(i + 24)]);
         sbox(&mut state);
         mixcolumns_2(&mut state);
-        ark(&mut state, &self.rkeys[24..32]);
 
-        // 4th round
+        ark(&mut state, &rkeys[(i + 24)..(i + 32)]);
         sbox(&mut state);
         mixcolumns_3(&mut state);
-        ark(&mut state, &self.rkeys[32..40]);
+    }
 
-        // 5th round
+    ark(&mut state, &rkeys[64..72]);
+    sbox(&mut state);
+    mixcolumns_0(&mut state);
+
+    ark(&mut state, &rkeys[72..80]);
+    sbox(&mut state);
+    mixcolumns_1(&mut state);
+
+    ark(&mut state, &rkeys[80..88]);
+    sbox(&mut state);
+    mixcolumns_2(&mut state);
+
+    ark(&mut state, &rkeys[88..96]);
+    sbox(&mut state);
+    // No resynchronization needed
+    ark(&mut state, &rkeys[96..104]);
+
+    // Unpack state into output
+    unpacking(&mut state, blocks);
+}
+
+/// Fully-fixsliced AES-256 encryption (the ShiftRows is completely omitted).
+///
+/// Encrypts two blocks in-place and in parallel.
+pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
+    debug_assert_eq!(blocks.len(), 2);
+    let mut state = State::default();
+
+    // Pack into bitsliced representation
+    packing(&mut state, &blocks[0], &blocks[1]);
+
+    // Loop over quadruple rounds
+    for i in (0..96).step_by(32) {
+        ark(&mut state, &rkeys[i..(i + 8)]);
         sbox(&mut state);
         mixcolumns_0(&mut state);
-        ark(&mut state, &self.rkeys[40..48]);
 
-        // 6th round
+        ark(&mut state, &rkeys[(i + 8)..(i + 16)]);
         sbox(&mut state);
         mixcolumns_1(&mut state);
-        ark(&mut state, &self.rkeys[48..56]);
 
-        // 7th round
+        ark(&mut state, &rkeys[(i + 16)..(i + 24)]);
         sbox(&mut state);
         mixcolumns_2(&mut state);
-        ark(&mut state, &self.rkeys[56..64]);
 
-        // 8th round
+        ark(&mut state, &rkeys[(i + 24)..(i + 32)]);
         sbox(&mut state);
         mixcolumns_3(&mut state);
-        ark(&mut state, &self.rkeys[64..72]);
-
-        // 9th round
-        sbox(&mut state);
-        mixcolumns_0(&mut state);
-        ark(&mut state, &self.rkeys[72..80]);
-
-        // 10th round
-        sbox(&mut state);
-        double_shiftrows(&mut state); // resynchronization
-        ark(&mut state, &self.rkeys[80..]);
-
-        // Unpack state into output
-        unpacking(&mut state, blocks);
     }
 
-    #[inline]
-    fn decrypt_blocks(&self, _blocks: &mut ParBlocks) {
-        todo!()
-    }
-}
+    ark(&mut state, &rkeys[96..104]);
+    sbox(&mut state);
+    mixcolumns_0(&mut state);
 
-/// AES-192 with a fully fixsliced implementation
-#[derive(Clone)]
-pub struct Aes192Fixsliced {
-    /// Round keys
-    rkeys: RKeys192,
-}
+    ark(&mut state, &rkeys[104..112]);
+    sbox(&mut state);
+    double_shiftrows(&mut state); // resynchronization
+    ark(&mut state, &rkeys[112..]);
 
-impl NewBlockCipher for Aes192Fixsliced {
-    type KeySize = U24;
-
-    #[inline]
-    fn new(key: &Key<Self>) -> Self {
-        // TODO(tarcieri): use `::default()` after MSRV 1.47+
-        let mut rk = [0u32; 104];
-        let mut tmp = [0u32; 8];
-
-        // Pack the keys into the bitsliced state
-        packing(&mut rk[..8], &key[..16], &key[..16]);
-        packing(&mut tmp, &key[8..], &key[8..]);
-
-        let mut rcon = 8;
-        let mut rk_off = 8;
-
-        loop {
-            for i in 0..8 {
-                rk[rk_off + i] =
-                    (0xf0f0f0f0 & (tmp[i] << 4)) | (0x0f0f0f0f & (rk[(rk_off - 8) + i] >> 4));
-            }
-
-            sbox(&mut tmp);
-
-            // NOT operations that are omitted in S-box
-            tmp[1] ^= 0xffffffff;
-            tmp[2] ^= 0xffffffff;
-            tmp[6] ^= 0xffffffff;
-            tmp[7] ^= 0xffffffff;
-
-            rcon -= 1;
-            tmp[rcon] ^= 0x00000300;
-
-            for i in 0..8 {
-                let mut ti = rk[rk_off + i];
-                ti ^= 0x0c0c0c0c & ror(tmp[i], 8 - 2);
-                ti ^= 0x03030303 & (ti >> 2);
-                tmp[i] = ti;
-            }
-            rk[rk_off..(rk_off + 8)].copy_from_slice(&tmp);
-            rk_off += 8;
-
-            for i in 0..8 {
-                let ui = tmp[i];
-                let mut ti = (0xf0f0f0f0 & (rk[(rk_off - 16) + i] << 4)) | (0x0f0f0f0f & (ui >> 4));
-                ti ^= 0xc0c0c0c0 & (ui << 6);
-                ti ^= 0x30303030 & (ti >> 2);
-                ti ^= 0x0c0c0c0c & (ti >> 2);
-                ti ^= 0x03030303 & (ti >> 2);
-                tmp[i] = ti;
-            }
-            rk[rk_off..(rk_off + 8)].copy_from_slice(&tmp);
-            rk_off += 8;
-
-            sbox(&mut tmp);
-
-            // NOT operations that are omitted in S-box
-            tmp[1] ^= 0xffffffff;
-            tmp[2] ^= 0xffffffff;
-            tmp[6] ^= 0xffffffff;
-            tmp[7] ^= 0xffffffff;
-
-            rcon -= 1;
-            tmp[rcon] ^= 0x00000300;
-
-            for i in 0..8 {
-                let mut ti = (0xf0f0f0f0 & (rk[(rk_off - 16) + i] << 4))
-                    | (0x0f0f0f0f & (rk[(rk_off - 8) + i] >> 4));
-                ti ^= 0xc0c0c0c0 & ror(tmp[i], 8 - 6);
-                ti ^= 0x30303030 & (ti >> 2);
-                ti ^= 0x0c0c0c0c & (ti >> 2);
-                ti ^= 0x03030303 & (ti >> 2);
-                rk[rk_off + i] = ti;
-            }
-            rk_off += 8;
-
-            if rcon == 0 {
-                break;
-            }
-
-            for i in 0..8 {
-                let ui = rk[(rk_off - 8) + i];
-                let mut ti = rk[(rk_off - 16) + i];
-                ti ^= 0x0c0c0c0c & (ui << 2);
-                ti ^= 0x03030303 & (ti >> 2);
-                tmp[i] = ti;
-            }
-        }
-
-        // to match fixslicing
-        for i in (0..96).step_by(32) {
-            inv_shiftrows_1(&mut rk[(i + 8)..(i + 16)]);
-            inv_shiftrows_2(&mut rk[(i + 16)..(i + 24)]);
-            inv_shiftrows_3(&mut rk[(i + 24)..(i + 32)]);
-        }
-
-        // Bitwise NOT to speed up SBox calculations
-        for i in 1..13 {
-            rk[i * 8 + 1] ^= 0xffffffff;
-            rk[i * 8 + 2] ^= 0xffffffff;
-            rk[i * 8 + 6] ^= 0xffffffff;
-            rk[i * 8 + 7] ^= 0xffffffff;
-        }
-
-        Self { rkeys: rk }
-    }
-}
-
-impl BlockCipher for Aes192Fixsliced {
-    type BlockSize = U16;
-    type ParBlocks = U2;
-
-    #[inline]
-    fn encrypt_block(&self, block: &mut Block) {
-        let mut blocks = ParBlocks::default();
-        blocks[0].copy_from_slice(&block);
-        self.encrypt_blocks(&mut blocks);
-        block.copy_from_slice(&blocks[0]);
-    }
-
-    #[inline]
-    fn decrypt_block(&self, _block: &mut Block) {
-        todo!()
-    }
-
-    #[inline]
-    fn encrypt_blocks(&self, blocks: &mut ParBlocks) {
-        let mut state = State::default();
-
-        // Pack into bitsliced representation
-        packing(&mut state, &blocks[0], &blocks[1]);
-
-        // Loop over quadruple rounds
-        for i in (0..64).step_by(32) {
-            ark(&mut state, &self.rkeys[i..(i + 8)]);
-            sbox(&mut state);
-            mixcolumns_0(&mut state);
-
-            ark(&mut state, &self.rkeys[(i + 8)..(i + 16)]);
-            sbox(&mut state);
-            mixcolumns_1(&mut state);
-
-            ark(&mut state, &self.rkeys[(i + 16)..(i + 24)]);
-            sbox(&mut state);
-            mixcolumns_2(&mut state);
-
-            ark(&mut state, &self.rkeys[(i + 24)..(i + 32)]);
-            sbox(&mut state);
-            mixcolumns_3(&mut state);
-        }
-
-        ark(&mut state, &self.rkeys[64..72]);
-        sbox(&mut state);
-        mixcolumns_0(&mut state);
-
-        ark(&mut state, &self.rkeys[72..80]);
-        sbox(&mut state);
-        mixcolumns_1(&mut state);
-
-        ark(&mut state, &self.rkeys[80..88]);
-        sbox(&mut state);
-        mixcolumns_2(&mut state);
-
-        ark(&mut state, &self.rkeys[88..96]);
-        sbox(&mut state);
-        // No resynchronization needed
-        ark(&mut state, &self.rkeys[96..104]);
-
-        // Unpack state into output
-        unpacking(&mut state, blocks);
-    }
-
-    #[inline]
-    fn decrypt_blocks(&self, _blocks: &mut ParBlocks) {
-        todo!()
-    }
-}
-
-/// AES-256 with a fully fixsliced implementation
-#[derive(Clone)]
-pub struct Aes256Fixsliced {
-    /// Round keys
-    rkeys: RKeys256,
-}
-
-impl NewBlockCipher for Aes256Fixsliced {
-    type KeySize = U32;
-
-    #[inline]
-    fn new(key: &Key<Self>) -> Self {
-        // TODO(tarcieri): use `::default()` after MSRV 1.47+
-        let mut rkeys = [0u32; 120];
-
-        // Pack the keys into the bitsliced state
-        packing(&mut rkeys[..8], &key[..16], &key[..16]);
-        packing(&mut rkeys[8..16], &key[16..], &key[16..]);
-        memshift32(&mut rkeys, 8);
-        sbox(&mut rkeys[16..24]);
-
-        rkeys[23] ^= 0x00000300; // 1st rconst
-        xor_columns(&mut rkeys, 16, 16, 2); // Rotword and XOR between the columns
-        memshift32(&mut rkeys, 16);
-        sbox(&mut rkeys[24..32]);
-        xor_columns(&mut rkeys, 24, 16, 26); // XOR between the columns
-        inv_shiftrows_1(&mut rkeys[8..16]); // to match fixslicing
-        memshift32(&mut rkeys, 24);
-        sbox(&mut rkeys[32..40]);
-
-        rkeys[38] ^= 0x00000300; // 2nd rconst
-        xor_columns(&mut rkeys, 32, 16, 2); // Rotword and XOR between the columns
-        inv_shiftrows_2(&mut rkeys[16..24]); // to match fixslicing
-        memshift32(&mut rkeys, 32);
-        sbox(&mut rkeys[40..48]);
-        xor_columns(&mut rkeys, 40, 16, 26); // XOR between the columns
-        inv_shiftrows_3(&mut rkeys[24..32]); // to match fixslicing
-        memshift32(&mut rkeys, 40);
-        sbox(&mut rkeys[48..56]);
-
-        rkeys[53] ^= 0x00000300; // 3rd rconst
-        xor_columns(&mut rkeys, 48, 16, 2); // Rotword and XOR between the columns
-        memshift32(&mut rkeys, 48);
-        sbox(&mut rkeys[56..64]);
-        xor_columns(&mut rkeys, 56, 16, 26); // XOR between the columns
-        inv_shiftrows_1(&mut rkeys[40..48]); // to match fixslicing
-        memshift32(&mut rkeys, 56);
-        sbox(&mut rkeys[64..72]);
-
-        rkeys[68] ^= 0x00000300; // 4th rconst
-        xor_columns(&mut rkeys, 64, 16, 2); // Rotword and XOR between the columns
-        inv_shiftrows_2(&mut rkeys[48..56]); // to match fixslicing
-        memshift32(&mut rkeys, 64);
-        sbox(&mut rkeys[72..80]);
-        xor_columns(&mut rkeys, 72, 16, 26); // XOR between the columns
-        inv_shiftrows_3(&mut rkeys[56..64]); // to match fixslicing
-        memshift32(&mut rkeys, 72);
-        sbox(&mut rkeys[80..88]);
-
-        rkeys[83] ^= 0x00000300; // 5th rconst
-        xor_columns(&mut rkeys, 80, 16, 2); // Rotword and XOR between the columns
-        memshift32(&mut rkeys, 80);
-        sbox(&mut rkeys[88..96]);
-        xor_columns(&mut rkeys, 88, 16, 26); // XOR between the columns
-        inv_shiftrows_1(&mut rkeys[72..80]); // to match fixslicing
-        memshift32(&mut rkeys, 88);
-        sbox(&mut rkeys[96..104]);
-
-        rkeys[98] ^= 0x00000300; // 6th rconst
-        xor_columns(&mut rkeys, 96, 16, 2); // Rotword and XOR between the columns
-        inv_shiftrows_2(&mut rkeys[80..88]); // to match fixslicing
-        memshift32(&mut rkeys, 96);
-        sbox(&mut rkeys[104..112]);
-        xor_columns(&mut rkeys, 104, 16, 26); // XOR between the columns
-        inv_shiftrows_3(&mut rkeys[88..96]); // to match fixslicing
-        memshift32(&mut rkeys, 104);
-        sbox(&mut rkeys[112..]);
-
-        rkeys[113] ^= 0x00000300; // 7th rconst
-        xor_columns(&mut rkeys, 112, 16, 2); // Rotword and XOR between the columns
-        inv_shiftrows_1(&mut rkeys[104..112]); // to match fixslicing
-
-        // Bitwise NOT to speed up SBox calculations
-        for i in 1..15 {
-            rkeys[i * 8 + 1] ^= 0xffffffff;
-            rkeys[i * 8 + 2] ^= 0xffffffff;
-            rkeys[i * 8 + 6] ^= 0xffffffff;
-            rkeys[i * 8 + 7] ^= 0xffffffff;
-        }
-
-        Self { rkeys }
-    }
-}
-
-impl BlockCipher for Aes256Fixsliced {
-    type BlockSize = U16;
-    type ParBlocks = U2;
-
-    #[inline]
-    fn encrypt_block(&self, block: &mut Block) {
-        let mut blocks = ParBlocks::default();
-        blocks[0].copy_from_slice(&block);
-        self.encrypt_blocks(&mut blocks);
-        block.copy_from_slice(&blocks[0]);
-    }
-
-    #[inline]
-    fn decrypt_block(&self, _block: &mut Block) {
-        todo!()
-    }
-
-    #[inline]
-    fn encrypt_blocks(&self, blocks: &mut ParBlocks) {
-        let mut state = State::default();
-
-        // Pack into bitsliced representation
-        packing(&mut state, &blocks[0], &blocks[1]);
-
-        // Loop over quadruple rounds
-        for i in (0..96).step_by(32) {
-            ark(&mut state, &self.rkeys[i..(i + 8)]);
-            sbox(&mut state);
-            mixcolumns_0(&mut state);
-
-            ark(&mut state, &self.rkeys[(i + 8)..(i + 16)]);
-            sbox(&mut state);
-            mixcolumns_1(&mut state);
-
-            ark(&mut state, &self.rkeys[(i + 16)..(i + 24)]);
-            sbox(&mut state);
-            mixcolumns_2(&mut state);
-
-            ark(&mut state, &self.rkeys[(i + 24)..(i + 32)]);
-            sbox(&mut state);
-            mixcolumns_3(&mut state);
-        }
-
-        ark(&mut state, &self.rkeys[96..104]);
-        sbox(&mut state);
-        mixcolumns_0(&mut state);
-
-        ark(&mut state, &self.rkeys[104..112]);
-        sbox(&mut state);
-        double_shiftrows(&mut state); // resynchronization
-        ark(&mut state, &self.rkeys[112..]);
-
-        // Unpack state into output
-        unpacking(&mut state, blocks);
-    }
-
-    #[inline]
-    fn decrypt_blocks(&self, _blocks: &mut ParBlocks) {
-        todo!()
-    }
+    // Unpack state into output
+    unpacking(&mut state, blocks);
 }
 
 /// Bitsliced implementation of the AES Sbox based on Boyar, Peralta and Calik.
@@ -1006,8 +907,9 @@ fn packing(output: &mut [u32], input0: &[u8], input1: &[u8]) {
 }
 
 /// Unpacks the 256-bit internal state in two 128-bit blocs out0, out1.
-fn unpacking(input: &mut [u32], output: &mut ParBlocks) {
+fn unpacking(input: &mut [u32], output: &mut [Block]) {
     debug_assert_eq!(input.len(), 8);
+    debug_assert_eq!(output.len(), 2);
 
     swapmove!(input[4], input[0], 0x0f0f0f0f, 4);
     swapmove!(input[5], input[1], 0x0f0f0f0f, 4);
