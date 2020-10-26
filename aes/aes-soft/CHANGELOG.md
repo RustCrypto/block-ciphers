@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.6.1 (2020-10-26)
+### Changed
+- Use fixslicing for AES encryption - 3X performance boost ([#174], [#176], [#177])
+- Additional bitslicing performance optimizations ([#171], [#175])
+
+[#177]: https://github.com/RustCrypto/block-ciphers/pull/177
+[#176]: https://github.com/RustCrypto/block-ciphers/pull/176
+[#175]: https://github.com/RustCrypto/block-ciphers/pull/175
+[#174]: https://github.com/RustCrypto/block-ciphers/pull/174
+[#171]: https://github.com/RustCrypto/block-ciphers/pull/171
+
 ## 0.6.0 (2020-10-16)
 ### Changed
 - Replace `block-cipher`/`stream-cipher` with `cipher` crate ([#167])
