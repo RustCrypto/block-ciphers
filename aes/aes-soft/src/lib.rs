@@ -50,7 +50,10 @@ mod fixslice;
 mod impls;
 mod simd;
 
-pub use crate::{
-    fixslice::{Aes128Fixsliced, Aes192Fixsliced, Aes256Fixsliced},
-    impls::{Aes128, Aes192, Aes256},
-};
+pub use crate::impls::{Aes128, Aes192, Aes256};
+
+/// 128-bit AES block
+pub type Block = cipher::generic_array::GenericArray<u8, cipher::consts::U16>;
+
+/// 8 x 128-bit AES blocks to be processed in parallel
+pub type ParBlocks = cipher::generic_array::GenericArray<Block, cipher::consts::U8>;
