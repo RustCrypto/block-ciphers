@@ -51,6 +51,6 @@ mod impls;
 mod simd;
 
 pub use crate::{
-    fixslice::{Aes128Fixsliced, Aes256Fixsliced},
+    fixslice::{Aes128Fixsliced, Aes192Fixsliced, Aes256Fixsliced},
     impls::{Aes128, Aes192, Aes256},
 };
