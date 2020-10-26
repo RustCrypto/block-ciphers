@@ -90,4 +90,5 @@ macro_rules! new_encrypt_only_test {
 }
 
 new_encrypt_only_test!(aes128_fixsliced_test, "aes128", aes_soft::Aes128Fixsliced);
+new_encrypt_only_test!(aes192_fixsliced_test, "aes192", aes_soft::Aes192Fixsliced);
 new_encrypt_only_test!(aes256_fixsliced_test, "aes256", aes_soft::Aes256Fixsliced);

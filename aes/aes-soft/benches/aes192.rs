@@ -2,7 +2,7 @@
 extern crate test;
 
 use aes_soft::cipher::{BlockCipher, NewBlockCipher};
-use aes_soft::Aes192;
+use aes_soft::{Aes192, Aes192Fixsliced};
 
 #[bench]
 pub fn aes192_encrypt(bh: &mut test::Bencher) {
@@ -31,6 +31,18 @@ pub fn aes192_decrypt(bh: &mut test::Bencher) {
 #[bench]
 pub fn aes192_encrypt8(bh: &mut test::Bencher) {
     let cipher = Aes192::new(&Default::default());
+    let mut input = Default::default();
+
+    bh.iter(|| {
+        cipher.encrypt_blocks(&mut input);
+        test::black_box(&input);
+    });
+    bh.bytes = (input[0].len() * input.len()) as u64;
+}
+
+#[bench]
+pub fn aes192_encrypt2_fixsliced(bh: &mut test::Bencher) {
+    let cipher = Aes192Fixsliced::new(&Default::default());
     let mut input = Default::default();
 
     bh.iter(|| {

@@ -1,4 +1,4 @@
-//! Fixsliced implementations of AES-128 and AES-256 (encryption-only)
+//! Fixsliced implementations of AES-128, AES-192 and AES-256 (encryption-only)
 //! adapted from the C implementation.
 //!
 //! All implementations are fully bitsliced and do not rely on any
@@ -15,7 +15,7 @@
 
 use cipher::{
     block::Key,
-    consts::{U16, U2, U32},
+    consts::{U16, U2, U24, U32},
     generic_array::GenericArray,
     BlockCipher, NewBlockCipher,
 };
@@ -31,6 +31,9 @@ type ParBlocks = GenericArray<Block, U2>;
 
 /// AES-128 round keys
 type RKeys128 = [u32; 88];
+
+/// AES-192 round keys
+type RKeys192 = [u32; 104];
 
 /// AES-256 round keys
 type RKeys256 = [u32; 120];
@@ -205,6 +208,191 @@ impl BlockCipher for Aes128Fixsliced {
         sbox(&mut state);
         double_shiftrows(&mut state); // resynchronization
         ark(&mut state, &self.rkeys[80..]);
+
+        // Unpack state into output
+        unpacking(&mut state, blocks);
+    }
+
+    #[inline]
+    fn decrypt_blocks(&self, _blocks: &mut ParBlocks) {
+        todo!()
+    }
+}
+
+/// AES-192 with a fully fixsliced implementation
+#[derive(Clone)]
+pub struct Aes192Fixsliced {
+    /// Round keys
+    rkeys: RKeys192,
+}
+
+impl NewBlockCipher for Aes192Fixsliced {
+    type KeySize = U24;
+
+    #[inline]
+    fn new(key: &Key<Self>) -> Self {
+        // TODO(tarcieri): use `::default()` after MSRV 1.47+
+        let mut rk = [0u32; 104];
+        let mut tmp = [0u32; 8];
+
+        // Pack the keys into the bitsliced state
+        packing(&mut rk[..8], &key[..16], &key[..16]);
+        packing(&mut tmp, &key[8..], &key[8..]);
+
+        let mut rcon = 8;
+        let mut rk_off = 8;
+
+        loop {
+            for i in 0..8 {
+                rk[rk_off + i] =
+                    (0xf0f0f0f0 & (tmp[i] << 4)) | (0x0f0f0f0f & (rk[(rk_off - 8) + i] >> 4));
+            }
+
+            sbox(&mut tmp);
+
+            // NOT operations that are omitted in S-box
+            tmp[1] ^= 0xffffffff;
+            tmp[2] ^= 0xffffffff;
+            tmp[6] ^= 0xffffffff;
+            tmp[7] ^= 0xffffffff;
+
+            rcon -= 1;
+            tmp[rcon] ^= 0x00000300;
+
+            for i in 0..8 {
+                let mut ti = rk[rk_off + i];
+                ti ^= 0x0c0c0c0c & ror(tmp[i], 8 - 2);
+                ti ^= 0x03030303 & (ti >> 2);
+                tmp[i] = ti;
+            }
+            rk[rk_off..(rk_off + 8)].copy_from_slice(&tmp);
+            rk_off += 8;
+
+            for i in 0..8 {
+                let ui = tmp[i];
+                let mut ti = (0xf0f0f0f0 & (rk[(rk_off - 16) + i] << 4)) | (0x0f0f0f0f & (ui >> 4));
+                ti ^= 0xc0c0c0c0 & (ui << 6);
+                ti ^= 0x30303030 & (ti >> 2);
+                ti ^= 0x0c0c0c0c & (ti >> 2);
+                ti ^= 0x03030303 & (ti >> 2);
+                tmp[i] = ti;
+            }
+            rk[rk_off..(rk_off + 8)].copy_from_slice(&tmp);
+            rk_off += 8;
+
+            sbox(&mut tmp);
+
+            // NOT operations that are omitted in S-box
+            tmp[1] ^= 0xffffffff;
+            tmp[2] ^= 0xffffffff;
+            tmp[6] ^= 0xffffffff;
+            tmp[7] ^= 0xffffffff;
+
+            rcon -= 1;
+            tmp[rcon] ^= 0x00000300;
+
+            for i in 0..8 {
+                let mut ti = (0xf0f0f0f0 & (rk[(rk_off - 16) + i] << 4))
+                    | (0x0f0f0f0f & (rk[(rk_off - 8) + i] >> 4));
+                ti ^= 0xc0c0c0c0 & ror(tmp[i], 8 - 6);
+                ti ^= 0x30303030 & (ti >> 2);
+                ti ^= 0x0c0c0c0c & (ti >> 2);
+                ti ^= 0x03030303 & (ti >> 2);
+                rk[rk_off + i] = ti;
+            }
+            rk_off += 8;
+
+            if rcon == 0 {
+                break;
+            }
+
+            for i in 0..8 {
+                let ui = rk[(rk_off - 8) + i];
+                let mut ti = rk[(rk_off - 16) + i];
+                ti ^= 0x0c0c0c0c & (ui << 2);
+                ti ^= 0x03030303 & (ti >> 2);
+                tmp[i] = ti;
+            }
+        }
+
+        // to match fixslicing
+        for i in (0..96).step_by(32) {
+            inv_shiftrows_1(&mut rk[(i + 8)..(i + 16)]);
+            inv_shiftrows_2(&mut rk[(i + 16)..(i + 24)]);
+            inv_shiftrows_3(&mut rk[(i + 24)..(i + 32)]);
+        }
+
+        // Bitwise NOT to speed up SBox calculations
+        for i in 1..13 {
+            rk[i * 8 + 1] ^= 0xffffffff;
+            rk[i * 8 + 2] ^= 0xffffffff;
+            rk[i * 8 + 6] ^= 0xffffffff;
+            rk[i * 8 + 7] ^= 0xffffffff;
+        }
+
+        Self { rkeys: rk }
+    }
+}
+
+impl BlockCipher for Aes192Fixsliced {
+    type BlockSize = U16;
+    type ParBlocks = U2;
+
+    #[inline]
+    fn encrypt_block(&self, block: &mut Block) {
+        let mut blocks = ParBlocks::default();
+        blocks[0].copy_from_slice(&block);
+        self.encrypt_blocks(&mut blocks);
+        block.copy_from_slice(&blocks[0]);
+    }
+
+    #[inline]
+    fn decrypt_block(&self, _block: &mut Block) {
+        todo!()
+    }
+
+    #[inline]
+    fn encrypt_blocks(&self, blocks: &mut ParBlocks) {
+        let mut state = State::default();
+
+        // Pack into bitsliced representation
+        packing(&mut state, &blocks[0], &blocks[1]);
+
+        // Loop over quadruple rounds
+        for i in (0..64).step_by(32) {
+            ark(&mut state, &self.rkeys[i..(i + 8)]);
+            sbox(&mut state);
+            mixcolumns_0(&mut state);
+
+            ark(&mut state, &self.rkeys[(i + 8)..(i + 16)]);
+            sbox(&mut state);
+            mixcolumns_1(&mut state);
+
+            ark(&mut state, &self.rkeys[(i + 16)..(i + 24)]);
+            sbox(&mut state);
+            mixcolumns_2(&mut state);
+
+            ark(&mut state, &self.rkeys[(i + 24)..(i + 32)]);
+            sbox(&mut state);
+            mixcolumns_3(&mut state);
+        }
+
+        ark(&mut state, &self.rkeys[64..72]);
+        sbox(&mut state);
+        mixcolumns_0(&mut state);
+
+        ark(&mut state, &self.rkeys[72..80]);
+        sbox(&mut state);
+        mixcolumns_1(&mut state);
+
+        ark(&mut state, &self.rkeys[80..88]);
+        sbox(&mut state);
+        mixcolumns_2(&mut state);
+
+        ark(&mut state, &self.rkeys[88..96]);
+        sbox(&mut state);
+        // No resynchronization needed
+        ark(&mut state, &self.rkeys[96..104]);
 
         // Unpack state into output
         unpacking(&mut state, blocks);
