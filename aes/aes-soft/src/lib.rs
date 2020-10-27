@@ -2,8 +2,10 @@
 //!
 //! The `aes-soft` crate implements the AES algorithm completely in software
 //! without using any table lookups or other timing dependant mechanisms.
-//! The implementation is heavily based on `aessafe` [module][1]
-//! from `rust-crypto` crate.
+//!
+//! The encryption implementation is based on a technique called [fixslicing][1],
+//! while the decryption implementation is heavily based on `aessafe` [module][2],
+//! from the original `rust-crypto` crate.
 //!
 //! # Usage example
 //! ```
@@ -31,7 +33,9 @@
 //! cipher.decrypt_blocks(&mut block8);
 //! assert_eq!(block8, block8_copy);
 //! ```
-//! [1]: https://github.com/DaGenix/rust-crypto/blob/master/src/aessafe.rs
+//!
+//! [1]: https://eprint.iacr.org/2020/1123.pdf
+//! [2]: https://github.com/DaGenix/rust-crypto/blob/master/src/aessafe.rs
 
 #![no_std]
 #![doc(
