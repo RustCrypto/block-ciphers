@@ -14,11 +14,11 @@
 //! Originally licensed MIT. Relicensed as Apache 2.0+MIT with permission.
 
 use crate::Block;
-use byteorder::{ByteOrder, LE};
 use cipher::{
     consts::{U16, U24, U32},
     generic_array::GenericArray,
 };
+use core::convert::TryInto;
 
 /// AES-128 round keys
 pub(crate) type FixsliceKeys128 = [u32; 88];
@@ -894,14 +894,14 @@ fn packing(output: &mut [u32], input0: &[u8], input1: &[u8]) {
 
     // Interleave the columns on input (note the order of input)
     //     b0 c1 c0 __ __ __ __ __ => c1 c0 b0 __ __ __ __ __
-    let mut t0 = LE::read_u32(&input0[0x00..0x04]);
-    let mut t2 = LE::read_u32(&input0[0x04..0x08]);
-    let mut t4 = LE::read_u32(&input0[0x08..0x0c]);
-    let mut t6 = LE::read_u32(&input0[0x0c..0x10]);
-    let mut t1 = LE::read_u32(&input1[0x00..0x04]);
-    let mut t3 = LE::read_u32(&input1[0x04..0x08]);
-    let mut t5 = LE::read_u32(&input1[0x08..0x0c]);
-    let mut t7 = LE::read_u32(&input1[0x0c..0x10]);
+    let mut t0 = u32::from_le_bytes(input0[0x00..0x04].try_into().unwrap());
+    let mut t2 = u32::from_le_bytes(input0[0x04..0x08].try_into().unwrap());
+    let mut t4 = u32::from_le_bytes(input0[0x08..0x0c].try_into().unwrap());
+    let mut t6 = u32::from_le_bytes(input0[0x0c..0x10].try_into().unwrap());
+    let mut t1 = u32::from_le_bytes(input1[0x00..0x04].try_into().unwrap());
+    let mut t3 = u32::from_le_bytes(input1[0x04..0x08].try_into().unwrap());
+    let mut t5 = u32::from_le_bytes(input1[0x08..0x0c].try_into().unwrap());
+    let mut t7 = u32::from_le_bytes(input1[0x0c..0x10].try_into().unwrap());
 
     // Bit Index Swap 5 <-> 0:
     //     __ __ b0 __ __ __ __ p0 => __ __ p0 __ __ __ __ b0
@@ -989,14 +989,14 @@ fn unpacking(input: &mut [u32], output: &mut [Block]) {
 
     // De-interleave the columns on output (note the order of output)
     //     c1 c0 b0 __ __ __ __ __ => b0 c1 c0 __ __ __ __ __
-    LE::write_u32(&mut output[0][0x00..0x04], t0);
-    LE::write_u32(&mut output[0][0x04..0x08], t2);
-    LE::write_u32(&mut output[0][0x08..0x0c], t4);
-    LE::write_u32(&mut output[0][0x0c..0x10], t6);
-    LE::write_u32(&mut output[1][0x00..0x04], t1);
-    LE::write_u32(&mut output[1][0x04..0x08], t3);
-    LE::write_u32(&mut output[1][0x08..0x0c], t5);
-    LE::write_u32(&mut output[1][0x0c..0x10], t7);
+    output[0][0x00..0x04].copy_from_slice(&t0.to_le_bytes());
+    output[0][0x04..0x08].copy_from_slice(&t2.to_le_bytes());
+    output[0][0x08..0x0c].copy_from_slice(&t4.to_le_bytes());
+    output[0][0x0c..0x10].copy_from_slice(&t6.to_le_bytes());
+    output[1][0x00..0x04].copy_from_slice(&t1.to_le_bytes());
+    output[1][0x04..0x08].copy_from_slice(&t3.to_le_bytes());
+    output[1][0x08..0x0c].copy_from_slice(&t5.to_le_bytes());
+    output[1][0x0c..0x10].copy_from_slice(&t7.to_le_bytes());
 
     // Final AES bit index, as desired:
     //     b0 c1 c0 r1 r0 p2 p1 p0
