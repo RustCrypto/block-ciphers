@@ -13,7 +13,7 @@ use crate::{
     },
     consts::U32X4_0,
     expand::expand_key,
-    fixslice::{self, FixsliceKeys128, FixsliceKeys192, FixsliceKeys256},
+    fixslice::{self, FixsliceKeys128, FixsliceKeys192, FixsliceKeys256, FIXSLICE_BLOCKS},
     simd::u32x4,
     Block, ParBlocks,
 };
@@ -70,7 +70,7 @@ macro_rules! define_aes_impl {
 
             #[inline]
             fn encrypt_block(&self, block: &mut Block) {
-	            let mut blocks = [Block::default(); 2];
+                let mut blocks = [Block::default(); FIXSLICE_BLOCKS];
                 blocks[0].copy_from_slice(block);
                 $fixslice_encrypt(&self.enc_keys, &mut blocks);
                 block.copy_from_slice(&blocks[0]);
@@ -85,7 +85,7 @@ macro_rules! define_aes_impl {
 
             #[inline]
             fn encrypt_blocks(&self, blocks: &mut ParBlocks) {
-                for chunk in blocks.chunks_mut(2) {
+                for chunk in blocks.chunks_mut(FIXSLICE_BLOCKS) {
                     $fixslice_encrypt(&self.enc_keys, chunk);
                 }
             }

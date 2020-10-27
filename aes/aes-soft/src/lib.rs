@@ -46,6 +46,11 @@ pub use cipher;
 mod bitslice;
 mod consts;
 mod expand;
+#[cfg(not(target_pointer_width = "64"))]
+#[path = "fixslice32.rs"]
+mod fixslice;
+#[cfg(target_pointer_width = "64")]
+#[path = "fixslice64.rs"]
 mod fixslice;
 mod impls;
 mod simd;
