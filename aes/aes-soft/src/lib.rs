@@ -41,8 +41,6 @@
 #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
-pub use cipher;
-
 mod bitslice;
 mod consts;
 mod expand;
@@ -56,6 +54,7 @@ mod impls;
 mod simd;
 
 pub use crate::impls::{Aes128, Aes192, Aes256};
+pub use cipher;
 
 /// 128-bit AES block
 pub type Block = cipher::generic_array::GenericArray<u8, cipher::consts::U16>;
