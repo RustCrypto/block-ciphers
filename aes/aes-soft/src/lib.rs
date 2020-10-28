@@ -45,9 +45,6 @@
 #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
-mod bitslice;
-mod consts;
-mod expand;
 #[cfg(not(target_pointer_width = "64"))]
 #[path = "fixslice32.rs"]
 mod fixslice;
@@ -55,7 +52,6 @@ mod fixslice;
 #[path = "fixslice64.rs"]
 mod fixslice;
 mod impls;
-mod simd;
 
 pub use crate::impls::{Aes128, Aes192, Aes256};
 pub use cipher;
