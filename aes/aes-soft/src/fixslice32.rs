@@ -593,14 +593,14 @@ fn mixcolumns_0(state: &mut State) {
         state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
     );
     let (b0, b1, b2, b3, b4, b5, b6, b7) = (
-        rotate_rows_and_columns_1_3(a0),
-        rotate_rows_and_columns_1_3(a1),
-        rotate_rows_and_columns_1_3(a2),
-        rotate_rows_and_columns_1_3(a3),
-        rotate_rows_and_columns_1_3(a4),
-        rotate_rows_and_columns_1_3(a5),
-        rotate_rows_and_columns_1_3(a6),
-        rotate_rows_and_columns_1_3(a7),
+        rotate_rows_and_columns_1_1(a0),
+        rotate_rows_and_columns_1_1(a1),
+        rotate_rows_and_columns_1_1(a2),
+        rotate_rows_and_columns_1_1(a3),
+        rotate_rows_and_columns_1_1(a4),
+        rotate_rows_and_columns_1_1(a5),
+        rotate_rows_and_columns_1_1(a6),
+        rotate_rows_and_columns_1_1(a7),
     );
     let (c0, c1, c2, c3, c4, c5, c6, c7) = (
         a0 ^ b0,
@@ -667,14 +667,14 @@ fn mixcolumns_2(state: &mut State) {
         state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
     );
     let (b0, b1, b2, b3, b4, b5, b6, b7) = (
-        rotate_rows_and_columns_1_1(a0),
-        rotate_rows_and_columns_1_1(a1),
-        rotate_rows_and_columns_1_1(a2),
-        rotate_rows_and_columns_1_1(a3),
-        rotate_rows_and_columns_1_1(a4),
-        rotate_rows_and_columns_1_1(a5),
-        rotate_rows_and_columns_1_1(a6),
-        rotate_rows_and_columns_1_1(a7),
+        rotate_rows_and_columns_1_3(a0),
+        rotate_rows_and_columns_1_3(a1),
+        rotate_rows_and_columns_1_3(a2),
+        rotate_rows_and_columns_1_3(a3),
+        rotate_rows_and_columns_1_3(a4),
+        rotate_rows_and_columns_1_3(a5),
+        rotate_rows_and_columns_1_3(a6),
+        rotate_rows_and_columns_1_3(a7),
     );
     let (c0, c1, c2, c3, c4, c5, c6, c7) = (
         a0 ^ b0,
@@ -971,21 +971,6 @@ fn ror_distance(rows: u32, cols: u32) -> u32 {
     (rows << 3) + (cols << 1)
 }
 
-#[inline]
-fn rotate_columns_1(x: u32) -> u32 {
-    ((x >> 6) & 0x03030303) | ((x & 0x3f3f3f3f) << 2)
-}
-
-#[inline]
-fn rotate_columns_2(x: u32) -> u32 {
-    ((x >> 4) & 0x0f0f0f0f) | ((x & 0x0f0f0f0f) << 4)
-}
-
-#[inline]
-fn rotate_columns_3(x: u32) -> u32 {
-    ((x >> 2) & 0x3f3f3f3f) | ((x & 0x03030303) << 6)
-}
-
 #[inline(always)]
 fn rotate_rows_1(x: u32) -> u32 {
     ror(x, ror_distance(1, 0))
@@ -997,21 +982,29 @@ fn rotate_rows_2(x: u32) -> u32 {
 }
 
 #[inline(always)]
+#[rustfmt::skip]
 fn rotate_rows_and_columns_1_1(x: u32) -> u32 {
-    rotate_rows_1(rotate_columns_1(x))
+    (ror(x, ror_distance(1, 1)) & 0x3f3f3f3f) |
+    (ror(x, ror_distance(0, 1)) & 0xc0c0c0c0)
 }
 
 #[inline(always)]
+#[rustfmt::skip]
 fn rotate_rows_and_columns_1_2(x: u32) -> u32 {
-    rotate_rows_1(rotate_columns_2(x))
+    (ror(x, ror_distance(1, 2)) & 0x0f0f0f0f) |
+    (ror(x, ror_distance(0, 2)) & 0xf0f0f0f0)
 }
 
 #[inline(always)]
+#[rustfmt::skip]
 fn rotate_rows_and_columns_1_3(x: u32) -> u32 {
-    rotate_rows_1(rotate_columns_3(x))
+    (ror(x, ror_distance(1, 3)) & 0x03030303) |
+    (ror(x, ror_distance(0, 3)) & 0xfcfcfcfc)
 }
 
 #[inline(always)]
+#[rustfmt::skip]
 fn rotate_rows_and_columns_2_2(x: u32) -> u32 {
-    rotate_rows_2(rotate_columns_2(x))
+    (ror(x, ror_distance(2, 2)) & 0x0f0f0f0f) |
+    (ror(x, ror_distance(1, 2)) & 0xf0f0f0f0)
 }
