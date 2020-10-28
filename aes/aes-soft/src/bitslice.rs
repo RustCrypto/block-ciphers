@@ -6,7 +6,7 @@
 
 use crate::consts::U32X4_1;
 use crate::simd::u32x4;
-use byteorder::{ByteOrder, LE};
+use core::convert::TryInto;
 use core::ops::{BitAnd, BitXor, Not};
 
 // This trait defines all of the operations needed for a type to be processed as part of an AES
@@ -328,10 +328,10 @@ pub fn bit_slice_4x1_with_u16(a: u32) -> Bs8State<u16> {
 
 // Bit slice a 16 byte array in column major order
 pub fn bit_slice_1x16_with_u16(data: &[u8]) -> Bs8State<u16> {
-    let a = LE::read_u32(&data[0..4]);
-    let b = LE::read_u32(&data[4..8]);
-    let c = LE::read_u32(&data[8..12]);
-    let d = LE::read_u32(&data[12..16]);
+    let a = u32::from_le_bytes(data[0..4].try_into().unwrap());
+    let b = u32::from_le_bytes(data[4..8].try_into().unwrap());
+    let c = u32::from_le_bytes(data[8..12].try_into().unwrap());
+    let d = u32::from_le_bytes(data[12..16].try_into().unwrap());
 
     bit_slice_4x4_with_u16(a, b, c, d)
 }
@@ -390,10 +390,10 @@ pub fn un_bit_slice_4x1_with_u16(bs: &Bs8State<u16>) -> u32 {
 pub fn un_bit_slice_1x16_with_u16(bs: &Bs8State<u16>, output: &mut [u8]) {
     let (a, b, c, d) = un_bit_slice_4x4_with_u16(bs);
 
-    LE::write_u32(&mut output[0..4], a);
-    LE::write_u32(&mut output[4..8], b);
-    LE::write_u32(&mut output[8..12], c);
-    LE::write_u32(&mut output[12..16], d);
+    output[0..4].copy_from_slice(&a.to_le_bytes());
+    output[4..8].copy_from_slice(&b.to_le_bytes());
+    output[8..12].copy_from_slice(&c.to_le_bytes());
+    output[12..16].copy_from_slice(&d.to_le_bytes());
 }
 
 // Bit Slice a 128 byte array of eight 16 byte blocks. Each block is in column major order.
@@ -480,10 +480,10 @@ pub fn bit_slice_1x128_with_u32x4(data: &[u8]) -> Bs8State<u32x4> {
 pub fn bit_slice_fill_4x4_with_u32x4(a: u32, b: u32, c: u32, d: u32) -> Bs8State<u32x4> {
     let mut tmp = [0u8; 128];
     for i in 0..8 {
-        LE::write_u32(&mut tmp[i * 16..i * 16 + 4], a);
-        LE::write_u32(&mut tmp[i * 16 + 4..i * 16 + 8], b);
-        LE::write_u32(&mut tmp[i * 16 + 8..i * 16 + 12], c);
-        LE::write_u32(&mut tmp[i * 16 + 12..i * 16 + 16], d);
+        tmp[i * 16..i * 16 + 4].copy_from_slice(&a.to_le_bytes());
+        tmp[i * 16 + 4..i * 16 + 8].copy_from_slice(&b.to_le_bytes());
+        tmp[i * 16 + 8..i * 16 + 12].copy_from_slice(&c.to_le_bytes());
+        tmp[i * 16 + 12..i * 16 + 16].copy_from_slice(&d.to_le_bytes());
     }
     bit_slice_1x128_with_u32x4(&tmp)
 }
