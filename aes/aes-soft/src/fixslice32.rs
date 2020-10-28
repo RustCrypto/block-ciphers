@@ -587,184 +587,113 @@ fn sbox_nots(state: &mut [u32]) {
 
 /// Computation of the MixColumns transformation in the fixsliced representation
 /// used for rounds i s.t. (i%4) == 0.
+#[rustfmt::skip]
 fn mixcolumns_0(state: &mut State) {
-    let mut tmp3 = rotate_rows_1(rotate_columns_3(state[7]));
-    let tmp0 = state[7] ^ tmp3;
-    let mut tmp2 = state[1];
-    state[1] = state[0] ^ tmp0;
-    let mut tmp1 = rotate_rows_1(rotate_columns_3(state[0]));
-    state[1] ^= tmp1;
-    state[0] ^= state[1];
-    tmp1 = rotate_rows_1(rotate_columns_3(tmp1));
-    tmp1 ^= rotate_rows_1(rotate_columns_3(tmp1));
-    state[0] ^= tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_3(tmp2));
-    state[1] ^= tmp1;
-    tmp2 ^= tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_3(tmp1));
-    tmp1 ^= rotate_rows_1(rotate_columns_3(tmp1));
-    state[1] ^= tmp1;
-    tmp1 = state[2];
-    state[2] = tmp2;
-    tmp2 = rotate_rows_1(rotate_columns_3(tmp1));
-    tmp1 ^= tmp2;
-    state[2] ^= tmp2;
-    tmp2 = rotate_rows_1(rotate_columns_3(tmp2));
-    tmp2 ^= rotate_rows_1(rotate_columns_3(tmp2));
-    state[2] ^= tmp2;
-    tmp2 = state[3];
-    state[3] = tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_3(tmp2));
-    tmp2 ^= tmp1;
-    state[3] ^= tmp0 ^ tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_3(tmp1));
-    tmp1 ^= rotate_rows_1(rotate_columns_3(tmp1));
-    state[3] ^= tmp1;
-    tmp1 = state[4];
-    state[4] = tmp0 ^ tmp2;
-    tmp2 = rotate_rows_1(rotate_columns_3(tmp1));
-    tmp1 ^= tmp2;
-    state[4] ^= tmp2;
-    tmp2 = rotate_rows_1(rotate_columns_3(tmp2));
-    tmp2 ^= rotate_rows_1(rotate_columns_3(tmp2));
-    state[4] ^= tmp2;
-    tmp2 = state[5];
-    state[5] = tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_3(tmp2));
-    tmp2 ^= tmp1;
-    state[5] ^= tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_3(tmp1));
-    tmp1 ^= rotate_rows_1(rotate_columns_3(tmp1));
-    state[5] ^= tmp1;
-    tmp1 = state[6];
-    state[6] = tmp2;
-    tmp2 = rotate_rows_1(rotate_columns_3(tmp1));
-    tmp1 ^= tmp2;
-    state[6] ^= tmp2;
-    tmp2 = rotate_rows_1(rotate_columns_3(tmp2));
-    tmp2 ^= rotate_rows_1(rotate_columns_3(tmp2));
-    state[6] ^= tmp2;
-    state[7] = tmp1;
-    state[7] ^= tmp3;
-    tmp3 = rotate_rows_1(rotate_columns_3(tmp3));
-    tmp3 ^= rotate_rows_1(rotate_columns_3(tmp3));
-    state[7] ^= tmp3;
+    let (a0, a1, a2, a3, a4, a5, a6, a7) = (
+        state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
+    );
+    let (b0, b1, b2, b3, b4, b5, b6, b7) = (
+        rotate_rows_and_columns_1_3(a0),
+        rotate_rows_and_columns_1_3(a1),
+        rotate_rows_and_columns_1_3(a2),
+        rotate_rows_and_columns_1_3(a3),
+        rotate_rows_and_columns_1_3(a4),
+        rotate_rows_and_columns_1_3(a5),
+        rotate_rows_and_columns_1_3(a6),
+        rotate_rows_and_columns_1_3(a7),
+    );
+    let (c0, c1, c2, c3, c4, c5, c6, c7) = (
+        a0 ^ b0,
+        a1 ^ b1,
+        a2 ^ b2,
+        a3 ^ b3,
+        a4 ^ b4,
+        a5 ^ b5,
+        a6 ^ b6,
+        a7 ^ b7,
+    );
+    state[0] = b0      ^ c7 ^ rotate_rows_and_columns_2_2(c0);
+    state[1] = b1 ^ c0 ^ c7 ^ rotate_rows_and_columns_2_2(c1);
+    state[2] = b2 ^ c1      ^ rotate_rows_and_columns_2_2(c2);
+    state[3] = b3 ^ c2 ^ c7 ^ rotate_rows_and_columns_2_2(c3);
+    state[4] = b4 ^ c3 ^ c7 ^ rotate_rows_and_columns_2_2(c4);
+    state[5] = b5 ^ c4      ^ rotate_rows_and_columns_2_2(c5);
+    state[6] = b6 ^ c5      ^ rotate_rows_and_columns_2_2(c6);
+    state[7] = b7 ^ c6      ^ rotate_rows_and_columns_2_2(c7);
 }
 
 /// Computation of the MixColumns transformation in the fixsliced representation
 /// used for round i s.t. (i%4) == 1.
+#[rustfmt::skip]
 fn mixcolumns_1(state: &mut State) {
-    let tmp0 = state[7] ^ rotate_rows_1(rotate_columns_2(state[7]));
-    let mut tmp1 = state[0] ^ rotate_rows_1(rotate_columns_2(state[0]));
-    let mut tmp2 = state[1];
-    state[1] = tmp1 ^ tmp0;
-    state[0] ^= state[1] ^ rotate_rows_2(tmp1);
-    tmp1 = rotate_rows_1(rotate_columns_2(tmp2));
-    state[1] ^= tmp1;
-    tmp1 ^= tmp2;
-    state[1] ^= rotate_rows_2(tmp1);
-    tmp2 = state[2];
-    state[2] = tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_2(tmp2));
-    state[2] ^= tmp1;
-    tmp1 ^= tmp2;
-    state[2] ^= rotate_rows_2(tmp1);
-    tmp2 = state[3];
-    state[3] = tmp1 ^ tmp0;
-    tmp1 = rotate_rows_1(rotate_columns_2(tmp2));
-    state[3] ^= tmp1;
-    tmp1 ^= tmp2;
-    state[3] ^= rotate_rows_2(tmp1);
-    tmp2 = state[4];
-    state[4] = tmp1 ^ tmp0;
-    tmp1 = rotate_rows_1(rotate_columns_2(tmp2));
-    state[4] ^= tmp1;
-    tmp1 ^= tmp2;
-    state[4] ^= rotate_rows_2(tmp1);
-    tmp2 = state[5];
-    state[5] = tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_2(tmp2));
-    state[5] ^= tmp1;
-    tmp1 ^= tmp2;
-    state[5] ^= rotate_rows_2(tmp1);
-    tmp2 = state[6];
-    state[6] = tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_2(tmp2));
-    state[6] ^= tmp1;
-    tmp1 ^= tmp2;
-    state[6] ^= rotate_rows_2(tmp1);
-    tmp2 = state[7];
-    state[7] = tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_2(tmp2));
-    state[7] ^= tmp1;
-    tmp1 ^= tmp2;
-    state[7] ^= rotate_rows_2(tmp1);
+    let (a0, a1, a2, a3, a4, a5, a6, a7) = (
+        state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
+    );
+    let (b0, b1, b2, b3, b4, b5, b6, b7) = (
+        rotate_rows_and_columns_1_2(a0),
+        rotate_rows_and_columns_1_2(a1),
+        rotate_rows_and_columns_1_2(a2),
+        rotate_rows_and_columns_1_2(a3),
+        rotate_rows_and_columns_1_2(a4),
+        rotate_rows_and_columns_1_2(a5),
+        rotate_rows_and_columns_1_2(a6),
+        rotate_rows_and_columns_1_2(a7),
+    );
+    let (c0, c1, c2, c3, c4, c5, c6, c7) = (
+        a0 ^ b0,
+        a1 ^ b1,
+        a2 ^ b2,
+        a3 ^ b3,
+        a4 ^ b4,
+        a5 ^ b5,
+        a6 ^ b6,
+        a7 ^ b7,
+    );
+    state[0] = b0      ^ c7 ^ rotate_rows_2(c0);
+    state[1] = b1 ^ c0 ^ c7 ^ rotate_rows_2(c1);
+    state[2] = b2 ^ c1      ^ rotate_rows_2(c2);
+    state[3] = b3 ^ c2 ^ c7 ^ rotate_rows_2(c3);
+    state[4] = b4 ^ c3 ^ c7 ^ rotate_rows_2(c4);
+    state[5] = b5 ^ c4      ^ rotate_rows_2(c5);
+    state[6] = b6 ^ c5      ^ rotate_rows_2(c6);
+    state[7] = b7 ^ c6      ^ rotate_rows_2(c7);
 }
 
 /// Computation of the MixColumns transformation in the fixsliced representation
 /// used for rounds i s.t. (i%4) == 2.
+#[rustfmt::skip]
 fn mixcolumns_2(state: &mut State) {
-    let tmp0 = state[7] ^ rotate_rows_1(rotate_columns_1(state[7]));
-    let mut tmp2 = state[1];
-    state[1] = state[0] ^ tmp0;
-    let mut tmp1 = rotate_rows_1(rotate_columns_1(state[0]));
-    state[1] ^= tmp1;
-    state[0] ^= state[1];
-    tmp1 = rotate_rows_1(rotate_columns_1(tmp1));
-    tmp1 ^= rotate_rows_1(rotate_columns_1(tmp1));
-    state[0] ^= tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_1(tmp2));
-    state[1] ^= tmp1;
-    tmp2 ^= tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_1(tmp1));
-    tmp1 ^= rotate_rows_1(rotate_columns_1(tmp1));
-    state[1] ^= tmp1;
-    tmp1 = state[2];
-    state[2] = tmp2;
-    tmp2 = rotate_rows_1(rotate_columns_1(tmp1));
-    tmp1 ^= tmp2;
-    state[2] ^= tmp2;
-    tmp2 = rotate_rows_1(rotate_columns_1(tmp2));
-    tmp2 ^= rotate_rows_1(rotate_columns_1(tmp2));
-    state[2] ^= tmp2;
-    tmp2 = state[3];
-    state[3] = tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_1(tmp2));
-    tmp2 ^= tmp1;
-    state[3] ^= tmp0 ^ tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_1(tmp1));
-    tmp1 ^= rotate_rows_1(rotate_columns_1(tmp1));
-    state[3] ^= tmp1;
-    tmp1 = state[4];
-    state[4] = tmp0 ^ tmp2;
-    tmp2 = rotate_rows_1(rotate_columns_1(tmp1));
-    tmp1 ^= tmp2;
-    state[4] ^= tmp2;
-    tmp2 = rotate_rows_1(rotate_columns_1(tmp2));
-    tmp2 ^= rotate_rows_1(rotate_columns_1(tmp2));
-    state[4] ^= tmp2;
-    tmp2 = state[5];
-    state[5] = tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_1(tmp2));
-    tmp2 ^= tmp1;
-    state[5] ^= tmp1;
-    tmp1 = rotate_rows_1(rotate_columns_1(tmp1));
-    tmp1 ^= rotate_rows_1(rotate_columns_1(tmp1));
-    state[5] ^= tmp1;
-    tmp1 = state[6];
-    state[6] = tmp2;
-    tmp2 = rotate_rows_1(rotate_columns_1(tmp1));
-    tmp1 ^= tmp2;
-    state[6] ^= tmp2;
-    tmp2 = rotate_rows_1(rotate_columns_1(tmp2));
-    tmp2 ^= rotate_rows_1(rotate_columns_1(tmp2));
-    state[6] ^= tmp2;
-    tmp2 = rotate_rows_1(rotate_columns_1(state[7]));
-    state[7] = tmp1;
-    state[7] ^= tmp2;
-    tmp2 = rotate_rows_1(rotate_columns_1(tmp2));
-    tmp2 ^= rotate_rows_1(rotate_columns_1(tmp2));
-    state[7] ^= tmp2;
+    let (a0, a1, a2, a3, a4, a5, a6, a7) = (
+        state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
+    );
+    let (b0, b1, b2, b3, b4, b5, b6, b7) = (
+        rotate_rows_and_columns_1_1(a0),
+        rotate_rows_and_columns_1_1(a1),
+        rotate_rows_and_columns_1_1(a2),
+        rotate_rows_and_columns_1_1(a3),
+        rotate_rows_and_columns_1_1(a4),
+        rotate_rows_and_columns_1_1(a5),
+        rotate_rows_and_columns_1_1(a6),
+        rotate_rows_and_columns_1_1(a7),
+    );
+    let (c0, c1, c2, c3, c4, c5, c6, c7) = (
+        a0 ^ b0,
+        a1 ^ b1,
+        a2 ^ b2,
+        a3 ^ b3,
+        a4 ^ b4,
+        a5 ^ b5,
+        a6 ^ b6,
+        a7 ^ b7,
+    );
+    state[0] = b0      ^ c7 ^ rotate_rows_and_columns_2_2(c0);
+    state[1] = b1 ^ c0 ^ c7 ^ rotate_rows_and_columns_2_2(c1);
+    state[2] = b2 ^ c1      ^ rotate_rows_and_columns_2_2(c2);
+    state[3] = b3 ^ c2 ^ c7 ^ rotate_rows_and_columns_2_2(c3);
+    state[4] = b4 ^ c3 ^ c7 ^ rotate_rows_and_columns_2_2(c4);
+    state[5] = b5 ^ c4      ^ rotate_rows_and_columns_2_2(c5);
+    state[6] = b6 ^ c5      ^ rotate_rows_and_columns_2_2(c6);
+    state[7] = b7 ^ c6      ^ rotate_rows_and_columns_2_2(c7);
 }
 
 /// Computation of the MixColumns transformation in the fixsliced representation
@@ -1065,4 +994,24 @@ fn rotate_rows_1(x: u32) -> u32 {
 #[inline(always)]
 fn rotate_rows_2(x: u32) -> u32 {
     ror(x, ror_distance(2, 0))
+}
+
+#[inline(always)]
+fn rotate_rows_and_columns_1_1(x: u32) -> u32 {
+    rotate_rows_1(rotate_columns_1(x))
+}
+
+#[inline(always)]
+fn rotate_rows_and_columns_1_2(x: u32) -> u32 {
+    rotate_rows_1(rotate_columns_2(x))
+}
+
+#[inline(always)]
+fn rotate_rows_and_columns_1_3(x: u32) -> u32 {
+    rotate_rows_1(rotate_columns_3(x))
+}
+
+#[inline(always)]
+fn rotate_rows_and_columns_2_2(x: u32) -> u32 {
+    rotate_rows_2(rotate_columns_2(x))
 }
