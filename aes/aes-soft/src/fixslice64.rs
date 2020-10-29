@@ -31,7 +31,7 @@ pub(crate) type FixsliceKeys192 = [u64; 104];
 /// AES-256 round keys
 pub(crate) type FixsliceKeys256 = [u64; 120];
 
-/// 256-bit internal state
+/// 512-bit internal state
 type State = [u64; 8];
 
 /// Fully bitsliced AES-128 key schedule to match the fully-fixsliced representation.
@@ -39,76 +39,38 @@ pub(crate) fn aes128_key_schedule(key: &GenericArray<u8, U16>) -> FixsliceKeys12
     // TODO(tarcieri): use `::default()` after MSRV 1.47+
     let mut rkeys = [0u64; 88];
 
-    // Pack the keys into the bitsliced state
-    packing(&mut rkeys[..8], key, key, key, key);
+    bitslice(&mut rkeys[..8], key, key, key, key);
 
-    memshift32(&mut rkeys, 0);
-    sbox(&mut rkeys[8..16]);
-    rcon_bit(&mut rkeys[8..16], 0);
-    xor_columns(&mut rkeys, 8, 8, ror_distance(1, 3));
+    let mut rk_off = 0;
+    for rcon in 0..10 {
+        memshift32(&mut rkeys, rk_off);
+        rk_off += 8;
 
-    memshift32(&mut rkeys, 8);
-    sbox(&mut rkeys[16..24]);
-    rcon_bit(&mut rkeys[16..24], 1);
-    xor_columns(&mut rkeys, 16, 8, ror_distance(1, 3));
-    inv_shiftrows_1(&mut rkeys[8..16]); // to match fixslicing
+        sub_bytes(&mut rkeys[rk_off..(rk_off + 8)]);
 
-    memshift32(&mut rkeys, 16);
-    sbox(&mut rkeys[24..32]);
-    rcon_bit(&mut rkeys[24..32], 2);
-    xor_columns(&mut rkeys, 24, 8, ror_distance(1, 3));
-    inv_shiftrows_2(&mut rkeys[16..24]); // to match fixslicing
+        if rcon < 8 {
+            add_round_constant_bit(&mut rkeys[rk_off..(rk_off + 8)], rcon);
+        } else {
+            add_round_constant_bit(&mut rkeys[rk_off..(rk_off + 8)], rcon - 8);
+            add_round_constant_bit(&mut rkeys[rk_off..(rk_off + 8)], rcon - 7);
+            add_round_constant_bit(&mut rkeys[rk_off..(rk_off + 8)], rcon - 5);
+            add_round_constant_bit(&mut rkeys[rk_off..(rk_off + 8)], rcon - 4);
+        }
 
-    memshift32(&mut rkeys, 24);
-    sbox(&mut rkeys[32..40]);
-    rcon_bit(&mut rkeys[32..40], 3);
-    xor_columns(&mut rkeys, 32, 8, ror_distance(1, 3));
-    inv_shiftrows_3(&mut rkeys[24..32]); // to match fixslicing
+        xor_columns(&mut rkeys, rk_off, 8, ror_distance(1, 3));
+    }
 
-    memshift32(&mut rkeys, 32);
-    sbox(&mut rkeys[40..48]);
-    rcon_bit(&mut rkeys[40..48], 4);
-    xor_columns(&mut rkeys, 40, 8, ror_distance(1, 3));
+    // Adjust to match fixslicing format
+    for i in (8..72).step_by(32) {
+        inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
+        inv_shift_rows_2(&mut rkeys[(i + 8)..(i + 16)]);
+        inv_shift_rows_3(&mut rkeys[(i + 16)..(i + 24)]);
+    }
+    inv_shift_rows_1(&mut rkeys[72..80]);
 
-    memshift32(&mut rkeys, 40);
-    sbox(&mut rkeys[48..56]);
-    rcon_bit(&mut rkeys[48..56], 5);
-    xor_columns(&mut rkeys, 48, 8, ror_distance(1, 3));
-    inv_shiftrows_1(&mut rkeys[40..48]); // to match fixslicing
-
-    memshift32(&mut rkeys, 48);
-    sbox(&mut rkeys[56..64]);
-    rcon_bit(&mut rkeys[56..64], 6);
-    xor_columns(&mut rkeys, 56, 8, ror_distance(1, 3));
-    inv_shiftrows_2(&mut rkeys[48..56]); // to match fixslicing
-
-    memshift32(&mut rkeys, 56);
-    sbox(&mut rkeys[64..72]);
-    rcon_bit(&mut rkeys[64..72], 7);
-    xor_columns(&mut rkeys, 64, 8, ror_distance(1, 3));
-    inv_shiftrows_3(&mut rkeys[56..64]); // to match fixslicing
-
-    memshift32(&mut rkeys, 64);
-    sbox(&mut rkeys[72..80]);
-    rcon_bit(&mut rkeys[72..80], 0);
-    rcon_bit(&mut rkeys[72..80], 1);
-    rcon_bit(&mut rkeys[72..80], 3);
-    rcon_bit(&mut rkeys[72..80], 4);
-    xor_columns(&mut rkeys, 72, 8, ror_distance(1, 3));
-
-    memshift32(&mut rkeys, 72);
-    sbox(&mut rkeys[80..]);
-    rcon_bit(&mut rkeys[80..], 1);
-    rcon_bit(&mut rkeys[80..], 2);
-    rcon_bit(&mut rkeys[80..], 4);
-    rcon_bit(&mut rkeys[80..], 5);
-    xor_columns(&mut rkeys, 80, 8, ror_distance(1, 3));
-
-    inv_shiftrows_1(&mut rkeys[72..80]);
-
-    // Bitwise NOT to speed up SBox calculations
+    // Account for NOTs removed from sub_bytes
     for i in 1..11 {
-        sbox_nots(&mut rkeys[(i * 8)..(i * 8 + 8)]);
+        sub_bytes_nots(&mut rkeys[(i * 8)..(i * 8 + 8)]);
     }
 
     rkeys
@@ -120,15 +82,14 @@ pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys19
     let mut rkeys = [0u64; 104];
     let mut tmp = [0u64; 8];
 
-    // Pack the keys into the bitsliced state
-    packing(
+    bitslice(
         &mut rkeys[..8],
         &key[..16],
         &key[..16],
         &key[..16],
         &key[..16],
     );
-    packing(&mut tmp, &key[8..], &key[8..], &key[8..], &key[8..]);
+    bitslice(&mut tmp, &key[8..], &key[8..], &key[8..], &key[8..]);
 
     let mut rcon = 0;
     let mut rk_off = 8;
@@ -139,9 +100,9 @@ pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys19
                 | (0xff00ff00ff00ff00 & (rkeys[(rk_off - 8) + i] << 8));
         }
 
-        sbox(&mut tmp);
-        sbox_nots(&mut tmp);
-        rcon_bit(&mut tmp, rcon);
+        sub_bytes(&mut tmp);
+        sub_bytes_nots(&mut tmp);
+        add_round_constant_bit(&mut tmp, rcon);
         rcon += 1;
 
         for i in 0..8 {
@@ -166,9 +127,9 @@ pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys19
         rkeys[rk_off..(rk_off + 8)].copy_from_slice(&tmp);
         rk_off += 8;
 
-        sbox(&mut tmp);
-        sbox_nots(&mut tmp);
-        rcon_bit(&mut tmp, rcon);
+        sub_bytes(&mut tmp);
+        sub_bytes_nots(&mut tmp);
+        add_round_constant_bit(&mut tmp, rcon);
         rcon += 1;
 
         for i in 0..8 {
@@ -195,16 +156,16 @@ pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys19
         }
     }
 
-    // to match fixslicing
+    // Adjust to match fixslicing format
     for i in (0..96).step_by(32) {
-        inv_shiftrows_1(&mut rkeys[(i + 8)..(i + 16)]);
-        inv_shiftrows_2(&mut rkeys[(i + 16)..(i + 24)]);
-        inv_shiftrows_3(&mut rkeys[(i + 24)..(i + 32)]);
+        inv_shift_rows_1(&mut rkeys[(i + 8)..(i + 16)]);
+        inv_shift_rows_2(&mut rkeys[(i + 16)..(i + 24)]);
+        inv_shift_rows_3(&mut rkeys[(i + 24)..(i + 32)]);
     }
 
-    // Bitwise NOT to speed up SBox calculations
+    // Account for NOTs removed from sub_bytes
     for i in 1..13 {
-        sbox_nots(&mut rkeys[(i * 8)..(i * 8 + 8)]);
+        sub_bytes_nots(&mut rkeys[(i * 8)..(i * 8 + 8)]);
     }
 
     rkeys
@@ -215,15 +176,14 @@ pub(crate) fn aes256_key_schedule(key: &GenericArray<u8, U32>) -> FixsliceKeys25
     // TODO(tarcieri): use `::default()` after MSRV 1.47+
     let mut rkeys = [0u64; 120];
 
-    // Pack the keys into the bitsliced state
-    packing(
+    bitslice(
         &mut rkeys[..8],
         &key[..16],
         &key[..16],
         &key[..16],
         &key[..16],
     );
-    packing(
+    bitslice(
         &mut rkeys[8..16],
         &key[16..],
         &key[16..],
@@ -231,78 +191,40 @@ pub(crate) fn aes256_key_schedule(key: &GenericArray<u8, U32>) -> FixsliceKeys25
         &key[16..],
     );
 
-    memshift32(&mut rkeys, 8);
-    sbox(&mut rkeys[16..24]);
-    rcon_bit(&mut rkeys[16..24], 0);
-    xor_columns(&mut rkeys, 16, 16, ror_distance(1, 3));
+    let mut rk_off = 8;
 
-    memshift32(&mut rkeys, 16);
-    sbox(&mut rkeys[24..32]);
-    xor_columns(&mut rkeys, 24, 16, ror_distance(0, 3));
-    inv_shiftrows_1(&mut rkeys[8..16]); // to match fixslicing
+    let mut rcon = 0;
+    loop {
+        memshift32(&mut rkeys, rk_off);
+        rk_off += 8;
 
-    memshift32(&mut rkeys, 24);
-    sbox(&mut rkeys[32..40]);
-    rcon_bit(&mut rkeys[32..40], 1);
-    xor_columns(&mut rkeys, 32, 16, ror_distance(1, 3));
-    inv_shiftrows_2(&mut rkeys[16..24]); // to match fixslicing
+        sub_bytes(&mut rkeys[rk_off..(rk_off + 8)]);
+        add_round_constant_bit(&mut rkeys[rk_off..(rk_off + 8)], rcon);
+        xor_columns(&mut rkeys, rk_off, 16, ror_distance(1, 3));
+        rcon += 1;
 
-    memshift32(&mut rkeys, 32);
-    sbox(&mut rkeys[40..48]);
-    xor_columns(&mut rkeys, 40, 16, ror_distance(0, 3));
-    inv_shiftrows_3(&mut rkeys[24..32]); // to match fixslicing
+        if rcon == 7 {
+            break;
+        }
 
-    memshift32(&mut rkeys, 40);
-    sbox(&mut rkeys[48..56]);
-    rcon_bit(&mut rkeys[48..56], 2);
-    xor_columns(&mut rkeys, 48, 16, ror_distance(1, 3));
+        memshift32(&mut rkeys, rk_off);
+        rk_off += 8;
 
-    memshift32(&mut rkeys, 48);
-    sbox(&mut rkeys[56..64]);
-    xor_columns(&mut rkeys, 56, 16, ror_distance(0, 3));
-    inv_shiftrows_1(&mut rkeys[40..48]); // to match fixslicing
+        sub_bytes(&mut rkeys[rk_off..(rk_off + 8)]);
+        xor_columns(&mut rkeys, rk_off, 16, ror_distance(0, 3));
+    }
 
-    memshift32(&mut rkeys, 56);
-    sbox(&mut rkeys[64..72]);
-    rcon_bit(&mut rkeys[64..72], 3);
-    xor_columns(&mut rkeys, 64, 16, ror_distance(1, 3));
-    inv_shiftrows_2(&mut rkeys[48..56]); // to match fixslicing
+    // Adjust to match fixslicing format
+    for i in (8..104).step_by(32) {
+        inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
+        inv_shift_rows_2(&mut rkeys[(i + 8)..(i + 16)]);
+        inv_shift_rows_3(&mut rkeys[(i + 16)..(i + 24)]);
+    }
+    inv_shift_rows_1(&mut rkeys[104..112]);
 
-    memshift32(&mut rkeys, 64);
-    sbox(&mut rkeys[72..80]);
-    xor_columns(&mut rkeys, 72, 16, ror_distance(0, 3));
-    inv_shiftrows_3(&mut rkeys[56..64]); // to match fixslicing
-
-    memshift32(&mut rkeys, 72);
-    sbox(&mut rkeys[80..88]);
-    rcon_bit(&mut rkeys[80..88], 4);
-    xor_columns(&mut rkeys, 80, 16, ror_distance(1, 3));
-
-    memshift32(&mut rkeys, 80);
-    sbox(&mut rkeys[88..96]);
-    xor_columns(&mut rkeys, 88, 16, ror_distance(0, 3));
-    inv_shiftrows_1(&mut rkeys[72..80]); // to match fixslicing
-
-    memshift32(&mut rkeys, 88);
-    sbox(&mut rkeys[96..104]);
-    rcon_bit(&mut rkeys[96..104], 5);
-    xor_columns(&mut rkeys, 96, 16, ror_distance(1, 3));
-    inv_shiftrows_2(&mut rkeys[80..88]); // to match fixslicing
-
-    memshift32(&mut rkeys, 96);
-    sbox(&mut rkeys[104..112]);
-    xor_columns(&mut rkeys, 104, 16, ror_distance(0, 3));
-    inv_shiftrows_3(&mut rkeys[88..96]); // to match fixslicing
-
-    memshift32(&mut rkeys, 104);
-    sbox(&mut rkeys[112..]);
-    rcon_bit(&mut rkeys[112..], 6);
-    xor_columns(&mut rkeys, 112, 16, ror_distance(1, 3));
-    inv_shiftrows_1(&mut rkeys[104..112]); // to match fixslicing
-
-    // Bitwise NOT to speed up SBox calculations
+    // Account for NOTs removed from sub_bytes
     for i in 1..15 {
-        sbox_nots(&mut rkeys[(i * 8)..(i * 8 + 8)]);
+        sub_bytes_nots(&mut rkeys[(i * 8)..(i * 8 + 8)]);
     }
 
     rkeys
@@ -315,53 +237,43 @@ pub(crate) fn aes128_decrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
     debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
     let mut state = State::default();
 
-    // packs into bitsliced representation
-    packing(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
+    bitslice(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
 
-    ark(&mut state, &rkeys[80..]);
-    double_shiftrows(&mut state); // resynchronization
-    inv_sbox(&mut state);
+    add_round_key(&mut state, &rkeys[80..]);
+    // Synchronize fixslice format
+    inv_shift_rows_2(&mut state);
+    inv_sub_bytes(&mut state);
 
-    ark(&mut state, &rkeys[72..80]);
-    inv_mixcolumns_0(&mut state);
-    inv_sbox(&mut state);
+    let mut rk_off = 72;
+    loop {
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        inv_mix_columns_1(&mut state);
+        inv_sub_bytes(&mut state);
+        rk_off -= 8;
 
-    ark(&mut state, &rkeys[64..72]);
-    inv_mixcolumns_3(&mut state);
-    inv_sbox(&mut state);
+        if rk_off == 0 {
+            break;
+        }
 
-    ark(&mut state, &rkeys[56..64]);
-    inv_mixcolumns_2(&mut state);
-    inv_sbox(&mut state);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        inv_mix_columns_0(&mut state);
+        inv_sub_bytes(&mut state);
+        rk_off -= 8;
 
-    ark(&mut state, &rkeys[48..56]);
-    inv_mixcolumns_1(&mut state);
-    inv_sbox(&mut state);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        inv_mix_columns_3(&mut state);
+        inv_sub_bytes(&mut state);
+        rk_off -= 8;
 
-    ark(&mut state, &rkeys[40..48]);
-    inv_mixcolumns_0(&mut state);
-    inv_sbox(&mut state);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        inv_mix_columns_2(&mut state);
+        inv_sub_bytes(&mut state);
+        rk_off -= 8;
+    }
 
-    ark(&mut state, &rkeys[32..40]);
-    inv_mixcolumns_3(&mut state);
-    inv_sbox(&mut state);
+    add_round_key(&mut state, &rkeys[..8]);
 
-    ark(&mut state, &rkeys[24..32]);
-    inv_mixcolumns_2(&mut state);
-    inv_sbox(&mut state);
-
-    ark(&mut state, &rkeys[16..24]);
-    inv_mixcolumns_1(&mut state);
-    inv_sbox(&mut state);
-
-    ark(&mut state, &rkeys[8..16]);
-    inv_mixcolumns_0(&mut state);
-    inv_sbox(&mut state);
-
-    ark(&mut state, &rkeys[..8]);
-
-    // Unpack state into output
-    unpacking(&mut state, blocks);
+    inv_bitslice(&mut state, blocks);
 }
 
 /// Fully-fixsliced AES-128 encryption (the ShiftRows is completely omitted).
@@ -371,53 +283,43 @@ pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
     debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
     let mut state = State::default();
 
-    // packs into bitsliced representation
-    packing(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
+    bitslice(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
 
-    ark(&mut state, &rkeys[..8]);
+    add_round_key(&mut state, &rkeys[..8]);
 
-    sbox(&mut state);
-    mixcolumns_0(&mut state);
-    ark(&mut state, &rkeys[8..16]);
+    let mut rk_off = 8;
+    loop {
+        sub_bytes(&mut state);
+        mix_columns_1(&mut state);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        rk_off += 8;
 
-    sbox(&mut state);
-    mixcolumns_1(&mut state);
-    ark(&mut state, &rkeys[16..24]);
+        if rk_off == 80 {
+            break;
+        }
 
-    sbox(&mut state);
-    mixcolumns_2(&mut state);
-    ark(&mut state, &rkeys[24..32]);
+        sub_bytes(&mut state);
+        mix_columns_2(&mut state);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        rk_off += 8;
 
-    sbox(&mut state);
-    mixcolumns_3(&mut state);
-    ark(&mut state, &rkeys[32..40]);
+        sub_bytes(&mut state);
+        mix_columns_3(&mut state);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        rk_off += 8;
 
-    sbox(&mut state);
-    mixcolumns_0(&mut state);
-    ark(&mut state, &rkeys[40..48]);
+        sub_bytes(&mut state);
+        mix_columns_0(&mut state);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        rk_off += 8;
+    }
 
-    sbox(&mut state);
-    mixcolumns_1(&mut state);
-    ark(&mut state, &rkeys[48..56]);
+    sub_bytes(&mut state);
+    // Synchronize fixslice format
+    shift_rows_2(&mut state);
+    add_round_key(&mut state, &rkeys[80..]);
 
-    sbox(&mut state);
-    mixcolumns_2(&mut state);
-    ark(&mut state, &rkeys[56..64]);
-
-    sbox(&mut state);
-    mixcolumns_3(&mut state);
-    ark(&mut state, &rkeys[64..72]);
-
-    sbox(&mut state);
-    mixcolumns_0(&mut state);
-    ark(&mut state, &rkeys[72..80]);
-
-    sbox(&mut state);
-    double_shiftrows(&mut state); // resynchronization
-    ark(&mut state, &rkeys[80..]);
-
-    // Unpack state into output
-    unpacking(&mut state, blocks);
+    inv_bitslice(&mut state, blocks);
 }
 
 /// Fully-fixsliced AES-192 decryption (the InvShiftRows is completely omitted).
@@ -427,47 +329,42 @@ pub(crate) fn aes192_decrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
     debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
     let mut state = State::default();
 
-    // Pack into bitsliced representation
-    packing(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
+    bitslice(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
 
-    ark(&mut state, &rkeys[96..104]);
-    // No resynchronization needed
-    inv_sbox(&mut state);
-    ark(&mut state, &rkeys[88..96]);
+    add_round_key(&mut state, &rkeys[96..]);
+    // No fixslice synchronization needed
+    inv_sub_bytes(&mut state);
 
-    inv_mixcolumns_2(&mut state);
-    inv_sbox(&mut state);
-    ark(&mut state, &rkeys[80..88]);
+    let mut rk_off = 88;
+    loop {
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        inv_mix_columns_3(&mut state);
+        inv_sub_bytes(&mut state);
+        rk_off -= 8;
 
-    inv_mixcolumns_1(&mut state);
-    inv_sbox(&mut state);
-    ark(&mut state, &rkeys[72..80]);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        inv_mix_columns_2(&mut state);
+        inv_sub_bytes(&mut state);
+        rk_off -= 8;
 
-    inv_mixcolumns_0(&mut state);
-    inv_sbox(&mut state);
-    ark(&mut state, &rkeys[64..72]);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        inv_mix_columns_1(&mut state);
+        inv_sub_bytes(&mut state);
+        rk_off -= 8;
 
-    // Loop over quadruple rounds
-    for i in (0..64).step_by(32).rev() {
-        inv_mixcolumns_3(&mut state);
-        inv_sbox(&mut state);
-        ark(&mut state, &rkeys[(i + 24)..(i + 32)]);
+        if rk_off == 0 {
+            break;
+        }
 
-        inv_mixcolumns_2(&mut state);
-        inv_sbox(&mut state);
-        ark(&mut state, &rkeys[(i + 16)..(i + 24)]);
-
-        inv_mixcolumns_1(&mut state);
-        inv_sbox(&mut state);
-        ark(&mut state, &rkeys[(i + 8)..(i + 16)]);
-
-        inv_mixcolumns_0(&mut state);
-        inv_sbox(&mut state);
-        ark(&mut state, &rkeys[i..(i + 8)]);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        inv_mix_columns_0(&mut state);
+        inv_sub_bytes(&mut state);
+        rk_off -= 8;
     }
 
-    // Unpack state into output
-    unpacking(&mut state, blocks);
+    add_round_key(&mut state, &rkeys[..8]);
+
+    inv_bitslice(&mut state, blocks);
 }
 
 /// Fully-fixsliced AES-192 encryption (the ShiftRows is completely omitted).
@@ -477,47 +374,42 @@ pub(crate) fn aes192_encrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
     debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
     let mut state = State::default();
 
-    // Pack into bitsliced representation
-    packing(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
+    bitslice(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
 
-    // Loop over quadruple rounds
-    for i in (0..64).step_by(32) {
-        ark(&mut state, &rkeys[i..(i + 8)]);
-        sbox(&mut state);
-        mixcolumns_0(&mut state);
+    add_round_key(&mut state, &rkeys[..8]);
 
-        ark(&mut state, &rkeys[(i + 8)..(i + 16)]);
-        sbox(&mut state);
-        mixcolumns_1(&mut state);
+    let mut rk_off = 8;
+    loop {
+        sub_bytes(&mut state);
+        mix_columns_1(&mut state);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        rk_off += 8;
 
-        ark(&mut state, &rkeys[(i + 16)..(i + 24)]);
-        sbox(&mut state);
-        mixcolumns_2(&mut state);
+        sub_bytes(&mut state);
+        mix_columns_2(&mut state);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        rk_off += 8;
 
-        ark(&mut state, &rkeys[(i + 24)..(i + 32)]);
-        sbox(&mut state);
-        mixcolumns_3(&mut state);
+        sub_bytes(&mut state);
+        mix_columns_3(&mut state);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        rk_off += 8;
+
+        if rk_off == 96 {
+            break;
+        }
+
+        sub_bytes(&mut state);
+        mix_columns_0(&mut state);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        rk_off += 8;
     }
 
-    ark(&mut state, &rkeys[64..72]);
-    sbox(&mut state);
-    mixcolumns_0(&mut state);
+    sub_bytes(&mut state);
+    // No fixslice synchronization needed
+    add_round_key(&mut state, &rkeys[96..]);
 
-    ark(&mut state, &rkeys[72..80]);
-    sbox(&mut state);
-    mixcolumns_1(&mut state);
-
-    ark(&mut state, &rkeys[80..88]);
-    sbox(&mut state);
-    mixcolumns_2(&mut state);
-
-    ark(&mut state, &rkeys[88..96]);
-    sbox(&mut state);
-    // No resynchronization needed
-    ark(&mut state, &rkeys[96..104]);
-
-    // Unpack state into output
-    unpacking(&mut state, blocks);
+    inv_bitslice(&mut state, blocks);
 }
 
 /// Fully-fixsliced AES-256 decryption (the InvShiftRows is completely omitted).
@@ -527,39 +419,43 @@ pub(crate) fn aes256_decrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
     debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
     let mut state = State::default();
 
-    // Pack into bitsliced representation
-    packing(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
+    bitslice(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
 
-    ark(&mut state, &rkeys[112..]);
-    double_shiftrows(&mut state); // resynchronization
-    inv_sbox(&mut state);
-    ark(&mut state, &rkeys[104..112]);
+    add_round_key(&mut state, &rkeys[112..]);
+    // Synchronize fixslice format
+    inv_shift_rows_2(&mut state);
+    inv_sub_bytes(&mut state);
 
-    inv_mixcolumns_0(&mut state);
-    inv_sbox(&mut state);
-    ark(&mut state, &rkeys[96..104]);
+    let mut rk_off = 104;
+    loop {
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        inv_mix_columns_1(&mut state);
+        inv_sub_bytes(&mut state);
+        rk_off -= 8;
 
-    // Loop over quadruple rounds
-    for i in (0..96).step_by(32).rev() {
-        inv_mixcolumns_3(&mut state);
-        inv_sbox(&mut state);
-        ark(&mut state, &rkeys[(i + 24)..(i + 32)]);
+        if rk_off == 0 {
+            break;
+        }
 
-        inv_mixcolumns_2(&mut state);
-        inv_sbox(&mut state);
-        ark(&mut state, &rkeys[(i + 16)..(i + 24)]);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        inv_mix_columns_0(&mut state);
+        inv_sub_bytes(&mut state);
+        rk_off -= 8;
 
-        inv_mixcolumns_1(&mut state);
-        inv_sbox(&mut state);
-        ark(&mut state, &rkeys[(i + 8)..(i + 16)]);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        inv_mix_columns_3(&mut state);
+        inv_sub_bytes(&mut state);
+        rk_off -= 8;
 
-        inv_mixcolumns_0(&mut state);
-        inv_sbox(&mut state);
-        ark(&mut state, &rkeys[i..(i + 8)]);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        inv_mix_columns_2(&mut state);
+        inv_sub_bytes(&mut state);
+        rk_off -= 8;
     }
 
-    // Unpack state into output
-    unpacking(&mut state, blocks);
+    add_round_key(&mut state, &rkeys[..8]);
+
+    inv_bitslice(&mut state, blocks);
 }
 
 /// Fully-fixsliced AES-256 encryption (the ShiftRows is completely omitted).
@@ -569,44 +465,48 @@ pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
     debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
     let mut state = State::default();
 
-    // Pack into bitsliced representation
-    packing(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
+    bitslice(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
 
-    // Loop over quadruple rounds
-    for i in (0..96).step_by(32) {
-        ark(&mut state, &rkeys[i..(i + 8)]);
-        sbox(&mut state);
-        mixcolumns_0(&mut state);
+    add_round_key(&mut state, &rkeys[..8]);
 
-        ark(&mut state, &rkeys[(i + 8)..(i + 16)]);
-        sbox(&mut state);
-        mixcolumns_1(&mut state);
+    let mut rk_off = 8;
+    loop {
+        sub_bytes(&mut state);
+        mix_columns_1(&mut state);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        rk_off += 8;
 
-        ark(&mut state, &rkeys[(i + 16)..(i + 24)]);
-        sbox(&mut state);
-        mixcolumns_2(&mut state);
+        if rk_off == 112 {
+            break;
+        }
 
-        ark(&mut state, &rkeys[(i + 24)..(i + 32)]);
-        sbox(&mut state);
-        mixcolumns_3(&mut state);
+        sub_bytes(&mut state);
+        mix_columns_2(&mut state);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        rk_off += 8;
+
+        sub_bytes(&mut state);
+        mix_columns_3(&mut state);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        rk_off += 8;
+
+        sub_bytes(&mut state);
+        mix_columns_0(&mut state);
+        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+        rk_off += 8;
     }
 
-    ark(&mut state, &rkeys[96..104]);
-    sbox(&mut state);
-    mixcolumns_0(&mut state);
+    sub_bytes(&mut state);
+    // Synchronize fixslice format
+    shift_rows_2(&mut state);
+    add_round_key(&mut state, &rkeys[112..]);
 
-    ark(&mut state, &rkeys[104..112]);
-    sbox(&mut state);
-    double_shiftrows(&mut state); // resynchronization
-    ark(&mut state, &rkeys[112..]);
-
-    // Unpack state into output
-    unpacking(&mut state, blocks);
+    inv_bitslice(&mut state, blocks);
 }
 
 /// Note that the 4 bitwise NOT (^= 0xffffffffffffffff) are accounted for here so that it is a true
-/// inverse of 'sbox'.
-fn inv_sbox(state: &mut [u64]) {
+/// inverse of 'sub_bytes'.
+fn inv_sub_bytes(state: &mut [u64]) {
     debug_assert_eq!(state.len(), 8);
 
     // Scheduled using https://github.com/Ko-/aes-armcortexm/tree/public/scheduler
@@ -815,7 +715,7 @@ fn inv_sbox(state: &mut [u64]) {
 /// See: <http://www.cs.yale.edu/homes/peralta/CircuitStuff/SLP_AES_113.txt>
 ///
 /// Note that the 4 bitwise NOT (^= 0xffffffffffffffff) are moved to the key schedule.
-fn sbox(state: &mut [u64]) {
+fn sub_bytes(state: &mut [u64]) {
     debug_assert_eq!(state.len(), 8);
 
     // Scheduled using https://github.com/Ko-/aes-armcortexm/tree/public/scheduler
@@ -988,7 +888,7 @@ fn sbox(state: &mut [u64]) {
 
 /// NOT operations that are omitted in S-box
 #[inline]
-fn sbox_nots(state: &mut [u64]) {
+fn sub_bytes_nots(state: &mut [u64]) {
     debug_assert_eq!(state.len(), 8);
     state[0] ^= 0xffffffffffffffff;
     state[1] ^= 0xffffffffffffffff;
@@ -996,375 +896,136 @@ fn sbox_nots(state: &mut [u64]) {
     state[6] ^= 0xffffffffffffffff;
 }
 
-#[rustfmt::skip]
-fn inv_mixcolumns_0(state: &mut State) {
-    let (a0, a1, a2, a3, a4, a5, a6, a7) = (
-        state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
-    );
-    let (b0, b1, b2, b3, b4, b5, b6, b7) = (
-        rotate_rows_and_columns_1_1(a0),
-        rotate_rows_and_columns_1_1(a1),
-        rotate_rows_and_columns_1_1(a2),
-        rotate_rows_and_columns_1_1(a3),
-        rotate_rows_and_columns_1_1(a4),
-        rotate_rows_and_columns_1_1(a5),
-        rotate_rows_and_columns_1_1(a6),
-        rotate_rows_and_columns_1_1(a7),
-    );
-    let (c0, c1, c2, c3, c4, c5, c6, c7) = (
-        a0 ^ b0,
-        a1 ^ b1,
-        a2 ^ b2,
-        a3 ^ b3,
-        a4 ^ b4,
-        a5 ^ b5,
-        a6 ^ b6,
-        a7 ^ b7,
-    );
-    let (d0, d1, d2, d3, d4, d5, d6, d7) = (
-        a0      ^ c7,
-        a1 ^ c0 ^ c7,
-        a2 ^ c1,
-        a3 ^ c2 ^ c7,
-        a4 ^ c3 ^ c7,
-        a5 ^ c4,
-        a6 ^ c5,
-        a7 ^ c6,
-    );
-    let (e0, e1, e2, e3, e4, e5, e6, e7) = (
-        c0      ^ d6,
-        c1      ^ d6 ^ d7,
-        c2 ^ d0      ^ d7,
-        c3 ^ d1 ^ d6,
-        c4 ^ d2 ^ d6 ^ d7,
-        c5 ^ d3      ^ d7,
-        c6 ^ d4,
-        c7 ^ d5,
-    );
-    state[0] = d0 ^ e0 ^ rotate_rows_and_columns_2_2(e0);
-    state[1] = d1 ^ e1 ^ rotate_rows_and_columns_2_2(e1);
-    state[2] = d2 ^ e2 ^ rotate_rows_and_columns_2_2(e2);
-    state[3] = d3 ^ e3 ^ rotate_rows_and_columns_2_2(e3);
-    state[4] = d4 ^ e4 ^ rotate_rows_and_columns_2_2(e4);
-    state[5] = d5 ^ e5 ^ rotate_rows_and_columns_2_2(e5);
-    state[6] = d6 ^ e6 ^ rotate_rows_and_columns_2_2(e6);
-    state[7] = d7 ^ e7 ^ rotate_rows_and_columns_2_2(e7);
-}
-
-#[rustfmt::skip]
-fn inv_mixcolumns_1(state: &mut State) {
-    let (a0, a1, a2, a3, a4, a5, a6, a7) = (
-        state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
-    );
-    let (b0, b1, b2, b3, b4, b5, b6, b7) = (
-        rotate_rows_and_columns_1_2(a0),
-        rotate_rows_and_columns_1_2(a1),
-        rotate_rows_and_columns_1_2(a2),
-        rotate_rows_and_columns_1_2(a3),
-        rotate_rows_and_columns_1_2(a4),
-        rotate_rows_and_columns_1_2(a5),
-        rotate_rows_and_columns_1_2(a6),
-        rotate_rows_and_columns_1_2(a7),
-    );
-    let (c0, c1, c2, c3, c4, c5, c6, c7) = (
-        a0 ^ b0,
-        a1 ^ b1,
-        a2 ^ b2,
-        a3 ^ b3,
-        a4 ^ b4,
-        a5 ^ b5,
-        a6 ^ b6,
-        a7 ^ b7,
-    );
-    let (d0, d1, d2, d3, d4, d5, d6, d7) = (
-        a0      ^ c7,
-        a1 ^ c0 ^ c7,
-        a2 ^ c1,
-        a3 ^ c2 ^ c7,
-        a4 ^ c3 ^ c7,
-        a5 ^ c4,
-        a6 ^ c5,
-        a7 ^ c6,
-    );
-    let (e0, e1, e2, e3, e4, e5, e6, e7) = (
-        c0      ^ d6,
-        c1      ^ d6 ^ d7,
-        c2 ^ d0      ^ d7,
-        c3 ^ d1 ^ d6,
-        c4 ^ d2 ^ d6 ^ d7,
-        c5 ^ d3      ^ d7,
-        c6 ^ d4,
-        c7 ^ d5,
-    );
-    state[0] = d0 ^ e0 ^ rotate_rows_2(e0);
-    state[1] = d1 ^ e1 ^ rotate_rows_2(e1);
-    state[2] = d2 ^ e2 ^ rotate_rows_2(e2);
-    state[3] = d3 ^ e3 ^ rotate_rows_2(e3);
-    state[4] = d4 ^ e4 ^ rotate_rows_2(e4);
-    state[5] = d5 ^ e5 ^ rotate_rows_2(e5);
-    state[6] = d6 ^ e6 ^ rotate_rows_2(e6);
-    state[7] = d7 ^ e7 ^ rotate_rows_2(e7);
-}
-
-#[rustfmt::skip]
-fn inv_mixcolumns_2(state: &mut State) {
-    let (a0, a1, a2, a3, a4, a5, a6, a7) = (
-        state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
-    );
-    let (b0, b1, b2, b3, b4, b5, b6, b7) = (
-        rotate_rows_and_columns_1_3(a0),
-        rotate_rows_and_columns_1_3(a1),
-        rotate_rows_and_columns_1_3(a2),
-        rotate_rows_and_columns_1_3(a3),
-        rotate_rows_and_columns_1_3(a4),
-        rotate_rows_and_columns_1_3(a5),
-        rotate_rows_and_columns_1_3(a6),
-        rotate_rows_and_columns_1_3(a7),
-    );
-    let (c0, c1, c2, c3, c4, c5, c6, c7) = (
-        a0 ^ b0,
-        a1 ^ b1,
-        a2 ^ b2,
-        a3 ^ b3,
-        a4 ^ b4,
-        a5 ^ b5,
-        a6 ^ b6,
-        a7 ^ b7,
-    );
-    let (d0, d1, d2, d3, d4, d5, d6, d7) = (
-        a0      ^ c7,
-        a1 ^ c0 ^ c7,
-        a2 ^ c1,
-        a3 ^ c2 ^ c7,
-        a4 ^ c3 ^ c7,
-        a5 ^ c4,
-        a6 ^ c5,
-        a7 ^ c6,
-    );
-    let (e0, e1, e2, e3, e4, e5, e6, e7) = (
-        c0      ^ d6,
-        c1      ^ d6 ^ d7,
-        c2 ^ d0      ^ d7,
-        c3 ^ d1 ^ d6,
-        c4 ^ d2 ^ d6 ^ d7,
-        c5 ^ d3      ^ d7,
-        c6 ^ d4,
-        c7 ^ d5,
-    );
-    state[0] = d0 ^ e0 ^ rotate_rows_and_columns_2_2(e0);
-    state[1] = d1 ^ e1 ^ rotate_rows_and_columns_2_2(e1);
-    state[2] = d2 ^ e2 ^ rotate_rows_and_columns_2_2(e2);
-    state[3] = d3 ^ e3 ^ rotate_rows_and_columns_2_2(e3);
-    state[4] = d4 ^ e4 ^ rotate_rows_and_columns_2_2(e4);
-    state[5] = d5 ^ e5 ^ rotate_rows_and_columns_2_2(e5);
-    state[6] = d6 ^ e6 ^ rotate_rows_and_columns_2_2(e6);
-    state[7] = d7 ^ e7 ^ rotate_rows_and_columns_2_2(e7);
-}
-
-#[rustfmt::skip]
-fn inv_mixcolumns_3(state: &mut State) {
-    let (a0, a1, a2, a3, a4, a5, a6, a7) = (
-        state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
-    );
-    let (b0, b1, b2, b3, b4, b5, b6, b7) = (
-        rotate_rows_1(a0),
-        rotate_rows_1(a1),
-        rotate_rows_1(a2),
-        rotate_rows_1(a3),
-        rotate_rows_1(a4),
-        rotate_rows_1(a5),
-        rotate_rows_1(a6),
-        rotate_rows_1(a7),
-    );
-    let (c0, c1, c2, c3, c4, c5, c6, c7) = (
-        a0 ^ b0,
-        a1 ^ b1,
-        a2 ^ b2,
-        a3 ^ b3,
-        a4 ^ b4,
-        a5 ^ b5,
-        a6 ^ b6,
-        a7 ^ b7,
-    );
-    let (d0, d1, d2, d3, d4, d5, d6, d7) = (
-        a0      ^ c7,
-        a1 ^ c0 ^ c7,
-        a2 ^ c1,
-        a3 ^ c2 ^ c7,
-        a4 ^ c3 ^ c7,
-        a5 ^ c4,
-        a6 ^ c5,
-        a7 ^ c6,
-    );
-    let (e0, e1, e2, e3, e4, e5, e6, e7) = (
-        c0      ^ d6,
-        c1      ^ d6 ^ d7,
-        c2 ^ d0      ^ d7,
-        c3 ^ d1 ^ d6,
-        c4 ^ d2 ^ d6 ^ d7,
-        c5 ^ d3      ^ d7,
-        c6 ^ d4,
-        c7 ^ d5,
-    );
-    state[0] = d0 ^ e0 ^ rotate_rows_2(e0);
-    state[1] = d1 ^ e1 ^ rotate_rows_2(e1);
-    state[2] = d2 ^ e2 ^ rotate_rows_2(e2);
-    state[3] = d3 ^ e3 ^ rotate_rows_2(e3);
-    state[4] = d4 ^ e4 ^ rotate_rows_2(e4);
-    state[5] = d5 ^ e5 ^ rotate_rows_2(e5);
-    state[6] = d6 ^ e6 ^ rotate_rows_2(e6);
-    state[7] = d7 ^ e7 ^ rotate_rows_2(e7);
-}
-
-/// Computation of the MixColumns transformation in the fixsliced representation
-/// used for rounds i s.t. (i%4) == 0.
-#[rustfmt::skip]
-fn mixcolumns_0(state: &mut State) {
-    let (a0, a1, a2, a3, a4, a5, a6, a7) = (
-        state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
-    );
-    let (b0, b1, b2, b3, b4, b5, b6, b7) = (
-        rotate_rows_and_columns_1_1(a0),
-        rotate_rows_and_columns_1_1(a1),
-        rotate_rows_and_columns_1_1(a2),
-        rotate_rows_and_columns_1_1(a3),
-        rotate_rows_and_columns_1_1(a4),
-        rotate_rows_and_columns_1_1(a5),
-        rotate_rows_and_columns_1_1(a6),
-        rotate_rows_and_columns_1_1(a7),
-    );
-    let (c0, c1, c2, c3, c4, c5, c6, c7) = (
-        a0 ^ b0,
-        a1 ^ b1,
-        a2 ^ b2,
-        a3 ^ b3,
-        a4 ^ b4,
-        a5 ^ b5,
-        a6 ^ b6,
-        a7 ^ b7,
-    );
-    state[0] = b0      ^ c7 ^ rotate_rows_and_columns_2_2(c0);
-    state[1] = b1 ^ c0 ^ c7 ^ rotate_rows_and_columns_2_2(c1);
-    state[2] = b2 ^ c1      ^ rotate_rows_and_columns_2_2(c2);
-    state[3] = b3 ^ c2 ^ c7 ^ rotate_rows_and_columns_2_2(c3);
-    state[4] = b4 ^ c3 ^ c7 ^ rotate_rows_and_columns_2_2(c4);
-    state[5] = b5 ^ c4      ^ rotate_rows_and_columns_2_2(c5);
-    state[6] = b6 ^ c5      ^ rotate_rows_and_columns_2_2(c6);
-    state[7] = b7 ^ c6      ^ rotate_rows_and_columns_2_2(c7);
-}
-
-/// Computation of the MixColumns transformation in the fixsliced representation
-/// used for round i s.t. (i%4) == 1.
-#[rustfmt::skip]
-fn mixcolumns_1(state: &mut State) {
-    let (a0, a1, a2, a3, a4, a5, a6, a7) = (
-        state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
-    );
-    let (b0, b1, b2, b3, b4, b5, b6, b7) = (
-        rotate_rows_and_columns_1_2(a0),
-        rotate_rows_and_columns_1_2(a1),
-        rotate_rows_and_columns_1_2(a2),
-        rotate_rows_and_columns_1_2(a3),
-        rotate_rows_and_columns_1_2(a4),
-        rotate_rows_and_columns_1_2(a5),
-        rotate_rows_and_columns_1_2(a6),
-        rotate_rows_and_columns_1_2(a7),
-    );
-    let (c0, c1, c2, c3, c4, c5, c6, c7) = (
-        a0 ^ b0,
-        a1 ^ b1,
-        a2 ^ b2,
-        a3 ^ b3,
-        a4 ^ b4,
-        a5 ^ b5,
-        a6 ^ b6,
-        a7 ^ b7,
-    );
-    state[0] = b0      ^ c7 ^ rotate_rows_2(c0);
-    state[1] = b1 ^ c0 ^ c7 ^ rotate_rows_2(c1);
-    state[2] = b2 ^ c1      ^ rotate_rows_2(c2);
-    state[3] = b3 ^ c2 ^ c7 ^ rotate_rows_2(c3);
-    state[4] = b4 ^ c3 ^ c7 ^ rotate_rows_2(c4);
-    state[5] = b5 ^ c4      ^ rotate_rows_2(c5);
-    state[6] = b6 ^ c5      ^ rotate_rows_2(c6);
-    state[7] = b7 ^ c6      ^ rotate_rows_2(c7);
-}
-
-/// Computation of the MixColumns transformation in the fixsliced representation
-/// used for rounds i s.t. (i%4) == 2.
-#[rustfmt::skip]
-fn mixcolumns_2(state: &mut State) {
-    let (a0, a1, a2, a3, a4, a5, a6, a7) = (
-        state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
-    );
-    let (b0, b1, b2, b3, b4, b5, b6, b7) = (
-        rotate_rows_and_columns_1_3(a0),
-        rotate_rows_and_columns_1_3(a1),
-        rotate_rows_and_columns_1_3(a2),
-        rotate_rows_and_columns_1_3(a3),
-        rotate_rows_and_columns_1_3(a4),
-        rotate_rows_and_columns_1_3(a5),
-        rotate_rows_and_columns_1_3(a6),
-        rotate_rows_and_columns_1_3(a7),
-    );
-    let (c0, c1, c2, c3, c4, c5, c6, c7) = (
-        a0 ^ b0,
-        a1 ^ b1,
-        a2 ^ b2,
-        a3 ^ b3,
-        a4 ^ b4,
-        a5 ^ b5,
-        a6 ^ b6,
-        a7 ^ b7,
-    );
-    state[0] = b0      ^ c7 ^ rotate_rows_and_columns_2_2(c0);
-    state[1] = b1 ^ c0 ^ c7 ^ rotate_rows_and_columns_2_2(c1);
-    state[2] = b2 ^ c1      ^ rotate_rows_and_columns_2_2(c2);
-    state[3] = b3 ^ c2 ^ c7 ^ rotate_rows_and_columns_2_2(c3);
-    state[4] = b4 ^ c3 ^ c7 ^ rotate_rows_and_columns_2_2(c4);
-    state[5] = b5 ^ c4      ^ rotate_rows_and_columns_2_2(c5);
-    state[6] = b6 ^ c5      ^ rotate_rows_and_columns_2_2(c6);
-    state[7] = b7 ^ c6      ^ rotate_rows_and_columns_2_2(c7);
-}
-
-/// Computation of the MixColumns transformation in the fixsliced representation
-/// used for rounds i s.t. (i%4) == 3.
+/// Computation of the MixColumns transformation in the fixsliced representation, with different
+/// rotations used according to the round number mod 4.
 ///
 /// Based on Käsper-Schwabe, similar to https://github.com/Ko-/aes-armcortexm.
-#[rustfmt::skip]
-fn mixcolumns_3(state: &mut State) {
-    let (a0, a1, a2, a3, a4, a5, a6, a7) = (
-        state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
-    );
-    let (b0, b1, b2, b3, b4, b5, b6, b7) = (
-        rotate_rows_1(a0),
-        rotate_rows_1(a1),
-        rotate_rows_1(a2),
-        rotate_rows_1(a3),
-        rotate_rows_1(a4),
-        rotate_rows_1(a5),
-        rotate_rows_1(a6),
-        rotate_rows_1(a7),
-    );
-    let (c0, c1, c2, c3, c4, c5, c6, c7) = (
-        a0 ^ b0,
-        a1 ^ b1,
-        a2 ^ b2,
-        a3 ^ b3,
-        a4 ^ b4,
-        a5 ^ b5,
-        a6 ^ b6,
-        a7 ^ b7,
-    );
-    state[0] = b0      ^ c7 ^ rotate_rows_2(c0);
-    state[1] = b1 ^ c0 ^ c7 ^ rotate_rows_2(c1);
-    state[2] = b2 ^ c1      ^ rotate_rows_2(c2);
-    state[3] = b3 ^ c2 ^ c7 ^ rotate_rows_2(c3);
-    state[4] = b4 ^ c3 ^ c7 ^ rotate_rows_2(c4);
-    state[5] = b5 ^ c4      ^ rotate_rows_2(c5);
-    state[6] = b6 ^ c5      ^ rotate_rows_2(c6);
-    state[7] = b7 ^ c6      ^ rotate_rows_2(c7);
+macro_rules! define_mix_columns {
+    (
+        $name:ident,
+        $name_inv:ident,
+        $first_rotate:path,
+        $second_rotate:path
+    ) => {
+        #[rustfmt::skip]
+        fn $name(state: &mut State) {
+            let (a0, a1, a2, a3, a4, a5, a6, a7) = (
+                state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
+            );
+            let (b0, b1, b2, b3, b4, b5, b6, b7) = (
+                $first_rotate(a0),
+                $first_rotate(a1),
+                $first_rotate(a2),
+                $first_rotate(a3),
+                $first_rotate(a4),
+                $first_rotate(a5),
+                $first_rotate(a6),
+                $first_rotate(a7),
+            );
+            let (c0, c1, c2, c3, c4, c5, c6, c7) = (
+                a0 ^ b0,
+                a1 ^ b1,
+                a2 ^ b2,
+                a3 ^ b3,
+                a4 ^ b4,
+                a5 ^ b5,
+                a6 ^ b6,
+                a7 ^ b7,
+            );
+            state[0] = b0      ^ c7 ^ $second_rotate(c0);
+            state[1] = b1 ^ c0 ^ c7 ^ $second_rotate(c1);
+            state[2] = b2 ^ c1      ^ $second_rotate(c2);
+            state[3] = b3 ^ c2 ^ c7 ^ $second_rotate(c3);
+            state[4] = b4 ^ c3 ^ c7 ^ $second_rotate(c4);
+            state[5] = b5 ^ c4      ^ $second_rotate(c5);
+            state[6] = b6 ^ c5      ^ $second_rotate(c6);
+            state[7] = b7 ^ c6      ^ $second_rotate(c7);
+        }
+
+        #[rustfmt::skip]
+        fn $name_inv(state: &mut State) {
+            let (a0, a1, a2, a3, a4, a5, a6, a7) = (
+                state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
+            );
+            let (b0, b1, b2, b3, b4, b5, b6, b7) = (
+                $first_rotate(a0),
+                $first_rotate(a1),
+                $first_rotate(a2),
+                $first_rotate(a3),
+                $first_rotate(a4),
+                $first_rotate(a5),
+                $first_rotate(a6),
+                $first_rotate(a7),
+            );
+            let (c0, c1, c2, c3, c4, c5, c6, c7) = (
+                a0 ^ b0,
+                a1 ^ b1,
+                a2 ^ b2,
+                a3 ^ b3,
+                a4 ^ b4,
+                a5 ^ b5,
+                a6 ^ b6,
+                a7 ^ b7,
+            );
+            let (d0, d1, d2, d3, d4, d5, d6, d7) = (
+                a0      ^ c7,
+                a1 ^ c0 ^ c7,
+                a2 ^ c1,
+                a3 ^ c2 ^ c7,
+                a4 ^ c3 ^ c7,
+                a5 ^ c4,
+                a6 ^ c5,
+                a7 ^ c6,
+            );
+            let (e0, e1, e2, e3, e4, e5, e6, e7) = (
+                c0      ^ d6,
+                c1      ^ d6 ^ d7,
+                c2 ^ d0      ^ d7,
+                c3 ^ d1 ^ d6,
+                c4 ^ d2 ^ d6 ^ d7,
+                c5 ^ d3      ^ d7,
+                c6 ^ d4,
+                c7 ^ d5,
+            );
+            state[0] = d0 ^ e0 ^ $second_rotate(e0);
+            state[1] = d1 ^ e1 ^ $second_rotate(e1);
+            state[2] = d2 ^ e2 ^ $second_rotate(e2);
+            state[3] = d3 ^ e3 ^ $second_rotate(e3);
+            state[4] = d4 ^ e4 ^ $second_rotate(e4);
+            state[5] = d5 ^ e5 ^ $second_rotate(e5);
+            state[6] = d6 ^ e6 ^ $second_rotate(e6);
+            state[7] = d7 ^ e7 ^ $second_rotate(e7);
+        }
+    }
 }
+
+define_mix_columns!(
+    mix_columns_0,
+    inv_mix_columns_0,
+    rotate_rows_1,
+    rotate_rows_2
+);
+
+define_mix_columns!(
+    mix_columns_1,
+    inv_mix_columns_1,
+    rotate_rows_and_columns_1_1,
+    rotate_rows_and_columns_2_2
+);
+
+define_mix_columns!(
+    mix_columns_2,
+    inv_mix_columns_2,
+    rotate_rows_and_columns_1_2,
+    rotate_rows_2
+);
+
+define_mix_columns!(
+    mix_columns_3,
+    inv_mix_columns_3,
+    rotate_rows_and_columns_1_3,
+    rotate_rows_and_columns_2_2
+);
 
 #[inline]
 fn delta_swap_1(a: &mut u64, shift: u32, mask: u64) {
@@ -1379,44 +1040,48 @@ fn delta_swap_2(a: &mut u64, b: &mut u64, shift: u32, mask: u64) {
     *b ^= t << shift;
 }
 
-/// Applies ShiftRows^(-1) on a round key to match the fixsliced representation.
+/// Applies ShiftRows once on an AES state (or key).
 #[inline]
-fn inv_shiftrows_1(rkey: &mut [u64]) {
-    debug_assert_eq!(rkey.len(), 8);
-
-    for x in rkey.iter_mut() {
-        delta_swap_1(x, 8, 0x000f00ff00f00000);
-        delta_swap_1(x, 4, 0x0f0f00000f0f0000);
-    }
-}
-
-/// Applies ShiftRows^(-2) on a round key to match the fixsliced representation.
-#[inline]
-fn inv_shiftrows_2(rkey: &mut [u64]) {
-    debug_assert_eq!(rkey.len(), 8);
-
-    for x in rkey.iter_mut() {
-        delta_swap_1(x, 8, 0x00ff000000ff0000);
-    }
-}
-
-/// Applies ShiftRows^(-3) on a round key to match the fixsliced representation.
-#[inline]
-fn inv_shiftrows_3(rkey: &mut [u64]) {
-    debug_assert_eq!(rkey.len(), 8);
-
-    for x in rkey.iter_mut() {
+fn shift_rows_1(state: &mut [u64]) {
+    debug_assert_eq!(state.len(), 8);
+    for x in state.iter_mut() {
         delta_swap_1(x, 8, 0x00f000ff000f0000);
         delta_swap_1(x, 4, 0x0f0f00000f0f0000);
     }
 }
 
-/// Applies the ShiftRows transformation twice (i.e. SR^2) on the internal state.
+/// Applies ShiftRows twice on an AES state (or key).
 #[inline]
-fn double_shiftrows(state: &mut State) {
+fn shift_rows_2(state: &mut [u64]) {
+    debug_assert_eq!(state.len(), 8);
     for x in state.iter_mut() {
         delta_swap_1(x, 8, 0x00ff000000ff0000);
     }
+}
+
+/// Applies ShiftRows three times on an AES state (or key).
+#[inline]
+fn shift_rows_3(state: &mut [u64]) {
+    debug_assert_eq!(state.len(), 8);
+    for x in state.iter_mut() {
+        delta_swap_1(x, 8, 0x000f00ff00f00000);
+        delta_swap_1(x, 4, 0x0f0f00000f0f0000);
+    }
+}
+
+#[inline(always)]
+fn inv_shift_rows_1(state: &mut [u64]) {
+    shift_rows_3(state);
+}
+
+#[inline(always)]
+fn inv_shift_rows_2(state: &mut [u64]) {
+    shift_rows_2(state);
+}
+
+#[inline(always)]
+fn inv_shift_rows_3(state: &mut [u64]) {
+    shift_rows_1(state);
 }
 
 /// XOR the columns after the S-box during the key schedule round function.
@@ -1430,7 +1095,7 @@ fn double_shiftrows(state: &mut State) {
 /// The `idx_ror` parameter refers to the rotation value, which varies between the
 /// different key schedules.
 fn xor_columns(rkeys: &mut [u64], offset: usize, idx_xor: usize, idx_ror: u32) {
-    sbox_nots(&mut rkeys[offset..(offset + 8)]);
+    sub_bytes_nots(&mut rkeys[offset..(offset + 8)]);
 
     for i in 0..8 {
         let off_i = offset + i;
@@ -1441,8 +1106,8 @@ fn xor_columns(rkeys: &mut [u64], offset: usize, idx_xor: usize, idx_ror: u32) {
     }
 }
 
-/// Packs four 128-bit input blocks input0, input1, input2, input3 into the 512-bit internal state.
-fn packing(output: &mut [u64], input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) {
+/// Bitslice four 128-bit input blocks input0, input1, input2, input3 into a 512-bit internal state.
+fn bitslice(output: &mut [u64], input0: &[u8], input1: &[u8], input2: &[u8], input3: &[u8]) {
     debug_assert_eq!(output.len(), 8);
     debug_assert_eq!(input0.len(), 16);
     debug_assert_eq!(input1.len(), 16);
@@ -1518,8 +1183,8 @@ fn packing(output: &mut [u64], input0: &[u8], input1: &[u8], input2: &[u8], inpu
     output[7] = t7;
 }
 
-/// Unpacks the 512-bit internal state into four 128-bit blocks of output.
-fn unpacking(input: &mut [u64], output: &mut [Block]) {
+/// Un-bitslice a 512-bit internal state into four 128-bit blocks of output.
+fn inv_bitslice(input: &mut [u64], output: &mut [Block]) {
     debug_assert_eq!(input.len(), 8);
     debug_assert_eq!(output.len(), 4);
 
@@ -1610,7 +1275,7 @@ fn memshift32(buffer: &mut [u64], src_offset: usize) {
 /// XOR the round key to the internal state. The round keys are expected to be
 /// pre-computed and to be packed in the fixsliced representation.
 #[inline]
-fn ark(state: &mut State, rkey: &[u64]) {
+fn add_round_key(state: &mut State, rkey: &[u64]) {
     debug_assert_eq!(rkey.len(), 8);
     for (a, b) in state.iter_mut().zip(rkey) {
         *a ^= b;
@@ -1618,7 +1283,7 @@ fn ark(state: &mut State, rkey: &[u64]) {
 }
 
 #[inline(always)]
-fn rcon_bit(state: &mut [u64], bit: usize) {
+fn add_round_constant_bit(state: &mut [u64], bit: usize) {
     state[bit] ^= 0x00000000f0000000;
 }
 
