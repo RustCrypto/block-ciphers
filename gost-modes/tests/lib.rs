@@ -179,5 +179,5 @@ fn magma_modes() {
     assert_eq!(buf, &pt[..]);
 }
 
-cipher::new_seek_test!(kuznyechik_ctr_seek, GostCtr128::<Kuznyechik, U14>);
-cipher::new_seek_test!(magma_ctr_seek, GostCtr64::<Magma, U5>);
+cipher::stream_cipher_seek_test!(kuznyechik_ctr_seek, GostCtr128::<Kuznyechik, U14>);
+cipher::stream_cipher_seek_test!(magma_ctr_seek, GostCtr64::<Magma, U5>);

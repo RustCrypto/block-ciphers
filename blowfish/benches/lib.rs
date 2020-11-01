@@ -1,3 +1,3 @@
 #![feature(test)]
 
-cipher::bench!(blowfish::Blowfish, 16);
+cipher::block_cipher_bench!(blowfish::Blowfish, 16);

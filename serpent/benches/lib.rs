@@ -1,3 +1,3 @@
 #![feature(test)]
 
-cipher::bench!(serpent::Serpent, 16);
+cipher::block_cipher_bench!(serpent::Serpent, 16);

@@ -1,3 +1,3 @@
 #![feature(test)]
 
-cipher::bench!(sm4::Sm4, 16);
+cipher::block_cipher_bench!(sm4::Sm4, 16);

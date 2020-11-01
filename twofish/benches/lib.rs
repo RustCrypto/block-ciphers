@@ -1,3 +1,3 @@
 #![feature(test)]
 
-cipher::bench!(twofish::Twofish, 16);
+cipher::block_cipher_bench!(twofish::Twofish, 16);

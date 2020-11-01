@@ -1,3 +1,3 @@
 #![feature(test)]
 
-cipher::bench!(des::Des, 8);
+cipher::block_cipher_bench!(des::Des, 8);
