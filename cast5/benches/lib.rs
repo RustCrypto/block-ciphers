@@ -1,3 +1,3 @@
 #![feature(test)]
 
-cipher::bench!(cast5::Cast5, 16);
+cipher::block_cipher_bench!(cast5::Cast5, 16);

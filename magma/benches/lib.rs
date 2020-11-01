@@ -1,3 +1,3 @@
 #![feature(test)]
 
-cipher::bench!(magma::Magma, 32);
+cipher::block_cipher_bench!(magma::Magma, 32);

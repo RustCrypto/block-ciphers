@@ -1,3 +1,3 @@
 #![feature(test)]
 
-cipher::bench!(des::TdesEde3, 24);
+cipher::block_cipher_bench!(des::TdesEde3, 24);

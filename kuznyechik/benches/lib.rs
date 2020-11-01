@@ -1,3 +1,3 @@
 #![feature(test)]
 
-cipher::bench!(kuznyechik::Kuznyechik, 32);
+cipher::block_cipher_bench!(kuznyechik::Kuznyechik, 32);
