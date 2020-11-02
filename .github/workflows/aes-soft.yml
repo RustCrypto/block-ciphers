@@ -66,6 +66,7 @@ jobs:
       - run: ${{ matrix.deps }}
       - run: cargo check --target ${{ matrix.target }} --all-features
       - run: cargo test --release --target ${{ matrix.target }}
+      - run: cargo test --release --target ${{ matrix.target }} --features semi_fixslice
 
   # Cross-compiled tests
   cross:
@@ -96,3 +97,4 @@ jobs:
           override: true
       - run: cargo install cross
       - run: cross test --release --target ${{ matrix.target }}
+      - run: cross test --release --target ${{ matrix.target }} --features semi_fixslice
