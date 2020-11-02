@@ -61,12 +61,21 @@ pub(crate) fn aes128_key_schedule(key: &GenericArray<u8, U16>) -> FixsliceKeys12
     }
 
     // Adjust to match fixslicing format
-    for i in (8..72).step_by(32) {
-        inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
-        inv_shift_rows_2(&mut rkeys[(i + 8)..(i + 16)]);
-        inv_shift_rows_3(&mut rkeys[(i + 16)..(i + 24)]);
+    #[cfg(feature = "semi_fixslice")]
+    {
+        for i in (8..88).step_by(16) {
+            inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
+        }
     }
-    inv_shift_rows_1(&mut rkeys[72..80]);
+    #[cfg(not(feature = "semi_fixslice"))]
+    {
+        for i in (8..72).step_by(32) {
+            inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
+            inv_shift_rows_2(&mut rkeys[(i + 8)..(i + 16)]);
+            inv_shift_rows_3(&mut rkeys[(i + 16)..(i + 24)]);
+        }
+        inv_shift_rows_1(&mut rkeys[72..80]);
+    }
 
     // Account for NOTs removed from sub_bytes
     for i in 1..11 {
@@ -157,10 +166,19 @@ pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys19
     }
 
     // Adjust to match fixslicing format
-    for i in (0..96).step_by(32) {
-        inv_shift_rows_1(&mut rkeys[(i + 8)..(i + 16)]);
-        inv_shift_rows_2(&mut rkeys[(i + 16)..(i + 24)]);
-        inv_shift_rows_3(&mut rkeys[(i + 24)..(i + 32)]);
+    #[cfg(feature = "semi_fixslice")]
+    {
+        for i in (8..104).step_by(16) {
+            inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
+        }
+    }
+    #[cfg(not(feature = "semi_fixslice"))]
+    {
+        for i in (0..96).step_by(32) {
+            inv_shift_rows_1(&mut rkeys[(i + 8)..(i + 16)]);
+            inv_shift_rows_2(&mut rkeys[(i + 16)..(i + 24)]);
+            inv_shift_rows_3(&mut rkeys[(i + 24)..(i + 32)]);
+        }
     }
 
     // Account for NOTs removed from sub_bytes
@@ -215,12 +233,21 @@ pub(crate) fn aes256_key_schedule(key: &GenericArray<u8, U32>) -> FixsliceKeys25
     }
 
     // Adjust to match fixslicing format
-    for i in (8..104).step_by(32) {
-        inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
-        inv_shift_rows_2(&mut rkeys[(i + 8)..(i + 16)]);
-        inv_shift_rows_3(&mut rkeys[(i + 16)..(i + 24)]);
+    #[cfg(feature = "semi_fixslice")]
+    {
+        for i in (8..120).step_by(16) {
+            inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
+        }
     }
-    inv_shift_rows_1(&mut rkeys[104..112]);
+    #[cfg(not(feature = "semi_fixslice"))]
+    {
+        for i in (8..104).step_by(32) {
+            inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
+            inv_shift_rows_2(&mut rkeys[(i + 8)..(i + 16)]);
+            inv_shift_rows_3(&mut rkeys[(i + 16)..(i + 24)]);
+        }
+        inv_shift_rows_1(&mut rkeys[104..112]);
+    }
 
     // Account for NOTs removed from sub_bytes
     for i in 1..15 {
@@ -240,12 +267,20 @@ pub(crate) fn aes128_decrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
     bitslice(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
 
     add_round_key(&mut state, &rkeys[80..]);
-    // Synchronize fixslice format
-    inv_shift_rows_2(&mut state);
     inv_sub_bytes(&mut state);
+
+    #[cfg(not(feature = "semi_fixslice"))]
+    {
+        inv_shift_rows_2(&mut state);
+    }
 
     let mut rk_off = 72;
     loop {
+        #[cfg(feature = "semi_fixslice")]
+        {
+            inv_shift_rows_2(&mut state);
+        }
+
         add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
         inv_mix_columns_1(&mut state);
         inv_sub_bytes(&mut state);
@@ -260,15 +295,18 @@ pub(crate) fn aes128_decrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
         inv_sub_bytes(&mut state);
         rk_off -= 8;
 
-        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
-        inv_mix_columns_3(&mut state);
-        inv_sub_bytes(&mut state);
-        rk_off -= 8;
+        #[cfg(not(feature = "semi_fixslice"))]
+        {
+            add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+            inv_mix_columns_3(&mut state);
+            inv_sub_bytes(&mut state);
+            rk_off -= 8;
 
-        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
-        inv_mix_columns_2(&mut state);
-        inv_sub_bytes(&mut state);
-        rk_off -= 8;
+            add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+            inv_mix_columns_2(&mut state);
+            inv_sub_bytes(&mut state);
+            rk_off -= 8;
+        }
     }
 
     add_round_key(&mut state, &rkeys[..8]);
@@ -294,19 +332,27 @@ pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
         add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
         rk_off += 8;
 
+        #[cfg(feature = "semi_fixslice")]
+        {
+            shift_rows_2(&mut state);
+        }
+
         if rk_off == 80 {
             break;
         }
 
-        sub_bytes(&mut state);
-        mix_columns_2(&mut state);
-        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
-        rk_off += 8;
+        #[cfg(not(feature = "semi_fixslice"))]
+        {
+            sub_bytes(&mut state);
+            mix_columns_2(&mut state);
+            add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+            rk_off += 8;
 
-        sub_bytes(&mut state);
-        mix_columns_3(&mut state);
-        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
-        rk_off += 8;
+            sub_bytes(&mut state);
+            mix_columns_3(&mut state);
+            add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+            rk_off += 8;
+        }
 
         sub_bytes(&mut state);
         mix_columns_0(&mut state);
@@ -314,9 +360,12 @@ pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
         rk_off += 8;
     }
 
+    #[cfg(not(feature = "semi_fixslice"))]
+    {
+        shift_rows_2(&mut state);
+    }
+
     sub_bytes(&mut state);
-    // Synchronize fixslice format
-    shift_rows_2(&mut state);
     add_round_key(&mut state, &rkeys[80..]);
 
     inv_bitslice(&mut state, blocks);
@@ -332,20 +381,26 @@ pub(crate) fn aes192_decrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
     bitslice(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
 
     add_round_key(&mut state, &rkeys[96..]);
-    // No fixslice synchronization needed
     inv_sub_bytes(&mut state);
 
     let mut rk_off = 88;
     loop {
-        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
-        inv_mix_columns_3(&mut state);
-        inv_sub_bytes(&mut state);
-        rk_off -= 8;
+        #[cfg(feature = "semi_fixslice")]
+        {
+            inv_shift_rows_2(&mut state);
+        }
+        #[cfg(not(feature = "semi_fixslice"))]
+        {
+            add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+            inv_mix_columns_3(&mut state);
+            inv_sub_bytes(&mut state);
+            rk_off -= 8;
 
-        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
-        inv_mix_columns_2(&mut state);
-        inv_sub_bytes(&mut state);
-        rk_off -= 8;
+            add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+            inv_mix_columns_2(&mut state);
+            inv_sub_bytes(&mut state);
+            rk_off -= 8;
+        }
 
         add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
         inv_mix_columns_1(&mut state);
@@ -385,15 +440,22 @@ pub(crate) fn aes192_encrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
         add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
         rk_off += 8;
 
-        sub_bytes(&mut state);
-        mix_columns_2(&mut state);
-        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
-        rk_off += 8;
+        #[cfg(feature = "semi_fixslice")]
+        {
+            shift_rows_2(&mut state);
+        }
+        #[cfg(not(feature = "semi_fixslice"))]
+        {
+            sub_bytes(&mut state);
+            mix_columns_2(&mut state);
+            add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+            rk_off += 8;
 
-        sub_bytes(&mut state);
-        mix_columns_3(&mut state);
-        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
-        rk_off += 8;
+            sub_bytes(&mut state);
+            mix_columns_3(&mut state);
+            add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+            rk_off += 8;
+        }
 
         if rk_off == 96 {
             break;
@@ -406,7 +468,6 @@ pub(crate) fn aes192_encrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
     }
 
     sub_bytes(&mut state);
-    // No fixslice synchronization needed
     add_round_key(&mut state, &rkeys[96..]);
 
     inv_bitslice(&mut state, blocks);
@@ -422,12 +483,20 @@ pub(crate) fn aes256_decrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
     bitslice(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
 
     add_round_key(&mut state, &rkeys[112..]);
-    // Synchronize fixslice format
-    inv_shift_rows_2(&mut state);
     inv_sub_bytes(&mut state);
+
+    #[cfg(not(feature = "semi_fixslice"))]
+    {
+        inv_shift_rows_2(&mut state);
+    }
 
     let mut rk_off = 104;
     loop {
+        #[cfg(feature = "semi_fixslice")]
+        {
+            inv_shift_rows_2(&mut state);
+        }
+
         add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
         inv_mix_columns_1(&mut state);
         inv_sub_bytes(&mut state);
@@ -442,15 +511,18 @@ pub(crate) fn aes256_decrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
         inv_sub_bytes(&mut state);
         rk_off -= 8;
 
-        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
-        inv_mix_columns_3(&mut state);
-        inv_sub_bytes(&mut state);
-        rk_off -= 8;
+        #[cfg(not(feature = "semi_fixslice"))]
+        {
+            add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+            inv_mix_columns_3(&mut state);
+            inv_sub_bytes(&mut state);
+            rk_off -= 8;
 
-        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
-        inv_mix_columns_2(&mut state);
-        inv_sub_bytes(&mut state);
-        rk_off -= 8;
+            add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+            inv_mix_columns_2(&mut state);
+            inv_sub_bytes(&mut state);
+            rk_off -= 8;
+        }
     }
 
     add_round_key(&mut state, &rkeys[..8]);
@@ -476,19 +548,27 @@ pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
         add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
         rk_off += 8;
 
+        #[cfg(feature = "semi_fixslice")]
+        {
+            shift_rows_2(&mut state);
+        }
+
         if rk_off == 112 {
             break;
         }
 
-        sub_bytes(&mut state);
-        mix_columns_2(&mut state);
-        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
-        rk_off += 8;
+        #[cfg(not(feature = "semi_fixslice"))]
+        {
+            sub_bytes(&mut state);
+            mix_columns_2(&mut state);
+            add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+            rk_off += 8;
 
-        sub_bytes(&mut state);
-        mix_columns_3(&mut state);
-        add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
-        rk_off += 8;
+            sub_bytes(&mut state);
+            mix_columns_3(&mut state);
+            add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
+            rk_off += 8;
+        }
 
         sub_bytes(&mut state);
         mix_columns_0(&mut state);
@@ -496,9 +576,12 @@ pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
         rk_off += 8;
     }
 
+    #[cfg(not(feature = "semi_fixslice"))]
+    {
+        shift_rows_2(&mut state);
+    }
+
     sub_bytes(&mut state);
-    // Synchronize fixslice format
-    shift_rows_2(&mut state);
     add_round_key(&mut state, &rkeys[112..]);
 
     inv_bitslice(&mut state, blocks);
@@ -1013,6 +1096,7 @@ define_mix_columns!(
     rotate_rows_and_columns_2_2
 );
 
+#[cfg(not(feature = "semi_fixslice"))]
 define_mix_columns!(
     mix_columns_2,
     inv_mix_columns_2,
@@ -1020,6 +1104,7 @@ define_mix_columns!(
     rotate_rows_2
 );
 
+#[cfg(not(feature = "semi_fixslice"))]
 define_mix_columns!(
     mix_columns_3,
     inv_mix_columns_3,
@@ -1041,6 +1126,7 @@ fn delta_swap_2(a: &mut u64, b: &mut u64, shift: u32, mask: u64) {
 }
 
 /// Applies ShiftRows once on an AES state (or key).
+#[cfg(not(feature = "semi_fixslice"))]
 #[inline]
 fn shift_rows_1(state: &mut [u64]) {
     debug_assert_eq!(state.len(), 8);
@@ -1079,6 +1165,7 @@ fn inv_shift_rows_2(state: &mut [u64]) {
     shift_rows_2(state);
 }
 
+#[cfg(not(feature = "semi_fixslice"))]
 #[inline(always)]
 fn inv_shift_rows_3(state: &mut [u64]) {
     shift_rows_1(state);
@@ -1314,6 +1401,7 @@ fn rotate_rows_and_columns_1_1(x: u64) -> u64 {
     (ror(x, ror_distance(0, 1)) & 0xf000f000f000f000)
 }
 
+#[cfg(not(feature = "semi_fixslice"))]
 #[inline(always)]
 #[rustfmt::skip]
 fn rotate_rows_and_columns_1_2(x: u64) -> u64 {
@@ -1321,6 +1409,7 @@ fn rotate_rows_and_columns_1_2(x: u64) -> u64 {
     (ror(x, ror_distance(0, 2)) & 0xff00ff00ff00ff00)
 }
 
+#[cfg(not(feature = "semi_fixslice"))]
 #[inline(always)]
 #[rustfmt::skip]
 fn rotate_rows_and_columns_1_3(x: u64) -> u64 {
