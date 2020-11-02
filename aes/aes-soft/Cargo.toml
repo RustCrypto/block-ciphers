@@ -16,3 +16,6 @@ opaque-debug = "0.3"
 
 [dev-dependencies]
 cipher = { version = "0.2", features = ["dev"] }
+
+[features]
+semi_fixslice = []
