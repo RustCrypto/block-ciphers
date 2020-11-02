@@ -45,11 +45,8 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
-#[cfg(not(target_pointer_width = "64"))]
-#[path = "fixslice32.rs"]
-mod fixslice;
-#[cfg(target_pointer_width = "64")]
-#[path = "fixslice64.rs"]
+#[cfg_attr(not(target_pointer_width = "64"), path = "fixslice32.rs")]
+#[cfg_attr(target_pointer_width = "64", path = "fixslice64.rs")]
 mod fixslice;
 mod impls;
 

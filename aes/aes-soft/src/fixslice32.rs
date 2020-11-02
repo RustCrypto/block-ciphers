@@ -48,6 +48,7 @@ pub(crate) fn aes128_key_schedule(key: &GenericArray<u8, U16>) -> FixsliceKeys12
         rk_off += 8;
 
         sub_bytes(&mut rkeys[rk_off..(rk_off + 8)]);
+        sub_bytes_nots(&mut rkeys[rk_off..(rk_off + 8)]);
 
         if rcon < 8 {
             add_round_constant_bit(&mut rkeys[rk_off..(rk_off + 8)], rcon);
@@ -106,6 +107,7 @@ pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys19
 
         sub_bytes(&mut tmp);
         sub_bytes_nots(&mut tmp);
+
         add_round_constant_bit(&mut tmp, rcon);
         rcon += 1;
 
@@ -122,16 +124,15 @@ pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys19
             let ui = tmp[i];
             let mut ti = (0x0f0f0f0f & (rkeys[(rk_off - 16) + i] >> 4)) | (0xf0f0f0f0 & (ui << 4));
             ti ^= 0x03030303 & (ui >> 6);
-            ti ^= 0x0c0c0c0c & (ti << 2);
-            ti ^= 0x30303030 & (ti << 2);
-            ti ^= 0xc0c0c0c0 & (ti << 2);
-            tmp[i] = ti;
+            tmp[i] =
+                ti ^ (0xfcfcfcfc & (ti << 2)) ^ (0xf0f0f0f0 & (ti << 4)) ^ (0xc0c0c0c0 & (ti << 6));
         }
         rkeys[rk_off..(rk_off + 8)].copy_from_slice(&tmp);
         rk_off += 8;
 
         sub_bytes(&mut tmp);
         sub_bytes_nots(&mut tmp);
+
         add_round_constant_bit(&mut tmp, rcon);
         rcon += 1;
 
@@ -139,10 +140,8 @@ pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys19
             let mut ti = (0x0f0f0f0f & (rkeys[(rk_off - 16) + i] >> 4))
                 | (0xf0f0f0f0 & (rkeys[(rk_off - 8) + i] << 4));
             ti ^= 0x03030303 & ror(tmp[i], ror_distance(1, 3));
-            ti ^= 0x0c0c0c0c & (ti << 2);
-            ti ^= 0x30303030 & (ti << 2);
-            ti ^= 0xc0c0c0c0 & (ti << 2);
-            rkeys[rk_off + i] = ti;
+            rkeys[rk_off + i] =
+                ti ^ (0xfcfcfcfc & (ti << 2)) ^ (0xf0f0f0f0 & (ti << 4)) ^ (0xc0c0c0c0 & (ti << 6));
         }
         rk_off += 8;
 
@@ -199,6 +198,8 @@ pub(crate) fn aes256_key_schedule(key: &GenericArray<u8, U32>) -> FixsliceKeys25
         rk_off += 8;
 
         sub_bytes(&mut rkeys[rk_off..(rk_off + 8)]);
+        sub_bytes_nots(&mut rkeys[rk_off..(rk_off + 8)]);
+
         add_round_constant_bit(&mut rkeys[rk_off..(rk_off + 8)], rcon);
         xor_columns(&mut rkeys, rk_off, 16, ror_distance(1, 3));
         rcon += 1;
@@ -211,6 +212,8 @@ pub(crate) fn aes256_key_schedule(key: &GenericArray<u8, U32>) -> FixsliceKeys25
         rk_off += 8;
 
         sub_bytes(&mut rkeys[rk_off..(rk_off + 8)]);
+        sub_bytes_nots(&mut rkeys[rk_off..(rk_off + 8)]);
+
         xor_columns(&mut rkeys, rk_off, 16, ror_distance(0, 3));
     }
 
@@ -1154,8 +1157,6 @@ fn inv_shift_rows_3(state: &mut [u32]) {
 }
 
 /// XOR the columns after the S-box during the key schedule round function.
-/// Note that the NOT omitted in the S-box calculations have to be applied t
-/// ensure output correctness.
 ///
 /// The `idx_xor` parameter refers to the index of the previous round key that is
 /// involved in the XOR computation (should be 8 and 16 for AES-128 and AES-256,
@@ -1164,14 +1165,11 @@ fn inv_shift_rows_3(state: &mut [u32]) {
 /// The `idx_ror` parameter refers to the rotation value, which varies between the
 /// different key schedules.
 fn xor_columns(rkeys: &mut [u32], offset: usize, idx_xor: usize, idx_ror: u32) {
-    sub_bytes_nots(&mut rkeys[offset..(offset + 8)]);
-
     for i in 0..8 {
         let off_i = offset + i;
-        rkeys[off_i] = (rkeys[off_i - idx_xor] ^ ror(rkeys[off_i], idx_ror)) & 0x03030303;
-        rkeys[off_i] |= (rkeys[off_i - idx_xor] ^ rkeys[off_i] << 2) & 0x0c0c0c0c;
-        rkeys[off_i] |= (rkeys[off_i - idx_xor] ^ rkeys[off_i] << 2) & 0x30303030;
-        rkeys[off_i] |= (rkeys[off_i - idx_xor] ^ rkeys[off_i] << 2) & 0xc0c0c0c0;
+        let rk = rkeys[off_i - idx_xor] ^ (0x03030303 & ror(rkeys[off_i], idx_ror));
+        rkeys[off_i] =
+            rk ^ (0xfcfcfcfc & (rk << 2)) ^ (0xf0f0f0f0 & (rk << 4)) ^ (0xc0c0c0c0 & (rk << 6));
     }
 }
 
