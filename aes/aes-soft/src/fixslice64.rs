@@ -47,6 +47,7 @@ pub(crate) fn aes128_key_schedule(key: &GenericArray<u8, U16>) -> FixsliceKeys12
         rk_off += 8;
 
         sub_bytes(&mut rkeys[rk_off..(rk_off + 8)]);
+        sub_bytes_nots(&mut rkeys[rk_off..(rk_off + 8)]);
 
         if rcon < 8 {
             add_round_constant_bit(&mut rkeys[rk_off..(rk_off + 8)], rcon);
@@ -111,6 +112,7 @@ pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys19
 
         sub_bytes(&mut tmp);
         sub_bytes_nots(&mut tmp);
+
         add_round_constant_bit(&mut tmp, rcon);
         rcon += 1;
 
@@ -128,16 +130,17 @@ pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys19
             let mut ti = (0x00ff00ff00ff00ff & (rkeys[(rk_off - 16) + i] >> 8))
                 | (0xff00ff00ff00ff00 & (ui << 8));
             ti ^= 0x000f000f000f000f & (ui >> 12);
-            ti ^= 0x00f000f000f000f0 & (ti << 4);
-            ti ^= 0x0f000f000f000f00 & (ti << 4);
-            ti ^= 0xf000f000f000f000 & (ti << 4);
-            tmp[i] = ti;
+            tmp[i] = ti
+                ^ (0xfff0fff0fff0fff0 & (ti << 4))
+                ^ (0xff00ff00ff00ff00 & (ti << 8))
+                ^ (0xf000f000f000f000 & (ti << 12));
         }
         rkeys[rk_off..(rk_off + 8)].copy_from_slice(&tmp);
         rk_off += 8;
 
         sub_bytes(&mut tmp);
         sub_bytes_nots(&mut tmp);
+
         add_round_constant_bit(&mut tmp, rcon);
         rcon += 1;
 
@@ -145,10 +148,10 @@ pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys19
             let mut ti = (0x00ff00ff00ff00ff & (rkeys[(rk_off - 16) + i] >> 8))
                 | (0xff00ff00ff00ff00 & (rkeys[(rk_off - 8) + i] << 8));
             ti ^= 0x000f000f000f000f & ror(tmp[i], ror_distance(1, 3));
-            ti ^= 0x00f000f000f000f0 & (ti << 4);
-            ti ^= 0x0f000f000f000f00 & (ti << 4);
-            ti ^= 0xf000f000f000f000 & (ti << 4);
-            rkeys[rk_off + i] = ti;
+            rkeys[rk_off + i] = ti
+                ^ (0xfff0fff0fff0fff0 & (ti << 4))
+                ^ (0xff00ff00ff00ff00 & (ti << 8))
+                ^ (0xf000f000f000f000 & (ti << 12));
         }
         rk_off += 8;
 
@@ -217,6 +220,8 @@ pub(crate) fn aes256_key_schedule(key: &GenericArray<u8, U32>) -> FixsliceKeys25
         rk_off += 8;
 
         sub_bytes(&mut rkeys[rk_off..(rk_off + 8)]);
+        sub_bytes_nots(&mut rkeys[rk_off..(rk_off + 8)]);
+
         add_round_constant_bit(&mut rkeys[rk_off..(rk_off + 8)], rcon);
         xor_columns(&mut rkeys, rk_off, 16, ror_distance(1, 3));
         rcon += 1;
@@ -229,6 +234,8 @@ pub(crate) fn aes256_key_schedule(key: &GenericArray<u8, U32>) -> FixsliceKeys25
         rk_off += 8;
 
         sub_bytes(&mut rkeys[rk_off..(rk_off + 8)]);
+        sub_bytes_nots(&mut rkeys[rk_off..(rk_off + 8)]);
+
         xor_columns(&mut rkeys, rk_off, 16, ror_distance(0, 3));
     }
 
@@ -1172,8 +1179,6 @@ fn inv_shift_rows_3(state: &mut [u64]) {
 }
 
 /// XOR the columns after the S-box during the key schedule round function.
-/// Note that the NOT omitted in the S-box calculations have to be applied t
-/// ensure output correctness.
 ///
 /// The `idx_xor` parameter refers to the index of the previous round key that is
 /// involved in the XOR computation (should be 8 and 16 for AES-128 and AES-256,
@@ -1182,14 +1187,13 @@ fn inv_shift_rows_3(state: &mut [u64]) {
 /// The `idx_ror` parameter refers to the rotation value, which varies between the
 /// different key schedules.
 fn xor_columns(rkeys: &mut [u64], offset: usize, idx_xor: usize, idx_ror: u32) {
-    sub_bytes_nots(&mut rkeys[offset..(offset + 8)]);
-
     for i in 0..8 {
         let off_i = offset + i;
-        rkeys[off_i] = (rkeys[off_i - idx_xor] ^ ror(rkeys[off_i], idx_ror)) & 0x000f000f000f000f;
-        rkeys[off_i] |= (rkeys[off_i - idx_xor] ^ rkeys[off_i] << 4) & 0x00f000f000f000f0;
-        rkeys[off_i] |= (rkeys[off_i - idx_xor] ^ rkeys[off_i] << 4) & 0x0f000f000f000f00;
-        rkeys[off_i] |= (rkeys[off_i - idx_xor] ^ rkeys[off_i] << 4) & 0xf000f000f000f000;
+        let rk = rkeys[off_i - idx_xor] ^ (0x000f000f000f000f & ror(rkeys[off_i], idx_ror));
+        rkeys[off_i] = rk
+            ^ (0xfff0fff0fff0fff0 & (rk << 4))
+            ^ (0xff00ff00ff00ff00 & (rk << 8))
+            ^ (0xf000f000f000f000 & (rk << 12));
     }
 }
 
