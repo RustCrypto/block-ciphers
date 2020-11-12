@@ -5,6 +5,14 @@ use aes_soft::cipher::{BlockCipher, NewBlockCipher};
 use aes_soft::Aes192;
 
 #[bench]
+pub fn aes192_new(bh: &mut test::Bencher) {
+    bh.iter(|| {
+        let cipher = Aes192::new(&Default::default());
+        test::black_box(&cipher);
+    });
+}
+
+#[bench]
 pub fn aes192_encrypt(bh: &mut test::Bencher) {
     let cipher = Aes192::new(&Default::default());
     let mut input = Default::default();

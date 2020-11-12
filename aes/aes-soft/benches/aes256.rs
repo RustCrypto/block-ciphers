@@ -5,6 +5,14 @@ use aes_soft::cipher::{BlockCipher, NewBlockCipher};
 use aes_soft::Aes256;
 
 #[bench]
+pub fn aes256_new(bh: &mut test::Bencher) {
+    bh.iter(|| {
+        let cipher = Aes256::new(&Default::default());
+        test::black_box(&cipher);
+    });
+}
+
+#[bench]
 pub fn aes256_encrypt(bh: &mut test::Bencher) {
     let cipher = Aes256::new(&Default::default());
     let mut input = Default::default();
