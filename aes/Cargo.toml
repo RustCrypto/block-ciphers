@@ -1,7 +1,10 @@
 [package]
 name = "aes"
 version = "0.6.0"
-description = "Facade for AES (Rijndael) block ciphers implementations"
+description = """
+Pure Rust implementation of the Advanced Encryption Standard (a.k.a. Rijndael)
+including support for AES in counter mode (a.k.a. AES-CTR)
+"""
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -13,12 +16,15 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 cipher = "0.2"
-
-[target.'cfg(not(all(target_feature="aes", target_feature = "sse2", any(target_arch = "x86_64", target_arch = "x86"))))'.dependencies]
-aes-soft = { version = "0.6", path = "aes-soft" }
-
-[target.'cfg(all(target_feature="aes", target_feature = "sse2", any(target_arch = "x86_64", target_arch = "x86")))'.dependencies]
-aesni = { version = "0.10", default-features = false, path = "aesni" }
+ctr = { version = "0.6", optional = true }
+opaque-debug = "0.3"
 
 [dev-dependencies]
 cipher = { version = "0.2", features = ["dev"] }
+
+[features]
+semi_fixslice = []
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
