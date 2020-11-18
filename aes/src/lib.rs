@@ -5,8 +5,8 @@
 //! are specified:
 //! - "soft" portable constant-time implementation based on [fixslicing].
 //! - [AES-NI] accelerated implementation for `i686`/`x86_64` target
-//!   architectures with enabled `aes` and `sse2` target features
-//!   (the latter is usually enabled by default).
+//!   architectures with `target-feature=+aes`, as well as an accelerated
+//!   AES-CTR implementation with `target-feature=+aes,+ssse3`
 //!
 //! Crate switches between implementations automatically at compile time.
 //! (i.e. it does not use run-time feature detection)
