@@ -1,11 +1,11 @@
-use crate::ni::arch::*;
+use super::arch::*;
 use cipher::{
     consts::{U16, U24, U8},
     generic_array::GenericArray,
     BlockCipher, NewBlockCipher,
 };
 
-use crate::ni::utils::{Block128, Block128x8};
+use super::utils::{Block128, Block128x8};
 
 mod expand;
 #[cfg(test)]

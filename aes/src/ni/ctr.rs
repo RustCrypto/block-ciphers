@@ -2,7 +2,7 @@
 
 #![allow(clippy::unreadable_literal)]
 
-use crate::ni::arch::*;
+use super::arch::*;
 use core::mem;
 
 use super::{Aes128, Aes192, Aes256};

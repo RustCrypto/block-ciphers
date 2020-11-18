@@ -1,5 +1,5 @@
 #[cfg(test)]
-use crate::ni::arch::__m128i;
+use super::arch::__m128i;
 #[cfg(test)]
 use core::mem;
 
