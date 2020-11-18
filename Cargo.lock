@@ -2,7 +2,7 @@
 # It is not intended for manual editing.
 [[package]]
 name = "aes"
-version = "0.6.0"
+version = "0.7.0-pre"
 dependencies = [
  "cipher",
  "ctr",

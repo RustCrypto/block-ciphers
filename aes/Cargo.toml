@@ -1,6 +1,6 @@
 [package]
 name = "aes"
-version = "0.6.0"
+version = "0.7.0-pre"
 description = """
 Pure Rust implementation of the Advanced Encryption Standard (a.k.a. Rijndael)
 including support for AES in counter mode (a.k.a. AES-CTR)
