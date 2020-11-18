@@ -6,6 +6,8 @@
 //!
 //! [1]: https://eprint.iacr.org/2020/1123.pdf
 
+#![deny(unsafe_code)]
+
 #[cfg_attr(not(target_pointer_width = "64"), path = "soft/fixslice32.rs")]
 #[cfg_attr(target_pointer_width = "64", path = "soft/fixslice64.rs")]
 mod fixslice;

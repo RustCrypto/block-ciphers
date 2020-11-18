@@ -44,8 +44,6 @@
 //! - [Intel AES-NI whitepaper](https://software.intel.com/sites/default/files/article/165683/aes-wp-2012-09-22-v01.pdf)
 //! - [Use of the AES Instruction Set](https://www.cosic.esat.kuleuven.be/ecrypt/AESday/slides/Use_of_the_AES_Instruction_Set.pdf)
 
-#![allow(unsafe_code)]
-
 #[macro_use]
 mod utils;
 
