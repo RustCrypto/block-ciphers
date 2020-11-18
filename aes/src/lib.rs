@@ -86,6 +86,7 @@ pub use ni::{Aes128, Aes192, Aes256};
     not(all(
         target_feature = "aes",
         target_feature = "sse2",
+        target_feature = "ssse3",
         any(target_arch = "x86_64", target_arch = "x86"),
     ))
 ))]
@@ -95,6 +96,7 @@ pub use soft::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
     feature = "ctr",
     target_feature = "aes",
     target_feature = "sse2",
+    target_feature = "ssse3",
     any(target_arch = "x86_64", target_arch = "x86"),
 ))]
 pub use ni::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
