@@ -32,15 +32,7 @@
 //! - [Intel advisory](https://www.intel.com/content/www/us/en/security-center/advisory/intel-sa-00145.html)
 //! - [Wikipedia](https://en.wikipedia.org/wiki/Lazy_FP_state_restore)
 //!
-//! # Runtime detection
-//! If you plan to use AES with runtime detection (e.g. via
-//! `is_x86_feature_detected!("aes")`), then you'll need to enable `nocheck`
-//! feature to disable compile-time target checks. Note that techincally
-//! doing so will make API of this crate unsafe, so you MUST ensure that
-//! this crate will be used in contexts with enabled necessary target features!
-//!
 //! # Related documents
-//!
 //! - [Intel AES-NI whitepaper](https://software.intel.com/sites/default/files/article/165683/aes-wp-2012-09-22-v01.pdf)
 //! - [Use of the AES Instruction Set](https://www.cosic.esat.kuleuven.be/ecrypt/AESday/slides/Use_of_the_AES_Instruction_Set.pdf)
 
@@ -53,9 +45,6 @@ mod aes256;
 
 #[cfg(feature = "ctr")]
 mod ctr;
-
-#[cfg(not(feature = "nocheck"))]
-mod target_checks;
 
 #[cfg(target_arch = "x86")]
 use core::arch::x86 as arch;
