@@ -3,7 +3,7 @@
 use cipher::{
     consts::{U16, U24, U32, U8},
     generic_array::GenericArray,
-    BlockCipher, NewBlockCipher,
+    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
 
 use super::fixslice::{self, FixsliceKeys128, FixsliceKeys192, FixsliceKeys256, FIXSLICE_BLOCKS};
@@ -37,7 +37,9 @@ macro_rules! define_aes_impl {
         impl BlockCipher for $name {
             type BlockSize = U16;
             type ParBlocks = U8;
+        }
 
+        impl BlockEncrypt for $name {
             #[inline]
             fn encrypt_block(&self, block: &mut Block) {
                 let mut blocks = [Block::default(); FIXSLICE_BLOCKS];
@@ -47,6 +49,15 @@ macro_rules! define_aes_impl {
             }
 
             #[inline]
+            fn encrypt_par_blocks(&self, blocks: &mut ParBlocks) {
+                for chunk in blocks.chunks_mut(FIXSLICE_BLOCKS) {
+                    $fixslice_encrypt(&self.keys, chunk);
+                }
+            }
+        }
+
+        impl BlockDecrypt for $name {
+            #[inline]
             fn decrypt_block(&self, block: &mut Block) {
                 let mut blocks = [Block::default(); FIXSLICE_BLOCKS];
                 blocks[0].copy_from_slice(block);
@@ -55,14 +66,7 @@ macro_rules! define_aes_impl {
             }
 
             #[inline]
-            fn encrypt_blocks(&self, blocks: &mut ParBlocks) {
-                for chunk in blocks.chunks_mut(FIXSLICE_BLOCKS) {
-                    $fixslice_encrypt(&self.keys, chunk);
-                }
-            }
-
-            #[inline]
-            fn decrypt_blocks(&self, blocks: &mut ParBlocks) {
+            fn decrypt_par_blocks(&self, blocks: &mut ParBlocks) {
                 for chunk in blocks.chunks_mut(FIXSLICE_BLOCKS) {
                     $fixslice_decrypt(&self.keys, chunk);
                 }

@@ -1,5 +1,5 @@
 use cast5::Cast5;
-use cipher::block::{BlockCipher, NewBlockCipher};
+use cipher::block::{BlockDecrypt, BlockEncrypt, NewBlockCipher};
 use cipher::generic_array::GenericArray;
 use hex_literal::hex;
 

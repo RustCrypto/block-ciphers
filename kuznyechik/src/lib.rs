@@ -15,7 +15,7 @@ pub use cipher;
 use cipher::{
     consts::{U1, U16, U32},
     generic_array::GenericArray,
-    BlockCipher, NewBlockCipher,
+    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
 
 mod consts;
@@ -153,14 +153,18 @@ impl NewBlockCipher for Kuznyechik {
 impl BlockCipher for Kuznyechik {
     type BlockSize = U16;
     type ParBlocks = U1;
+}
 
+impl BlockEncrypt for Kuznyechik {
     #[inline]
     fn encrypt_block(&self, block: &mut Block) {
         #[allow(unsafe_code)]
         let block: &mut [u8; 16] = unsafe { core::mem::transmute(block) };
         self.encrypt(block);
     }
+}
 
+impl BlockDecrypt for Kuznyechik {
     #[inline]
     fn decrypt_block(&self, block: &mut Block) {
         #[allow(unsafe_code)]

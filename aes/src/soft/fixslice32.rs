@@ -37,7 +37,6 @@ type State = [u32; 8];
 
 /// Fully bitsliced AES-128 key schedule to match the fully-fixsliced representation.
 pub(crate) fn aes128_key_schedule(key: &GenericArray<u8, U16>) -> FixsliceKeys128 {
-    // TODO(tarcieri): use `::default()` after MSRV 1.47+
     let mut rkeys = [0u32; 88];
 
     bitslice(&mut rkeys[..8], key, key);
@@ -89,7 +88,6 @@ pub(crate) fn aes128_key_schedule(key: &GenericArray<u8, U16>) -> FixsliceKeys12
 
 /// Fully bitsliced AES-192 key schedule to match the fully-fixsliced representation.
 pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys192 {
-    // TODO(tarcieri): use `::default()` after MSRV 1.47+
     let mut rkeys = [0u32; 104];
     let mut tmp = [0u32; 8];
 
@@ -184,7 +182,6 @@ pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys19
 
 /// Fully bitsliced AES-256 key schedule to match the fully-fixsliced representation.
 pub(crate) fn aes256_key_schedule(key: &GenericArray<u8, U32>) -> FixsliceKeys256 {
-    // TODO(tarcieri): use `::default()` after MSRV 1.47+
     let mut rkeys = [0u32; 120];
 
     bitslice(&mut rkeys[..8], &key[..16], &key[..16]);

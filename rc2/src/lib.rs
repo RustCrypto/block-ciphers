@@ -13,7 +13,7 @@
 pub use cipher;
 
 use cipher::{
-    block::{BlockCipher, InvalidKeyLength, NewBlockCipher},
+    block::{BlockCipher, BlockDecrypt, BlockEncrypt, InvalidKeyLength, NewBlockCipher},
     consts::{U1, U32, U8},
     generic_array::GenericArray,
 };
@@ -212,11 +212,15 @@ impl NewBlockCipher for Rc2 {
 impl BlockCipher for Rc2 {
     type BlockSize = U8;
     type ParBlocks = U1;
+}
 
+impl BlockEncrypt for Rc2 {
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         self.encrypt(block);
     }
+}
 
+impl BlockDecrypt for Rc2 {
     fn decrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         self.decrypt(block);
     }

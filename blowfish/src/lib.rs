@@ -10,11 +10,9 @@
 
 pub use cipher;
 
-use byteorder::ByteOrder;
-use byteorder::{BE, LE};
-use cipher::block::consts::{U1, U56, U8};
-use cipher::block::InvalidKeyLength;
-use cipher::block::{BlockCipher, NewBlockCipher};
+use byteorder::{ByteOrder, BE, LE};
+use cipher::block::{BlockCipher, BlockDecrypt, BlockEncrypt, InvalidKeyLength, NewBlockCipher};
+use cipher::consts::{U1, U56, U8};
 use cipher::generic_array::GenericArray;
 use core::marker::PhantomData;
 
@@ -128,7 +126,9 @@ impl<T: ByteOrder> NewBlockCipher for Blowfish<T> {
 impl<T: ByteOrder> BlockCipher for Blowfish<T> {
     type BlockSize = U8;
     type ParBlocks = U1;
+}
 
+impl<T: ByteOrder> BlockEncrypt for Blowfish<T> {
     #[inline]
     fn encrypt_block(&self, block: &mut Block) {
         let l = T::read_u32(&block[..4]);
@@ -137,7 +137,9 @@ impl<T: ByteOrder> BlockCipher for Blowfish<T> {
         T::write_u32(&mut block[..4], l);
         T::write_u32(&mut block[4..], r);
     }
+}
 
+impl<T: ByteOrder> BlockDecrypt for Blowfish<T> {
     #[inline]
     fn decrypt_block(&self, block: &mut Block) {
         let l = T::read_u32(&block[..4]);

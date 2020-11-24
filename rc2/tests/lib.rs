@@ -1,4 +1,4 @@
-use cipher::block::{BlockCipher, NewBlockCipher};
+use cipher::block::{BlockDecrypt, BlockEncrypt, NewBlockCipher};
 use cipher::generic_array::GenericArray;
 
 struct Test {

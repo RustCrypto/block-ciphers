@@ -5,7 +5,7 @@ name = "aes"
 version = "0.7.0-pre"
 dependencies = [
  "cfg-if",
- "cipher",
+ "cipher 0.3.0-pre",
  "ctr",
  "opaque-debug",
 ]
@@ -18,11 +18,11 @@ checksum = "fc52553543ecb104069b0ff9e0fcc5c739ad16202935528a112d974e8f1a4ee8"
 
 [[package]]
 name = "block-modes"
-version = "0.7.0"
+version = "0.8.0-pre"
 dependencies = [
  "aes",
  "block-padding",
- "cipher",
+ "cipher 0.3.0-pre",
  "hex-literal",
 ]
 
@@ -34,10 +34,10 @@ checksum = "8d696c370c750c948ada61c69a0ee2cbbb9c50b1019ddb86d9317157a99c2cae"
 
 [[package]]
 name = "blowfish"
-version = "0.7.0"
+version = "0.8.0-pre"
 dependencies = [
  "byteorder",
- "cipher",
+ "cipher 0.3.0-pre",
  "opaque-debug",
 ]
 
@@ -49,10 +49,10 @@ checksum = "08c48aae112d48ed9f069b33538ea9e3e90aa263cfa3d1c24309612b1f7472de"
 
 [[package]]
 name = "cast5"
-version = "0.9.0"
+version = "0.10.0-pre"
 dependencies = [
  "byteorder",
- "cipher",
+ "cipher 0.3.0-pre",
  "hex-literal",
  "opaque-debug",
 ]
@@ -69,6 +69,15 @@ version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "12f8e7987cbd042a63249497f41aed09f8e65add917ea6566effbc56578d6801"
 dependencies = [
+ "generic-array",
+]
+
+[[package]]
+name = "cipher"
+version = "0.3.0-pre"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "42848bd4f28c6e74641082fc3ca870cb5381ce08d8715045cc96ff4ca20c0bbe"
+dependencies = [
  "blobby",
  "generic-array",
 ]
@@ -79,15 +88,15 @@ version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fb4a30d54f7443bf3d6191dcd486aca19e67cb3c49fa7a06a319966346707e7f"
 dependencies = [
- "cipher",
+ "cipher 0.2.5",
 ]
 
 [[package]]
 name = "des"
-version = "0.6.0"
+version = "0.7.0-pre"
 dependencies = [
  "byteorder",
- "cipher",
+ "cipher 0.3.0-pre",
  "opaque-debug",
 ]
 
@@ -103,10 +112,10 @@ dependencies = [
 
 [[package]]
 name = "gost-modes"
-version = "0.4.0"
+version = "0.5.0-pre"
 dependencies = [
  "block-modes",
- "cipher",
+ "cipher 0.3.0-pre",
  "generic-array",
  "hex-literal",
  "kuznyechik",
@@ -134,26 +143,26 @@ dependencies = [
 
 [[package]]
 name = "idea"
-version = "0.3.0"
+version = "0.4.0-pre"
 dependencies = [
- "cipher",
+ "cipher 0.3.0-pre",
  "opaque-debug",
 ]
 
 [[package]]
 name = "kuznyechik"
-version = "0.6.0"
+version = "0.7.0-pre"
 dependencies = [
- "cipher",
+ "cipher 0.3.0-pre",
  "hex-literal",
  "opaque-debug",
 ]
 
 [[package]]
 name = "magma"
-version = "0.6.0"
+version = "0.7.0-pre"
 dependencies = [
- "cipher",
+ "cipher 0.3.0-pre",
  "hex-literal",
  "opaque-debug",
 ]
@@ -172,44 +181,44 @@ checksum = "99c605b9a0adc77b7211c6b1f722dcb613d68d66859a44f3d485a6da332b0598"
 
 [[package]]
 name = "rc2"
-version = "0.6.0"
+version = "0.7.0-pre"
 dependencies = [
- "cipher",
+ "cipher 0.3.0-pre",
  "opaque-debug",
 ]
 
 [[package]]
 name = "serpent"
-version = "0.3.0"
+version = "0.4.0-pre"
 dependencies = [
  "byteorder",
- "cipher",
+ "cipher 0.3.0-pre",
  "opaque-debug",
 ]
 
 [[package]]
 name = "sm4"
-version = "0.3.0"
+version = "0.4.0-pre"
 dependencies = [
  "byteorder",
- "cipher",
+ "cipher 0.3.0-pre",
  "hex-literal",
  "opaque-debug",
 ]
 
 [[package]]
 name = "threefish"
-version = "0.3.0"
+version = "0.4.0-pre"
 dependencies = [
- "cipher",
+ "cipher 0.3.0-pre",
 ]
 
 [[package]]
 name = "twofish"
-version = "0.5.0"
+version = "0.6.0-pre"
 dependencies = [
  "byteorder",
- "cipher",
+ "cipher 0.3.0-pre",
  "hex-literal",
  "opaque-debug",
 ]

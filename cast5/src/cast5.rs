@@ -4,7 +4,7 @@ use cipher::{
 };
 
 use byteorder::{BigEndian, ByteOrder};
-use cipher::block::{BlockCipher, InvalidKeyLength, NewBlockCipher};
+use cipher::block::{BlockCipher, BlockDecrypt, BlockEncrypt, InvalidKeyLength, NewBlockCipher};
 
 use crate::{
     consts::{S1, S2, S3, S4},
@@ -111,7 +111,9 @@ impl NewBlockCipher for Cast5 {
 impl BlockCipher for Cast5 {
     type BlockSize = U8;
     type ParBlocks = U1;
+}
 
+impl BlockEncrypt for Cast5 {
     #[inline]
     fn encrypt_block(&self, block: &mut Block) {
         let masking = self.masking;
@@ -158,7 +160,9 @@ impl BlockCipher for Cast5 {
         BigEndian::write_u32(&mut block[0..4], r);
         BigEndian::write_u32(&mut block[4..8], l);
     }
+}
 
+impl BlockDecrypt for Cast5 {
     #[inline]
     fn decrypt_block(&self, block: &mut Block) {
         let masking = self.masking;

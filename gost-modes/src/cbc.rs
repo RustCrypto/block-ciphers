@@ -1,11 +1,11 @@
 use crate::{utils::xor, GostPadding};
-use block_modes::block_padding::Padding;
-use block_modes::BlockMode;
-use cipher::block::{Block, BlockCipher, NewBlockCipher};
-use core::marker::PhantomData;
-use core::ops::Mul;
-use generic_array::typenum::type_operators::{IsGreater, IsLessOrEqual};
-use generic_array::typenum::{Prod, Unsigned, U0, U1, U255};
+use block_modes::{block_padding::Padding, BlockMode};
+use cipher::block::{Block, BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher};
+use core::{marker::PhantomData, ops::Mul};
+use generic_array::typenum::{
+    type_operators::{IsGreater, IsLessOrEqual},
+    Prod, Unsigned, U0, U1, U255,
+};
 use generic_array::{ArrayLength, GenericArray};
 
 /// Cipher Block Chaining (CBC) mode of operation as defined in GOST R 34.13-2015
@@ -34,7 +34,7 @@ where
 
 impl<C, P, Z> BlockMode<C, P> for GostCbc<C, P, Z>
 where
-    C: BlockCipher + NewBlockCipher,
+    C: BlockCipher + BlockEncrypt + BlockDecrypt + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     Z: ArrayLength<Block<C>> + Unsigned + Mul<C::BlockSize> + IsGreater<U0> + IsLessOrEqual<U255>,
     Prod<Z, C::BlockSize>: ArrayLength<u8>,

@@ -1,12 +1,14 @@
 use crate::utils::xor;
 use cipher::{
-    block::{Block, BlockCipher, NewBlockCipher},
+    block::{Block, BlockCipher, BlockEncrypt, NewBlockCipher},
     stream::{
         FromBlockCipher, LoopError, OverflowError, SeekNum, SyncStreamCipher, SyncStreamCipherSeek,
     },
 };
-use generic_array::typenum::type_operators::{IsGreater, IsLessOrEqual};
-use generic_array::typenum::{Unsigned, U0, U4, U8};
+use generic_array::typenum::{
+    type_operators::{IsGreater, IsLessOrEqual},
+    Unsigned, U0, U4, U8,
+};
 use generic_array::{ArrayLength, GenericArray};
 
 /// Counter (CTR) mode of operation for 64-bit block ciphers as defined in
@@ -18,7 +20,7 @@ use generic_array::{ArrayLength, GenericArray};
 #[derive(Clone)]
 pub struct GostCtr64<C, S = <C as BlockCipher>::BlockSize>
 where
-    C: BlockCipher<BlockSize = U8> + NewBlockCipher,
+    C: BlockCipher<BlockSize = U8> + BlockEncrypt + NewBlockCipher,
     C::ParBlocks: ArrayLength<GenericArray<u8, U8>>,
     S: ArrayLength<u8> + Unsigned + IsGreater<U0> + IsLessOrEqual<U8>,
 {
@@ -31,7 +33,7 @@ where
 
 impl<C, S> GostCtr64<C, S>
 where
-    C: BlockCipher<BlockSize = U8> + NewBlockCipher,
+    C: BlockCipher<BlockSize = U8> + BlockEncrypt + NewBlockCipher,
     C::ParBlocks: ArrayLength<GenericArray<u8, U8>>,
     S: ArrayLength<u8> + Unsigned + IsGreater<U0> + IsLessOrEqual<U8>,
 {
@@ -48,7 +50,7 @@ where
 
 impl<C, S> FromBlockCipher for GostCtr64<C, S>
 where
-    C: BlockCipher<BlockSize = U8> + NewBlockCipher,
+    C: BlockCipher<BlockSize = U8> + BlockEncrypt + NewBlockCipher,
     C::ParBlocks: ArrayLength<GenericArray<u8, U8>>,
     S: ArrayLength<u8> + Unsigned + IsGreater<U0> + IsLessOrEqual<U8>,
 {
@@ -68,7 +70,7 @@ where
 
 impl<C, S> SyncStreamCipher for GostCtr64<C, S>
 where
-    C: BlockCipher<BlockSize = U8> + NewBlockCipher,
+    C: BlockCipher<BlockSize = U8> + BlockEncrypt + NewBlockCipher,
     C::ParBlocks: ArrayLength<GenericArray<u8, U8>>,
     S: ArrayLength<u8> + Unsigned + IsGreater<U0> + IsLessOrEqual<U8>,
 {
@@ -110,7 +112,7 @@ where
 
 impl<C, S> SyncStreamCipherSeek for GostCtr64<C, S>
 where
-    C: BlockCipher<BlockSize = U8> + NewBlockCipher,
+    C: BlockCipher<BlockSize = U8> + BlockEncrypt + NewBlockCipher,
     C::ParBlocks: ArrayLength<GenericArray<u8, U8>>,
     S: ArrayLength<u8> + Unsigned + IsGreater<U0> + IsLessOrEqual<U8>,
 {

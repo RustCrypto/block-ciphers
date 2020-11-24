@@ -1,6 +1,6 @@
 use crate::utils::{xor_set1, xor_set2};
 use cipher::{
-    block::{Block, BlockCipher, NewBlockCipher},
+    block::{Block, BlockCipher, BlockEncrypt, NewBlockCipher},
     stream::{FromBlockCipher, StreamCipher},
 };
 use core::ops::Sub;
@@ -24,7 +24,7 @@ type Tail<C, M> = GenericArray<u8, Diff<M, <C as BlockCipher>::BlockSize>>;
 #[derive(Clone)]
 pub struct GostCfb<C, M = BlockSize<C>, S = BlockSize<C>>
 where
-    C: BlockCipher + NewBlockCipher,
+    C: BlockCipher + BlockEncrypt + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
     S: Unsigned + ArrayLength<u8> + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
@@ -38,7 +38,7 @@ where
 
 impl<C, M, S> GostCfb<C, M, S>
 where
-    C: BlockCipher + NewBlockCipher,
+    C: BlockCipher + BlockEncrypt + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
     S: Unsigned + ArrayLength<u8> + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
@@ -68,7 +68,7 @@ where
 
 impl<C, M, S> FromBlockCipher for GostCfb<C, M, S>
 where
-    C: BlockCipher + NewBlockCipher,
+    C: BlockCipher + BlockEncrypt + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
     S: Unsigned + ArrayLength<u8> + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
@@ -92,7 +92,7 @@ where
 
 impl<C, M, S> StreamCipher for GostCfb<C, M, S>
 where
-    C: BlockCipher + NewBlockCipher,
+    C: BlockCipher + BlockEncrypt + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     M: Unsigned + ArrayLength<u8> + IsGreaterOrEqual<C::BlockSize> + Sub<C::BlockSize>,
     S: Unsigned + ArrayLength<u8> + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,

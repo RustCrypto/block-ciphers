@@ -1,12 +1,13 @@
 use crate::utils::xor;
 use cipher::{
-    block::{Block, BlockCipher, NewBlockCipher},
+    block::{Block, BlockCipher, BlockEncrypt, NewBlockCipher},
     stream::{FromBlockCipher, LoopError, SyncStreamCipher},
 };
-use core::marker::PhantomData;
-use core::ops::Mul;
-use generic_array::typenum::type_operators::{IsGreater, IsLessOrEqual};
-use generic_array::typenum::{Prod, Unsigned, U0, U1, U255};
+use core::{marker::PhantomData, ops::Mul};
+use generic_array::typenum::{
+    type_operators::{IsGreater, IsLessOrEqual},
+    Prod, Unsigned, U0, U1, U255,
+};
 use generic_array::{ArrayLength, GenericArray};
 
 /// Output feedback (OFB) mode of operation as defined in GOST R 34.13-2015
@@ -21,7 +22,7 @@ use generic_array::{ArrayLength, GenericArray};
 #[derive(Clone)]
 pub struct GostOfb<C, Z = U1, S = <C as BlockCipher>::BlockSize>
 where
-    C: BlockCipher + NewBlockCipher,
+    C: BlockCipher + BlockEncrypt + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Z: ArrayLength<Block<C>> + Unsigned + Mul<C::BlockSize> + IsGreater<U0> + IsLessOrEqual<U255>,
@@ -36,7 +37,7 @@ where
 
 impl<C, Z, S> FromBlockCipher for GostOfb<C, Z, S>
 where
-    C: BlockCipher + NewBlockCipher,
+    C: BlockCipher + BlockEncrypt + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Z: ArrayLength<Block<C>> + Unsigned + Mul<C::BlockSize> + IsGreater<U0> + IsLessOrEqual<U255>,
@@ -66,7 +67,7 @@ where
 
 impl<C, Z, S> SyncStreamCipher for GostOfb<C, Z, S>
 where
-    C: BlockCipher + NewBlockCipher,
+    C: BlockCipher + BlockEncrypt + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,
     S: Unsigned + IsGreater<U0> + IsLessOrEqual<C::BlockSize>,
     Z: ArrayLength<Block<C>> + Unsigned + Mul<C::BlockSize> + IsGreater<U0> + IsLessOrEqual<U255>,
