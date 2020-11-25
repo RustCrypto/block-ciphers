@@ -14,7 +14,7 @@ use crate::consts::{C240, P_1024, P_256, P_512, R_1024, R_256, R_512};
 use cipher::{
     consts::{U1, U128, U32, U64},
     generic_array::GenericArray,
-    BlockCipher, NewBlockCipher,
+    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
 use core::{convert::TryInto, ops::BitXor};
 
@@ -84,7 +84,9 @@ macro_rules! impl_threefish(
         impl BlockCipher for $name {
             type BlockSize = $block_size;
             type ParBlocks = U1;
+        }
 
+        impl BlockEncrypt for $name {
             fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
                 let mut v = [0u64; $n_w];
                 for (vv, chunk) in v.iter_mut().zip(block.chunks_exact(8)) {
@@ -119,7 +121,9 @@ macro_rules! impl_threefish(
                     chunk.copy_from_slice(&vv.to_le_bytes());
                 }
             }
+        }
 
+        impl BlockDecrypt for $name {
             fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
                 let mut v = [0u64; $n_w];
                 for (vv, chunk) in v.iter_mut().zip(block.chunks_exact(8)) {

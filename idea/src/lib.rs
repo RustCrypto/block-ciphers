@@ -11,7 +11,7 @@
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::many_single_char_names)]
 
-pub use cipher::{self, BlockCipher, NewBlockCipher};
+pub use cipher::{self, BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher};
 
 use cipher::{
     consts::{U1, U16, U8},
@@ -185,11 +185,15 @@ impl NewBlockCipher for Idea {
 impl BlockCipher for Idea {
     type BlockSize = U8;
     type ParBlocks = U1;
+}
 
+impl BlockEncrypt for Idea {
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         self.crypt(block, &self.encryption_sub_keys);
     }
+}
 
+impl BlockDecrypt for Idea {
     fn decrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         self.crypt(block, &self.decryption_sub_keys);
     }

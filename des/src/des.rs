@@ -6,7 +6,7 @@ use byteorder::{ByteOrder, BE};
 use cipher::{
     consts::{U1, U8},
     generic_array::GenericArray,
-    BlockCipher, NewBlockCipher,
+    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
 
 use crate::consts::{SBOXES, SHIFTS};
@@ -199,12 +199,16 @@ impl NewBlockCipher for Des {
 impl BlockCipher for Des {
     type BlockSize = U8;
     type ParBlocks = U1;
+}
 
+impl BlockEncrypt for Des {
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let data = BE::read_u64(block);
         BE::write_u64(block, self.encrypt(data));
     }
+}
 
+impl BlockDecrypt for Des {
     fn decrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let data = BE::read_u64(block);
         BE::write_u64(block, self.decrypt(data));

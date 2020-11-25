@@ -1,6 +1,6 @@
 [package]
 name = "rc2"
-version = "0.6.0"
+version = "0.7.0-pre"
 description = "RC2 block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -12,8 +12,8 @@ keywords = ["crypto", "rc2", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.2"
+cipher = "=0.3.0-pre"
 opaque-debug = "0.3"
 
 [dev-dependencies]
-cipher = { version = "0.2", features = ["dev"] }
+cipher = { version = "=0.3.0-pre", features = ["dev"] }

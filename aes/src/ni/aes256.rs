@@ -2,7 +2,7 @@ use super::arch::*;
 use cipher::{
     consts::{U16, U32, U8},
     generic_array::GenericArray,
-    BlockCipher, NewBlockCipher,
+    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
 
 use super::utils::{Block128, Block128x8};
@@ -86,7 +86,9 @@ impl NewBlockCipher for Aes256 {
 impl BlockCipher for Aes256 {
     type BlockSize = U16;
     type ParBlocks = U8;
+}
 
+impl BlockEncrypt for Aes256 {
     #[inline]
     fn encrypt_block(&self, block: &mut Block128) {
         // Safety: `loadu` and `storeu` support unaligned access
@@ -98,6 +100,16 @@ impl BlockCipher for Aes256 {
         }
     }
 
+    #[inline]
+    fn encrypt_par_blocks(&self, blocks: &mut Block128x8) {
+        unsafe {
+            let b = self.encrypt8(load8!(blocks));
+            store8!(blocks, b);
+        }
+    }
+}
+
+impl BlockDecrypt for Aes256 {
     #[inline]
     fn decrypt_block(&self, block: &mut Block128) {
         #[inline]
@@ -128,15 +140,7 @@ impl BlockCipher for Aes256 {
     }
 
     #[inline]
-    fn encrypt_blocks(&self, blocks: &mut Block128x8) {
-        unsafe {
-            let b = self.encrypt8(load8!(blocks));
-            store8!(blocks, b);
-        }
-    }
-
-    #[inline]
-    fn decrypt_blocks(&self, blocks: &mut Block128x8) {
+    fn decrypt_par_blocks(&self, blocks: &mut Block128x8) {
         #[inline]
         #[target_feature(enable = "aes")]
         unsafe fn aes256_decrypt8(blocks: &mut Block128x8, keys: &[__m128i; 15]) {

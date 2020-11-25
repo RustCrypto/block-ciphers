@@ -17,7 +17,7 @@ use byteorder::{ByteOrder, BE};
 use cipher::{
     consts::{U1, U16},
     generic_array::GenericArray,
-    BlockCipher, NewBlockCipher,
+    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
 
 pub const SBOX: [u8; 256] = [
@@ -114,7 +114,9 @@ impl NewBlockCipher for Sm4 {
 impl BlockCipher for Sm4 {
     type BlockSize = U16;
     type ParBlocks = U1;
+}
 
+impl BlockEncrypt for Sm4 {
     fn encrypt_block(&self, block: &mut GenericArray<u8, U16>) {
         let mut x = [0u32; 4];
         BE::read_u32_into(block, &mut x);
@@ -128,7 +130,9 @@ impl BlockCipher for Sm4 {
         x = [x[3], x[2], x[1], x[0]];
         BE::write_u32_into(&x, block);
     }
+}
 
+impl BlockDecrypt for Sm4 {
     fn decrypt_block(&self, block: &mut GenericArray<u8, U16>) {
         let mut x = [0u32; 4];
         BE::read_u32_into(block, &mut x);

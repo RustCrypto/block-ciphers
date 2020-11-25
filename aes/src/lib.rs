@@ -13,9 +13,11 @@
 //!
 //! # Usage example
 //! ```
-//! use aes::cipher::generic_array::GenericArray;
-//! use aes::cipher::{BlockCipher, NewBlockCipher};
 //! use aes::Aes128;
+//! use aes::cipher::{
+//!     BlockCipher, BlockEncrypt, BlockDecrypt, NewBlockCipher,
+//!     generic_array::GenericArray,
+//! };
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
 //! let mut block = GenericArray::clone_from_slice(&[0u8; 16]);
@@ -33,8 +35,8 @@
 //! // We can encrypt 8 blocks simultaneously using
 //! // instruction-level parallelism
 //! let block8_copy = block8.clone();
-//! cipher.encrypt_blocks(&mut block8);
-//! cipher.decrypt_blocks(&mut block8);
+//! cipher.encrypt_par_blocks(&mut block8);
+//! cipher.decrypt_par_blocks(&mut block8);
 //! assert_eq!(block8, block8_copy);
 //! ```
 //!

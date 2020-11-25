@@ -1,6 +1,6 @@
 //! Test vectors are from GM/T 0002-2012
 
-use cipher::block::{BlockCipher, NewBlockCipher};
+use cipher::block::{BlockDecrypt, BlockEncrypt, NewBlockCipher};
 use hex_literal::hex;
 use sm4::Sm4;
 

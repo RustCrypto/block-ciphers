@@ -5,7 +5,7 @@ use byteorder::{ByteOrder, BE};
 use cipher::{
     consts::{U1, U16, U24, U8},
     generic_array::GenericArray,
-    BlockCipher, NewBlockCipher,
+    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
 
 /// Triple DES (3DES) block cipher.
@@ -58,7 +58,9 @@ impl NewBlockCipher for TdesEde3 {
 impl BlockCipher for TdesEde3 {
     type BlockSize = U8;
     type ParBlocks = U1;
+}
 
+impl BlockEncrypt for TdesEde3 {
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let mut data = BE::read_u64(block);
 
@@ -68,7 +70,9 @@ impl BlockCipher for TdesEde3 {
 
         BE::write_u64(block, data);
     }
+}
 
+impl BlockDecrypt for TdesEde3 {
     fn decrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let mut data = BE::read_u64(block);
 
@@ -100,7 +104,9 @@ impl NewBlockCipher for TdesEee3 {
 impl BlockCipher for TdesEee3 {
     type BlockSize = U8;
     type ParBlocks = U1;
+}
 
+impl BlockEncrypt for TdesEee3 {
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let mut data = BE::read_u64(block);
 
@@ -110,7 +116,9 @@ impl BlockCipher for TdesEee3 {
 
         BE::write_u64(block, data);
     }
+}
 
+impl BlockDecrypt for TdesEee3 {
     fn decrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let mut data = BE::read_u64(block);
 
@@ -139,7 +147,9 @@ impl NewBlockCipher for TdesEde2 {
 impl BlockCipher for TdesEde2 {
     type BlockSize = U8;
     type ParBlocks = U1;
+}
 
+impl BlockEncrypt for TdesEde2 {
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let mut data = BE::read_u64(block);
 
@@ -149,7 +159,9 @@ impl BlockCipher for TdesEde2 {
 
         BE::write_u64(block, data);
     }
+}
 
+impl BlockDecrypt for TdesEde2 {
     fn decrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let mut data = BE::read_u64(block);
 
@@ -178,7 +190,9 @@ impl NewBlockCipher for TdesEee2 {
 impl BlockCipher for TdesEee2 {
     type BlockSize = U8;
     type ParBlocks = U1;
+}
 
+impl BlockEncrypt for TdesEee2 {
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let mut data = BE::read_u64(block);
 
@@ -188,7 +202,9 @@ impl BlockCipher for TdesEee2 {
 
         BE::write_u64(block, data);
     }
+}
 
+impl BlockDecrypt for TdesEee2 {
     fn decrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let mut data = BE::read_u64(block);
 

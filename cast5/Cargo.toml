@@ -1,6 +1,6 @@
 [package]
 name = "cast5"
-version = "0.9.0"
+version = "0.10.0-pre"
 description = "CAST5 block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -12,12 +12,12 @@ keywords = ["crypto", "cast5", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.2"
+cipher = "=0.3.0-pre"
 opaque-debug = "0.3"
 byteorder = { version = "1", default-features = false }
 
 [dev-dependencies]
-cipher = { version = "0.2", features = ["dev"] }
+cipher = { version = "=0.3.0-pre", features = ["dev"] }
 hex-literal = "0.2"
 
 [features]

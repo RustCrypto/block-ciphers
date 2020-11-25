@@ -2,11 +2,10 @@
 //!
 //! Implementation according to [RFC 2144](https://tools.ietf.org/html/rfc2144).
 //!
-//!
 //! # Usage example
 //! ```
 //! use cast5::cipher::generic_array::GenericArray;
-//! use cast5::cipher::{BlockCipher, NewBlockCipher};
+//! use cast5::cipher::{BlockCipher, BlockEncrypt, BlockDecrypt, NewBlockCipher};
 //! use cast5::Cast5;
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);

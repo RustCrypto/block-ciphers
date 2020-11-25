@@ -3,7 +3,7 @@
 //!
 //! # Examples
 //! ```
-//! use magma::{Magma, BlockCipher, NewBlockCipher};
+//! use magma::{Magma, BlockCipher, BlockEncrypt, BlockDecrypt, NewBlockCipher};
 //! use magma::cipher::generic_array::GenericArray;
 //! use hex_literal::hex;
 //!
@@ -34,7 +34,7 @@
 #![deny(unsafe_code)]
 #![warn(rust_2018_idioms)]
 
-pub use cipher::{self, BlockCipher, NewBlockCipher};
+pub use cipher::{self, BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher};
 
 use cipher::{
     consts::{U1, U32, U8},
@@ -71,7 +71,9 @@ impl<S: Sbox> NewBlockCipher for Gost89<S> {
 impl<S: Sbox> BlockCipher for Gost89<S> {
     type BlockSize = U8;
     type ParBlocks = U1;
+}
 
+impl<S: Sbox> BlockEncrypt for Gost89<S> {
     #[inline]
     fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let mut v = (to_u32(&block[0..4]), to_u32(&block[4..8]));
@@ -86,7 +88,9 @@ impl<S: Sbox> BlockCipher for Gost89<S> {
         block[0..4].copy_from_slice(&v.1.to_be_bytes());
         block[4..8].copy_from_slice(&v.0.to_be_bytes());
     }
+}
 
+impl<S: Sbox> BlockDecrypt for Gost89<S> {
     #[inline]
     fn decrypt_block(&self, block: &mut GenericArray<u8, U8>) {
         let mut v = (to_u32(&block[0..4]), to_u32(&block[4..8]));

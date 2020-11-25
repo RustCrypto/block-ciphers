@@ -1,7 +1,7 @@
 use crate::traits::BlockMode;
 use crate::utils::Block;
 use block_padding::Padding;
-use cipher::block::{BlockCipher, NewBlockCipher};
+use cipher::block::{BlockCipher, BlockEncrypt, NewBlockCipher};
 use cipher::generic_array::GenericArray;
 use core::marker::PhantomData;
 
@@ -9,7 +9,7 @@ use core::marker::PhantomData;
 ///
 /// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Cipher_feedback_(CFB)
 #[derive(Clone)]
-pub struct Cfb8<C: BlockCipher + NewBlockCipher, P: Padding> {
+pub struct Cfb8<C: BlockCipher + BlockEncrypt + NewBlockCipher, P: Padding> {
     cipher: C,
     iv: GenericArray<u8, C::BlockSize>,
     _p: PhantomData<P>,
@@ -17,7 +17,7 @@ pub struct Cfb8<C: BlockCipher + NewBlockCipher, P: Padding> {
 
 impl<C, P> BlockMode<C, P> for Cfb8<C, P>
 where
-    C: BlockCipher + NewBlockCipher,
+    C: BlockCipher + BlockEncrypt + NewBlockCipher,
     P: Padding,
 {
     type IvSize = C::BlockSize;

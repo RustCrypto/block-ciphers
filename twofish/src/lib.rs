@@ -13,7 +13,7 @@ pub use cipher;
 
 use byteorder::{ByteOrder, LE};
 use cipher::{
-    block::{BlockCipher, InvalidKeyLength, NewBlockCipher},
+    block::{BlockCipher, BlockDecrypt, BlockEncrypt, InvalidKeyLength, NewBlockCipher},
     consts::{U1, U16, U32},
     generic_array::GenericArray,
 };
@@ -185,7 +185,9 @@ impl NewBlockCipher for Twofish {
 impl BlockCipher for Twofish {
     type BlockSize = U16;
     type ParBlocks = U1;
+}
 
+impl BlockEncrypt for Twofish {
     fn encrypt_block(&self, block: &mut Block) {
         let mut p = [0u32; 4];
         LE::read_u32_into(block, &mut p);
@@ -217,7 +219,9 @@ impl BlockCipher for Twofish {
         LE::write_u32(&mut block[8..12], p[0] ^ self.k[6]);
         LE::write_u32(&mut block[12..16], p[1] ^ self.k[7]);
     }
+}
 
+impl BlockDecrypt for Twofish {
     fn decrypt_block(&self, block: &mut Block) {
         let mut c = [0u32; 4];
 

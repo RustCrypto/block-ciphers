@@ -17,7 +17,7 @@ pub use cipher;
 
 use byteorder::{ByteOrder, LE};
 use cipher::{
-    block::{BlockCipher, InvalidKeyLength, NewBlockCipher},
+    block::{BlockCipher, BlockDecrypt, BlockEncrypt, InvalidKeyLength, NewBlockCipher},
     consts::{U1, U16},
     generic_array::GenericArray,
 };
@@ -254,7 +254,9 @@ impl NewBlockCipher for Serpent {
 impl BlockCipher for Serpent {
     type BlockSize = U16;
     type ParBlocks = U1;
+}
 
+impl BlockEncrypt for Serpent {
     fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
         let mut b = [0u8; 16];
 
@@ -267,7 +269,9 @@ impl BlockCipher for Serpent {
         }
         *block = *GenericArray::from_slice(&b);
     }
+}
 
+impl BlockDecrypt for Serpent {
     fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
         let mut b = [0u8; 16];
 
