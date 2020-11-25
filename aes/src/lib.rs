@@ -53,53 +53,33 @@
 )]
 #![warn(missing_docs, rust_2018_idioms)]
 
-#[cfg(all(
-    target_feature = "aes",
-    target_feature = "sse2",
-    any(target_arch = "x86_64", target_arch = "x86"),
-))]
-mod ni;
+use cfg_if::cfg_if;
 
-#[cfg(not(all(
-    target_feature = "aes",
-    target_feature = "sse2",
-    any(target_arch = "x86_64", target_arch = "x86"),
-)))]
-mod soft;
-
-#[cfg(not(all(
-    target_feature = "aes",
-    target_feature = "sse2",
-    any(target_arch = "x86_64", target_arch = "x86"),
-)))]
-pub use soft::{Aes128, Aes192, Aes256};
-
-#[cfg(all(
-    target_feature = "aes",
-    target_feature = "sse2",
-    any(target_arch = "x86_64", target_arch = "x86"),
-))]
-pub use ni::{Aes128, Aes192, Aes256};
-
-#[cfg(all(
-    feature = "ctr",
-    not(all(
+cfg_if! {
+    if #[cfg(all(
         target_feature = "aes",
         target_feature = "sse2",
-        target_feature = "ssse3",
         any(target_arch = "x86_64", target_arch = "x86"),
-    ))
-))]
-pub use soft::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
+    ))] {
+        mod ni;
+        pub use ni::{Aes128, Aes192, Aes256};
 
-#[cfg(all(
-    feature = "ctr",
-    target_feature = "aes",
-    target_feature = "sse2",
-    target_feature = "ssse3",
-    any(target_arch = "x86_64", target_arch = "x86"),
-))]
-pub use ni::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
+        #[cfg(feature = "ctr")]
+        cfg_if! {
+            if #[cfg(target_feature = "ssse3")] {
+                pub use ni::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
+            } else {
+                compile_error!("Please enable the +ssse3 target feature to use `ctr` with AES-NI")
+            }
+        }
+    } else {
+        mod soft;
+        pub use soft::{Aes128, Aes192, Aes256};
+
+        #[cfg(feature = "ctr")]
+        pub use soft::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
+    }
+}
 
 pub use cipher::{self, BlockCipher, NewBlockCipher};
 

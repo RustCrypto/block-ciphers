@@ -15,6 +15,7 @@ keywords = ["crypto", "aes", "rijndael", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
+cfg-if = "1"
 cipher = "0.2"
 ctr = { version = "0.6", optional = true }
 opaque-debug = "0.3"
