@@ -63,21 +63,17 @@ use cfg_if::cfg_if;
 
 cfg_if! {
     if #[cfg(all(
-        target_feature = "aes",
-        target_feature = "sse2",
         any(target_arch = "x86_64", target_arch = "x86"),
+        not(feature = "force-soft")
     ))] {
+        mod autodetect;
         mod ni;
-        pub use ni::{Aes128, Aes192, Aes256};
+        mod soft;
+
+        pub use autodetect::{Aes128, Aes192, Aes256};
 
         #[cfg(feature = "ctr")]
-        cfg_if! {
-            if #[cfg(target_feature = "ssse3")] {
-                pub use ni::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
-            } else {
-                compile_error!("Please enable the +ssse3 target feature to use `ctr` with AES-NI")
-            }
-        }
+        pub use autodetect::ctr::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
     } else {
         mod soft;
         pub use soft::{Aes128, Aes192, Aes256};
@@ -87,7 +83,7 @@ cfg_if! {
     }
 }
 
-pub use cipher::{self, BlockCipher, NewBlockCipher};
+pub use cipher::{self, BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher};
 
 /// 128-bit AES block
 pub type Block = cipher::generic_array::GenericArray<u8, cipher::consts::U16>;
