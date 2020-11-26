@@ -36,6 +36,7 @@ jobs:
           profile: minimal
           override: true
       - run: cargo build --release --target ${{ matrix.target }}
+      - run: cargo build --release --target ${{ matrix.target }} --all-features
 
   # Tests for the portable software backend
   soft:
@@ -68,6 +69,8 @@ jobs:
       - run: cargo check --target ${{ matrix.target }} --all-features
       - run: cargo test --release --target ${{ matrix.target }}
       - run: cargo test --release --target ${{ matrix.target }} --features compact
+      - run: cargo test --release --target ${{ matrix.target }} --features ctr
+      - run: cargo test --release --target ${{ matrix.target }} --all-features
 
   # Tests for the AES-NI backend
   aesni:

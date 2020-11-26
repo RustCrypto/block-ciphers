@@ -17,7 +17,7 @@ categories = ["cryptography", "no-std"]
 [dependencies]
 cfg-if = "1"
 cipher = "=0.3.0-pre"
-ctr = { version = "0.6", optional = true }
+ctr = { version = "=0.7.0-pre", optional = true }
 opaque-debug = "0.3"
 
 [dev-dependencies]
