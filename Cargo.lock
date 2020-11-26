@@ -5,7 +5,7 @@ name = "aes"
 version = "0.7.0-pre"
 dependencies = [
  "cfg-if",
- "cipher 0.3.0-pre",
+ "cipher",
  "ctr",
  "opaque-debug",
 ]
@@ -22,7 +22,7 @@ version = "0.8.0-pre"
 dependencies = [
  "aes",
  "block-padding",
- "cipher 0.3.0-pre",
+ "cipher",
  "hex-literal",
 ]
 
@@ -37,7 +37,7 @@ name = "blowfish"
 version = "0.8.0-pre"
 dependencies = [
  "byteorder",
- "cipher 0.3.0-pre",
+ "cipher",
  "opaque-debug",
 ]
 
@@ -52,7 +52,7 @@ name = "cast5"
 version = "0.10.0-pre"
 dependencies = [
  "byteorder",
- "cipher 0.3.0-pre",
+ "cipher",
  "hex-literal",
  "opaque-debug",
 ]
@@ -62,15 +62,6 @@ name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
-
-[[package]]
-name = "cipher"
-version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12f8e7987cbd042a63249497f41aed09f8e65add917ea6566effbc56578d6801"
-dependencies = [
- "generic-array",
-]
 
 [[package]]
 name = "cipher"
@@ -84,11 +75,11 @@ dependencies = [
 
 [[package]]
 name = "ctr"
-version = "0.6.0"
+version = "0.7.0-pre"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb4a30d54f7443bf3d6191dcd486aca19e67cb3c49fa7a06a319966346707e7f"
+checksum = "c24c08075706da56b6eebe30dc3af9a842802dadd1f169651a8defd69852a4e6"
 dependencies = [
- "cipher 0.2.5",
+ "cipher",
 ]
 
 [[package]]
@@ -96,7 +87,7 @@ name = "des"
 version = "0.7.0-pre"
 dependencies = [
  "byteorder",
- "cipher 0.3.0-pre",
+ "cipher",
  "opaque-debug",
 ]
 
@@ -115,7 +106,7 @@ name = "gost-modes"
 version = "0.5.0-pre"
 dependencies = [
  "block-modes",
- "cipher 0.3.0-pre",
+ "cipher",
  "generic-array",
  "hex-literal",
  "kuznyechik",
@@ -145,7 +136,7 @@ dependencies = [
 name = "idea"
 version = "0.4.0-pre"
 dependencies = [
- "cipher 0.3.0-pre",
+ "cipher",
  "opaque-debug",
 ]
 
@@ -153,7 +144,7 @@ dependencies = [
 name = "kuznyechik"
 version = "0.7.0-pre"
 dependencies = [
- "cipher 0.3.0-pre",
+ "cipher",
  "hex-literal",
  "opaque-debug",
 ]
@@ -162,7 +153,7 @@ dependencies = [
 name = "magma"
 version = "0.7.0-pre"
 dependencies = [
- "cipher 0.3.0-pre",
+ "cipher",
  "hex-literal",
  "opaque-debug",
 ]
@@ -183,7 +174,7 @@ checksum = "99c605b9a0adc77b7211c6b1f722dcb613d68d66859a44f3d485a6da332b0598"
 name = "rc2"
 version = "0.7.0-pre"
 dependencies = [
- "cipher 0.3.0-pre",
+ "cipher",
  "opaque-debug",
 ]
 
@@ -192,7 +183,7 @@ name = "serpent"
 version = "0.4.0-pre"
 dependencies = [
  "byteorder",
- "cipher 0.3.0-pre",
+ "cipher",
  "opaque-debug",
 ]
 
@@ -201,7 +192,7 @@ name = "sm4"
 version = "0.4.0-pre"
 dependencies = [
  "byteorder",
- "cipher 0.3.0-pre",
+ "cipher",
  "hex-literal",
  "opaque-debug",
 ]
@@ -210,7 +201,7 @@ dependencies = [
 name = "threefish"
 version = "0.4.0-pre"
 dependencies = [
- "cipher 0.3.0-pre",
+ "cipher",
 ]
 
 [[package]]
@@ -218,7 +209,7 @@ name = "twofish"
 version = "0.6.0-pre"
 dependencies = [
  "byteorder",
- "cipher 0.3.0-pre",
+ "cipher",
  "hex-literal",
  "opaque-debug",
 ]
