@@ -3,7 +3,11 @@
 //!
 //! It provides two different backends based on what target features
 //! are specified:
+//!
 //! - "soft" portable constant-time implementation based on [fixslicing].
+//!   Enabling the `compact` Cargo feature will reduce the code size of this
+//!   backend at the cost of decreased performance (using a modified form of
+//!   the fixslicing technique called "semi-fixslicing").
 //! - [AES-NI] accelerated implementation for `i686`/`x86_64` target
 //!   architectures with `target-feature=+aes`, as well as an accelerated
 //!   AES-CTR implementation with `target-feature=+aes,+ssse3`
