@@ -17,6 +17,7 @@ env:
   RUSTFLAGS: "-Dwarnings"
 
 jobs:
+  # Builds for no_std platforms
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -36,7 +37,9 @@ jobs:
           profile: minimal
           override: true
       - run: cargo build --release --target ${{ matrix.target }}
-      - run: cargo build --release --target ${{ matrix.target }} --all-features
+      - run: cargo build --release --target ${{ matrix.target }} --features compact
+      - run: cargo build --release --target ${{ matrix.target }} --features ctr
+      - run: cargo build --release --target ${{ matrix.target }} --features compact,ctr
 
   # Tests for the portable software backend
   soft:
@@ -99,13 +102,16 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
           toolchain: ${{ matrix.rust }}
+          target: ${{ matrix.target }}
+          profile: minimal
+          override: true
       - run: ${{ matrix.deps }}
-      - run: cargo check --all-features
-      - run: cargo test --no-default-features
-      - run: cargo test
-      - run: cargo test --all-features
+      - run: cargo check --target ${{ matrix.target }} --all-features
+      - run: cargo test --release --target ${{ matrix.target }}
+      - run: cargo test --release --target ${{ matrix.target }} --features compact
+      - run: cargo test --release --target ${{ matrix.target }} --features ctr
+      - run: cargo test --release --target ${{ matrix.target }} --all-features
 
   # Cross-compiled tests
   cross:
@@ -137,3 +143,5 @@ jobs:
       - run: cargo install cross
       - run: cross test --release --target ${{ matrix.target }}
       - run: cross test --release --target ${{ matrix.target }} --features compact
+      - run: cross test --release --target ${{ matrix.target }} --features ctr
+      - run: cross test --release --target ${{ matrix.target }} --features compact,ctr
