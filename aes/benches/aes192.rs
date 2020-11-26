@@ -1,7 +1,7 @@
 #![feature(test)]
 extern crate test;
 
-use aes::cipher::{BlockCipher, NewBlockCipher};
+use aes::cipher::{BlockDecrypt, BlockEncrypt, NewBlockCipher};
 use aes::Aes192;
 
 #[bench]
@@ -42,7 +42,7 @@ pub fn aes192_encrypt8(bh: &mut test::Bencher) {
     let mut input = Default::default();
 
     bh.iter(|| {
-        cipher.encrypt_blocks(&mut input);
+        cipher.encrypt_par_blocks(&mut input);
         test::black_box(&input);
     });
     bh.bytes = (input[0].len() * input.len()) as u64;
@@ -54,7 +54,7 @@ pub fn aes192_decrypt8(bh: &mut test::Bencher) {
     let mut input = Default::default();
 
     bh.iter(|| {
-        cipher.decrypt_blocks(&mut input);
+        cipher.decrypt_par_blocks(&mut input);
         test::black_box(&input);
     });
     bh.bytes = (input[0].len() * input.len()) as u64;

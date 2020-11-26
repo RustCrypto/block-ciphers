@@ -10,16 +10,18 @@ on:
       - README.md
 
 jobs:
-  clippy:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-    - uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: 1.41.0 # MSRV
-        components: clippy
-    - run: cargo clippy --all --all-features -- -D warnings
+# TODO(tarcieri): re-enable clippy
+#  clippy:
+#    runs-on: ubuntu-latest
+#    steps:
+#    - uses: actions/checkout@v1
+#    - uses: actions-rs/toolchain@v1
+#      with:
+#        toolchain: 1.41.0 # MSRV
+#        components: clippy
+#        override: true
+#        profile: minimal
+#    - run: cargo clippy --all --all-features -- -D warnings
 
   rustfmt:
     runs-on: ubuntu-latest
@@ -30,12 +32,23 @@ jobs:
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
           toolchain: stable
           components: rustfmt
-
+          override: true
+          profile: minimal
       - name: Run cargo fmt
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
+
+  benches:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          override: true
+      - run: cargo build --all --benches
