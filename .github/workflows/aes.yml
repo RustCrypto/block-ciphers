@@ -67,7 +67,7 @@ jobs:
       - run: ${{ matrix.deps }}
       - run: cargo check --target ${{ matrix.target }} --all-features
       - run: cargo test --release --target ${{ matrix.target }}
-      - run: cargo test --release --target ${{ matrix.target }} --features semi_fixslice
+      - run: cargo test --release --target ${{ matrix.target }} --features compact
 
   # Tests for the AES-NI backend
   aesni:
@@ -133,4 +133,4 @@ jobs:
           override: true
       - run: cargo install cross
       - run: cross test --release --target ${{ matrix.target }}
-      - run: cross test --release --target ${{ matrix.target }} --features semi_fixslice
+      - run: cross test --release --target ${{ matrix.target }} --features compact

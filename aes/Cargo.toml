@@ -24,7 +24,7 @@ opaque-debug = "0.3"
 cipher = { version = "=0.3.0-pre", features = ["dev"] }
 
 [features]
-semi_fixslice = []
+compact = [] # Reduce code size at the cost of performance
 
 [package.metadata.docs.rs]
 all-features = true
