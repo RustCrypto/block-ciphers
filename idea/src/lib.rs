@@ -56,7 +56,7 @@ impl Idea {
 
     fn invert_sub_keys(&mut self) {
         let mut k = ROUNDS * 6;
-        for i in 0..ROUNDS + 1 {
+        for i in 0..=ROUNDS {
             let j = i * 6;
             let l = k - j;
 

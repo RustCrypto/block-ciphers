@@ -54,7 +54,7 @@ macro_rules! impl_threefish(
                 let t = [t0, t1, t0 ^ t1];
 
                 let mut sk = [[0u64; $n_w]; $rounds / 4 + 1];
-                for s in 0..($rounds / 4 + 1) {
+                for s in 0..=($rounds / 4) {
                     for i in 0..$n_w {
                         sk[s][i] = k[(s + i) % ($n_w + 1)];
                         if i == $n_w - 3 {
