@@ -13,6 +13,8 @@
 //!
 //! Originally licensed MIT. Relicensed as Apache 2.0+MIT with permission.
 
+#![allow(clippy::unreadable_literal)]
+
 use crate::Block;
 use cipher::{
     consts::{U16, U24, U32},
