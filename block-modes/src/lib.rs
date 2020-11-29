@@ -91,6 +91,7 @@ mod cbc;
 mod cfb;
 mod cfb8;
 mod ecb;
+mod ige;
 mod ofb;
 mod pcbc;
 
@@ -103,6 +104,7 @@ pub use crate::{
     cfb8::Cfb8,
     ecb::Ecb,
     errors::{BlockModeError, InvalidKeyIvLength},
+    ige::Ige,
     ofb::Ofb,
     pcbc::Pcbc,
     traits::BlockMode,
