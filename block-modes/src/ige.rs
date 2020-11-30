@@ -3,11 +3,10 @@ use crate::{
     utils::{xor, Block},
 };
 use block_padding::Padding;
-use byte_tools::copy;
 use cipher::{
     block::{BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher},
     generic_array::{
-        typenum::{Prod, UInt, UTerm, Unsigned, B0, B1, U2},
+        typenum::{Prod, Unsigned, U2},
         ArrayLength, GenericArray,
     },
 };
@@ -22,71 +21,53 @@ pub struct Ige<C, P>
 where
     C: BlockCipher + NewBlockCipher + BlockEncrypt + BlockDecrypt,
     P: Padding,
-    C::BlockSize: Mul<UInt<UInt<UTerm, B1>, B0>>,
-    <C::BlockSize as Mul<UInt<UInt<UTerm, B1>, B0>>>::Output: ArrayLength<u8>,
+    C::BlockSize: Mul<U2>,
+    IgeIvBlockSize<C>: ArrayLength<u8>,
 {
     cipher: C,
-    iv: GenericArray<u8, IgeIvBlockSize<C>>,
+    x: GenericArray<u8, C::BlockSize>,
+    y: GenericArray<u8, C::BlockSize>,
     _p: PhantomData<P>,
 }
-
-// Implementation derived from:
-// https://mgp25.com/AESIGE/
 
 impl<C, P> BlockMode<C, P> for Ige<C, P>
 where
     C: BlockCipher + NewBlockCipher + BlockEncrypt + BlockDecrypt,
     P: Padding,
-    C::BlockSize: Mul<UInt<UInt<UTerm, B1>, B0>>,
-    <C::BlockSize as Mul<UInt<UInt<UTerm, B1>, B0>>>::Output: ArrayLength<u8>,
+    C::BlockSize: Mul<U2>,
+    IgeIvBlockSize<C>: ArrayLength<u8>,
 {
     type IvSize = IgeIvBlockSize<C>;
 
     fn new(cipher: C, iv: &GenericArray<u8, Self::IvSize>) -> Self {
+        let (y, x) = iv.split_at(C::BlockSize::to_usize());
         Ige {
             cipher,
-            iv: iv.clone(),
+            x: GenericArray::clone_from_slice(x),
+            y: GenericArray::clone_from_slice(y),
             _p: Default::default(),
         }
     }
 
     fn encrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
-        let block_size = C::BlockSize::to_usize();
-
-        let (mut y_prev, x_prev) = self.iv.split_at_mut(block_size);
-        let mut x_temp = GenericArray::<u8, C::BlockSize>::default();
-
         for block in blocks {
-            copy(block, &mut x_temp);
-
-            xor(block, y_prev);
-
+            let t = block.clone();
+            xor(block, &self.y);
             self.cipher.encrypt_block(block);
-
-            xor(block, x_prev);
-
-            copy(&x_temp, x_prev);
-            y_prev = block;
+            xor(block, &self.x);
+            self.x = t;
+            self.y = block.clone();
         }
     }
 
     fn decrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
-        let block_size = C::BlockSize::to_usize();
-
-        let (x_prev, mut y_prev) = self.iv.split_at_mut(block_size);
-        let mut x_temp = GenericArray::<u8, C::BlockSize>::default();
-
         for block in blocks {
-            copy(block, &mut x_temp);
-
-            xor(block, y_prev);
-
+            let t = block.clone();
+            xor(block, &self.x);
             self.cipher.decrypt_block(block);
-
-            xor(block, x_prev);
-
-            copy(&x_temp, x_prev);
-            y_prev = block;
+            xor(block, &self.y);
+            self.y = t;
+            self.x = block.clone();
         }
     }
 }
