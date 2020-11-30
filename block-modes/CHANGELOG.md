@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Changed
+- Upgrade to `cipher v0.3` ([#202])
+
+### Added
+- Infinite Garble Extension (IGE) block mode ([#211])
+
+[#202]: https://github.com/RustCrypto/block-ciphers/pull/202
+[#211]: https://github.com/RustCrypto/block-ciphers/pull/211
+
 ## 0.7.0 (2020-10-16)
 ### Changed
 - Replace `block-cipher`/`stream-cipher` with `cipher` crate ([#167])

@@ -12,7 +12,6 @@ keywords = ["crypto", "block-cipher", "ciphers"]
 
 [dependencies]
 block-padding = "0.2"
-byte-tools = "0.3"
 cipher = "=0.3.0-pre"
 
 [dev-dependencies]
