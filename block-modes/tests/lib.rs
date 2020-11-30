@@ -1,9 +1,10 @@
 //! Test vectors generated with OpenSSL
 
 use aes::Aes128;
-use block_modes::block_padding::ZeroPadding;
+use block_modes::block_padding::{NoPadding, ZeroPadding};
 use block_modes::BlockMode;
-use block_modes::{Cbc, Ecb};
+use block_modes::{Cbc, Ecb, Ige};
+use cipher::generic_array::GenericArray;
 
 #[test]
 fn ecb_aes128() {
@@ -68,4 +69,32 @@ fn par_blocks() {
     run::<block_modes::Ecb<_, _>>();
     run::<block_modes::Ofb<_, _>>();
     run::<block_modes::Pcbc<_, _>>();
+}
+
+#[test]
+fn ige_aes256_1() {
+    let key = GenericArray::from_slice(include_bytes!("data/ige-aes128-1.key.bin"));
+    let iv = GenericArray::from_slice(include_bytes!("data/ige-aes128-1.iv.bin"));
+    let plaintext = include_bytes!("data/ige-aes128-1.plaintext.bin");
+    let ciphertext = include_bytes!("data/ige-aes128-1.ciphertext.bin");
+
+    let mode = Ige::<Aes128, NoPadding>::new_fix(key, iv);
+    assert_eq!(mode.encrypt_vec(plaintext), &ciphertext[..]);
+
+    let mode = Ige::<Aes128, NoPadding>::new_fix(key, iv);
+    assert_eq!(mode.decrypt_vec(ciphertext).unwrap(), &plaintext[..]);
+}
+
+#[test]
+fn ige_aes256_2() {
+    let key = GenericArray::from_slice(include_bytes!("data/ige-aes128-2.key.bin"));
+    let iv = GenericArray::from_slice(include_bytes!("data/ige-aes128-2.iv.bin"));
+    let plaintext = include_bytes!("data/ige-aes128-2.plaintext.bin");
+    let ciphertext = include_bytes!("data/ige-aes128-2.ciphertext.bin");
+
+    let mode = Ige::<Aes128, NoPadding>::new_fix(key, iv);
+    assert_eq!(mode.encrypt_vec(plaintext), &ciphertext[..]);
+
+    let mode = Ige::<Aes128, NoPadding>::new_fix(key, iv);
+    assert_eq!(mode.decrypt_vec(ciphertext).unwrap(), &plaintext[..]);
 }

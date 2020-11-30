@@ -22,6 +22,7 @@ version = "0.8.0-pre"
 dependencies = [
  "aes",
  "block-padding",
+ "byte-tools",
  "cipher",
  "hex-literal",
 ]
@@ -40,6 +41,12 @@ dependencies = [
  "cipher",
  "opaque-debug",
 ]
+
+[[package]]
+name = "byte-tools"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3b5ca7a04898ad4bcd41c90c5285445ff5b791899bb1b0abdd2a2aa791211d7"
 
 [[package]]
 name = "byteorder"
