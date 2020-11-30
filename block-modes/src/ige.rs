@@ -51,22 +51,22 @@ where
 
     fn encrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
         for block in blocks {
-            let x_temp = block.clone();
+            let t = block.clone();
             xor(block, &self.y);
             self.cipher.encrypt_block(block);
             xor(block, &self.x);
-            self.x = x_temp;
+            self.x = t;
             self.y = block.clone();
         }
     }
 
     fn decrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
         for block in blocks {
-            let x_temp = block.clone();
+            let t = block.clone();
             xor(block, &self.x);
             self.cipher.decrypt_block(block);
             xor(block, &self.y);
-            self.y = x_temp;
+            self.y = t;
             self.x = block.clone();
         }
     }
