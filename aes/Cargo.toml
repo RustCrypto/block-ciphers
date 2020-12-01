@@ -14,6 +14,7 @@ repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "aes", "rijndael", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
+
 [dependencies]
 cfg-if = "1"
 cipher = "=0.3.0-pre"
