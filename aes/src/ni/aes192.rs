@@ -114,6 +114,7 @@ impl BlockDecrypt for Aes192 {
             // Safety: `loadu` and `storeu` support unaligned access
             #[allow(clippy::cast_ptr_alignment)]
             let mut b = _mm_loadu_si128(block.as_ptr() as *const __m128i);
+
             b = _mm_xor_si128(b, keys[12]);
             b = _mm_aesdec_si128(b, keys[11]);
             b = _mm_aesdec_si128(b, keys[10]);
@@ -127,6 +128,9 @@ impl BlockDecrypt for Aes192 {
             b = _mm_aesdec_si128(b, keys[2]);
             b = _mm_aesdec_si128(b, keys[1]);
             b = _mm_aesdeclast_si128(b, keys[0]);
+
+            // Safety: `loadu` and `storeu` support unaligned access
+            #[allow(clippy::cast_ptr_alignment)]
             _mm_storeu_si128(block.as_mut_ptr() as *mut __m128i, b);
         }
 

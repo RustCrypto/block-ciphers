@@ -39,7 +39,8 @@ jobs:
       - run: cargo build --release --target ${{ matrix.target }}
       - run: cargo build --release --target ${{ matrix.target }} --features compact
       - run: cargo build --release --target ${{ matrix.target }} --features ctr
-      - run: cargo build --release --target ${{ matrix.target }} --features compact,ctr
+      - run: cargo build --release --target ${{ matrix.target }} --features force-soft
+      - run: cargo build --release --target ${{ matrix.target }} --all-features
 
   # Tests for the portable software backend
   soft:
@@ -73,6 +74,7 @@ jobs:
       - run: cargo test --release --target ${{ matrix.target }}
       - run: cargo test --release --target ${{ matrix.target }} --features compact
       - run: cargo test --release --target ${{ matrix.target }} --features ctr
+      - run: cargo test --release --target ${{ matrix.target }} --features force-soft
       - run: cargo test --release --target ${{ matrix.target }} --all-features
 
   # Tests for the AES-NI backend
@@ -111,6 +113,7 @@ jobs:
       - run: cargo test --release --target ${{ matrix.target }}
       - run: cargo test --release --target ${{ matrix.target }} --features compact
       - run: cargo test --release --target ${{ matrix.target }} --features ctr
+      - run: cargo test --release --target ${{ matrix.target }} --features force-soft
       - run: cargo test --release --target ${{ matrix.target }} --all-features
 
   # Cross-compiled tests
@@ -144,4 +147,5 @@ jobs:
       - run: cross test --release --target ${{ matrix.target }}
       - run: cross test --release --target ${{ matrix.target }} --features compact
       - run: cross test --release --target ${{ matrix.target }} --features ctr
-      - run: cross test --release --target ${{ matrix.target }} --features compact,ctr
+      - run: cross test --release --target ${{ matrix.target }} --features force-soft
+      - run: cross test --release --target ${{ matrix.target }} --all-features

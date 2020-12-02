@@ -20,7 +20,7 @@ macro_rules! define_aes_impl {
         $doc:expr
     ) => {
         #[doc=$doc]
-        #[derive(Clone)]
+        #[derive(Copy, Clone)]
         pub struct $name {
             keys: $fixslice_keys,
         }

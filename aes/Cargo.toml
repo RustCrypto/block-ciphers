@@ -23,9 +23,13 @@ opaque-debug = "0.3"
 [dev-dependencies]
 cipher = { version = "=0.3.0-pre", features = ["dev"] }
 
+[target.'cfg(any(target_arch = "x86_64", target_arch = "x86"))'.dependencies]
+cpuid-bool = "0.2"
+
 [features]
-compact = [] # Reduce code size at the cost of performance
+compact = [] # Reduce code size at the cost of slower performance
+force-soft = [] # Disable support for AES hardware intrinsics
 
 [package.metadata.docs.rs]
-all-features = true
+features = ["ctr"]
 rustdoc-args = ["--cfg", "docsrs"]
