@@ -227,7 +227,6 @@ impl BlockCipher for Serpent {
         Self::new_varkey(key).unwrap()
     }
 
-    #[inline(always)]
     fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
         if key.len() < 16 || key.len() > 32 {
             return Err(InvalidKeyLength);
@@ -239,7 +238,6 @@ impl BlockCipher for Serpent {
         })
     }
 
-    #[inline(always)]
     fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
         let mut b = [0u8; 16];
 
@@ -253,7 +251,6 @@ impl BlockCipher for Serpent {
         *block = *GenericArray::from_slice(&b);
     }
 
-    #[inline(always)]
     fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
         let mut b = [0u8; 16];
 
