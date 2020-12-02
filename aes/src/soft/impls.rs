@@ -20,7 +20,11 @@ macro_rules! define_aes_impl {
         $doc:expr
     ) => {
         #[doc=$doc]
-        #[derive(Copy, Clone)]
+        #[derive(Clone)]
+        #[cfg_attr(
+            all(any(target_arch = "x86_64", target_arch = "x86"), not(feature = "force-soft")),
+            derive(Copy)
+        )] // TODO(tarcieri): remove this when `ManuallyDrop` is stable
         pub struct $name {
             keys: $fixslice_keys,
         }
