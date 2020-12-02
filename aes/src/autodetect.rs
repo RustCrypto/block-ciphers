@@ -104,7 +104,7 @@ define_aes_impl!(Aes256, aes256, U32, "AES-256 block cipher instance");
 
 #[cfg(feature = "ctr")]
 pub(crate) mod ctr {
-    use super::{aes_cpuid, Aes128, Aes192, Aes256};
+    use super::{Aes128, Aes192, Aes256};
     use cipher::{
         block::BlockCipher,
         generic_array::GenericArray,
@@ -113,6 +113,8 @@ pub(crate) mod ctr {
             SyncStreamCipherSeek,
         },
     };
+
+    cpuid_bool::new!(aes_ssse3_cpuid, "aes", "ssse3");
 
     macro_rules! define_aes_ctr_impl {
         (
@@ -143,7 +145,7 @@ pub(crate) mod ctr {
                     cipher: $cipher,
                     nonce: &GenericArray<u8, Self::NonceSize>,
                 ) -> Self {
-                    let inner = if aes_cpuid::get() {
+                    let inner = if aes_ssse3_cpuid::get() {
                         $module::Inner::Ni(
                             crate::ni::$name::from_block_cipher(
                                 unsafe { cipher.inner.ni },
