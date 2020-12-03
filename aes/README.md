@@ -42,7 +42,7 @@ using a portable implementation based on bitslicing.
 
 ## Minimum Supported Rust Version
 
-Rust **1.41** or higher.
+Rust **1.49** or higher.
 
 Minimum supported Rust version can be changed in the future, but it will be
 done with a minor version bump.
@@ -74,7 +74,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-image]: https://docs.rs/aes/badge.svg
 [docs-link]: https://docs.rs/aes/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.41+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.49+-blue.svg
 [hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
 [hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
