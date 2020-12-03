@@ -64,13 +64,7 @@ fn linear_transform_inverse_bitslice(input: Block128, output: &mut Block128) {
     LE::write_u32_into(&words, output);
 }
 
-fn round_bitslice(
-    i: usize,
-    b_i: Block128,
-    k: Subkeys,
-    b_output: &mut Block128,
-)
-{
+fn round_bitslice(i: usize, b_i: Block128, k: Subkeys, b_output: &mut Block128) {
     let xored_block = xor_block(b_i, k[i]);
 
     let s_i = apply_s_bitslice(i, xored_block);
@@ -81,13 +75,9 @@ fn round_bitslice(
         linear_transform_bitslice(s_i, b_output);
     }
 }
-fn round_inverse_bitslice(
-    i: usize,
-    b_i_next: Block128,
-    k: Subkeys,
-    b_output: &mut Block128,
-)
-{
+
+#[allow(clippy::useless_let_if_seq)]
+fn round_inverse_bitslice(i: usize, b_i_next: Block128, k: Subkeys, b_output: &mut Block128) {
     let mut s_i = [0u8; 16];
     if i == ROUNDS - 1 {
         s_i = xor_block(b_i_next, k[ROUNDS]);
@@ -100,7 +90,10 @@ fn round_inverse_bitslice(
     *b_output = xor_block(xored, k[i]);
 }
 
-fn apply_s(index: usize, nibble: u8) -> u8 { S[index % 8][nibble as usize] }
+fn apply_s(index: usize, nibble: u8) -> u8 {
+    S[index % 8][nibble as usize]
+}
+
 fn apply_s_inverse(index: usize, nibble: u8) -> u8 {
     S_INVERSE[index % 8][nibble as usize]
 }
