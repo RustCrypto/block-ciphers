@@ -32,12 +32,12 @@ where
     /// Create a new block mode instance from variable size key and IV.
     ///
     /// Returns an error if key or IV have unsupported length.
-    fn new_var(key: &[u8], iv: &[u8]) -> Result<Self, InvalidKeyIvLength> {
+    fn new_from_slices(key: &[u8], iv: &[u8]) -> Result<Self, InvalidKeyIvLength> {
         if iv.len() != Self::IvSize::USIZE {
             return Err(InvalidKeyIvLength);
         }
         let iv = GenericArray::from_slice(iv);
-        let cipher = C::new_var(key).map_err(|_| InvalidKeyIvLength)?;
+        let cipher = C::new_from_slice(key).map_err(|_| InvalidKeyIvLength)?;
         Ok(Self::new(cipher, iv))
     }
 

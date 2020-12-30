@@ -13,7 +13,7 @@ fn kuznyechik() {
     let plaintext = hex!("1122334455667700FFEEDDCCBBAA9988");
     let ciphertext = hex!("7F679D90BEBC24305a468d42b9d4EDCD");
 
-    let state = kuznyechik::Kuznyechik::new_var(&key).unwrap();
+    let state = kuznyechik::Kuznyechik::new_from_slice(&key).unwrap();
 
     let mut block = GenericArray::clone_from_slice(&plaintext);
     state.encrypt_block(&mut block);

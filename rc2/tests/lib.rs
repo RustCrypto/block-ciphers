@@ -24,7 +24,7 @@ macro_rules! new_tests {
 fn rc2() {
     let tests = new_tests!("1", "2", "3", "7");
     for test in &tests {
-        let cipher = rc2::Rc2::new_var(&test.key).unwrap();
+        let cipher = rc2::Rc2::new_from_slice(&test.key).unwrap();
 
         let mut buf = GenericArray::clone_from_slice(test.input);
         cipher.encrypt_block(&mut buf);

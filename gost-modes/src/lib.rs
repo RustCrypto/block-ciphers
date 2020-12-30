@@ -23,10 +23,10 @@
 //!
 //! type Cipher = GostCbc<Kuznyechik, GostPadding, U2>;
 //!
-//! let cipher = Cipher::new_var(&key, &iv).unwrap();
+//! let cipher = Cipher::new_from_slices(&key, &iv).unwrap();
 //! let ct = cipher.encrypt_vec(pt);
 //!
-//! let cipher = Cipher::new_var(&key, &iv).unwrap();
+//! let cipher = Cipher::new_from_slices(&key, &iv).unwrap();
 //! let buf = cipher.decrypt_vec(&ct).unwrap();
 //!
 //! assert_eq!(buf, &pt[..]);
@@ -34,7 +34,7 @@
 //! // OFB mode example
 //! use gost_modes::{GostOfb, StreamCipher, NewCipher};
 //!
-//! let mut cipher = GostOfb::<Kuznyechik, U2>::new_var(&key, &iv).unwrap();
+//! let mut cipher = GostOfb::<Kuznyechik, U2>::new_from_slices(&key, &iv).unwrap();
 //! let mut buf = pt.to_vec();
 //! cipher.apply_keystream(&mut buf);
 //! assert_eq!(buf, hex!("fddb196e81812e4174d1c9f741a3457a88"));
