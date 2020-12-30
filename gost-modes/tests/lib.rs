@@ -5,7 +5,7 @@ use gost_modes::{
     block_padding::ZeroPadding,
     consts::{U14, U16, U2, U3, U32, U5},
     generic_array::GenericArray,
-    BlockMode, Ecb, GostCbc, GostCfb, GostCtr128, GostCtr64, GostOfb, NewStreamCipher,
+    AsyncStreamCipher, BlockMode, Ecb, GostCbc, GostCfb, GostCtr128, GostCtr64, GostOfb, NewCipher,
     StreamCipher,
 };
 use hex_literal::hex;
@@ -13,6 +13,29 @@ use kuznyechik::Kuznyechik;
 use magma::{cipher::NewBlockCipher, Magma};
 
 fn test_stream_cipher(cipher: impl StreamCipher + Clone, pt: &[u8], ct: &[u8]) {
+    let mut buf = pt.to_vec();
+    cipher.clone().apply_keystream(&mut buf);
+    assert_eq!(buf, &ct[..]);
+    cipher.clone().apply_keystream(&mut buf);
+    assert_eq!(buf, &pt[..]);
+
+    for i in 1..32 {
+        let mut c = cipher.clone();
+        let mut buf = pt.to_vec();
+        for chunk in buf.chunks_mut(i) {
+            c.apply_keystream(chunk);
+        }
+        assert_eq!(buf, &ct[..]);
+
+        let mut c = cipher.clone();
+        for chunk in buf.chunks_mut(i) {
+            c.apply_keystream(chunk);
+        }
+        assert_eq!(buf, &pt[..]);
+    }
+}
+
+fn test_async_stream_cipher(cipher: impl AsyncStreamCipher + Clone, pt: &[u8], ct: &[u8]) {
     let mut buf = pt.to_vec();
     cipher.clone().encrypt(&mut buf);
     assert_eq!(buf, &ct[..]);
@@ -90,7 +113,7 @@ fn kuznyechik_modes() {
     test_stream_cipher(c, &pt, &ofb_ct);
 
     let c = GostCfb::<Kuznyechik, U32>::new(&key, &iv);
-    test_stream_cipher(c, &pt, &cfb_ct);
+    test_async_stream_cipher(c, &pt, &cfb_ct);
 
     let c = GostCtr128::<Kuznyechik>::new(&key, &ctr_iv);
     test_stream_cipher(c, &pt, &ctr_ct);
@@ -157,7 +180,7 @@ fn magma_modes() {
     test_stream_cipher(c, &pt, &ofb_ct);
 
     let c = GostCfb::<Magma, U16>::new(&key, &iv);
-    test_stream_cipher(c, &pt, &cfb_ct);
+    test_async_stream_cipher(c, &pt, &cfb_ct);
 
     let c = GostCtr64::<Magma>::new(&key, &ctr_iv);
     test_stream_cipher(c, &pt, &ctr_ct);

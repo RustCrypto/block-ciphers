@@ -11,9 +11,12 @@
 pub use cipher;
 
 use byteorder::{ByteOrder, BE, LE};
-use cipher::block::{BlockCipher, BlockDecrypt, BlockEncrypt, InvalidKeyLength, NewBlockCipher};
-use cipher::consts::{U1, U56, U8};
-use cipher::generic_array::GenericArray;
+use cipher::{
+    consts::{U1, U56, U8},
+    errors::InvalidLength,
+    generic_array::GenericArray,
+    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
+};
 use core::marker::PhantomData;
 
 mod consts;
@@ -110,12 +113,12 @@ impl<T: ByteOrder> NewBlockCipher for Blowfish<T> {
     type KeySize = U56;
 
     fn new(key: &GenericArray<u8, U56>) -> Self {
-        Self::new_varkey(&key).unwrap()
+        Self::new_var(&key).unwrap()
     }
 
-    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+    fn new_var(key: &[u8]) -> Result<Self, InvalidLength> {
         if key.len() < 4 || key.len() > 56 {
-            return Err(InvalidKeyLength);
+            return Err(InvalidLength);
         }
         let mut blowfish = Blowfish::init_state();
         blowfish.expand_key(key);

@@ -1,15 +1,19 @@
 //! AES in counter mode (a.k.a. AES-CTR)
 
+// TODO(tarcieri): support generic CTR API
+
 #![allow(clippy::unreadable_literal)]
 
 use super::arch::*;
 use core::mem;
 
 use super::{Aes128, Aes192, Aes256};
-use cipher::stream::{
-    FromBlockCipher, LoopError, OverflowError, SeekNum, SyncStreamCipher, SyncStreamCipherSeek,
+use cipher::{
+    consts::U16,
+    errors::{LoopError, OverflowError},
+    generic_array::GenericArray,
+    BlockCipher, FromBlockCipher, SeekNum, StreamCipher, StreamCipherSeek,
 };
-use cipher::{consts::U16, generic_array::GenericArray, BlockCipher};
 
 const BLOCK_SIZE: usize = 16;
 const PAR_BLOCKS: usize = 8;
@@ -146,7 +150,7 @@ macro_rules! impl_ctr {
             }
         }
 
-        impl SyncStreamCipher for $name {
+        impl StreamCipher for $name {
             #[inline]
             fn try_apply_keystream(&mut self, mut data: &mut [u8])
                 -> Result<(), LoopError>
@@ -200,7 +204,7 @@ macro_rules! impl_ctr {
             }
         }
 
-        impl SyncStreamCipherSeek for $name {
+        impl StreamCipherSeek for $name {
             fn try_current_pos<T: SeekNum>(&self) -> Result<T, OverflowError> {
                 T::from_block_byte(self.get_u64_ctr(), self.pos, BLOCK_SIZE as u8)
             }

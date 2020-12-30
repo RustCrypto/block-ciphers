@@ -1,10 +1,16 @@
-use crate::errors::InvalidKeyIvLength;
-use crate::traits::BlockMode;
-use crate::utils::{get_par_blocks, Block};
+use crate::{
+    errors::InvalidKeyIvLength,
+    traits::BlockMode,
+    utils::{get_par_blocks, Block},
+};
 use block_padding::Padding;
-use cipher::block::{BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher};
-use cipher::generic_array::typenum::{Unsigned, U0};
-use cipher::generic_array::GenericArray;
+use cipher::{
+    generic_array::{
+        typenum::{Unsigned, U0},
+        GenericArray,
+    },
+    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
+};
 use core::marker::PhantomData;
 
 /// [Electronic Codebook][1] (ECB) block cipher mode instance.
@@ -34,7 +40,7 @@ where
     }
 
     fn new_var(key: &[u8], _iv: &[u8]) -> Result<Self, InvalidKeyIvLength> {
-        let cipher = C::new_varkey(key).map_err(|_| InvalidKeyIvLength)?;
+        let cipher = C::new_var(key).map_err(|_| InvalidKeyIvLength)?;
         Ok(Self {
             cipher,
             _p: Default::default(),

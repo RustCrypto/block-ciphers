@@ -106,12 +106,9 @@ define_aes_impl!(Aes256, aes256, U32, "AES-256 block cipher instance");
 pub(crate) mod ctr {
     use super::{Aes128, Aes192, Aes256};
     use cipher::{
-        block::BlockCipher,
+        errors::{LoopError, OverflowError},
         generic_array::GenericArray,
-        stream::{
-            FromBlockCipher, LoopError, OverflowError, SeekNum, SyncStreamCipher,
-            SyncStreamCipherSeek,
-        },
+        BlockCipher, FromBlockCipher, SeekNum, StreamCipher, StreamCipherSeek,
     };
 
     cpuid_bool::new!(aes_ssse3_cpuid, "aes", "ssse3");
@@ -165,7 +162,7 @@ pub(crate) mod ctr {
                 }
             }
 
-            impl SyncStreamCipher for $name {
+            impl StreamCipher for $name {
                 #[inline]
                 fn try_apply_keystream(&mut self, data: &mut [u8]) -> Result<(), LoopError> {
                     match &mut self.inner {
@@ -175,7 +172,7 @@ pub(crate) mod ctr {
                 }
             }
 
-            impl SyncStreamCipherSeek for $name {
+            impl StreamCipherSeek for $name {
                 #[inline]
                 fn try_current_pos<T: SeekNum>(&self) -> Result<T, OverflowError> {
                     match &self.inner {

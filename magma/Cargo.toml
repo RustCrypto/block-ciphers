@@ -12,9 +12,9 @@ keywords = ["crypto", "magma", "gost", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "=0.3.0-pre"
+cipher = "=0.3.0-pre.3"
 opaque-debug = "0.3"
 
 [dev-dependencies]
-cipher = { version = "=0.3.0-pre", features = ["dev"] }
+cipher = { version = "=0.3.0-pre.3", features = ["dev"] }
 hex-literal = "0.2"

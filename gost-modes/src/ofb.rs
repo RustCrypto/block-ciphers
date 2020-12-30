@@ -1,7 +1,7 @@
 use crate::utils::xor;
 use cipher::{
-    block::{Block, BlockCipher, BlockEncrypt, NewBlockCipher},
-    stream::{FromBlockCipher, LoopError, SyncStreamCipher},
+    errors::LoopError, Block, BlockCipher, BlockEncrypt, FromBlockCipher, NewBlockCipher,
+    StreamCipher,
 };
 use core::{marker::PhantomData, ops::Mul};
 use generic_array::typenum::{
@@ -65,7 +65,7 @@ where
     }
 }
 
-impl<C, Z, S> SyncStreamCipher for GostOfb<C, Z, S>
+impl<C, Z, S> StreamCipher for GostOfb<C, Z, S>
 where
     C: BlockCipher + BlockEncrypt + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,

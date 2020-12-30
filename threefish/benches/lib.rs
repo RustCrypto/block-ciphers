@@ -2,8 +2,7 @@
 
 extern crate test;
 
-use cipher::block::{BlockEncrypt, NewBlockCipher};
-use cipher::generic_array::GenericArray;
+use cipher::{generic_array::GenericArray, BlockEncrypt, NewBlockCipher};
 use test::Bencher;
 
 #[bench]

@@ -4,11 +4,11 @@ use crate::{
 };
 use block_padding::Padding;
 use cipher::{
-    block::{BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher},
     generic_array::{
         typenum::{Prod, Unsigned, U2},
         ArrayLength, GenericArray,
     },
+    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
 use core::{marker::PhantomData, ops::Mul};
 

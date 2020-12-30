@@ -13,9 +13,10 @@
 pub use cipher;
 
 use cipher::{
-    block::{BlockCipher, BlockDecrypt, BlockEncrypt, InvalidKeyLength, NewBlockCipher},
     consts::{U1, U32, U8},
+    errors::InvalidLength,
     generic_array::GenericArray,
+    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
 
 mod consts;
@@ -197,12 +198,12 @@ impl NewBlockCipher for Rc2 {
     type KeySize = U32;
 
     fn new(key: &GenericArray<u8, U32>) -> Self {
-        Self::new_varkey(key).unwrap()
+        Self::new_var(key).unwrap()
     }
 
-    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+    fn new_var(key: &[u8]) -> Result<Self, InvalidLength> {
         if key.is_empty() || key.len() > 128 {
-            Err(InvalidKeyLength)
+            Err(InvalidLength)
         } else {
             Ok(Self::new_with_eff_key_len(key, key.len() * 8))
         }

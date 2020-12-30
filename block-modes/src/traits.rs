@@ -1,12 +1,15 @@
 #[cfg(feature = "alloc")]
 pub use alloc::vec::Vec;
 
-use crate::errors::{BlockModeError, InvalidKeyIvLength};
-use crate::utils::{to_blocks, Block, Key};
+use crate::{
+    errors::{BlockModeError, InvalidKeyIvLength},
+    utils::{to_blocks, Block, Key},
+};
 use block_padding::Padding;
-use cipher::block::{BlockCipher, NewBlockCipher};
-use cipher::generic_array::typenum::Unsigned;
-use cipher::generic_array::{ArrayLength, GenericArray};
+use cipher::{
+    generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
+    BlockCipher, NewBlockCipher,
+};
 
 /// Trait for a block cipher mode of operation that is used to apply a block cipher
 /// operation to input data to transform it into a variable-length output message.
@@ -34,7 +37,7 @@ where
             return Err(InvalidKeyIvLength);
         }
         let iv = GenericArray::from_slice(iv);
-        let cipher = C::new_varkey(key).map_err(|_| InvalidKeyIvLength)?;
+        let cipher = C::new_var(key).map_err(|_| InvalidKeyIvLength)?;
         Ok(Self::new(cipher, iv))
     }
 

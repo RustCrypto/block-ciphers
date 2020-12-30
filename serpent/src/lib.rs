@@ -17,9 +17,10 @@ pub use cipher;
 
 use byteorder::{ByteOrder, LE};
 use cipher::{
-    block::{BlockCipher, BlockDecrypt, BlockEncrypt, InvalidKeyLength, NewBlockCipher},
     consts::{U1, U16},
+    errors::InvalidLength,
     generic_array::GenericArray,
+    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
 
 mod consts;
@@ -236,12 +237,12 @@ impl NewBlockCipher for Serpent {
     type KeySize = U16;
 
     fn new(key: &GenericArray<u8, U16>) -> Self {
-        Self::new_varkey(key).unwrap()
+        Self::new_var(key).unwrap()
     }
 
-    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+    fn new_var(key: &[u8]) -> Result<Self, InvalidLength> {
         if key.len() < 16 || key.len() > 32 {
-            return Err(InvalidKeyLength);
+            return Err(InvalidLength);
         }
         let mut k = [0u8; 32];
         expand_key(key, key.len() * 8, &mut k);

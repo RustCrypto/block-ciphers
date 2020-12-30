@@ -1,10 +1,11 @@
 use cipher::{
     consts::{U1, U16, U8},
+    errors::InvalidLength,
     generic_array::GenericArray,
+    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
 
 use byteorder::{BigEndian, ByteOrder};
-use cipher::block::{BlockCipher, BlockDecrypt, BlockEncrypt, InvalidKeyLength, NewBlockCipher};
 
 use crate::{
     consts::{S1, S2, S3, S4},
@@ -86,13 +87,13 @@ impl NewBlockCipher for Cast5 {
     type KeySize = U16;
 
     fn new(key: &GenericArray<u8, U16>) -> Self {
-        Self::new_varkey(&key).unwrap()
+        Self::new_var(&key).unwrap()
     }
 
-    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+    fn new_var(key: &[u8]) -> Result<Self, InvalidLength> {
         // Available key sizes are 40...128 bits.
         if key.len() < 5 || key.len() > 16 {
-            return Err(InvalidKeyLength);
+            return Err(InvalidLength);
         }
         let mut cast5 = Cast5::init_state(key.len());
 

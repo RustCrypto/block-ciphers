@@ -13,9 +13,10 @@ pub use cipher;
 
 use byteorder::{ByteOrder, LE};
 use cipher::{
-    block::{BlockCipher, BlockDecrypt, BlockEncrypt, InvalidKeyLength, NewBlockCipher},
     consts::{U1, U16, U32},
+    errors::InvalidLength,
     generic_array::GenericArray,
+    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
 
 mod consts;
@@ -164,13 +165,13 @@ impl NewBlockCipher for Twofish {
     type KeySize = U32;
 
     fn new(key: &GenericArray<u8, U32>) -> Self {
-        Self::new_varkey(key).unwrap()
+        Self::new_var(key).unwrap()
     }
 
-    fn new_varkey(key: &[u8]) -> Result<Self, InvalidKeyLength> {
+    fn new_var(key: &[u8]) -> Result<Self, InvalidLength> {
         let n = key.len();
         if n != 16 && n != 24 && n != 32 {
-            return Err(InvalidKeyLength);
+            return Err(InvalidLength);
         }
         let mut twofish = Self {
             s: [0u8; 16],

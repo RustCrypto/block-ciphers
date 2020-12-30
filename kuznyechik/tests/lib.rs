@@ -1,7 +1,6 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 
-use cipher::generic_array::GenericArray;
-use cipher::block::{BlockEncrypt, BlockDecrypt, NewBlockCipher};
+use cipher::{generic_array::GenericArray, BlockEncrypt, BlockDecrypt, NewBlockCipher};
 use hex_literal::hex;
 
 /// Example vectors from GOST 34.12-2018
@@ -14,7 +13,7 @@ fn kuznyechik() {
     let plaintext = hex!("1122334455667700FFEEDDCCBBAA9988");
     let ciphertext = hex!("7F679D90BEBC24305a468d42b9d4EDCD");
 
-    let state = kuznyechik::Kuznyechik::new_varkey(&key).unwrap();
+    let state = kuznyechik::Kuznyechik::new_var(&key).unwrap();
 
     let mut block = GenericArray::clone_from_slice(&plaintext);
     state.encrypt_block(&mut block);

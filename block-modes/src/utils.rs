@@ -1,6 +1,7 @@
-use cipher::block::{BlockCipher, NewBlockCipher};
-use cipher::generic_array::typenum::Unsigned;
-use cipher::generic_array::{ArrayLength, GenericArray};
+use cipher::{
+    generic_array::{typenum::Unsigned, ArrayLength, GenericArray},
+    BlockCipher, NewBlockCipher,
+};
 use core::slice;
 
 #[inline(always)]
