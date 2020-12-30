@@ -12,13 +12,13 @@ keywords = ["crypto", "block-cipher", "ciphers"]
 
 [dependencies]
 block-modes = { version = "=0.8.0-pre", path = "../block-modes", default-features = false }
-cipher = { version = "=0.3.0-pre", default-features = false }
+cipher = { version = "=0.3.0-pre.3", default-features = false }
 generic-array = "0.14"
 
 [dev-dependencies]
 kuznyechik = { version = "=0.7.0-pre", path = "../kuznyechik" }
 magma = { version = "=0.7.0-pre", path = "../magma" }
-cipher = { version = "=0.3.0-pre", features = ["dev"] }
+cipher = { version = "=0.3.0-pre.3", features = ["dev"] }
 hex-literal = "0.2"
 
 [features]

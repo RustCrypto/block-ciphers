@@ -1,8 +1,6 @@
-use crate::traits::BlockMode;
-use crate::utils::Block;
+use crate::{traits::BlockMode, utils::Block};
 use block_padding::Padding;
-use cipher::block::{BlockCipher, BlockEncrypt, NewBlockCipher};
-use cipher::generic_array::GenericArray;
+use cipher::{generic_array::GenericArray, BlockCipher, BlockEncrypt, NewBlockCipher};
 use core::marker::PhantomData;
 
 /// [Cipher feedback][1] (CFB) block mode instance with a full block feedback.

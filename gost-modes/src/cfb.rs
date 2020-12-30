@@ -1,12 +1,15 @@
 use crate::utils::{xor_set1, xor_set2};
 use cipher::{
-    block::{Block, BlockCipher, BlockEncrypt, NewBlockCipher},
-    stream::{FromBlockCipher, StreamCipher},
+    AsyncStreamCipher, Block, BlockCipher, BlockEncrypt, FromBlockCipher, NewBlockCipher,
 };
 use core::ops::Sub;
-use generic_array::typenum::type_operators::{IsGreater, IsGreaterOrEqual, IsLessOrEqual};
-use generic_array::typenum::{Diff, Unsigned, U0, U255};
-use generic_array::{ArrayLength, GenericArray};
+use generic_array::{
+    typenum::{
+        type_operators::{IsGreater, IsGreaterOrEqual, IsLessOrEqual},
+        Diff, Unsigned, U0, U255,
+    },
+    ArrayLength, GenericArray,
+};
 
 type BlockSize<C> = <C as BlockCipher>::BlockSize;
 
@@ -90,7 +93,7 @@ where
     }
 }
 
-impl<C, M, S> StreamCipher for GostCfb<C, M, S>
+impl<C, M, S> AsyncStreamCipher for GostCfb<C, M, S>
 where
     C: BlockCipher + BlockEncrypt + NewBlockCipher,
     C::BlockSize: IsLessOrEqual<U255>,

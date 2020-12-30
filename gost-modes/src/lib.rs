@@ -32,7 +32,7 @@
 //! assert_eq!(buf, &pt[..]);
 //!
 //! // OFB mode example
-//! use gost_modes::{GostOfb, SyncStreamCipher, NewStreamCipher};
+//! use gost_modes::{GostOfb, StreamCipher, NewCipher};
 //!
 //! let mut cipher = GostOfb::<Kuznyechik, U2>::new_var(&key, &iv).unwrap();
 //! let mut buf = pt.to_vec();
@@ -58,7 +58,7 @@ pub use cipher::{self, consts};
 pub use generic_array;
 
 pub use block_modes::{BlockMode, Ecb};
-pub use cipher::stream::{NewStreamCipher, StreamCipher, SyncStreamCipher, SyncStreamCipherSeek};
+pub use cipher::{AsyncStreamCipher, NewCipher, StreamCipher, StreamCipherSeek};
 
 mod cbc;
 mod cfb;

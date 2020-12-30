@@ -1,5 +1,4 @@
-use cipher::block::{BlockDecrypt, BlockEncrypt, NewBlockCipher};
-use cipher::generic_array::GenericArray;
+use cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, NewBlockCipher};
 use hex_literal::hex;
 use twofish::Twofish;
 
@@ -16,7 +15,7 @@ macro_rules! new_test {
             let mut cipher;
 
             for i in 1..50 {
-                let twofish = Twofish::new_varkey(&key).unwrap();
+                let twofish = Twofish::new_var(&key).unwrap();
 
                 let mut buf = plain.clone();
                 twofish.encrypt_block(&mut buf);

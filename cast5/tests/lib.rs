@@ -1,6 +1,5 @@
 use cast5::Cast5;
-use cipher::block::{BlockDecrypt, BlockEncrypt, NewBlockCipher};
-use cipher::generic_array::GenericArray;
+use cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, NewBlockCipher};
 use hex_literal::hex;
 
 /// Test vectors from RFC 2144 Appendix B.1
@@ -17,19 +16,19 @@ fn rfc2144_b1() {
 
     let mut buf = pt.clone();
 
-    let c = Cast5::new_varkey(&key128).unwrap();
+    let c = Cast5::new_var(&key128).unwrap();
     c.encrypt_block(&mut buf);
     assert_eq!(buf, ct128);
     c.decrypt_block(&mut buf);
     assert_eq!(buf, pt);
 
-    let c = Cast5::new_varkey(&key80).unwrap();
+    let c = Cast5::new_var(&key80).unwrap();
     c.encrypt_block(&mut buf);
     assert_eq!(buf, ct80);
     c.decrypt_block(&mut buf);
     assert_eq!(buf, pt);
 
-    let c = Cast5::new_varkey(&key40).unwrap();
+    let c = Cast5::new_var(&key40).unwrap();
     c.encrypt_block(&mut buf);
     assert_eq!(buf, ct40);
     c.decrypt_block(&mut buf);

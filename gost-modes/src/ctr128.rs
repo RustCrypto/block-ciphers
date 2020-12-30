@@ -1,9 +1,8 @@
 use crate::utils::xor;
 use cipher::{
-    block::{Block, BlockCipher, BlockEncrypt, NewBlockCipher},
-    stream::{
-        FromBlockCipher, LoopError, OverflowError, SeekNum, SyncStreamCipher, SyncStreamCipherSeek,
-    },
+    errors::{LoopError, OverflowError},
+    Block, BlockCipher, BlockEncrypt, FromBlockCipher, NewBlockCipher, SeekNum, StreamCipher,
+    StreamCipherSeek,
 };
 use generic_array::typenum::{
     type_operators::{IsGreater, IsLessOrEqual},
@@ -68,7 +67,7 @@ where
     }
 }
 
-impl<C, S> SyncStreamCipher for GostCtr128<C, S>
+impl<C, S> StreamCipher for GostCtr128<C, S>
 where
     C: BlockCipher<BlockSize = U16> + BlockEncrypt + NewBlockCipher,
     C::ParBlocks: ArrayLength<GenericArray<u8, U16>>,
@@ -110,7 +109,7 @@ where
     }
 }
 
-impl<C, S> SyncStreamCipherSeek for GostCtr128<C, S>
+impl<C, S> StreamCipherSeek for GostCtr128<C, S>
 where
     C: BlockCipher<BlockSize = U16> + BlockEncrypt + NewBlockCipher,
     C::ParBlocks: ArrayLength<GenericArray<u8, U16>>,

@@ -66,9 +66,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "cipher"
-version = "0.3.0-pre"
+version = "0.3.0-pre.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42848bd4f28c6e74641082fc3ca870cb5381ce08d8715045cc96ff4ca20c0bbe"
+checksum = "e067eaf9ba1497adc11bb7fb96c9aa4355ac978da0c384d27fc97866ea9e4c6b"
 dependencies = [
  "blobby",
  "generic-array",
@@ -82,9 +82,9 @@ checksum = "dcb25d077389e53838a8158c8e99174c5a9d902dee4904320db714f3c653ffba"
 
 [[package]]
 name = "ctr"
-version = "0.7.0-pre"
+version = "0.7.0-pre.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c24c08075706da56b6eebe30dc3af9a842802dadd1f169651a8defd69852a4e6"
+checksum = "f5dd7f3794a8f1f25789696c1586cb133bdd5a997317dfa464ecab45714eb98f"
 dependencies = [
  "cipher",
 ]

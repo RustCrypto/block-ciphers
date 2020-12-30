@@ -1,8 +1,9 @@
-use crate::traits::BlockMode;
-use crate::utils::{xor, Block};
+use crate::{
+    traits::BlockMode,
+    utils::{xor, Block},
+};
 use block_padding::Padding;
-use cipher::block::{BlockCipher, BlockEncrypt, NewBlockCipher};
-use cipher::generic_array::GenericArray;
+use cipher::{generic_array::GenericArray, BlockCipher, BlockEncrypt, NewBlockCipher};
 use core::marker::PhantomData;
 
 /// [Output feedback][1] (OFB) block mode instance with a full block feedback.
