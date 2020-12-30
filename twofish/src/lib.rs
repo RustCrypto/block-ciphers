@@ -165,10 +165,10 @@ impl NewBlockCipher for Twofish {
     type KeySize = U32;
 
     fn new(key: &GenericArray<u8, U32>) -> Self {
-        Self::new_var(key).unwrap()
+        Self::new_from_slice(key).unwrap()
     }
 
-    fn new_var(key: &[u8]) -> Result<Self, InvalidLength> {
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
         let n = key.len();
         if n != 16 && n != 24 && n != 32 {
             return Err(InvalidLength);

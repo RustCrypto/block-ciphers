@@ -39,8 +39,8 @@ where
         }
     }
 
-    fn new_var(key: &[u8], _iv: &[u8]) -> Result<Self, InvalidKeyIvLength> {
-        let cipher = C::new_var(key).map_err(|_| InvalidKeyIvLength)?;
+    fn new_from_slices(key: &[u8], _iv: &[u8]) -> Result<Self, InvalidKeyIvLength> {
+        let cipher = C::new_from_slice(key).map_err(|_| InvalidKeyIvLength)?;
         Ok(Self {
             cipher,
             _p: Default::default(),

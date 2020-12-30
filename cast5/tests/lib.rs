@@ -16,19 +16,19 @@ fn rfc2144_b1() {
 
     let mut buf = pt.clone();
 
-    let c = Cast5::new_var(&key128).unwrap();
+    let c = Cast5::new_from_slice(&key128).unwrap();
     c.encrypt_block(&mut buf);
     assert_eq!(buf, ct128);
     c.decrypt_block(&mut buf);
     assert_eq!(buf, pt);
 
-    let c = Cast5::new_var(&key80).unwrap();
+    let c = Cast5::new_from_slice(&key80).unwrap();
     c.encrypt_block(&mut buf);
     assert_eq!(buf, ct80);
     c.decrypt_block(&mut buf);
     assert_eq!(buf, pt);
 
-    let c = Cast5::new_var(&key40).unwrap();
+    let c = Cast5::new_from_slice(&key40).unwrap();
     c.encrypt_block(&mut buf);
     assert_eq!(buf, ct40);
     c.decrypt_block(&mut buf);

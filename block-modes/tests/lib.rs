@@ -13,10 +13,10 @@ fn ecb_aes128() {
     // ECB mode ignores IV
     let iv = Default::default();
 
-    let mode = Ecb::<Aes128, NoPadding>::new_var(key, iv).unwrap();
+    let mode = Ecb::<Aes128, NoPadding>::new_from_slices(key, iv).unwrap();
     assert_eq!(mode.encrypt_vec(plaintext), &ciphertext[..]);
 
-    let mode = Ecb::<Aes128, NoPadding>::new_var(key, iv).unwrap();
+    let mode = Ecb::<Aes128, NoPadding>::new_from_slices(key, iv).unwrap();
     assert_eq!(mode.decrypt_vec(ciphertext).unwrap(), &plaintext[..]);
 }
 
@@ -27,10 +27,10 @@ fn cbc_aes128() {
     let plaintext = include_bytes!("data/aes128.plaintext.bin");
     let ciphertext = include_bytes!("data/cbc-aes128.ciphertext.bin");
 
-    let mode = Cbc::<Aes128, NoPadding>::new_var(key, iv).unwrap();
+    let mode = Cbc::<Aes128, NoPadding>::new_from_slices(key, iv).unwrap();
     assert_eq!(mode.encrypt_vec(plaintext), &ciphertext[..]);
 
-    let mode = Cbc::<Aes128, NoPadding>::new_var(key, iv).unwrap();
+    let mode = Cbc::<Aes128, NoPadding>::new_from_slices(key, iv).unwrap();
     assert_eq!(mode.decrypt_vec(ciphertext).unwrap(), &plaintext[..]);
 }
 
@@ -45,9 +45,9 @@ fn par_blocks() {
         for i in 1..160 {
             let mut buf = [128u8; 160];
 
-            let cipher = M::new_var(key, iv).unwrap();
+            let cipher = M::new_from_slices(key, iv).unwrap();
             let ct_len = cipher.encrypt(&mut buf, i).unwrap().len();
-            let cipher = M::new_var(key, iv).unwrap();
+            let cipher = M::new_from_slices(key, iv).unwrap();
             let pt = cipher.decrypt(&mut buf[..ct_len]).unwrap();
             assert!(pt.iter().all(|&b| b == 128));
         }
@@ -67,10 +67,10 @@ fn ige_aes256_1() {
     let plaintext = include_bytes!("data/ige-aes128-1.plaintext.bin");
     let ciphertext = include_bytes!("data/ige-aes128-1.ciphertext.bin");
 
-    let mode = Ige::<Aes128, NoPadding>::new_var(key, iv).unwrap();
+    let mode = Ige::<Aes128, NoPadding>::new_from_slices(key, iv).unwrap();
     assert_eq!(mode.encrypt_vec(plaintext), &ciphertext[..]);
 
-    let mode = Ige::<Aes128, NoPadding>::new_var(key, iv).unwrap();
+    let mode = Ige::<Aes128, NoPadding>::new_from_slices(key, iv).unwrap();
     assert_eq!(mode.decrypt_vec(ciphertext).unwrap(), &plaintext[..]);
 }
 
@@ -81,9 +81,9 @@ fn ige_aes256_2() {
     let plaintext = include_bytes!("data/ige-aes128-2.plaintext.bin");
     let ciphertext = include_bytes!("data/ige-aes128-2.ciphertext.bin");
 
-    let mode = Ige::<Aes128, NoPadding>::new_var(key, iv).unwrap();
+    let mode = Ige::<Aes128, NoPadding>::new_from_slices(key, iv).unwrap();
     assert_eq!(mode.encrypt_vec(plaintext), &ciphertext[..]);
 
-    let mode = Ige::<Aes128, NoPadding>::new_var(key, iv).unwrap();
+    let mode = Ige::<Aes128, NoPadding>::new_from_slices(key, iv).unwrap();
     assert_eq!(mode.decrypt_vec(ciphertext).unwrap(), &plaintext[..]);
 }

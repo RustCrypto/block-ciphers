@@ -87,10 +87,10 @@ impl NewBlockCipher for Cast5 {
     type KeySize = U16;
 
     fn new(key: &GenericArray<u8, U16>) -> Self {
-        Self::new_var(&key).unwrap()
+        Self::new_from_slice(&key).unwrap()
     }
 
-    fn new_var(key: &[u8]) -> Result<Self, InvalidLength> {
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
         // Available key sizes are 40...128 bits.
         if key.len() < 5 || key.len() > 16 {
             return Err(InvalidLength);

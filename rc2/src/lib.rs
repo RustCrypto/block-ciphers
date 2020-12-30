@@ -198,10 +198,10 @@ impl NewBlockCipher for Rc2 {
     type KeySize = U32;
 
     fn new(key: &GenericArray<u8, U32>) -> Self {
-        Self::new_var(key).unwrap()
+        Self::new_from_slice(key).unwrap()
     }
 
-    fn new_var(key: &[u8]) -> Result<Self, InvalidLength> {
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
         if key.is_empty() || key.len() > 128 {
             Err(InvalidLength)
         } else {
