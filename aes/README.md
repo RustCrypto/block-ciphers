@@ -42,10 +42,11 @@ using a portable implementation based on bitslicing.
 
 ## Minimum Supported Rust Version
 
-Rust **1.49** or higher.
+- Rust **1.49** or higher.
+- Rust **1.41** is supported when the `force-soft` feature is enabled.
 
-Minimum supported Rust version can be changed in the future, but it will be
-done with a minor version bump.
+Minimum supported Rust version can be changed in future releases, but it will
+be done with a minor version bump.
 
 ## SemVer Policy
 
