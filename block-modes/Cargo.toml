@@ -15,7 +15,7 @@ block-padding = "0.2"
 cipher = "=0.3.0-pre.4"
 
 [dev-dependencies]
-aes = { version = "=0.7.0-pre", path = "../aes" }
+aes = { version = "=0.7.0-pre", path = "../aes", features = ["force-soft"] }
 hex-literal = "0.2"
 
 [features]
