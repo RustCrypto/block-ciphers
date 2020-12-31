@@ -36,46 +36,12 @@ jobs:
           target: ${{ matrix.target }}
           profile: minimal
           override: true
+      - run: cargo check --all-features
       - run: cargo build --release --target ${{ matrix.target }}
       - run: cargo build --release --target ${{ matrix.target }} --features compact
       - run: cargo build --release --target ${{ matrix.target }} --features ctr
       - run: cargo build --release --target ${{ matrix.target }} --features force-soft
       - run: cargo build --release --target ${{ matrix.target }} --all-features
-
-  # Tests for the portable software backend
-  soft:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          # 32-bit Linux
-          - target: i686-unknown-linux-gnu
-            rust: 1.49.0 # MSRV
-            deps: sudo apt update && sudo apt install gcc-multilib
-          - target: i686-unknown-linux-gnu
-            rust: stable
-            deps: sudo apt update && sudo apt install gcc-multilib
-
-          # 64-bit Linux
-          - target: x86_64-unknown-linux-gnu
-            rust: 1.49.0 # MSRV
-          - target: x86_64-unknown-linux-gnu
-            rust: stable
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust }}
-          target: ${{ matrix.target }}
-          profile: minimal
-          override: true
-      - run: ${{ matrix.deps }}
-      - run: cargo check --target ${{ matrix.target }} --all-features
-      - run: cargo test --release --target ${{ matrix.target }}
-      - run: cargo test --release --target ${{ matrix.target }} --features compact
-      - run: cargo test --release --target ${{ matrix.target }} --features ctr
-      - run: cargo test --release --target ${{ matrix.target }} --features force-soft
-      - run: cargo test --release --target ${{ matrix.target }} --all-features
 
   # Tests for the AES-NI backend
   aesni:
@@ -109,11 +75,75 @@ jobs:
           profile: minimal
           override: true
       - run: ${{ matrix.deps }}
-      - run: cargo check --target ${{ matrix.target }} --all-features
       - run: cargo test --release --target ${{ matrix.target }}
       - run: cargo test --release --target ${{ matrix.target }} --features compact
       - run: cargo test --release --target ${{ matrix.target }} --features ctr
       - run: cargo test --release --target ${{ matrix.target }} --features force-soft
+      - run: cargo test --release --target ${{ matrix.target }} --all-features
+
+  # Tests for CPU feature autodetection with fallback to portable software implementation
+  autodetect:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # 32-bit Linux
+          - target: i686-unknown-linux-gnu
+            rust: 1.49.0 # MSRV
+            deps: sudo apt update && sudo apt install gcc-multilib
+          - target: i686-unknown-linux-gnu
+            rust: stable
+            deps: sudo apt update && sudo apt install gcc-multilib
+
+          # 64-bit Linux
+          - target: x86_64-unknown-linux-gnu
+            rust: 1.49.0 # MSRV
+          - target: x86_64-unknown-linux-gnu
+            rust: stable
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          target: ${{ matrix.target }}
+          profile: minimal
+          override: true
+      - run: ${{ matrix.deps }}
+      - run: cargo test --release --target ${{ matrix.target }}
+      - run: cargo test --release --target ${{ matrix.target }} --features compact
+      - run: cargo test --release --target ${{ matrix.target }} --features ctr
+
+  # Tests for the portable software backend (i.e. `force-soft`-only)
+  soft:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # 32-bit Linux
+          - target: i686-unknown-linux-gnu
+            rust: 1.41.0 # MSRV (temporarily lower than with CPU feature auto-detection)
+            deps: sudo apt update && sudo apt install gcc-multilib
+          - target: i686-unknown-linux-gnu
+            rust: stable
+            deps: sudo apt update && sudo apt install gcc-multilib
+
+          # 64-bit Linux
+          - target: x86_64-unknown-linux-gnu
+            rust: 1.41.0 # MSRV (temporarily lower than with CPU feature auto-detection)
+          - target: x86_64-unknown-linux-gnu
+            rust: stable
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          target: ${{ matrix.target }}
+          profile: minimal
+          override: true
+      - run: ${{ matrix.deps }}
+      - run: cargo test --release --target ${{ matrix.target }} --features force-soft
+      - run: cargo test --release --target ${{ matrix.target }} --features force-soft,compact
+      - run: cargo test --release --target ${{ matrix.target }} --features force-soft,ctr
       - run: cargo test --release --target ${{ matrix.target }} --all-features
 
   # Cross-compiled tests
