@@ -7,6 +7,7 @@ use cipher::{
     generic_array::GenericArray,
     BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
+use core::mem::ManuallyDrop;
 
 cpuid_bool::new!(aes_cpuid, "aes");
 
@@ -18,17 +19,17 @@ macro_rules! define_aes_impl {
         $doc:expr
     ) => {
         #[doc=$doc]
-        #[derive(Clone)]
         pub struct $name {
             inner: $module::Inner,
             token: aes_cpuid::InitToken
         }
 
         mod $module {
-            #[derive(Copy, Clone)]
+            use core::mem::ManuallyDrop;
+
             pub(super) union Inner {
-                pub(super) ni: crate::ni::$name,
-                pub(super) soft: crate::soft::$name,
+                pub(super) ni: ManuallyDrop<crate::ni::$name>,
+                pub(super) soft: ManuallyDrop<crate::soft::$name>,
             }
         }
 
@@ -40,12 +41,24 @@ macro_rules! define_aes_impl {
                 let (token, aesni_present) = aes_cpuid::init_get();
 
                 let inner = if aesni_present {
-                    $module::Inner { ni: crate::ni::$name::new(key) }
+                    $module::Inner { ni: ManuallyDrop::new(crate::ni::$name::new(key)) }
                 } else {
-                    $module::Inner { soft: crate::soft::$name::new(key) }
+                    $module::Inner { soft: ManuallyDrop::new(crate::soft::$name::new(key)) }
                 };
 
                 Self { inner, token }
+            }
+        }
+
+        impl Clone for $name {
+            fn clone(&self) -> Self {
+                let inner = if self.token.get() {
+                    $module::Inner { ni: unsafe { self.inner.ni.clone() } }
+                } else {
+                    $module::Inner { soft: unsafe { self.inner.soft.clone() } }
+                };
+
+                Self { inner, token: self.token }
             }
         }
 
@@ -110,6 +123,7 @@ pub(crate) mod ctr {
         generic_array::GenericArray,
         BlockCipher, FromBlockCipher, SeekNum, StreamCipher, StreamCipherSeek,
     };
+    use core::mem::ManuallyDrop;
 
     cpuid_bool::new!(aes_ssse3_cpuid, "aes", "ssse3");
 
@@ -124,13 +138,15 @@ pub(crate) mod ctr {
             #[cfg_attr(docsrs, doc(cfg(feature = "ctr")))]
             pub struct $name {
                 inner: $module::Inner,
+                token: aes_ssse3_cpuid::InitToken
             }
 
             mod $module {
-                #[allow(clippy::large_enum_variant)]
-                pub(super) enum Inner {
-                    Ni(crate::ni::$name),
-                    Soft(crate::soft::$name),
+                use core::mem::ManuallyDrop;
+
+                pub(super) union Inner {
+                    pub(super) ni: ManuallyDrop<crate::ni::$name>,
+                    pub(super) soft: ManuallyDrop<crate::soft::$name>,
                 }
             }
 
@@ -142,32 +158,35 @@ pub(crate) mod ctr {
                     cipher: $cipher,
                     nonce: &GenericArray<u8, Self::NonceSize>,
                 ) -> Self {
-                    let inner = if aes_ssse3_cpuid::get() {
-                        $module::Inner::Ni(
-                            crate::ni::$name::from_block_cipher(
-                                unsafe { cipher.inner.ni },
-                                nonce
-                            )
-                        )
+                    let (token, aesni_present) = aes_ssse3_cpuid::init_get();
+
+                    let inner = if aesni_present {
+                        let ni = crate::ni::$name::from_block_cipher(
+                            unsafe { (*cipher.inner.ni).clone() },
+                            nonce
+                        );
+
+                        $module::Inner { ni: ManuallyDrop::new(ni) }
                     } else {
-                        $module::Inner::Soft(
-                            crate::soft::$name::from_block_cipher(
-                                unsafe { cipher.inner.soft },
-                                nonce
-                            )
-                        )
+                        let soft = crate::soft::$name::from_block_cipher(
+                            unsafe { (*cipher.inner.soft).clone() },
+                            nonce
+                        );
+
+                        $module::Inner { soft: ManuallyDrop::new(soft) }
                     };
 
-                    Self { inner }
+                    Self { inner, token }
                 }
             }
 
             impl StreamCipher for $name {
                 #[inline]
                 fn try_apply_keystream(&mut self, data: &mut [u8]) -> Result<(), LoopError> {
-                    match &mut self.inner {
-                        $module::Inner::Ni(aes) => aes.try_apply_keystream(data),
-                        $module::Inner::Soft(aes) => aes.try_apply_keystream(data)
+                    if self.token.get() {
+                        unsafe { (*self.inner.ni).try_apply_keystream(data) }
+                    } else {
+                        unsafe { (*self.inner.soft).try_apply_keystream(data) }
                     }
                 }
             }
@@ -175,17 +194,19 @@ pub(crate) mod ctr {
             impl StreamCipherSeek for $name {
                 #[inline]
                 fn try_current_pos<T: SeekNum>(&self) -> Result<T, OverflowError> {
-                    match &self.inner {
-                        $module::Inner::Ni(aes) => aes.try_current_pos(),
-                        $module::Inner::Soft(aes) => aes.try_current_pos()
+                    if self.token.get() {
+                        unsafe { (*self.inner.ni).try_current_pos() }
+                    } else {
+                        unsafe { (*self.inner.soft).try_current_pos() }
                     }
                 }
 
                 #[inline]
                 fn try_seek<T: SeekNum>(&mut self, pos: T) -> Result<(), LoopError> {
-                    match &mut self.inner {
-                        $module::Inner::Ni(aes) => aes.try_seek(pos),
-                        $module::Inner::Soft(aes) => aes.try_seek(pos)
+                    if self.token.get() {
+                        unsafe { (*self.inner.ni).try_seek(pos) }
+                    } else {
+                        unsafe { (*self.inner.soft).try_seek(pos) }
                     }
                 }
             }

@@ -12,7 +12,7 @@ mod expand;
 mod test_expand;
 
 /// AES-192 block cipher
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct Aes192 {
     encrypt_keys: [__m128i; 13],
     decrypt_keys: [__m128i; 13],
