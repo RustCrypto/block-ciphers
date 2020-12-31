@@ -36,6 +36,7 @@ jobs:
           target: ${{ matrix.target }}
           override: true
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -47,8 +48,9 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions-rs/toolchain@v1
       with:
-        profile: minimal
         toolchain: ${{ matrix.rust }}
+        override: true
+        profile: minimal
     - run: cargo check --all-features
     - run: cargo test --no-default-features
     - run: cargo test
