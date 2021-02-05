@@ -1,44 +1,51 @@
-use super::arch::*;
+use super::{
+    arch::*,
+    utils::{
+        aesdec8, aesdeclast8, aesenc8, aesenclast8, load8, store8, xor8, Block128, Block128x8,
+        U128x8,
+    },
+};
 use cipher::{
     consts::{U16, U32, U8},
     generic_array::GenericArray,
     BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
 
-use super::utils::{Block128, Block128x8};
-
 mod expand;
 #[cfg(test)]
 mod test_expand;
 
+/// AES-256 round keys
+type RoundKeys = [__m128i; 15];
+
 /// AES-256 block cipher
 #[derive(Clone)]
 pub struct Aes256 {
-    encrypt_keys: [__m128i; 15],
-    decrypt_keys: [__m128i; 15],
+    encrypt_keys: RoundKeys,
+    decrypt_keys: RoundKeys,
 }
 
 impl Aes256 {
     #[inline(always)]
-    pub(crate) fn encrypt8(&self, mut blocks: [__m128i; 8]) -> [__m128i; 8] {
+    pub(crate) fn encrypt8(&self, mut blocks: U128x8) -> U128x8 {
         #[inline]
         #[target_feature(enable = "aes")]
-        unsafe fn aesni256_encrypt8(keys: &[__m128i; 15], blocks: &mut [__m128i; 8]) {
-            xor8!(blocks, keys[0]);
-            aesenc8!(blocks, keys[1]);
-            aesenc8!(blocks, keys[2]);
-            aesenc8!(blocks, keys[3]);
-            aesenc8!(blocks, keys[4]);
-            aesenc8!(blocks, keys[5]);
-            aesenc8!(blocks, keys[6]);
-            aesenc8!(blocks, keys[7]);
-            aesenc8!(blocks, keys[8]);
-            aesenc8!(blocks, keys[9]);
-            aesenc8!(blocks, keys[10]);
-            aesenc8!(blocks, keys[11]);
-            aesenc8!(blocks, keys[12]);
-            aesenc8!(blocks, keys[13]);
-            aesenclast8!(blocks, keys[14]);
+        unsafe fn aesni256_encrypt8(keys: &RoundKeys, blocks: &mut U128x8) {
+            xor8(blocks, keys[0]);
+            aesenc8(blocks, keys[1]);
+            aesenc8(blocks, keys[2]);
+            aesenc8(blocks, keys[3]);
+            aesenc8(blocks, keys[4]);
+            aesenc8(blocks, keys[5]);
+            aesenc8(blocks, keys[6]);
+            aesenc8(blocks, keys[7]);
+            aesenc8(blocks, keys[8]);
+            aesenc8(blocks, keys[9]);
+            aesenc8(blocks, keys[10]);
+            aesenc8(blocks, keys[11]);
+            aesenc8(blocks, keys[12]);
+            aesenc8(blocks, keys[13]);
+            aesenclast8(blocks, keys[14]);
         }
         unsafe { aesni256_encrypt8(&self.encrypt_keys, &mut blocks) };
         blocks
@@ -48,7 +55,7 @@ impl Aes256 {
     pub(crate) fn encrypt(&self, block: __m128i) -> __m128i {
         #[inline]
         #[target_feature(enable = "aes")]
-        unsafe fn aesni256_encrypt1(keys: &[__m128i; 15], mut block: __m128i) -> __m128i {
+        unsafe fn aesni256_encrypt1(keys: &RoundKeys, mut block: __m128i) -> __m128i {
             block = _mm_xor_si128(block, keys[0]);
             block = _mm_aesenc_si128(block, keys[1]);
             block = _mm_aesenc_si128(block, keys[2]);
@@ -102,10 +109,8 @@ impl BlockEncrypt for Aes256 {
 
     #[inline]
     fn encrypt_par_blocks(&self, blocks: &mut Block128x8) {
-        unsafe {
-            let b = self.encrypt8(load8!(blocks));
-            store8!(blocks, b);
-        }
+        let b = self.encrypt8(load8(blocks));
+        store8(blocks, b);
     }
 }
 
@@ -114,7 +119,7 @@ impl BlockDecrypt for Aes256 {
     fn decrypt_block(&self, block: &mut Block128) {
         #[inline]
         #[target_feature(enable = "aes")]
-        unsafe fn aes256_decrypt1(block: &mut Block128, keys: &[__m128i; 15]) {
+        unsafe fn aes256_decrypt1(block: &mut Block128, keys: &RoundKeys) {
             // Safety: `loadu` and `storeu` support unaligned access
             #[allow(clippy::cast_ptr_alignment)]
             let mut b = _mm_loadu_si128(block.as_ptr() as *const __m128i);
@@ -147,24 +152,24 @@ impl BlockDecrypt for Aes256 {
     fn decrypt_par_blocks(&self, blocks: &mut Block128x8) {
         #[inline]
         #[target_feature(enable = "aes")]
-        unsafe fn aes256_decrypt8(blocks: &mut Block128x8, keys: &[__m128i; 15]) {
-            let mut b = load8!(blocks);
-            xor8!(b, keys[14]);
-            aesdec8!(b, keys[13]);
-            aesdec8!(b, keys[12]);
-            aesdec8!(b, keys[11]);
-            aesdec8!(b, keys[10]);
-            aesdec8!(b, keys[9]);
-            aesdec8!(b, keys[8]);
-            aesdec8!(b, keys[7]);
-            aesdec8!(b, keys[6]);
-            aesdec8!(b, keys[5]);
-            aesdec8!(b, keys[4]);
-            aesdec8!(b, keys[3]);
-            aesdec8!(b, keys[2]);
-            aesdec8!(b, keys[1]);
-            aesdeclast8!(b, keys[0]);
-            store8!(blocks, b);
+        unsafe fn aes256_decrypt8(blocks: &mut Block128x8, keys: &RoundKeys) {
+            let mut b = load8(blocks);
+            xor8(&mut b, keys[14]);
+            aesdec8(&mut b, keys[13]);
+            aesdec8(&mut b, keys[12]);
+            aesdec8(&mut b, keys[11]);
+            aesdec8(&mut b, keys[10]);
+            aesdec8(&mut b, keys[9]);
+            aesdec8(&mut b, keys[8]);
+            aesdec8(&mut b, keys[7]);
+            aesdec8(&mut b, keys[6]);
+            aesdec8(&mut b, keys[5]);
+            aesdec8(&mut b, keys[4]);
+            aesdec8(&mut b, keys[3]);
+            aesdec8(&mut b, keys[2]);
+            aesdec8(&mut b, keys[1]);
+            aesdeclast8(&mut b, keys[0]);
+            store8(blocks, b);
         }
 
         unsafe { aes256_decrypt8(blocks, &self.decrypt_keys) }
