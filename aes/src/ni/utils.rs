@@ -6,9 +6,6 @@ use cipher::{
     generic_array::GenericArray,
 };
 
-#[cfg(test)]
-use core::mem;
-
 pub type Block128 = GenericArray<u8, U16>;
 pub type Block128x8 = GenericArray<GenericArray<u8, U16>, U8>;
 pub type U128x8 = [__m128i; 8];
@@ -16,7 +13,7 @@ pub type U128x8 = [__m128i; 8];
 #[cfg(test)]
 pub(crate) fn check(a: &[__m128i], b: &[[u64; 2]]) {
     for (v1, v2) in a.iter().zip(b) {
-        let t1: [u64; 2] = unsafe { mem::transmute(*v1) };
+        let t1: [u64; 2] = unsafe { core::mem::transmute(*v1) };
         let t2 = [v2[0].to_be(), v2[1].to_be()];
         assert_eq!(t1, t2);
     }
