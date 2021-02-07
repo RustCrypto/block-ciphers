@@ -19,9 +19,9 @@ macro_rules! expand_round {
         t1 = _mm_xor_si128(t1, t3);
         t1 = _mm_xor_si128(t1, t2);
 
-        $enc_keys[$pos] = t1.into();
+        $enc_keys[$pos] = t1;
         let t1 = if $pos != 10 { _mm_aesimc_si128(t1) } else { t1 };
-        $dec_keys[$pos] = t1.into();
+        $dec_keys[$pos] = t1;
     };
 }
 
