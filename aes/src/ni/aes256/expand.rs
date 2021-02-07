@@ -5,9 +5,9 @@ use core::mem;
 
 macro_rules! expand_round {
     ($enc_keys:expr, $dec_keys:expr, $pos:expr, $round:expr) => {
-        let mut t1 = _mm_load_si128($enc_keys.as_ptr().offset($pos - 2));
+        let mut t1 = $enc_keys[$pos - 2];
         let mut t2;
-        let mut t3 = _mm_load_si128($enc_keys.as_ptr().offset($pos - 1));
+        let mut t3 = $enc_keys[$pos - 1];
         let mut t4;
 
         t2 = _mm_aeskeygenassist_si128(t3, $round);
@@ -20,9 +20,8 @@ macro_rules! expand_round {
         t1 = _mm_xor_si128(t1, t4);
         t1 = _mm_xor_si128(t1, t2);
 
-        _mm_store_si128($enc_keys.as_mut_ptr().offset($pos), t1);
-        let t = _mm_aesimc_si128(t1);
-        _mm_store_si128($dec_keys.as_mut_ptr().offset($pos), t);
+        $enc_keys[$pos] = t1;
+        $dec_keys[$pos] = _mm_aesimc_si128(t1);
 
         t4 = _mm_aeskeygenassist_si128(t1, 0x00);
         t2 = _mm_shuffle_epi32(t4, 0xaa);
@@ -34,17 +33,16 @@ macro_rules! expand_round {
         t3 = _mm_xor_si128(t3, t4);
         t3 = _mm_xor_si128(t3, t2);
 
-        _mm_store_si128($enc_keys.as_mut_ptr().offset($pos + 1), t3);
-        let t = _mm_aesimc_si128(t3);
-        _mm_store_si128($dec_keys.as_mut_ptr().offset($pos + 1), t);
+        $enc_keys[$pos + 1] = t3;
+        $dec_keys[$pos + 1] = _mm_aesimc_si128(t3);
     };
 }
 
 macro_rules! expand_round_last {
     ($enc_keys:expr, $dec_keys:expr, $pos:expr, $round:expr) => {
-        let mut t1 = _mm_load_si128($enc_keys.as_ptr().offset($pos - 2));
+        let mut t1 = $enc_keys[$pos - 2];
         let mut t2;
-        let t3 = _mm_load_si128($enc_keys.as_ptr().offset($pos - 1));
+        let t3 = $enc_keys[$pos - 1];
         let mut t4;
 
         t2 = _mm_aeskeygenassist_si128(t3, $round);
@@ -57,8 +55,8 @@ macro_rules! expand_round_last {
         t1 = _mm_xor_si128(t1, t4);
         t1 = _mm_xor_si128(t1, t2);
 
-        _mm_store_si128($enc_keys.as_mut_ptr().offset($pos), t1);
-        _mm_store_si128($dec_keys.as_mut_ptr().offset($pos), t1);
+        $enc_keys[$pos] = t1;
+        $dec_keys[$pos] = t1;
     };
 }
 
@@ -73,10 +71,10 @@ pub(super) fn expand(key: &[u8; 32]) -> (RoundKeys, RoundKeys) {
         let kp = key.as_ptr() as *const __m128i;
         let k1 = _mm_loadu_si128(kp);
         let k2 = _mm_loadu_si128(kp.offset(1));
-        _mm_store_si128(enc_keys.as_mut_ptr(), k1);
-        _mm_store_si128(dec_keys.as_mut_ptr(), k1);
-        _mm_store_si128(enc_keys.as_mut_ptr().offset(1), k2);
-        _mm_store_si128(dec_keys.as_mut_ptr().offset(1), _mm_aesimc_si128(k2));
+        enc_keys[0] = k1;
+        dec_keys[0] = k1;
+        enc_keys[1] = k2;
+        dec_keys[1] = _mm_aesimc_si128(k2);
 
         expand_round!(enc_keys, dec_keys, 2, 0x01);
         expand_round!(enc_keys, dec_keys, 4, 0x02);

@@ -42,8 +42,8 @@ pub(super) fn expand(key: &[u8; 24]) -> (RoundKeys, RoundKeys) {
 
         macro_rules! store {
             ($i:expr, $k:expr) => {
-                _mm_store_si128(enc_keys.as_mut_ptr().offset($i), $k);
-                _mm_store_si128(dec_keys.as_mut_ptr().offset($i), _mm_aesimc_si128($k));
+                enc_keys[$i] = $k;
+                dec_keys[$i] = _mm_aesimc_si128($k);
             };
         }
 
@@ -63,8 +63,8 @@ pub(super) fn expand(key: &[u8; 24]) -> (RoundKeys, RoundKeys) {
             )
         };
 
-        _mm_store_si128(enc_keys.as_mut_ptr(), k0);
-        _mm_store_si128(dec_keys.as_mut_ptr(), k0);
+        enc_keys[0] = k0;
+        dec_keys[0] = k0;
 
         let (k1_2, k2r) = expand_round!(k0, k1l, 0x01);
         let k1 = shuffle!(k1l, k1_2, 0);
@@ -100,8 +100,8 @@ pub(super) fn expand(key: &[u8; 24]) -> (RoundKeys, RoundKeys) {
         store!(11, k11);
 
         let (k12, _) = expand_round!(k10_11, k11r, 0x80);
-        _mm_store_si128(enc_keys.as_mut_ptr().offset(12), k12);
-        _mm_store_si128(dec_keys.as_mut_ptr().offset(12), k12);
+        enc_keys[12] = k12;
+        dec_keys[12] = k12;
 
         (enc_keys, dec_keys)
     }
