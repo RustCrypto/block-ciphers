@@ -5,7 +5,7 @@ use core::mem;
 
 macro_rules! expand_round {
     ($enc_keys:expr, $dec_keys:expr, $pos:expr, $round:expr) => {
-        let mut t1 = _mm_load_si128($enc_keys.as_ptr().offset($pos - 1));
+        let mut t1 = $enc_keys[$pos - 1];
         let mut t2;
         let mut t3;
 
@@ -19,9 +19,9 @@ macro_rules! expand_round {
         t1 = _mm_xor_si128(t1, t3);
         t1 = _mm_xor_si128(t1, t2);
 
-        _mm_store_si128($enc_keys.as_mut_ptr().offset($pos), t1);
+        $enc_keys[$pos] = t1.into();
         let t1 = if $pos != 10 { _mm_aesimc_si128(t1) } else { t1 };
-        _mm_store_si128($dec_keys.as_mut_ptr().offset($pos), t1);
+        $dec_keys[$pos] = t1.into();
     };
 }
 
@@ -34,8 +34,8 @@ pub(super) fn expand(key: &[u8; 16]) -> (RoundKeys, RoundKeys) {
         // Safety: `loadu` supports unaligned loads
         #[allow(clippy::cast_ptr_alignment)]
         let k = _mm_loadu_si128(key.as_ptr() as *const __m128i);
-        _mm_store_si128(enc_keys.as_mut_ptr(), k);
-        _mm_store_si128(dec_keys.as_mut_ptr(), k);
+        enc_keys[0] = k;
+        dec_keys[0] = k;
 
         expand_round!(enc_keys, dec_keys, 1, 0x01);
         expand_round!(enc_keys, dec_keys, 2, 0x02);
