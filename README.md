@@ -1,4 +1,4 @@
-# RustCrypto: block ciphers [![Project Chat][chat-image]][chat-link] [![dependency status][deps-image]][deps]
+# RustCrypto: block ciphers [![Project Chat][chat-image]][chat-link] [![dependency status][deps-image]][deps-link]
 
 Collection of [block ciphers][1] and [block modes][2] written in pure Rust.
 
@@ -121,7 +121,7 @@ dual licensed as above, without any additional terms or conditions.
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260039-block-ciphers
 [deps-image]: https://deps.rs/repo/github/RustCrypto/block-ciphers/status.svg
-[deps]: https://deps.rs/repo/github/RustCrypto/block-ciphers
+[deps-link]: https://deps.rs/repo/github/RustCrypto/block-ciphers
 
 [//]: # (footnotes)
 
