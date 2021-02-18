@@ -1,4 +1,4 @@
-use crate::traits::BlockMode;
+use crate::traits::{BlockMode, IvState};
 use crate::utils::{get_par_blocks, xor, Block, ParBlocks};
 use block_padding::Padding;
 use cipher::generic_array::{typenum::Unsigned, GenericArray};
@@ -80,5 +80,15 @@ where
         } else {
             self.single_blocks_decrypt(blocks);
         }
+    }
+}
+
+impl<C, P> IvState<C, P> for Cbc<C, P>
+where
+    C: BlockCipher + BlockEncrypt + BlockDecrypt + NewBlockCipher,
+    P: Padding,
+{
+    fn iv_state(&self) -> GenericArray<u8, <Self as BlockMode<C, P>>::IvSize> {
+        self.iv.clone()
     }
 }

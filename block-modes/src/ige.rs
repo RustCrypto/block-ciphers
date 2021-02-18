@@ -1,5 +1,5 @@
 use crate::{
-    traits::BlockMode,
+    traits::{BlockMode, IvState},
     utils::{xor, Block},
 };
 use block_padding::Padding;
@@ -69,5 +69,18 @@ where
             self.y = t;
             self.x = block.clone();
         }
+    }
+}
+
+impl<C, P> IvState<C, P> for Ige<C, P>
+where
+    C: BlockCipher + NewBlockCipher + BlockEncrypt + BlockDecrypt,
+    P: Padding,
+    C::BlockSize: Mul<U2>,
+    IgeIvBlockSize<C>: ArrayLength<u8>,
+{
+    fn iv_state(&self) -> GenericArray<u8, Self::IvSize> {
+        let iv = &[self.y.as_slice(), self.x.as_slice()].concat();
+        GenericArray::<u8, Self::IvSize>::clone_from_slice(iv)
     }
 }

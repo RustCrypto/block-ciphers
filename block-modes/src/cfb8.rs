@@ -1,4 +1,7 @@
-use crate::{traits::BlockMode, utils::Block};
+use crate::{
+    traits::{BlockMode, IvState},
+    utils::Block,
+};
 use block_padding::Padding;
 use cipher::{generic_array::GenericArray, BlockCipher, BlockEncrypt, NewBlockCipher};
 use core::marker::PhantomData;
@@ -57,5 +60,15 @@ where
             }
         }
         self.iv = iv;
+    }
+}
+
+impl<C, P> IvState<C, P> for Cfb8<C, P>
+where
+    C: BlockCipher + BlockEncrypt + NewBlockCipher,
+    P: Padding,
+{
+    fn iv_state(&self) -> GenericArray<u8, Self::IvSize> {
+        self.iv.clone()
     }
 }

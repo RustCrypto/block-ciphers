@@ -107,5 +107,5 @@ pub use crate::{
     ige::Ige,
     ofb::Ofb,
     pcbc::Pcbc,
-    traits::BlockMode,
+    traits::{BlockMode, IvState},
 };

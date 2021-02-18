@@ -1,5 +1,5 @@
 use crate::{
-    traits::BlockMode,
+    traits::{BlockMode, IvState},
     utils::{xor, Block},
 };
 use block_padding::Padding;
@@ -40,5 +40,15 @@ where
 
     fn decrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
         self.encrypt_blocks(blocks)
+    }
+}
+
+impl<C, P> IvState<C, P> for Ofb<C, P>
+where
+    C: BlockCipher + BlockEncrypt + NewBlockCipher,
+    P: Padding,
+{
+    fn iv_state(&self) -> GenericArray<u8, <Self as BlockMode<C, P>>::IvSize> {
+        self.iv.clone()
     }
 }
