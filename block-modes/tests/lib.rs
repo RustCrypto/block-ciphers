@@ -3,7 +3,7 @@
 use aes::{Aes128, BlockCipher, NewBlockCipher};
 use block_modes::block_padding::NoPadding;
 use block_modes::{BlockMode, IvState};
-use block_modes::{Cbc, Ecb, Ofb, Ige};
+use block_modes::{Cbc, Ecb, Ige, Ofb};
 use cipher::generic_array::{ArrayLength, GenericArray};
 
 #[test]

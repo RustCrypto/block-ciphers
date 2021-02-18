@@ -5,14 +5,15 @@ use crate::{
 use block_padding::Padding;
 use cipher::{
     generic_array::{
-        typenum::{Prod, Unsigned, U2},
+        sequence::Concat,
+        typenum::{Sum, Unsigned},
         ArrayLength, GenericArray,
     },
     BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
-use core::{marker::PhantomData, ops::Mul};
+use core::{marker::PhantomData, ops::Add};
 
-type IgeIvBlockSize<C> = Prod<<C as BlockCipher>::BlockSize, U2>;
+type IgeIvBlockSize<C> = Sum<<C as BlockCipher>::BlockSize, <C as BlockCipher>::BlockSize>;
 
 /// [Infinite Garble Extension][1] (IGE) block cipher mode instance.
 ///
@@ -21,7 +22,7 @@ pub struct Ige<C, P>
 where
     C: BlockCipher + NewBlockCipher + BlockEncrypt + BlockDecrypt,
     P: Padding,
-    C::BlockSize: Mul<U2>,
+    C::BlockSize: Add,
     IgeIvBlockSize<C>: ArrayLength<u8>,
 {
     cipher: C,
@@ -34,7 +35,7 @@ impl<C, P> BlockMode<C, P> for Ige<C, P>
 where
     C: BlockCipher + NewBlockCipher + BlockEncrypt + BlockDecrypt,
     P: Padding,
-    C::BlockSize: Mul<U2>,
+    C::BlockSize: Add,
     IgeIvBlockSize<C>: ArrayLength<u8>,
 {
     type IvSize = IgeIvBlockSize<C>;
@@ -76,11 +77,10 @@ impl<C, P> IvState<C, P> for Ige<C, P>
 where
     C: BlockCipher + NewBlockCipher + BlockEncrypt + BlockDecrypt,
     P: Padding,
-    C::BlockSize: Mul<U2>,
+    C::BlockSize: Add,
     IgeIvBlockSize<C>: ArrayLength<u8>,
 {
     fn iv_state(&self) -> GenericArray<u8, Self::IvSize> {
-        let iv = &[self.y.as_slice(), self.x.as_slice()].concat();
-        GenericArray::<u8, Self::IvSize>::clone_from_slice(iv)
+        self.y.clone().concat(self.x.clone())
     }
 }
