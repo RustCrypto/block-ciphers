@@ -3,7 +3,7 @@
 use aes::{Aes128, BlockCipher, NewBlockCipher};
 use block_modes::block_padding::NoPadding;
 use block_modes::{BlockMode, IvState};
-use block_modes::{Cbc, Ecb, Ige, Ofb};
+use block_modes::{Cbc, Cfb, Ecb, Ige, Ofb};
 use cipher::generic_array::{ArrayLength, GenericArray};
 
 #[test]
@@ -42,23 +42,88 @@ fn cbc_aes128_continued() {
     let key = GenericArray::from_slice(include_bytes!("data/aes128.key.bin"));
     let iv = GenericArray::from_slice(include_bytes!("data/aes128.iv.bin"));
     let mut ciphertext = *include_bytes!("data/cbc-aes128.ciphertext.bin");
+    let mut plaintext = *include_bytes!("data/aes128.plaintext.bin");
+    let plaintext_blocks = to_blocks::<BlockSize>(&mut plaintext[..]);
     let ciphertext_blocks = to_blocks::<BlockSize>(&mut ciphertext[..]);
 
     for i in 0..ciphertext_blocks.len() {
         let mut plaintext = *include_bytes!("data/aes128.plaintext.bin");
-        let plaintext_blocks = to_blocks::<BlockSize>(&mut plaintext[..]);
+        let blocks = to_blocks::<BlockSize>(&mut plaintext[..]);
 
         // Encrypt `i` blocks
         let cipher = Aes128::new(key);
         let mut mode = block_modes::Cbc::<Aes128, NoPadding>::new(cipher, iv);
-        mode.encrypt_blocks(&mut plaintext_blocks[..i]);
+        mode.encrypt_blocks(&mut blocks[..i]);
 
         // Interrupt, reinitialize mode, encrypt remaining blocks
         let cipher = Aes128::new(key);
         let mut mode = block_modes::Cbc::<Aes128, NoPadding>::new(cipher, &mode.iv_state());
-        mode.encrypt_blocks(&mut plaintext_blocks[i..]);
+        mode.encrypt_blocks(&mut blocks[i..]);
 
-        assert_eq!(plaintext_blocks, ciphertext_blocks)
+        assert_eq!(blocks, ciphertext_blocks);
+
+        // Decrypt likewise
+        let cipher = Aes128::new(key);
+        let mut mode = block_modes::Cbc::<Aes128, NoPadding>::new(cipher, iv);
+        mode.decrypt_blocks(&mut blocks[..i]);
+        let cipher = Aes128::new(key);
+        let mut mode = block_modes::Cbc::<Aes128, NoPadding>::new(cipher, &mode.iv_state());
+        mode.decrypt_blocks(&mut blocks[i..]);
+
+        assert_eq!(blocks, plaintext_blocks);
+    }
+}
+
+#[test]
+fn cfb_aes128() {
+    let key = include_bytes!("data/aes128.key.bin");
+    let iv = include_bytes!("data/aes128.iv.bin");
+    let plaintext = include_bytes!("data/aes128.plaintext.bin");
+    let ciphertext = include_bytes!("data/cfb-aes128.ciphertext.bin");
+
+    let mode = Cfb::<Aes128, NoPadding>::new_from_slices(key, iv).unwrap();
+    assert_eq!(mode.encrypt_vec(plaintext), &ciphertext[..]);
+
+    let mode = Cfb::<Aes128, NoPadding>::new_from_slices(key, iv).unwrap();
+    assert_eq!(mode.decrypt_vec(ciphertext).unwrap(), &plaintext[..]);
+}
+
+#[test]
+fn cfb_aes128_continued() {
+    type BlockSize = <Aes128 as BlockCipher>::BlockSize;
+
+    let key = GenericArray::from_slice(include_bytes!("data/aes128.key.bin"));
+    let iv = GenericArray::from_slice(include_bytes!("data/aes128.iv.bin"));
+    let mut ciphertext = *include_bytes!("data/cfb-aes128.ciphertext.bin");
+    let mut plaintext = *include_bytes!("data/aes128.plaintext.bin");
+    let plaintext_blocks = to_blocks::<BlockSize>(&mut plaintext[..]);
+    let ciphertext_blocks = to_blocks::<BlockSize>(&mut ciphertext[..]);
+
+    for i in 0..ciphertext_blocks.len() {
+        let mut plaintext = *include_bytes!("data/aes128.plaintext.bin");
+        let blocks = to_blocks::<BlockSize>(&mut plaintext[..]);
+
+        // Encrypt `i` blocks
+        let cipher = Aes128::new(key);
+        let mut mode = block_modes::Cfb::<Aes128, NoPadding>::new(cipher, iv);
+        mode.encrypt_blocks(&mut blocks[..i]);
+
+        // Interrupt, reinitialize mode, encrypt remaining blocks
+        let cipher = Aes128::new(key);
+        let mut mode = block_modes::Cfb::<Aes128, NoPadding>::new(cipher, &mode.iv_state());
+        mode.encrypt_blocks(&mut blocks[i..]);
+
+        assert_eq!(blocks, ciphertext_blocks);
+
+        // Decrypt likewise
+        let cipher = Aes128::new(key);
+        let mut mode = block_modes::Cfb::<Aes128, NoPadding>::new(cipher, iv);
+        mode.decrypt_blocks(&mut blocks[..i]);
+        let cipher = Aes128::new(key);
+        let mut mode = block_modes::Cfb::<Aes128, NoPadding>::new(cipher, &mode.iv_state());
+        mode.decrypt_blocks(&mut blocks[i..]);
+
+        assert_eq!(blocks, plaintext_blocks);
     }
 }
 

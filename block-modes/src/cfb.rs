@@ -5,7 +5,7 @@ use crate::{
 use block_padding::Padding;
 use cipher::{
     generic_array::{typenum::Unsigned, GenericArray},
-    BlockCipher, BlockEncrypt, NewBlockCipher,
+    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
 use core::{marker::PhantomData, ptr};
 
@@ -13,7 +13,7 @@ use core::{marker::PhantomData, ptr};
 ///
 /// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Cipher_feedback_(CFB)
 #[derive(Clone)]
-pub struct Cfb<C: BlockCipher + BlockEncrypt + NewBlockCipher, P: Padding> {
+pub struct Cfb<C: BlockCipher + BlockDecrypt + BlockEncrypt + NewBlockCipher, P: Padding> {
     cipher: C,
     iv: GenericArray<u8, C::BlockSize>,
     _p: PhantomData<P>,
@@ -21,25 +21,23 @@ pub struct Cfb<C: BlockCipher + BlockEncrypt + NewBlockCipher, P: Padding> {
 
 impl<C, P> BlockMode<C, P> for Cfb<C, P>
 where
-    C: BlockCipher + BlockEncrypt + NewBlockCipher,
+    C: BlockCipher + BlockDecrypt + BlockEncrypt + NewBlockCipher,
     P: Padding,
 {
     type IvSize = C::BlockSize;
 
     fn new(cipher: C, iv: &Block<C>) -> Self {
-        let mut iv = iv.clone();
-        cipher.encrypt_block(&mut iv);
         Self {
             cipher,
-            iv,
+            iv: iv.clone(),
             _p: Default::default(),
         }
     }
 
     fn encrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
         for block in blocks {
-            xor_set1(block, self.iv.as_mut_slice());
             self.cipher.encrypt_block(&mut self.iv);
+            xor_set1(block, self.iv.as_mut_slice());
         }
     }
 
@@ -55,6 +53,7 @@ where
             let (b, r) = { blocks }.split_at_mut(1);
             blocks = r;
 
+            self.cipher.encrypt_block(&mut self.iv);
             xor(&mut b[0], &self.iv);
 
             while blocks.len() >= 2 * pb - 1 {
@@ -77,18 +76,19 @@ where
                 xor(a, b)
             }
             self.iv = par_iv[pb - 1].clone();
+            self.cipher.decrypt_block(&mut self.iv);
         }
 
         for block in blocks {
-            xor_set2(block, self.iv.as_mut_slice());
             self.cipher.encrypt_block(&mut self.iv);
+            xor_set2(block, self.iv.as_mut_slice());
         }
     }
 }
 
 impl<C, P> IvState<C, P> for Cfb<C, P>
 where
-    C: BlockCipher + BlockEncrypt + NewBlockCipher,
+    C: BlockCipher + BlockDecrypt + BlockEncrypt + NewBlockCipher,
     P: Padding,
 {
     fn iv_state(&self) -> GenericArray<u8, Self::IvSize> {
