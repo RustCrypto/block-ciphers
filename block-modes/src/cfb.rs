@@ -59,7 +59,6 @@ where
 
             while blocks.len() >= 2 * pb {
                 let next_par_iv = read_par_block::<C>(&blocks[pb - 1..2 * pb - 1]);
-
                 self.cipher.encrypt_blocks(&mut par_iv);
                 let (par_block, r) = { blocks }.split_at_mut(pb);
                 blocks = r;
@@ -67,7 +66,6 @@ where
                 for (a, b) in par_block.iter_mut().zip(par_iv.iter()) {
                     xor(a, b)
                 }
-
                 par_iv = next_par_iv;
             }
 
@@ -75,7 +73,7 @@ where
             let (par_block, r) = { blocks }.split_at_mut(pb);
             blocks = r;
 
-            for (a, b) in par_block.iter_mut().zip(par_iv.iter()) {
+            for (a, b) in par_block.iter_mut().zip(par_iv[..pb].iter()) {
                 xor(a, b)
             }
         }
