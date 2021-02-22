@@ -106,3 +106,21 @@ where
         Ok(buf)
     }
 }
+
+/// Trait for a BlockMode, used to obtain the current state in the form of an IV
+/// that can initialize a BlockMode later and resume the original operation.
+///
+/// The IV value SHOULD be used for resuming operations only and MUST NOT be
+/// exposed to attackers. Failing to comply with this requirement breaks
+/// unpredictability and opens attack venues (see e.g. [1], sec. 3.6.2).
+///
+/// [1]: https://www.cs.umd.edu/~jkatz/imc.html
+pub trait IvState<C, P>: BlockMode<C, P>
+where
+    C: BlockCipher + NewBlockCipher,
+    P: Padding,
+{
+    /// Returns the IV needed to process the following block. This value MUST
+    /// NOT be exposed to attackers.
+    fn iv_state(&self) -> GenericArray<u8, Self::IvSize>;
+}
