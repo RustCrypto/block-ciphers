@@ -108,10 +108,12 @@ macro_rules! impl_ctr {
 
             #[inline(always)]
             fn get_u64_ctr(&self) -> u64 {
-                let (ctr, nonce) = unsafe {(
-                    mem::transmute::<__m128i, [u64; 2]>(self.ctr)[1],
-                    mem::transmute::<__m128i, [u64; 2]>(self.nonce)[1],
-                )};
+                let (ctr, nonce) = unsafe {
+                    (
+                        mem::transmute::<__m128i, [u64; 2]>(self.ctr)[1],
+                        mem::transmute::<__m128i, [u64; 2]>(self.nonce)[1],
+                    )
+                };
                 ctr.wrapping_sub(nonce)
             }
 
@@ -152,9 +154,7 @@ macro_rules! impl_ctr {
 
         impl StreamCipher for $name {
             #[inline]
-            fn try_apply_keystream(&mut self, mut data: &mut [u8])
-                -> Result<(), LoopError>
-            {
+            fn try_apply_keystream(&mut self, mut data: &mut [u8]) -> Result<(), LoopError> {
                 self.check_data_len(data)?;
                 let bs = BLOCK_SIZE;
                 let pos = self.pos as usize;
@@ -211,9 +211,7 @@ macro_rules! impl_ctr {
 
             fn try_seek<T: SeekNum>(&mut self, pos: T) -> Result<(), LoopError> {
                 let res: (u64, u8) = pos.to_block_byte(BLOCK_SIZE as u8)?;
-                self.ctr = unsafe {
-                    _mm_add_epi64(self.nonce, _mm_set_epi64x(res.0 as i64, 0))
-                };
+                self.ctr = unsafe { _mm_add_epi64(self.nonce, _mm_set_epi64x(res.0 as i64, 0)) };
                 self.pos = res.1;
                 if self.pos != 0 {
                     self.gen_block()
@@ -223,7 +221,7 @@ macro_rules! impl_ctr {
         }
 
         opaque_debug::implement!($name);
-    }
+    };
 }
 
 impl_ctr!(Aes128Ctr, Aes128, "AES-128 in CTR mode");

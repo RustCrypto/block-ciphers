@@ -30,7 +30,9 @@ macro_rules! define_aes_impl {
 
             #[inline]
             fn new(key: &GenericArray<u8, $key_size>) -> Self {
-                Self { keys: $fixslice_key_schedule(key) }
+                Self {
+                    keys: $fixslice_key_schedule(key),
+                }
             }
         }
 
@@ -74,7 +76,7 @@ macro_rules! define_aes_impl {
         }
 
         opaque_debug::implement!($name);
-    }
+    };
 }
 
 define_aes_impl!(
