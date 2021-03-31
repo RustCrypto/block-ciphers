@@ -21,7 +21,7 @@ macro_rules! define_aes_impl {
         #[doc=$doc]
         pub struct $name {
             inner: $module::Inner,
-            token: aes_cpuid::InitToken
+            token: aes_cpuid::InitToken,
         }
 
         mod $module {
@@ -41,9 +41,13 @@ macro_rules! define_aes_impl {
                 let (token, aesni_present) = aes_cpuid::init_get();
 
                 let inner = if aesni_present {
-                    $module::Inner { ni: ManuallyDrop::new(crate::ni::$name::new(key)) }
+                    $module::Inner {
+                        ni: ManuallyDrop::new(crate::ni::$name::new(key)),
+                    }
                 } else {
-                    $module::Inner { soft: ManuallyDrop::new(crate::soft::$name::new(key)) }
+                    $module::Inner {
+                        soft: ManuallyDrop::new(crate::soft::$name::new(key)),
+                    }
                 };
 
                 Self { inner, token }
@@ -53,12 +57,19 @@ macro_rules! define_aes_impl {
         impl Clone for $name {
             fn clone(&self) -> Self {
                 let inner = if self.token.get() {
-                    $module::Inner { ni: unsafe { self.inner.ni.clone() } }
+                    $module::Inner {
+                        ni: unsafe { self.inner.ni.clone() },
+                    }
                 } else {
-                    $module::Inner { soft: unsafe { self.inner.soft.clone() } }
+                    $module::Inner {
+                        soft: unsafe { self.inner.soft.clone() },
+                    }
                 };
 
-                Self { inner, token: self.token }
+                Self {
+                    inner,
+                    token: self.token,
+                }
             }
         }
 
@@ -108,7 +119,7 @@ macro_rules! define_aes_impl {
         }
 
         opaque_debug::implement!($name);
-    }
+    };
 }
 
 define_aes_impl!(Aes128, aes128, U16, "AES-128 block cipher instance");
@@ -138,7 +149,7 @@ pub(crate) mod ctr {
             #[cfg_attr(docsrs, doc(cfg(feature = "ctr")))]
             pub struct $name {
                 inner: $module::Inner,
-                token: aes_ssse3_cpuid::InitToken
+                token: aes_ssse3_cpuid::InitToken,
             }
 
             mod $module {
@@ -163,17 +174,21 @@ pub(crate) mod ctr {
                     let inner = if aesni_present {
                         let ni = crate::ni::$name::from_block_cipher(
                             unsafe { (*cipher.inner.ni).clone() },
-                            nonce
+                            nonce,
                         );
 
-                        $module::Inner { ni: ManuallyDrop::new(ni) }
+                        $module::Inner {
+                            ni: ManuallyDrop::new(ni),
+                        }
                     } else {
                         let soft = crate::soft::$name::from_block_cipher(
                             unsafe { (*cipher.inner.soft).clone() },
-                            nonce
+                            nonce,
                         );
 
-                        $module::Inner { soft: ManuallyDrop::new(soft) }
+                        $module::Inner {
+                            soft: ManuallyDrop::new(soft),
+                        }
                     };
 
                     Self { inner, token }
@@ -212,7 +227,7 @@ pub(crate) mod ctr {
             }
 
             opaque_debug::implement!($name);
-        }
+        };
     }
 
     define_aes_ctr_impl!(Aes128Ctr, Aes128, aes128ctr, "AES-128 in CTR mode");
