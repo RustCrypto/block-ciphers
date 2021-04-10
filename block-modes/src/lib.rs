@@ -78,34 +78,37 @@
 #![deny(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
-#[cfg(feature = "alloc")]
-extern crate alloc;
-#[cfg(feature = "std")]
-extern crate std;
-
-mod errors;
-mod traits;
-mod utils;
-
-mod cbc;
-mod cfb;
-mod cfb8;
-mod ecb;
-mod ige;
-mod ofb;
-mod pcbc;
-
-pub use block_padding;
 pub use cipher;
 
-pub use crate::{
-    cbc::Cbc,
-    cfb::Cfb,
-    cfb8::Cfb8,
-    ecb::Ecb,
-    errors::{BlockModeError, InvalidKeyIvLength},
-    ige::Ige,
-    ofb::Ofb,
-    pcbc::Pcbc,
-    traits::{BlockMode, IvState},
-};
+mod utils;
+
+pub mod cbc;
+pub mod cfb;
+pub mod cfb8;
+pub mod pcbc;
+pub mod ige;
+mod ofb;
+
+pub use ofb::Ofb;
+
+
+use cipher::generic_array::{ArrayLength, GenericArray};
+
+#[inline(always)]
+fn xor<N: ArrayLength<u8>>(out: &mut GenericArray<u8, N>, buf: &GenericArray<u8, N>) {
+    for (a, b) in out.iter_mut().zip(buf) {
+        *a ^= *b;
+    }
+}
+
+#[inline(always)]
+fn xor_ret<N: ArrayLength<u8>>(
+    buf1: &GenericArray<u8, N>,
+    buf2: &GenericArray<u8, N>,
+) -> GenericArray<u8, N> {
+    let mut res = GenericArray::<u8, N>::default();
+    for i in 0..N::USIZE {
+        res[i] = buf1[i] ^ buf2[i];
+    }
+    res
+}

@@ -1,13 +1,13 @@
 //! Macros for implementing `Aes*` structs and the `BlockCipher` interface
 
 use cipher::{
-    consts::{U16, U24, U32, U8},
+    consts::{U16, U24, U32, U2},
     generic_array::GenericArray,
-    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
+    BlockProcessing, BlockCipher, BlockDecrypt, BlockEncrypt, KeyInit, InOutVal, InOutBuf, InResOutBuf,
 };
+use crate::{Block, Block2};
 
-use super::fixslice::{self, FixsliceKeys128, FixsliceKeys192, FixsliceKeys256, FIXSLICE_BLOCKS};
-use crate::{Block, ParBlocks};
+use super::fixslice::{self, FixsliceKeys128, FixsliceKeys192, FixsliceKeys256};
 
 macro_rules! define_aes_impl {
     (
@@ -25,7 +25,7 @@ macro_rules! define_aes_impl {
             keys: $fixslice_keys,
         }
 
-        impl NewBlockCipher for $name {
+        impl KeyInit for $name {
             type KeySize = $key_size;
 
             #[inline]
@@ -34,42 +34,66 @@ macro_rules! define_aes_impl {
             }
         }
 
-        impl BlockCipher for $name {
+        impl BlockProcessing for $name {
             type BlockSize = U16;
-            type ParBlocks = U8;
         }
 
+        impl BlockCipher for $name {}
+
         impl BlockEncrypt for $name {
-            #[inline]
-            fn encrypt_block(&self, block: &mut Block) {
-                let mut blocks = [Block::default(); FIXSLICE_BLOCKS];
-                blocks[0].copy_from_slice(block);
-                $fixslice_encrypt(&self.keys, &mut blocks);
-                block.copy_from_slice(&blocks[0]);
+            fn encrypt_block(&self, mut block: impl InOutVal<Block>) {
+                let mut t = Block2::default();
+                t[0] = *(block.get_in());
+                *(block.get_out()) = $fixslice_encrypt(&self.keys, &t)[0];
             }
 
-            #[inline]
-            fn encrypt_par_blocks(&self, blocks: &mut ParBlocks) {
-                for chunk in blocks.chunks_mut(FIXSLICE_BLOCKS) {
-                    $fixslice_encrypt(&self.keys, chunk);
-                }
+            fn encrypt_blocks(
+                &self,
+                mut blocks: InOutBuf<'_, '_, Block>,
+                proc: impl FnMut(InResOutBuf<'_, '_, '_, Block>),
+            ) {
+                blocks.chunks::<U2, _, _, _, _>(
+                    &self.keys,
+                    |keys, inc, res| *res = $fixslice_encrypt(keys, inc),
+                    |keys, inc, res| {
+                        debug_assert_eq!(inc.len(), 1);
+                        res[0] = inc[0];
+                        res[0] = $fixslice_encrypt(
+                            keys,
+                            &res
+                        )[0];
+                    },
+                    proc,
+                );
             }
         }
 
         impl BlockDecrypt for $name {
             #[inline]
-            fn decrypt_block(&self, block: &mut Block) {
-                let mut blocks = [Block::default(); FIXSLICE_BLOCKS];
-                blocks[0].copy_from_slice(block);
-                $fixslice_decrypt(&self.keys, &mut blocks);
-                block.copy_from_slice(&blocks[0]);
+            fn decrypt_block(&self, mut block: impl InOutVal<Block>) {
+                let mut t = Block2::default();
+                t[0] = *(block.get_in());
+                *(block.get_out()) = $fixslice_decrypt(&self.keys, &t)[0];
             }
 
-            #[inline]
-            fn decrypt_par_blocks(&self, blocks: &mut ParBlocks) {
-                for chunk in blocks.chunks_mut(FIXSLICE_BLOCKS) {
-                    $fixslice_decrypt(&self.keys, chunk);
-                }
+            fn decrypt_blocks(
+                &self,
+                mut blocks: InOutBuf<'_, '_, Block>,
+                proc: impl FnMut(InResOutBuf<'_, '_, '_, Block>),
+            ) {
+                blocks.chunks::<U2, _, _, _, _>(
+                    &self.keys,
+                    |keys, inc, res| *res = $fixslice_decrypt(keys, inc),
+                    |keys, inc, res| {
+                        debug_assert_eq!(inc.len(), 1);
+                        res[0] = inc[0];
+                        res[0] = $fixslice_decrypt(
+                            keys,
+                            &res
+                        )[0];
+                    },
+                    proc,
+                );
             }
         }
 

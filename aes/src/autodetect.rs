@@ -1,12 +1,12 @@
 //! Autodetection support for hardware accelerated AES backends with fallback
 //! to the fixsliced "soft" implementation.
 
-use crate::{Block, ParBlocks};
 use cipher::{
-    consts::{U16, U24, U32, U8},
+    consts::{U16, U24, U32},
     generic_array::GenericArray,
-    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
+    BlockCipher, BlockProcessing, BlockDecrypt, BlockEncrypt, KeyInit, InOutVal, InOutBuf, InResOutBuf,
 };
+use crate::Block;
 use core::mem::ManuallyDrop;
 
 cpuid_bool::new!(aes_cpuid, "aes");
@@ -33,7 +33,7 @@ macro_rules! define_aes_impl {
             }
         }
 
-        impl NewBlockCipher for $name {
+        impl KeyInit for $name {
             type KeySize = $key_size;
 
             #[inline]
@@ -62,14 +62,13 @@ macro_rules! define_aes_impl {
             }
         }
 
-        impl BlockCipher for $name {
+        impl BlockProcessing for $name {
             type BlockSize = U16;
-            type ParBlocks = U8;
         }
 
         impl BlockEncrypt for $name {
             #[inline]
-            fn encrypt_block(&self, block: &mut Block) {
+            fn encrypt_block(&self, block: impl InOutVal<Block>) {
                 if self.token.get() {
                     unsafe { self.inner.ni.encrypt_block(block) }
                 } else {
@@ -78,18 +77,22 @@ macro_rules! define_aes_impl {
             }
 
             #[inline]
-            fn encrypt_par_blocks(&self, blocks: &mut ParBlocks) {
+            fn encrypt_blocks(
+                &self,
+                blocks: InOutBuf<'_, '_, Block>,
+                proc: impl FnMut(InResOutBuf<'_, '_, '_, Block>),
+            ) {
                 if self.token.get() {
-                    unsafe { self.inner.ni.encrypt_par_blocks(blocks) }
+                    unsafe { self.inner.ni.encrypt_blocks(blocks, proc) }
                 } else {
-                    unsafe { self.inner.soft.encrypt_par_blocks(blocks) }
+                    unsafe { self.inner.soft.encrypt_blocks(blocks, proc) }
                 }
             }
         }
 
         impl BlockDecrypt for $name {
             #[inline]
-            fn decrypt_block(&self, block: &mut Block) {
+            fn decrypt_block(&self, block: impl InOutVal<Block>) {
                 if self.token.get() {
                     unsafe { self.inner.ni.decrypt_block(block) }
                 } else {
@@ -98,14 +101,20 @@ macro_rules! define_aes_impl {
             }
 
             #[inline]
-            fn decrypt_par_blocks(&self, blocks: &mut ParBlocks) {
+            fn decrypt_blocks(
+                &self,
+                blocks: InOutBuf<'_, '_, Block>,
+                proc: impl FnMut(InResOutBuf<'_, '_, '_, Block>),
+            ) {
                 if self.token.get() {
-                    unsafe { self.inner.ni.decrypt_par_blocks(blocks) }
+                    unsafe { self.inner.ni.decrypt_blocks(blocks, proc) }
                 } else {
-                    unsafe { self.inner.soft.decrypt_par_blocks(blocks) }
+                    unsafe { self.inner.soft.decrypt_blocks(blocks, proc) }
                 }
             }
         }
+
+        impl BlockCipher for $name {}
 
         opaque_debug::implement!($name);
     }

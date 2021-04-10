@@ -1,124 +1,110 @@
-use crate::{
-    traits::{BlockMode, IvState},
-    utils::{xor, Block, ParBlocks},
-};
-use block_padding::Padding;
+//! [Cipher feedback][1] (CFB) mode with full block feedback.
+//!
+//! [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Cipher_feedback_(CFB)
+use crate::xor;
 use cipher::{
-    generic_array::{typenum::Unsigned, GenericArray},
-    BlockCipher, BlockEncrypt, NewBlockCipher,
+    generic_array::GenericArray, AsyncStreamCipher, Block, BlockCipher, BlockDecryptMut,
+    BlockEncryptMut, BlockProcessing, InOutBuf, InOutVal, InResOutBuf, InnerIvInit, IvState,
 };
-use core::{marker::PhantomData, ptr};
 
-/// [Cipher feedback][1] (CFB) block mode instance with a full block feedback.
-///
-/// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Cipher_feedback_(CFB)
+/// CFB mode encryptor.
 #[derive(Clone)]
-pub struct Cfb<C: BlockCipher + BlockEncrypt + NewBlockCipher, P: Padding> {
+pub struct Encrypt<C: BlockEncryptMut + BlockCipher> {
     cipher: C,
-    iv: GenericArray<u8, C::BlockSize>,
-    _p: PhantomData<P>,
+    iv: Block<C>,
 }
 
-impl<C, P> BlockMode<C, P> for Cfb<C, P>
-where
-    C: BlockCipher + BlockEncrypt + NewBlockCipher,
-    P: Padding,
-{
+impl<C: BlockEncryptMut + BlockCipher> BlockEncryptMut for Encrypt<C> {
+    fn encrypt_block(&mut self, mut block: impl InOutVal<Block<Self>>) {
+        self.cipher.encrypt_block(&mut self.iv);
+        xor(&mut self.iv, block.get_in());
+        *block.get_out() = self.iv.clone();
+    }
+}
+
+impl<C: BlockEncryptMut + BlockCipher> BlockProcessing for Encrypt<C> {
+    type BlockSize = C::BlockSize;
+}
+
+impl<C: BlockEncryptMut + BlockCipher> AsyncStreamCipher for Encrypt<C> {}
+
+impl<C: BlockEncryptMut + BlockCipher> InnerIvInit for Encrypt<C> {
+    type Inner = C;
     type IvSize = C::BlockSize;
 
-    fn new(cipher: C, iv: &Block<C>) -> Self {
+    #[inline]
+    fn inner_iv_init(cipher: C, iv: &GenericArray<u8, Self::IvSize>) -> Self {
         Self {
             cipher,
             iv: iv.clone(),
-            _p: Default::default(),
-        }
-    }
-
-    fn encrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
-        for block in blocks {
-            self.cipher.encrypt_block(&mut self.iv);
-            xor_set1(block, self.iv.as_mut_slice());
-        }
-    }
-
-    fn decrypt_blocks(&mut self, mut blocks: &mut [Block<C>]) {
-        let pb = C::ParBlocks::to_usize();
-
-        if blocks.len() > pb {
-            // SAFETY: we have checked that `blocks` has enough elements
-            #[allow(unsafe_code)]
-            let mut par_iv = read_par_block::<C>(&blocks[..pb]);
-
-            let (b, r) = { blocks }.split_at_mut(1);
-            blocks = r;
-            self.cipher.encrypt_block(&mut self.iv);
-            xor(&mut b[0], &self.iv);
-
-            // Remember IV for trailing blocks
-            self.iv = blocks[blocks.len() - (blocks.len() % pb) - 1].clone();
-
-            while blocks.len() >= 2 * pb {
-                let next_par_iv = read_par_block::<C>(&blocks[pb - 1..2 * pb - 1]);
-                self.cipher.encrypt_blocks(&mut par_iv);
-                let (par_block, r) = { blocks }.split_at_mut(pb);
-                blocks = r;
-
-                for (a, b) in par_block.iter_mut().zip(par_iv.iter()) {
-                    xor(a, b)
-                }
-                par_iv = next_par_iv;
-            }
-
-            self.cipher.encrypt_blocks(&mut par_iv);
-            let (par_block, r) = { blocks }.split_at_mut(pb);
-            blocks = r;
-
-            for (a, b) in par_block.iter_mut().zip(par_iv[..pb].iter()) {
-                xor(a, b)
-            }
-        }
-
-        for block in blocks {
-            self.cipher.encrypt_block(&mut self.iv);
-            xor_set2(block, self.iv.as_mut_slice());
         }
     }
 }
 
-impl<C, P> IvState<C, P> for Cfb<C, P>
-where
-    C: BlockCipher + BlockEncrypt + NewBlockCipher,
-    P: Padding,
-{
+impl<C: BlockEncryptMut + BlockCipher> IvState for Encrypt<C> {
     fn iv_state(&self) -> GenericArray<u8, Self::IvSize> {
         self.iv.clone()
     }
 }
 
-#[inline(always)]
-fn read_par_block<C: BlockCipher>(blocks: &[Block<C>]) -> ParBlocks<C> {
-    assert!(blocks.len() >= C::ParBlocks::to_usize());
-    // SAFETY: assert checks that `blocks` is long enough
-    #[allow(unsafe_code)]
-    unsafe {
-        ptr::read(blocks.as_ptr() as *const ParBlocks<C>)
+/// CFB mode decryptor.
+#[derive(Clone)]
+pub struct Decrypt<C: BlockEncryptMut + BlockCipher> {
+    cipher: C,
+    iv: Block<C>,
+}
+
+impl<C: BlockEncryptMut + BlockCipher> BlockDecryptMut for Decrypt<C> {
+    fn decrypt_block(&mut self, mut block: impl InOutVal<Block<Self>>) {
+        let mut t = self.iv.clone();
+        self.cipher.encrypt_block(&mut t);
+        xor(&mut t, block.get_in());
+        self.iv = block.get_in().clone();
+        *block.get_out() = t;
+    }
+
+    fn decrypt_blocks(
+        &mut self,
+        blocks: InOutBuf<'_, '_, Block<Self>>,
+        mut proc: impl FnMut(InResOutBuf<'_, '_, '_, Block<Self>>),
+    ) {
+        let mut enc_iv = self.iv.clone();
+        self.cipher.encrypt_block(&mut enc_iv);
+        let iv = &mut self.iv;
+        self.cipher.encrypt_blocks(blocks, |mut buf| {
+            let len = buf.len();
+            let (in_buf, res_buf) = buf.get_in_res();
+            for i in 0..len {
+                xor(&mut enc_iv, &in_buf[i]);
+                core::mem::swap(&mut res_buf[i], &mut enc_iv);
+            }
+            *iv = in_buf[len - 1].clone();
+            proc(buf);
+        });
     }
 }
 
-#[inline(always)]
-fn xor_set1(buf1: &mut [u8], buf2: &mut [u8]) {
-    for (a, b) in buf1.iter_mut().zip(buf2) {
-        let t = *a ^ *b;
-        *a = t;
-        *b = t;
+impl<C: BlockEncryptMut + BlockCipher> BlockProcessing for Decrypt<C> {
+    type BlockSize = C::BlockSize;
+}
+
+impl<C: BlockEncryptMut + BlockCipher> AsyncStreamCipher for Decrypt<C> {}
+
+impl<C: BlockEncryptMut + BlockCipher> InnerIvInit for Decrypt<C> {
+    type Inner = C;
+    type IvSize = C::BlockSize;
+
+    #[inline]
+    fn inner_iv_init(cipher: C, iv: &GenericArray<u8, Self::IvSize>) -> Self {
+        Self {
+            cipher,
+            iv: iv.clone(),
+        }
     }
 }
 
-#[inline(always)]
-fn xor_set2(buf1: &mut [u8], buf2: &mut [u8]) {
-    for (a, b) in buf1.iter_mut().zip(buf2) {
-        let t = *a;
-        *a ^= *b;
-        *b = t;
+impl<C: BlockEncryptMut + BlockCipher> IvState for Decrypt<C> {
+    fn iv_state(&self) -> GenericArray<u8, Self::IvSize> {
+        self.iv.clone()
     }
 }

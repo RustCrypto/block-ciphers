@@ -15,15 +15,12 @@
 
 #![allow(clippy::unreadable_literal)]
 
-use crate::Block;
 use cipher::{
     consts::{U16, U24, U32},
     generic_array::GenericArray,
 };
 use core::convert::TryInto;
-
-/// AES block batch size for this implementation
-pub(crate) const FIXSLICE_BLOCKS: usize = 2;
+use crate::Block2;
 
 /// AES-128 round keys
 pub(crate) type FixsliceKeys128 = [u32; 88];
@@ -244,8 +241,7 @@ pub(crate) fn aes256_key_schedule(key: &GenericArray<u8, U32>) -> FixsliceKeys25
 /// Fully-fixsliced AES-128 decryption (the InvShiftRows is completely omitted).
 ///
 /// Decrypts four blocks in-place and in parallel.
-pub(crate) fn aes128_decrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
-    debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
+pub(crate) fn aes128_decrypt(rkeys: &FixsliceKeys128, blocks: &Block2) -> Block2 {
     let mut state = State::default();
 
     bitslice(&mut state, &blocks[0], &blocks[1]);
@@ -295,14 +291,13 @@ pub(crate) fn aes128_decrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
 
     add_round_key(&mut state, &rkeys[..8]);
 
-    inv_bitslice(&mut state, blocks);
+    inv_bitslice(&mut state)
 }
 
 /// Fully-fixsliced AES-128 encryption (the ShiftRows is completely omitted).
 ///
 /// Encrypts four blocks in-place and in parallel.
-pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
-    debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
+pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &Block2) -> Block2 {
     let mut state = State::default();
 
     bitslice(&mut state, &blocks[0], &blocks[1]);
@@ -352,14 +347,13 @@ pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
     sub_bytes(&mut state);
     add_round_key(&mut state, &rkeys[80..]);
 
-    inv_bitslice(&mut state, blocks);
+    inv_bitslice(&mut state)
 }
 
 /// Fully-fixsliced AES-192 decryption (the InvShiftRows is completely omitted).
 ///
 /// Decrypts four blocks in-place and in parallel.
-pub(crate) fn aes192_decrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
-    debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
+pub(crate) fn aes192_decrypt(rkeys: &FixsliceKeys192, blocks: &Block2) -> Block2 {
     let mut state = State::default();
 
     bitslice(&mut state, &blocks[0], &blocks[1]);
@@ -403,14 +397,13 @@ pub(crate) fn aes192_decrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
 
     add_round_key(&mut state, &rkeys[..8]);
 
-    inv_bitslice(&mut state, blocks);
+    inv_bitslice(&mut state)
 }
 
 /// Fully-fixsliced AES-192 encryption (the ShiftRows is completely omitted).
 ///
 /// Encrypts four blocks in-place and in parallel.
-pub(crate) fn aes192_encrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
-    debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
+pub(crate) fn aes192_encrypt(rkeys: &FixsliceKeys192, blocks: &Block2) -> Block2 {
     let mut state = State::default();
 
     bitslice(&mut state, &blocks[0], &blocks[1]);
@@ -454,14 +447,13 @@ pub(crate) fn aes192_encrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
     sub_bytes(&mut state);
     add_round_key(&mut state, &rkeys[96..]);
 
-    inv_bitslice(&mut state, blocks);
+    inv_bitslice(&mut state)
 }
 
 /// Fully-fixsliced AES-256 decryption (the InvShiftRows is completely omitted).
 ///
 /// Decrypts four blocks in-place and in parallel.
-pub(crate) fn aes256_decrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
-    debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
+pub(crate) fn aes256_decrypt(rkeys: &FixsliceKeys256, blocks: &Block2) -> Block2 {
     let mut state = State::default();
 
     bitslice(&mut state, &blocks[0], &blocks[1]);
@@ -511,14 +503,13 @@ pub(crate) fn aes256_decrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
 
     add_round_key(&mut state, &rkeys[..8]);
 
-    inv_bitslice(&mut state, blocks);
+    inv_bitslice(&mut state)
 }
 
 /// Fully-fixsliced AES-256 encryption (the ShiftRows is completely omitted).
 ///
 /// Encrypts four blocks in-place and in parallel.
-pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
-    debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
+pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &Block2) -> Block2 {
     let mut state = State::default();
 
     bitslice(&mut state, &blocks[0], &blocks[1]);
@@ -568,7 +559,7 @@ pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
     sub_bytes(&mut state);
     add_round_key(&mut state, &rkeys[112..]);
 
-    inv_bitslice(&mut state, blocks);
+    inv_bitslice(&mut state)
 }
 
 /// Note that the 4 bitwise NOT (^= 0xffffffff) are accounted for here so that it is a true
@@ -1234,9 +1225,8 @@ fn bitslice(output: &mut [u32], input0: &[u8], input1: &[u8]) {
 }
 
 /// Un-bitslice a 256-bit internal state into two 128-bit blocks of output.
-fn inv_bitslice(input: &mut [u32], output: &mut [Block]) {
+fn inv_bitslice(input: &mut [u32]) -> Block2 {
     debug_assert_eq!(input.len(), 8);
-    debug_assert_eq!(output.len(), 2);
 
     // Unbitslicing is a bit index manipulation. 256 bits of data means each bit is positioned at
     // an 8-bit index. AES data is 2 blocks, each one a 4x4 column-major matrix of bytes, so the
@@ -1283,6 +1273,7 @@ fn inv_bitslice(input: &mut [u32], output: &mut [Block]) {
 
     // De-interleave the columns on output (note the order of output)
     //     c1 c0 b0 __ __ __ __ __ => b0 c1 c0 __ __ __ __ __
+    let mut output = Block2::default();
     output[0][0x00..0x04].copy_from_slice(&t0.to_le_bytes());
     output[0][0x04..0x08].copy_from_slice(&t2.to_le_bytes());
     output[0][0x08..0x0c].copy_from_slice(&t4.to_le_bytes());
@@ -1294,6 +1285,7 @@ fn inv_bitslice(input: &mut [u32], output: &mut [Block]) {
 
     // Final AES bit index, as desired:
     //     b0 c1 c0 r1 r0 p2 p1 p0
+    output
 }
 
 /// Copy 32-bytes within the provided slice to an 8-byte offset

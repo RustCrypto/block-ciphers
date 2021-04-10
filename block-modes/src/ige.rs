@@ -1,84 +1,156 @@
-use crate::{
-    traits::{BlockMode, IvState},
-    utils::{xor, Block},
-};
-use block_padding::Padding;
+//! [Infinite Garble Extension][1] (IGE) block cipher mode of operation.
+//!
+//! [1]: https://www.links.org/files/openssl-ige.pdf
+use crate::{xor, xor_ret};
+use core::ops::Add;
 use cipher::{
     generic_array::{
         sequence::Concat,
         typenum::{Sum, Unsigned},
         ArrayLength, GenericArray,
     },
-    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
+    Block, BlockCipher, BlockDecryptMut, BlockEncryptMut,
+    BlockProcessing, InOutVal, InnerIvInit, IvState,
 };
-use core::{marker::PhantomData, ops::Add};
 
-type IgeIvBlockSize<C> = Sum<<C as BlockCipher>::BlockSize, <C as BlockCipher>::BlockSize>;
+type BlockSize<C> = <C as BlockProcessing>::BlockSize;
+type IgeIvSize<C> = Sum<BlockSize<C>, BlockSize<C>>;
 
-/// [Infinite Garble Extension][1] (IGE) block cipher mode instance.
-///
-/// [1]: https://www.links.org/files/openssl-ige.pdf
-pub struct Ige<C, P>
+/// IGE mode encryptor.
+#[derive(Clone)]
+pub struct Encrypt<C>
 where
-    C: BlockCipher + NewBlockCipher + BlockEncrypt + BlockDecrypt,
-    P: Padding,
+    C: BlockEncryptMut + BlockCipher,
     C::BlockSize: Add,
-    IgeIvBlockSize<C>: ArrayLength<u8>,
+    IgeIvSize<C>: ArrayLength<u8>,
 {
     cipher: C,
-    x: GenericArray<u8, C::BlockSize>,
-    y: GenericArray<u8, C::BlockSize>,
-    _p: PhantomData<P>,
+    x: Block<C>,
+    y: Block<C>,
 }
 
-impl<C, P> BlockMode<C, P> for Ige<C, P>
+impl<C> BlockEncryptMut for Encrypt<C>
 where
-    C: BlockCipher + NewBlockCipher + BlockEncrypt + BlockDecrypt,
-    P: Padding,
+    C: BlockEncryptMut + BlockCipher,
     C::BlockSize: Add,
-    IgeIvBlockSize<C>: ArrayLength<u8>,
+    IgeIvSize<C>: ArrayLength<u8>,
 {
-    type IvSize = IgeIvBlockSize<C>;
+    fn encrypt_block(&mut self, mut block: impl InOutVal<Block<Self>>) {
+        let new_x = block.get_in().clone();
+        let mut t = xor_ret(block.get_in(), &self.y);
+        self.cipher.encrypt_block(&mut t);
+        xor(&mut t, &self.x);
+        *block.get_out() = t.clone();
+        self.x = new_x;
+        self.y = t;
+    }
+}
 
-    fn new(cipher: C, iv: &GenericArray<u8, Self::IvSize>) -> Self {
+impl<C> BlockProcessing for Encrypt<C>
+where
+    C: BlockEncryptMut + BlockCipher,
+    C::BlockSize: Add,
+    IgeIvSize<C>: ArrayLength<u8>,
+{
+    type BlockSize = C::BlockSize;
+}
+
+impl<C> InnerIvInit for Encrypt<C>
+where
+    C: BlockEncryptMut + BlockCipher,
+    C::BlockSize: Add,
+    IgeIvSize<C>: ArrayLength<u8>,
+{
+    type Inner = C;
+    type IvSize = IgeIvSize<C>;
+
+    #[inline]
+    fn inner_iv_init(cipher: C, iv: &GenericArray<u8, Self::IvSize>) -> Self {
         let (y, x) = iv.split_at(C::BlockSize::to_usize());
-        Ige {
+        Self {
             cipher,
             x: GenericArray::clone_from_slice(x),
             y: GenericArray::clone_from_slice(y),
-            _p: Default::default(),
-        }
-    }
-
-    fn encrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
-        for block in blocks {
-            let t = block.clone();
-            xor(block, &self.y);
-            self.cipher.encrypt_block(block);
-            xor(block, &self.x);
-            self.x = t;
-            self.y = block.clone();
-        }
-    }
-
-    fn decrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
-        for block in blocks {
-            let t = block.clone();
-            xor(block, &self.x);
-            self.cipher.decrypt_block(block);
-            xor(block, &self.y);
-            self.y = t;
-            self.x = block.clone();
         }
     }
 }
 
-impl<C, P> IvState<C, P> for Ige<C, P>
+impl<C> IvState for Encrypt<C>
 where
-    C: BlockCipher + NewBlockCipher + BlockEncrypt + BlockDecrypt,
-    P: Padding,
+    C: BlockEncryptMut + BlockCipher,
     C::BlockSize: Add,
-    IgeIvBlockSize<C>: ArrayLength<u8>,
+    IgeIvSize<C>: ArrayLength<u8>,
+{
+    #[inline]
+    fn iv_state(&self) -> GenericArray<u8, Self::IvSize> {
+        self.y.clone().concat(self.x.clone())
+    }
+}
+
+/// IGE mode decryptor.
+#[derive(Clone)]
+pub struct Decrypt<C>
+where
+    C: BlockDecryptMut + BlockCipher,
+    C::BlockSize: Add,
+    IgeIvSize<C>: ArrayLength<u8>,
+{
+    cipher: C,
+    x: Block<C>,
+    y: Block<C>,
+}
+
+impl<C> BlockDecryptMut for Decrypt<C>
+where
+    C: BlockDecryptMut + BlockCipher,
+    C::BlockSize: Add,
+    IgeIvSize<C>: ArrayLength<u8>,
+{
+    fn decrypt_block(&mut self, mut block: impl InOutVal<Block<Self>>) {
+        let new_y = block.get_in().clone();
+        let mut t = xor_ret(block.get_in(), &self.x);
+        self.cipher.decrypt_block(&mut t);
+        xor(&mut t, &self.y);
+        *block.get_out() = t.clone();
+        self.y = new_y;
+        self.x = t;
+    }
+}
+
+impl<C> BlockProcessing for Decrypt<C>
+where
+    C: BlockDecryptMut + BlockCipher,
+    C::BlockSize: Add,
+    IgeIvSize<C>: ArrayLength<u8>,
+{
+    type BlockSize = C::BlockSize;
+}
+
+impl<C> InnerIvInit for Decrypt<C>
+where
+    C: BlockDecryptMut + BlockCipher,
+    C::BlockSize: Add,
+    IgeIvSize<C>: ArrayLength<u8>,
+{
+    type Inner = C;
+    type IvSize = IgeIvSize<C>;
+
+    #[inline]
+    fn inner_iv_init(cipher: C, iv: &GenericArray<u8, Self::IvSize>) -> Self {
+        let (y, x) = iv.split_at(C::BlockSize::to_usize());
+        Self {
+            cipher,
+            x: GenericArray::clone_from_slice(x),
+            y: GenericArray::clone_from_slice(y),
+        }
+    }
+}
+
+impl<C> IvState for Decrypt<C>
+where
+    C: BlockDecryptMut + BlockCipher,
+    C::BlockSize: Add,
+    IgeIvSize<C>: ArrayLength<u8>,
 {
     fn iv_state(&self) -> GenericArray<u8, Self::IvSize> {
         self.y.clone().concat(self.x.clone())

@@ -19,13 +19,12 @@
 //! ```
 //! use aes::Aes128;
 //! use aes::cipher::{
-//!     BlockCipher, BlockEncrypt, BlockDecrypt, NewBlockCipher,
+//!     BlockEncrypt, BlockDecrypt, KeyInit,
 //!     generic_array::GenericArray,
 //! };
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
 //! let mut block = GenericArray::clone_from_slice(&[0u8; 16]);
-//! let mut block8 = GenericArray::clone_from_slice(&[block; 8]);
 //! // Initialize cipher
 //! let cipher = Aes128::new(&key);
 //!
@@ -36,12 +35,11 @@
 //! cipher.decrypt_block(&mut block);
 //! assert_eq!(block, block_copy);
 //!
-//! // We can encrypt 8 blocks simultaneously using
-//! // instruction-level parallelism
-//! let block8_copy = block8.clone();
-//! cipher.encrypt_par_blocks(&mut block8);
-//! cipher.decrypt_par_blocks(&mut block8);
-//! assert_eq!(block8, block8_copy);
+//! // It's also possible to process data in buffer-to-buffer fashion
+//! let mut res = GenericArray::default();
+//! cipher.encrypt_block((&block, &mut res));
+//! cipher.decrypt_block((&res, &mut block));
+//! assert_eq!(block, block_copy);
 //! ```
 //!
 //! For implementations of block cipher modes of operation see
@@ -83,10 +81,10 @@ cfg_if! {
     }
 }
 
-pub use cipher::{self, BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher};
+pub use cipher::{self, BlockDecrypt, BlockEncrypt, KeyInit};
 
-/// 128-bit AES block
-pub type Block = cipher::generic_array::GenericArray<u8, cipher::consts::U16>;
+use cipher::generic_array::{GenericArray, typenum::{U16, U8, U2}};
 
-/// 8 x 128-bit AES blocks to be processed in parallel
-pub type ParBlocks = cipher::generic_array::GenericArray<Block, cipher::consts::U8>;
+type Block = GenericArray<u8, U16>;
+type Block2 = GenericArray<Block, U2>;
+type Block8 = GenericArray<Block, U8>;

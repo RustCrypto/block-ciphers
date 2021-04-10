@@ -1,54 +1,62 @@
-use crate::{
-    traits::{BlockMode, IvState},
-    utils::{xor, Block},
-};
-use block_padding::Padding;
-use cipher::{generic_array::GenericArray, BlockCipher, BlockEncrypt, NewBlockCipher};
-use core::marker::PhantomData;
-
-/// [Output feedback][1] (OFB) block mode instance with a full block feedback.
+/// [Output feedback][1] (OFB) mode.
 ///
-/// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Cipher_feedback_(CFB)
+/// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Output_feedback_(OFB)
+use cipher::{
+    generic_array::GenericArray, Block, BlockCipher, StreamCipherCore, BlockEncryptMut,
+    BlockProcessing, InnerIvInit, IvState, InOutVal, BlockDecryptMut, errors::LoopError,
+};
+use crate::xor_ret;
+
+/// [Output feedback][1] (OFB) mode.
+///
+/// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Output_feedback_(OFB)
 #[derive(Clone)]
-pub struct Ofb<C: BlockCipher + BlockEncrypt + NewBlockCipher, P: Padding> {
+pub struct Ofb<C: BlockEncryptMut + BlockCipher> {
     cipher: C,
-    iv: GenericArray<u8, C::BlockSize>,
-    _p: PhantomData<P>,
+    iv: Block<C>,
 }
 
-impl<C, P> BlockMode<C, P> for Ofb<C, P>
-where
-    C: BlockCipher + BlockEncrypt + NewBlockCipher,
-    P: Padding,
-{
+impl<C: BlockEncryptMut + BlockCipher> StreamCipherCore for Ofb<C> {
+    fn gen_keystream_block(&mut self) -> Result<Block<Self>, LoopError> {
+        self.cipher.encrypt_block(&mut self.iv);
+        Ok(self.iv.clone())
+    }
+}
+
+impl<C: BlockEncryptMut + BlockCipher> BlockProcessing for Ofb<C> {
+    type BlockSize = C::BlockSize;
+}
+
+impl<C: BlockEncryptMut + BlockCipher> InnerIvInit for Ofb<C> {
+    type Inner = C;
     type IvSize = C::BlockSize;
 
-    fn new(cipher: C, iv: &Block<C>) -> Self {
+    #[inline]
+    fn inner_iv_init(cipher: C, iv: &GenericArray<u8, Self::IvSize>) -> Self {
         Self {
             cipher,
             iv: iv.clone(),
-            _p: Default::default(),
         }
-    }
-
-    fn encrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
-        for block in blocks.iter_mut() {
-            self.cipher.encrypt_block(&mut self.iv);
-            xor(block, &self.iv);
-        }
-    }
-
-    fn decrypt_blocks(&mut self, blocks: &mut [Block<C>]) {
-        self.encrypt_blocks(blocks)
     }
 }
 
-impl<C, P> IvState<C, P> for Ofb<C, P>
-where
-    C: BlockCipher + BlockEncrypt + NewBlockCipher,
-    P: Padding,
-{
-    fn iv_state(&self) -> GenericArray<u8, <Self as BlockMode<C, P>>::IvSize> {
+impl<C: BlockEncryptMut + BlockCipher> IvState for Ofb<C> {
+    #[inline]
+    fn iv_state(&self) -> GenericArray<u8, Self::IvSize> {
         self.iv.clone()
+    }
+}
+
+impl<C: BlockEncryptMut + BlockCipher> BlockEncryptMut for Ofb<C> {
+    fn encrypt_block(&mut self, mut block: impl InOutVal<Block<Self>>) {
+        self.cipher.encrypt_block(&mut self.iv);
+        *block.get_out() = xor_ret(&self.iv, block.get_in());
+    }
+}
+
+impl<C: BlockEncryptMut + BlockCipher> BlockDecryptMut for Ofb<C> {
+    fn decrypt_block(&mut self, mut block: impl InOutVal<Block<Self>>) {
+        self.cipher.encrypt_block(&mut self.iv);
+        *block.get_out() = xor_ret(&self.iv, block.get_in());
     }
 }
