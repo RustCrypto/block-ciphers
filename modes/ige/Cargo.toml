@@ -1,0 +1,17 @@
+[package]
+name = "ige"
+version = "0.1.0"
+description = "Infinite Garble Extension (IGE) block cipher mode of operation"
+authors = ["RustCrypto Developers"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+edition = "2018"
+documentation = "https://docs.rs/ige"
+repository = "https://github.com/RustCrypto/block-ciphers"
+keywords = ["crypto", "block-cipher", "ciphers"]
+
+[dependencies]
+cipher = { git = "https://github.com/RustCrypto/traits", branch = "experimental_design" }
+
+[dev-dependencies]
+aes = { version = "=0.7.0-pre", path = "../../aes", features = ["force-soft"] }
