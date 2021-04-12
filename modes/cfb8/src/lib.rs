@@ -1,6 +1,15 @@
 //! [Cipher Feedback with eight bit feedback][1] (CFB-8) mode.
 //!
 //! [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#CFB-1,_CFB-8,_CFB-64,_CFB-128,_etc.
+
+#![no_std]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/master/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/master/logo.svg"
+)]
+#![deny(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
+
 use cipher::{
     generic_array::{typenum::U1, GenericArray},
     AsyncStreamCipher, Block, BlockCipher, BlockDecryptMut, BlockEncryptMut, BlockProcessing,

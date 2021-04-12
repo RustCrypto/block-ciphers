@@ -1,6 +1,15 @@
 //! [Infinite Garble Extension][1] (IGE) block cipher mode of operation.
 //!
 //! [1]: https://www.links.org/files/openssl-ige.pdf
+
+#![no_std]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/master/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/master/logo.svg"
+)]
+#![deny(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
+
 use cipher::{
     generic_array::{
         sequence::Concat,

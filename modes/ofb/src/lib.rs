@@ -1,6 +1,15 @@
-/// [Output feedback][1] (OFB) mode.
-///
-/// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Output_feedback_(OFB)
+//! [Output feedback][1] (OFB) mode.
+//!
+//! [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Output_feedback_(OFB)
+
+#![no_std]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/master/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/master/logo.svg"
+)]
+#![deny(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
+
 use cipher::{
     errors::LoopError,
     generic_array::{ArrayLength, GenericArray},

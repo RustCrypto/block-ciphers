@@ -1,6 +1,15 @@
 //! [Cipher feedback][1] (CFB) mode with full block feedback.
 //!
 //! [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Cipher_feedback_(CFB)
+
+#![no_std]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/master/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/master/logo.svg"
+)]
+#![deny(unsafe_code)]
+#![warn(missing_docs, rust_2018_idioms)]
+
 use cipher::{
     generic_array::{ArrayLength, GenericArray},
     AsyncStreamCipher, Block, BlockCipher, BlockDecryptMut, BlockEncryptMut, BlockProcessing,
