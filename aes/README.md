@@ -16,7 +16,7 @@ intended for direct use in applications.
 
 [Documentation][docs-link]
 
-<img src="https://raw.githubusercontent.com/RustCrypto/meta/master/img/block-ciphers/aes-subbytes.png" width="480px">
+<img src="https://raw.githubusercontent.com/RustCrypto/media/85f62bb/img/block-ciphers/aes-round.svg" width="480px">
 
 ## Security
 
