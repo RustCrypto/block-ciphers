@@ -12,10 +12,10 @@ keywords = ["crypto", "sm4", "block-cipher"]
 categories = ["cryptography"]
 
 [dependencies]
-cipher = "=0.3.0-pre.4"
+cipher = "0.3"
 byteorder = { version = "1", default-features = false }
 opaque-debug = "0.3"
 
 [dev-dependencies]
-cipher = { version = "=0.3.0-pre.4", features = ["dev"] }
+cipher = { version = "0.3", features = ["dev"] }
 hex-literal = "0.2"
