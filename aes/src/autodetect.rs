@@ -9,7 +9,7 @@ use cipher::{
 };
 use core::mem::ManuallyDrop;
 
-cpuid_bool::new!(aes_cpuid, "aes");
+cpufeatures::new!(aes_cpuid, "aes");
 
 macro_rules! define_aes_impl {
     (
@@ -136,7 +136,7 @@ pub(crate) mod ctr {
     };
     use core::mem::ManuallyDrop;
 
-    cpuid_bool::new!(aes_ssse3_cpuid, "aes", "ssse3");
+    cpufeatures::new!(aes_ssse3_cpuid, "aes", "ssse3");
 
     macro_rules! define_aes_ctr_impl {
         (

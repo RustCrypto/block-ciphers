@@ -24,7 +24,7 @@ opaque-debug = "0.3"
 cipher = { version = "0.3", features = ["dev"] }
 
 [target.'cfg(any(target_arch = "x86_64", target_arch = "x86"))'.dependencies]
-cpuid-bool = "0.2"
+cpufeatures = "0.1"
 
 [features]
 compact = [] # Reduce code size at the cost of slower performance

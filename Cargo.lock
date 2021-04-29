@@ -6,7 +6,7 @@ version = "0.7.0-pre"
 dependencies = [
  "cfg-if",
  "cipher",
- "cpuid-bool",
+ "cpufeatures",
  "ctr",
  "opaque-debug",
 ]
@@ -75,10 +75,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "cpuid-bool"
-version = "0.2.0"
+name = "cpufeatures"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dcb25d077389e53838a8158c8e99174c5a9d902dee4904320db714f3c653ffba"
+checksum = "5cd5a7748210e7ec1a9696610b1015e6e31fbf58f77a160801f124bd1c36592a"
 
 [[package]]
 name = "ctr"
