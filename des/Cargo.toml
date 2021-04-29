@@ -1,6 +1,6 @@
 [package]
 name = "des"
-version = "0.7.0-pre"
+version = "0.7.0"
 description = "DES and Triple DES (3DES, TDES) block ciphers implementation"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"

@@ -1,6 +1,6 @@
 [package]
 name = "blowfish"
-version = "0.8.0-pre"
+version = "0.8.0"
 description = "Blowfish block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
