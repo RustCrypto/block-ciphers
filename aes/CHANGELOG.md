@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.7.0 (2021-04-29)
+### Added
+- Auto-detection support for AES-NI; MSRV 1.49+ ([#208], [#214], [#215], [#216])
+
+### Changed
+- Unify the `aes`, `aesni`, and `aes-soft` crates ([#200])
+- Use `cfg-if` crate ([#203])
+- Rename `semi_fixslice` feature to `compact` ([#204])
+- Refactor NI backend ([#224], [#225])
+- Bump `cipher` crate dependency to v0.3 release ([#235])
+- Bump `ctr` crate dependency to v0.7 ([#237])
+
+[#200]: https://github.com/RustCrypto/block-ciphers/pull/200
+[#203]: https://github.com/RustCrypto/block-ciphers/pull/203
+[#204]: https://github.com/RustCrypto/block-ciphers/pull/204
+[#208]: https://github.com/RustCrypto/block-ciphers/pull/208
+[#214]: https://github.com/RustCrypto/block-ciphers/pull/214
+[#215]: https://github.com/RustCrypto/block-ciphers/pull/215
+[#216]: https://github.com/RustCrypto/block-ciphers/pull/216
+[#224]: https://github.com/RustCrypto/block-ciphers/pull/224
+[#225]: https://github.com/RustCrypto/block-ciphers/pull/225
+[#235]: https://github.com/RustCrypto/block-ciphers/pull/235
+[#237]: https://github.com/RustCrypto/block-ciphers/pull/237
+
 ## 0.6.0 (2020-10-16)
 ### Changed
 - Replace `block-cipher`/`stream-cipher` with `cipher` crate ([#167])

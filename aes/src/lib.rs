@@ -1,8 +1,10 @@
 //! Pure Rust implementation of the Advanced Encryption Standard
 //! (a.k.a. Rijndael)
 //!
-//! It provides two different backends based on what target features
-//! are specified:
+//! # Supported platforms
+//!
+//! This crate provides two different backends based on what target features
+//! are available:
 //!
 //! - "soft" portable constant-time implementation based on [fixslicing].
 //!   Enabling the `compact` Cargo feature will reduce the code size of this
@@ -12,8 +14,14 @@
 //!   architectures with `target-feature=+aes`, as well as an accelerated
 //!   AES-CTR implementation with `target-feature=+aes,+ssse3`
 //!
-//! Crate switches between implementations automatically at compile time.
-//! (i.e. it does not use run-time feature detection)
+//! By default this crate uses runtime detection on `i686`/`x86_64` targets
+//! in order to determine if AES-NI is available, and if it is not, it will
+//! fallback to using a constant-time software implementation.
+//!
+//! Passing `RUSTFLAGS=-Ctarget-feature=+aes,+ssse3` explicitly at compile-time
+//! will override runtime detection and ensure that AES-NI is always used.
+//! Programs built in this manner will crash with an illegal instruction on
+//! CPUs which do not have AES-NI enabled.
 //!
 //! # Usage example
 //! ```
@@ -26,12 +34,15 @@
 //! let key = GenericArray::from_slice(&[0u8; 16]);
 //! let mut block = GenericArray::clone_from_slice(&[0u8; 16]);
 //! let mut block8 = GenericArray::clone_from_slice(&[block; 8]);
+//!
 //! // Initialize cipher
 //! let cipher = Aes128::new(&key);
 //!
 //! let block_copy = block.clone();
+//!
 //! // Encrypt block in-place
 //! cipher.encrypt_block(&mut block);
+//!
 //! // And decrypt it back
 //! cipher.decrypt_block(&mut block);
 //! assert_eq!(block, block_copy);
