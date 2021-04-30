@@ -9,7 +9,7 @@ use cipher::{
         typenum::{Sum, Unsigned},
         ArrayLength, GenericArray,
     },
-    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
+    BlockCipher, BlockDecrypt, BlockEncrypt,
 };
 use core::{marker::PhantomData, ops::Add};
 
@@ -20,7 +20,7 @@ type IgeIvBlockSize<C> = Sum<<C as BlockCipher>::BlockSize, <C as BlockCipher>::
 /// [1]: https://www.links.org/files/openssl-ige.pdf
 pub struct Ige<C, P>
 where
-    C: BlockCipher + NewBlockCipher + BlockEncrypt + BlockDecrypt,
+    C: BlockCipher + BlockEncrypt + BlockDecrypt,
     P: Padding,
     C::BlockSize: Add,
     IgeIvBlockSize<C>: ArrayLength<u8>,
@@ -33,7 +33,7 @@ where
 
 impl<C, P> BlockMode<C, P> for Ige<C, P>
 where
-    C: BlockCipher + NewBlockCipher + BlockEncrypt + BlockDecrypt,
+    C: BlockCipher + BlockEncrypt + BlockDecrypt,
     P: Padding,
     C::BlockSize: Add,
     IgeIvBlockSize<C>: ArrayLength<u8>,
@@ -75,7 +75,7 @@ where
 
 impl<C, P> IvState<C, P> for Ige<C, P>
 where
-    C: BlockCipher + NewBlockCipher + BlockEncrypt + BlockDecrypt,
+    C: BlockCipher + BlockEncrypt + BlockDecrypt,
     P: Padding,
     C::BlockSize: Add,
     IgeIvBlockSize<C>: ArrayLength<u8>,
