@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.8.1 (2021-04-30)
 ### Changed
-- Removed unnecessary `NewBlockCipher` bounds ([#240])
+- Remove unnecessary `NewBlockCipher` bounds ([#240])
 
 [#240]: https://github.com/RustCrypto/block-ciphers/pull/240
 
