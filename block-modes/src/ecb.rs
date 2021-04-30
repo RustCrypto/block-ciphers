@@ -20,14 +20,14 @@ use core::marker::PhantomData;
 ///
 /// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB
 #[derive(Clone)]
-pub struct Ecb<C: BlockCipher + BlockEncrypt + BlockDecrypt + NewBlockCipher, P: Padding> {
+pub struct Ecb<C: BlockCipher + BlockEncrypt + BlockDecrypt, P: Padding> {
     cipher: C,
     _p: PhantomData<P>,
 }
 
 impl<C, P> BlockMode<C, P> for Ecb<C, P>
 where
-    C: BlockCipher + BlockEncrypt + BlockDecrypt + NewBlockCipher,
+    C: BlockCipher + BlockEncrypt + BlockDecrypt,
     P: Padding,
 {
     type IvSize = U0;
@@ -39,7 +39,10 @@ where
         }
     }
 
-    fn new_from_slices(key: &[u8], _iv: &[u8]) -> Result<Self, InvalidKeyIvLength> {
+    fn new_from_slices(key: &[u8], _iv: &[u8]) -> Result<Self, InvalidKeyIvLength>
+    where
+        C: NewBlockCipher,
+    {
         let cipher = C::new_from_slice(key).map_err(|_| InvalidKeyIvLength)?;
         Ok(Self {
             cipher,

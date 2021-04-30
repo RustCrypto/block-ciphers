@@ -1,6 +1,6 @@
 [package]
 name = "block-modes"
-version = "0.8.0"
+version = "0.8.1"
 description = "Block cipher modes of operation"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"

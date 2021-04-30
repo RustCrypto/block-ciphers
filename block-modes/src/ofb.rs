@@ -3,14 +3,14 @@ use crate::{
     utils::{xor, Block},
 };
 use block_padding::Padding;
-use cipher::{generic_array::GenericArray, BlockCipher, BlockEncrypt, NewBlockCipher};
+use cipher::{generic_array::GenericArray, BlockCipher, BlockEncrypt};
 use core::marker::PhantomData;
 
 /// [Output feedback][1] (OFB) block mode instance with a full block feedback.
 ///
 /// [1]: https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Cipher_feedback_(CFB)
 #[derive(Clone)]
-pub struct Ofb<C: BlockCipher + BlockEncrypt + NewBlockCipher, P: Padding> {
+pub struct Ofb<C: BlockCipher + BlockEncrypt, P: Padding> {
     cipher: C,
     iv: GenericArray<u8, C::BlockSize>,
     _p: PhantomData<P>,
@@ -18,7 +18,7 @@ pub struct Ofb<C: BlockCipher + BlockEncrypt + NewBlockCipher, P: Padding> {
 
 impl<C, P> BlockMode<C, P> for Ofb<C, P>
 where
-    C: BlockCipher + BlockEncrypt + NewBlockCipher,
+    C: BlockCipher + BlockEncrypt,
     P: Padding,
 {
     type IvSize = C::BlockSize;
@@ -45,7 +45,7 @@ where
 
 impl<C, P> IvState<C, P> for Ofb<C, P>
 where
-    C: BlockCipher + BlockEncrypt + NewBlockCipher,
+    C: BlockCipher + BlockEncrypt,
     P: Padding,
 {
     fn iv_state(&self) -> GenericArray<u8, <Self as BlockMode<C, P>>::IvSize> {

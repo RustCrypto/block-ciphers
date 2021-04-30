@@ -13,11 +13,7 @@ use cipher::{
 
 /// Trait for a block cipher mode of operation that is used to apply a block cipher
 /// operation to input data to transform it into a variable-length output message.
-pub trait BlockMode<C, P>: Sized
-where
-    C: BlockCipher + NewBlockCipher,
-    P: Padding,
-{
+pub trait BlockMode<C: BlockCipher, P: Padding>: Sized {
     /// Initialization Vector size.
     type IvSize: ArrayLength<u8>;
 
@@ -25,14 +21,20 @@ where
     fn new(cipher: C, iv: &GenericArray<u8, Self::IvSize>) -> Self;
 
     /// Create a new block mode instance from fixed sized key and IV.
-    fn new_fix(key: &Key<C>, iv: &GenericArray<u8, Self::IvSize>) -> Self {
+    fn new_fix(key: &Key<C>, iv: &GenericArray<u8, Self::IvSize>) -> Self
+    where
+        C: NewBlockCipher,
+    {
         Self::new(C::new(key), iv)
     }
 
     /// Create a new block mode instance from variable size key and IV.
     ///
     /// Returns an error if key or IV have unsupported length.
-    fn new_from_slices(key: &[u8], iv: &[u8]) -> Result<Self, InvalidKeyIvLength> {
+    fn new_from_slices(key: &[u8], iv: &[u8]) -> Result<Self, InvalidKeyIvLength>
+    where
+        C: NewBlockCipher,
+    {
         if iv.len() != Self::IvSize::USIZE {
             return Err(InvalidKeyIvLength);
         }
@@ -117,7 +119,7 @@ where
 /// [1]: https://www.cs.umd.edu/~jkatz/imc.html
 pub trait IvState<C, P>: BlockMode<C, P>
 where
-    C: BlockCipher + NewBlockCipher,
+    C: BlockCipher,
     P: Padding,
 {
     /// Returns the IV needed to process the following block. This value MUST
