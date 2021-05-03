@@ -8,9 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.7.0 (2021-04-29)
 ### Added
 - Auto-detection support for AES-NI; MSRV 1.49+ ([#208], [#214], [#215], [#216])
+- `ctr` feature providing SIMD accelerated AES-CTR ([#200])
 
 ### Changed
-- Unify the `aes`, `aesni`, and `aes-soft` crates ([#200])
+- Unify the `aes`, `aesni`, `aes-ctr`, and `aes-soft` crates ([#200])
 - Use `cfg-if` crate ([#203])
 - Rename `semi_fixslice` feature to `compact` ([#204])
 - Refactor NI backend ([#224], [#225])
