@@ -41,7 +41,7 @@
 //! ```
 //!
 //! With an enabled `alloc` feature (which is enabled by default) you can use
-//! `encrypt_vec` and `descrypt_vec` methods:
+//! `encrypt_vec` and `decrypt_vec` methods:
 //! ```
 //! # use aes::Aes128;
 //! # use block_modes::{BlockMode, Cbc};
