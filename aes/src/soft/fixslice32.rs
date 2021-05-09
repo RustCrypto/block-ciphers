@@ -1,5 +1,5 @@
-//! Fixsliced implementations of AES-128, AES-192 and AES-256
-//! adapted from the C implementation.
+//! Fixsliced implementations of AES-128, AES-192 and AES-256 (32-bit)
+//! adapted from the C implementation
 //!
 //! All implementations are fully bitsliced and do not rely on any
 //! Look-Up Table (LUT).
