@@ -78,9 +78,12 @@ dependencies = [
 
 [[package]]
 name = "cpufeatures"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5cd5a7748210e7ec1a9696610b1015e6e31fbf58f77a160801f124bd1c36592a"
+checksum = "dec1028182c380cc45a2e2c5ec841134f2dfd0f8f5f0a5bcd68004f81b5efdf4"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "ctr"
@@ -157,6 +160,12 @@ dependencies = [
  "hex-literal",
  "opaque-debug",
 ]
+
+[[package]]
+name = "libc"
+version = "0.2.94"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "18794a8ad5b29321f790b55d93dfba91e125cb1a9edbd4f8e3150acc771c1a5e"
 
 [[package]]
 name = "magma"
