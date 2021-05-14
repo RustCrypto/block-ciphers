@@ -1,10 +1,8 @@
 use super::{
     arch::*,
-    utils::{
-        aesdec8, aesdeclast8, aesenc8, aesenclast8, load8, store8, xor8, Block128, Block128x8,
-        U128x8,
-    },
+    utils::{aesdec8, aesdeclast8, aesenc8, aesenclast8, load8, store8, xor8, U128x8},
 };
+use crate::{Block, ParBlocks};
 use cipher::{
     consts::{U16, U32, U8},
     generic_array::GenericArray,
@@ -97,7 +95,7 @@ impl BlockCipher for Aes256 {
 
 impl BlockEncrypt for Aes256 {
     #[inline]
-    fn encrypt_block(&self, block: &mut Block128) {
+    fn encrypt_block(&self, block: &mut Block) {
         // Safety: `loadu` and `storeu` support unaligned access
         #[allow(clippy::cast_ptr_alignment)]
         unsafe {
@@ -108,7 +106,7 @@ impl BlockEncrypt for Aes256 {
     }
 
     #[inline]
-    fn encrypt_par_blocks(&self, blocks: &mut Block128x8) {
+    fn encrypt_par_blocks(&self, blocks: &mut ParBlocks) {
         let b = self.encrypt8(load8(blocks));
         store8(blocks, b);
     }
@@ -116,10 +114,10 @@ impl BlockEncrypt for Aes256 {
 
 impl BlockDecrypt for Aes256 {
     #[inline]
-    fn decrypt_block(&self, block: &mut Block128) {
+    fn decrypt_block(&self, block: &mut Block) {
         #[inline]
         #[target_feature(enable = "aes")]
-        unsafe fn aes256_decrypt1(block: &mut Block128, keys: &RoundKeys) {
+        unsafe fn aes256_decrypt1(block: &mut Block, keys: &RoundKeys) {
             // Safety: `loadu` and `storeu` support unaligned access
             #[allow(clippy::cast_ptr_alignment)]
             let mut b = _mm_loadu_si128(block.as_ptr() as *const __m128i);
@@ -149,10 +147,10 @@ impl BlockDecrypt for Aes256 {
     }
 
     #[inline]
-    fn decrypt_par_blocks(&self, blocks: &mut Block128x8) {
+    fn decrypt_par_blocks(&self, blocks: &mut ParBlocks) {
         #[inline]
         #[target_feature(enable = "aes")]
-        unsafe fn aes256_decrypt8(blocks: &mut Block128x8, keys: &RoundKeys) {
+        unsafe fn aes256_decrypt8(blocks: &mut ParBlocks, keys: &RoundKeys) {
             let mut b = load8(blocks);
             xor8(&mut b, keys[14]);
             aesdec8(&mut b, keys[13]);

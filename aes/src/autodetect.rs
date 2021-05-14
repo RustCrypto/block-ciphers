@@ -1,7 +1,7 @@
 //! Autodetection support for hardware accelerated AES backends with fallback
 //! to the fixsliced "soft" implementation.
 
-use crate::{Block, ParBlocks};
+use crate::{soft, Block, ParBlocks};
 use cipher::{
     consts::{U16, U24, U32, U8},
     generic_array::GenericArray,
@@ -9,7 +9,13 @@ use cipher::{
 };
 use core::mem::ManuallyDrop;
 
-cpufeatures::new!(aes_cpuid, "aes");
+#[cfg(all(target_arch = "aarch64", feature = "armv8"))]
+use crate::armv8 as intrinsics;
+
+#[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
+use crate::ni as intrinsics;
+
+cpufeatures::new!(aes_intrinsics, "aes");
 
 macro_rules! define_aes_impl {
     (
@@ -21,15 +27,16 @@ macro_rules! define_aes_impl {
         #[doc=$doc]
         pub struct $name {
             inner: $module::Inner,
-            token: aes_cpuid::InitToken,
+            token: aes_intrinsics::InitToken,
         }
 
         mod $module {
+            use super::{intrinsics, soft};
             use core::mem::ManuallyDrop;
 
             pub(super) union Inner {
-                pub(super) ni: ManuallyDrop<crate::ni::$name>,
-                pub(super) soft: ManuallyDrop<crate::soft::$name>,
+                pub(super) intrinsics: ManuallyDrop<intrinsics::$name>,
+                pub(super) soft: ManuallyDrop<soft::$name>,
             }
         }
 
@@ -38,15 +45,15 @@ macro_rules! define_aes_impl {
 
             #[inline]
             fn new(key: &GenericArray<u8, $key_size>) -> Self {
-                let (token, aesni_present) = aes_cpuid::init_get();
+                let (token, aesni_present) = aes_intrinsics::init_get();
 
                 let inner = if aesni_present {
                     $module::Inner {
-                        ni: ManuallyDrop::new(crate::ni::$name::new(key)),
+                        intrinsics: ManuallyDrop::new(intrinsics::$name::new(key)),
                     }
                 } else {
                     $module::Inner {
-                        soft: ManuallyDrop::new(crate::soft::$name::new(key)),
+                        soft: ManuallyDrop::new(soft::$name::new(key)),
                     }
                 };
 
@@ -58,7 +65,7 @@ macro_rules! define_aes_impl {
             fn clone(&self) -> Self {
                 let inner = if self.token.get() {
                     $module::Inner {
-                        ni: unsafe { self.inner.ni.clone() },
+                        intrinsics: unsafe { self.inner.intrinsics.clone() },
                     }
                 } else {
                     $module::Inner {
@@ -82,7 +89,7 @@ macro_rules! define_aes_impl {
             #[inline]
             fn encrypt_block(&self, block: &mut Block) {
                 if self.token.get() {
-                    unsafe { self.inner.ni.encrypt_block(block) }
+                    unsafe { self.inner.intrinsics.encrypt_block(block) }
                 } else {
                     unsafe { self.inner.soft.encrypt_block(block) }
                 }
@@ -91,7 +98,7 @@ macro_rules! define_aes_impl {
             #[inline]
             fn encrypt_par_blocks(&self, blocks: &mut ParBlocks) {
                 if self.token.get() {
-                    unsafe { self.inner.ni.encrypt_par_blocks(blocks) }
+                    unsafe { self.inner.intrinsics.encrypt_par_blocks(blocks) }
                 } else {
                     unsafe { self.inner.soft.encrypt_par_blocks(blocks) }
                 }
@@ -102,7 +109,7 @@ macro_rules! define_aes_impl {
             #[inline]
             fn decrypt_block(&self, block: &mut Block) {
                 if self.token.get() {
-                    unsafe { self.inner.ni.decrypt_block(block) }
+                    unsafe { self.inner.intrinsics.decrypt_block(block) }
                 } else {
                     unsafe { self.inner.soft.decrypt_block(block) }
                 }
@@ -111,7 +118,7 @@ macro_rules! define_aes_impl {
             #[inline]
             fn decrypt_par_blocks(&self, blocks: &mut ParBlocks) {
                 if self.token.get() {
-                    unsafe { self.inner.ni.decrypt_par_blocks(blocks) }
+                    unsafe { self.inner.intrinsics.decrypt_par_blocks(blocks) }
                 } else {
                     unsafe { self.inner.soft.decrypt_par_blocks(blocks) }
                 }
@@ -126,9 +133,24 @@ define_aes_impl!(Aes128, aes128, U16, "AES-128 block cipher instance");
 define_aes_impl!(Aes192, aes192, U24, "AES-192 block cipher instance");
 define_aes_impl!(Aes256, aes256, U32, "AES-256 block cipher instance");
 
-#[cfg(feature = "ctr")]
+#[cfg(all(feature = "ctr", target_arch = "aarch64"))]
 pub(crate) mod ctr {
     use super::{Aes128, Aes192, Aes256};
+
+    /// AES-128 in CTR mode
+    pub type Aes128Ctr = ::ctr::Ctr64BE<Aes128>;
+
+    /// AES-192 in CTR mode
+    pub type Aes192Ctr = ::ctr::Ctr64BE<Aes192>;
+
+    /// AES-256 in CTR mode
+    pub type Aes256Ctr = ::ctr::Ctr64BE<Aes256>;
+}
+
+#[cfg(all(feature = "ctr", any(target_arch = "x86_64", target_arch = "x86")))]
+pub(crate) mod ctr {
+    use super::{Aes128, Aes192, Aes256};
+    use crate::{ni, soft};
     use cipher::{
         errors::{LoopError, OverflowError},
         generic_array::GenericArray,
@@ -153,11 +175,12 @@ pub(crate) mod ctr {
             }
 
             mod $module {
+                use crate::{ni, soft};
                 use core::mem::ManuallyDrop;
 
                 pub(super) union Inner {
-                    pub(super) ni: ManuallyDrop<crate::ni::$name>,
-                    pub(super) soft: ManuallyDrop<crate::soft::$name>,
+                    pub(super) ni: ManuallyDrop<ni::$name>,
+                    pub(super) soft: ManuallyDrop<soft::$name>,
                 }
             }
 
@@ -172,8 +195,8 @@ pub(crate) mod ctr {
                     let (token, aesni_present) = aes_ssse3_cpuid::init_get();
 
                     let inner = if aesni_present {
-                        let ni = crate::ni::$name::from_block_cipher(
-                            unsafe { (*cipher.inner.ni).clone() },
+                        let ni = ni::$name::from_block_cipher(
+                            unsafe { (*cipher.inner.intrinsics).clone() },
                             nonce,
                         );
 
@@ -181,7 +204,7 @@ pub(crate) mod ctr {
                             ni: ManuallyDrop::new(ni),
                         }
                     } else {
-                        let soft = crate::soft::$name::from_block_cipher(
+                        let soft = soft::$name::from_block_cipher(
                             unsafe { (*cipher.inner.soft).clone() },
                             nonce,
                         );

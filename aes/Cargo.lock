@@ -21,47 +21,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc52553543ecb104069b0ff9e0fcc5c739ad16202935528a112d974e8f1a4ee8"
 
 [[package]]
-name = "block-modes"
-version = "0.8.1"
-dependencies = [
- "aes",
- "block-padding",
- "cipher",
- "hex-literal",
-]
-
-[[package]]
-name = "block-padding"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d696c370c750c948ada61c69a0ee2cbbb9c50b1019ddb86d9317157a99c2cae"
-
-[[package]]
-name = "blowfish"
-version = "0.8.0"
-dependencies = [
- "byteorder",
- "cipher",
- "opaque-debug",
-]
-
-[[package]]
-name = "byteorder"
-version = "1.4.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
-
-[[package]]
-name = "cast5"
-version = "0.10.0"
-dependencies = [
- "byteorder",
- "cipher",
- "hex-literal",
- "opaque-debug",
-]
-
-[[package]]
 name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -96,15 +55,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "des"
-version = "0.7.0"
-dependencies = [
- "byteorder",
- "cipher",
- "opaque-debug",
-]
-
-[[package]]
 name = "generic-array"
 version = "0.14.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -112,18 +62,6 @@ checksum = "501466ecc8a30d1d3b7fc9229b122b2ce8ed6e9d9223f1138d4babb253e51817"
 dependencies = [
  "typenum",
  "version_check",
-]
-
-[[package]]
-name = "gost-modes"
-version = "0.5.0"
-dependencies = [
- "block-modes",
- "cipher",
- "generic-array",
- "hex-literal",
- "kuznyechik",
- "magma",
 ]
 
 [[package]]
@@ -146,36 +84,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "idea"
-version = "0.4.0"
-dependencies = [
- "cipher",
- "opaque-debug",
-]
-
-[[package]]
-name = "kuznyechik"
-version = "0.7.0"
-dependencies = [
- "cipher",
- "hex-literal",
- "opaque-debug",
-]
-
-[[package]]
 name = "libc"
 version = "0.2.94"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "18794a8ad5b29321f790b55d93dfba91e125cb1a9edbd4f8e3150acc771c1a5e"
-
-[[package]]
-name = "magma"
-version = "0.7.0"
-dependencies = [
- "cipher",
- "hex-literal",
- "opaque-debug",
-]
 
 [[package]]
 name = "opaque-debug"
@@ -185,62 +97,18 @@ checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
 
 [[package]]
 name = "proc-macro-hack"
-version = "0.5.18"
+version = "0.5.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99c605b9a0adc77b7211c6b1f722dcb613d68d66859a44f3d485a6da332b0598"
-
-[[package]]
-name = "rc2"
-version = "0.7.0"
-dependencies = [
- "cipher",
- "opaque-debug",
-]
-
-[[package]]
-name = "serpent"
-version = "0.4.0"
-dependencies = [
- "byteorder",
- "cipher",
- "opaque-debug",
-]
-
-[[package]]
-name = "sm4"
-version = "0.4.0"
-dependencies = [
- "byteorder",
- "cipher",
- "hex-literal",
- "opaque-debug",
-]
-
-[[package]]
-name = "threefish"
-version = "0.4.0"
-dependencies = [
- "cipher",
-]
-
-[[package]]
-name = "twofish"
-version = "0.6.0"
-dependencies = [
- "byteorder",
- "cipher",
- "hex-literal",
- "opaque-debug",
-]
+checksum = "dbf0c48bc1d91375ae5c3cd81e3722dff1abcf81a30960240640d223f59fe0e5"
 
 [[package]]
 name = "typenum"
-version = "1.12.0"
+version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "373c8a200f9e67a0c95e62a4f52fbf80c23b4381c05a17845531982fa99e6b33"
+checksum = "879f6906492a7cd215bfa4cf595b600146ccfac0c79bcbd1f3000162af5e8b06"
 
 [[package]]
 name = "version_check"
-version = "0.9.2"
+version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5a972e5669d67ba988ce3dc826706fb0a8b01471c088cb0b6110b805cc36aed"
+checksum = "5fecdca9a5291cc2b8dcf7dc02453fee791a280f3743cb0905f8822ae463b3fe"
