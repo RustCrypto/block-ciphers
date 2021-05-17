@@ -90,14 +90,14 @@
 )]
 #![warn(missing_docs, rust_2018_idioms)]
 
+mod soft;
+
 use cfg_if::cfg_if;
 
 cfg_if! {
     if #[cfg(all(target_arch = "aarch64", feature = "armv8", not(feature = "force-soft")))] {
         mod armv8;
         mod autodetect;
-        mod soft;
-
         pub use autodetect::{Aes128, Aes192, Aes256};
 
         #[cfg(feature = "ctr")]
@@ -108,14 +108,11 @@ cfg_if! {
     ))] {
         mod autodetect;
         mod ni;
-        mod soft;
-
         pub use autodetect::{Aes128, Aes192, Aes256};
 
         #[cfg(feature = "ctr")]
         pub use autodetect::ctr::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
     } else {
-        mod soft;
         pub use soft::{Aes128, Aes192, Aes256};
 
         #[cfg(feature = "ctr")]

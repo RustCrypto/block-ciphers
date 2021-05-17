@@ -35,7 +35,7 @@ pub(crate) type FixsliceKeys192 = [u32; 104];
 pub(crate) type FixsliceKeys256 = [u32; 120];
 
 /// 256-bit internal state
-type State = [u32; 8];
+pub(crate) type State = [u32; 8];
 
 /// Fully bitsliced AES-128 key schedule to match the fully-fixsliced representation.
 pub(crate) fn aes128_key_schedule(key: &GenericArray<u8, U16>) -> FixsliceKeys128 {
