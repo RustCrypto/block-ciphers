@@ -4,13 +4,8 @@
 #![allow(clippy::needless_range_loop)]
 
 use super::arch::*;
-use cipher::{
-    consts::{U16, U8},
-    generic_array::GenericArray,
-};
+use crate::ParBlocks;
 
-pub type Block128 = GenericArray<u8, U16>;
-pub type Block128x8 = GenericArray<GenericArray<u8, U16>, U8>;
 pub type U128x8 = [__m128i; 8];
 
 #[cfg(test)]
@@ -23,7 +18,7 @@ pub(crate) fn check(a: &[__m128i], b: &[[u64; 2]]) {
 }
 
 #[inline(always)]
-pub(crate) fn load8(blocks: &Block128x8) -> U128x8 {
+pub(crate) fn load8(blocks: &ParBlocks) -> U128x8 {
     unsafe {
         [
             _mm_loadu_si128(blocks[0].as_ptr() as *const __m128i),
@@ -39,7 +34,7 @@ pub(crate) fn load8(blocks: &Block128x8) -> U128x8 {
 }
 
 #[inline(always)]
-pub(crate) fn store8(blocks: &mut Block128x8, b: U128x8) {
+pub(crate) fn store8(blocks: &mut ParBlocks, b: U128x8) {
     unsafe {
         _mm_storeu_si128(blocks[0].as_mut_ptr() as *mut __m128i, b[0]);
         _mm_storeu_si128(blocks[1].as_mut_ptr() as *mut __m128i, b[1]);

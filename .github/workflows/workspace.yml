@@ -20,7 +20,7 @@ jobs:
         components: clippy
         override: true
         profile: minimal
-    - run: cargo clippy --all --all-features -- -D warnings
+    - run: cargo clippy --all --exclude aes --all-features -- -D warnings
 
   rustfmt:
     runs-on: ubuntu-latest

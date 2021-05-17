@@ -22,12 +22,14 @@ opaque-debug = "0.3"
 
 [dev-dependencies]
 cipher = { version = "0.3", features = ["dev"] }
+hex-literal = "0.2"
 
-[target.'cfg(any(target_arch = "x86_64", target_arch = "x86"))'.dependencies]
-cpufeatures = "0.1"
+[target.'cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))'.dependencies]
+cpufeatures = "0.1.4"
 
 [features]
-compact = [] # Reduce code size at the cost of slower performance
+armv8      = [] # Enable ARMv8 AES intrinsics (nightly-only)
+compact    = [] # Reduce code size at the cost of slower performance
 force-soft = [] # Disable support for AES hardware intrinsics
 
 [package.metadata.docs.rs]

@@ -2,7 +2,6 @@
 //! (a.k.a. Rijndael)
 //!
 //! # Supported platforms
-//!
 //! This crate provides two different backends based on what target features
 //! are available:
 //!
@@ -14,6 +13,18 @@
 //!   architectures with `target-feature=+aes`, as well as an accelerated
 //!   AES-CTR implementation with `target-feature=+aes,+ssse3`
 //!
+//! ## ARMv8 intrinsics (nightly-only)
+//! On `aarch64` targets including `aarch64-apple-darwin` (Apple M1) and Linux
+//! targets such as `aarch64-unknown-linux-gnu` and `aarch64-unknown-linux-musl`,
+//! support for using AES intrinsics provided by the ARMv8 Cryptography Extensions
+//! is available when using the nightly compiler, and can be enabled using the
+//! `armv8` crate feature.
+//!
+//! On Linux and macOS, when the `armv8` feature is enabled support for AES
+//! intrinsics is autodetected at runtime. On other platforms the `crypto`
+//! target feature must be enabled via RUSTFLAGS.
+//!
+//! ## `x86`/`x86_64` intrinsics (AES-NI)
 //! By default this crate uses runtime detection on `i686`/`x86_64` targets
 //! in order to determine if AES-NI is available, and if it is not, it will
 //! fallback to using a constant-time software implementation.
@@ -64,6 +75,7 @@
 
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(feature = "armv8", feature(stdsimd, aarch64_target_feature))]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"
@@ -73,7 +85,16 @@
 use cfg_if::cfg_if;
 
 cfg_if! {
-    if #[cfg(all(
+    if #[cfg(all(target_arch = "aarch64", feature = "armv8", not(feature = "force-soft")))] {
+        mod armv8;
+        mod autodetect;
+        mod soft;
+
+        pub use autodetect::{Aes128, Aes192, Aes256};
+
+        #[cfg(feature = "ctr")]
+        pub use autodetect::ctr::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
+    } else if #[cfg(all(
         any(target_arch = "x86_64", target_arch = "x86"),
         not(feature = "force-soft")
     ))] {
