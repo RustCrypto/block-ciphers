@@ -79,6 +79,7 @@ jobs:
       - run: cargo test --release --target ${{ matrix.target }} --features compact
       - run: cargo test --release --target ${{ matrix.target }} --features ctr
       - run: cargo test --release --target ${{ matrix.target }} --features force-soft
+      - run: cargo test --release --target ${{ matrix.target }} --features hazmat
 
   # Tests for CPU feature autodetection with fallback to portable software implementation
   autodetect:
@@ -111,6 +112,8 @@ jobs:
       - run: cargo test --release --target ${{ matrix.target }}
       - run: cargo test --release --target ${{ matrix.target }} --features compact
       - run: cargo test --release --target ${{ matrix.target }} --features ctr
+      - run: cargo test --release --target ${{ matrix.target }} --features hazmat
+      - run: cargo test --release --target ${{ matrix.target }} --all-features
 
   # Tests for the portable software backend (i.e. `force-soft`-only)
   soft:
@@ -200,6 +203,7 @@ jobs:
       - run: cross test --release --target ${{ matrix.target }} --features armv8,compact
       - run: cross test --release --target ${{ matrix.target }} --features armv8,ctr
       - run: cross test --release --target ${{ matrix.target }} --features armv8,force-soft
+      - run: cross test --release --target ${{ matrix.target }} --features armv8,hazmat
       - run: cross test --release --target ${{ matrix.target }} --all-features
 
   clippy:

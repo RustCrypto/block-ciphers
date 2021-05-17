@@ -31,6 +31,9 @@ mod aes256;
 #[cfg(feature = "ctr")]
 mod ctr;
 
+#[cfg(feature = "hazmat")]
+pub(crate) mod round;
+
 #[cfg(target_arch = "x86")]
 use core::arch::x86 as arch;
 #[cfg(target_arch = "x86_64")]

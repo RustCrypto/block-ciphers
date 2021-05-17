@@ -31,6 +31,7 @@ cpufeatures = "0.1.4"
 armv8      = [] # Enable ARMv8 AES intrinsics (nightly-only)
 compact    = [] # Reduce code size at the cost of slower performance
 force-soft = [] # Disable support for AES hardware intrinsics
+hazmat     = [] # Expose cryptographically hazardous APIs
 
 [package.metadata.docs.rs]
 features = ["ctr"]
