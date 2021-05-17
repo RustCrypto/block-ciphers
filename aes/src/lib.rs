@@ -1,17 +1,22 @@
 //! Pure Rust implementation of the Advanced Encryption Standard
 //! (a.k.a. Rijndael)
 //!
-//! # Supported platforms
-//! This crate provides two different backends based on what target features
-//! are available:
+//! # Supported backends
+//! This crate provides multiple backends including a portable pure Rust
+//! backend as well as ones based on CPU intrinsics.
 //!
-//! - "soft" portable constant-time implementation based on [fixslicing].
-//!   Enabling the `compact` Cargo feature will reduce the code size of this
-//!   backend at the cost of decreased performance (using a modified form of
-//!   the fixslicing technique called "semi-fixslicing").
-//! - [AES-NI] accelerated implementation for `i686`/`x86_64` target
-//!   architectures with `target-feature=+aes`, as well as an accelerated
-//!   AES-CTR implementation with `target-feature=+aes,+ssse3`
+//! By default, it performs runtime detection of CPU intrinsics and uses them
+//! if they are available.
+//!
+//! ## "soft" portable backend
+//! As a baseline implementation, this crate provides a constant-time pure Rust
+//! implementation based on [fixslicing], a more advanced form of bitslicing
+//! implemented entirely in terms of bitwise arithmetic with no use of any
+//! lookup tables or data-dependent branches.
+//!
+//! Enabling the `compact` Cargo feature will reduce the code size of this
+//! backend at the cost of decreased performance (using a modified form of
+//! the fixslicing technique called "semi-fixslicing").
 //!
 //! ## ARMv8 intrinsics (nightly-only)
 //! On `aarch64` targets including `aarch64-apple-darwin` (Apple M1) and Linux
@@ -33,6 +38,9 @@
 //! will override runtime detection and ensure that AES-NI is always used.
 //! Programs built in this manner will crash with an illegal instruction on
 //! CPUs which do not have AES-NI enabled.
+//!
+//! Note: runtime detection is not possible on SGX targets. Please use the
+//! afforementioned `RUSTFLAGS` to leverage AES-NI on these targets.
 //!
 //! # Usage example
 //! ```
