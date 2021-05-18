@@ -1,4 +1,4 @@
-//! Raw AES round function: ARMv8 Cryptography Extensions support.
+//! Low-level "hazmat" AES functions: ARMv8 Cryptography Extensions support.
 //!
 //! Note: this isn't actually used in the `Aes128`/`Aes192`/`Aes256`
 //! implementations in this crate, but instead provides raw AES-NI accelerated
@@ -11,7 +11,7 @@ use core::arch::aarch64::*;
 /// AES cipher (encrypt) round function.
 #[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "crypto")]
-pub(crate) unsafe fn cipher(block: &mut Block, round_key: &Block) {
+pub(crate) unsafe fn cipher_round(block: &mut Block, round_key: &Block) {
     let b = vld1q_u8(block.as_ptr());
     let k = vld1q_u8(round_key.as_ptr());
 
@@ -30,7 +30,7 @@ pub(crate) unsafe fn cipher(block: &mut Block, round_key: &Block) {
 /// AES equivalent inverse cipher (decrypt) round function.
 #[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "crypto")]
-pub(crate) unsafe fn equiv_inv_cipher(block: &mut Block, round_key: &Block) {
+pub(crate) unsafe fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
     let b = vld1q_u8(block.as_ptr());
     let k = vld1q_u8(round_key.as_ptr());
 
@@ -44,4 +44,13 @@ pub(crate) unsafe fn equiv_inv_cipher(block: &mut Block, round_key: &Block) {
     state = veorq_u8(state, k);
 
     vst1q_u8(block.as_mut_ptr(), state);
+}
+
+/// AES inverse mix columns function.
+#[allow(clippy::cast_ptr_alignment)]
+#[target_feature(enable = "crypto")]
+pub(crate) unsafe fn inv_mix_columns(block: &mut Block) {
+    let b = vld1q_u8(block.as_ptr());
+    let out = vaesimcq_u8(b);
+    vst1q_u8(block.as_mut_ptr(), out);
 }

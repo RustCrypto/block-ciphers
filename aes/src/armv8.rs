@@ -10,7 +10,7 @@
 #![allow(clippy::needless_range_loop)]
 
 #[cfg(feature = "hazmat")]
-pub(crate) mod round;
+pub(crate) mod hazmat;
 
 mod decrypt;
 mod encrypt;

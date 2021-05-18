@@ -1,4 +1,4 @@
-//! ⚠️ Raw AES round function.
+//! ⚠️ Low-level "hazmat" AES functions.
 //!
 //! # ☢️️ WARNING: HAZARDOUS API ☢️
 //!
@@ -14,10 +14,10 @@
 use crate::Block;
 
 #[cfg(all(target_arch = "aarch64", feature = "armv8"))]
-use crate::armv8::round as intrinsics;
+use crate::armv8::hazmat as intrinsics;
 
 #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
-use crate::ni::round as intrinsics;
+use crate::ni::hazmat as intrinsics;
 
 #[cfg(not(any(
     target_arch = "x86_64",
@@ -43,11 +43,11 @@ cpufeatures::new!(aes_intrinsics, "aes");
 ///
 /// Use this function with great care! See the [module-level documentation][crate::round]
 /// for more information.
-pub fn cipher(block: &mut Block, round_key: &Block) {
-    if aes_intrinsics::init_get().1 {
-        unsafe { intrinsics::cipher(block, round_key) };
+pub fn cipher_round(block: &mut Block, round_key: &Block) {
+    if aes_intrinsics::get() {
+        unsafe { intrinsics::cipher_round(block, round_key) };
     } else {
-        todo!("soft fallback for the raw AES round function API is not yet implemented");
+        todo!("soft fallback for AES hazmat functions is not yet implemented");
     }
 }
 
@@ -66,10 +66,26 @@ pub fn cipher(block: &mut Block, round_key: &Block) {
 ///
 /// Use this function with great care! See the [module-level documentation][crate::round]
 /// for more information.
-pub fn equiv_inv_cipher(block: &mut Block, round_key: &Block) {
-    if aes_intrinsics::init_get().1 {
-        unsafe { intrinsics::equiv_inv_cipher(block, round_key) };
+pub fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
+    if aes_intrinsics::get() {
+        unsafe { intrinsics::equiv_inv_cipher_round(block, round_key) };
     } else {
-        todo!("soft fallback for the raw AES round function API is not yet implemented");
+        todo!("soft fallback for AES hazmat functions is not yet implemented");
+    }
+}
+
+/// ⚠️ AES inverse mix columns function.
+///
+/// This function is equivalent to the Intel AES-NI `AESIMC` instruction.
+///
+/// # ☢️️ WARNING: HAZARDOUS API ☢️
+///
+/// Use this function with great care! See the [module-level documentation][crate::round]
+/// for more information.
+pub fn inv_mix_columns(block: &mut Block) {
+    if aes_intrinsics::get() {
+        unsafe { intrinsics::inv_mix_columns(block) };
+    } else {
+        todo!("soft fallback for AES hazmat functions is not yet implemented");
     }
 }

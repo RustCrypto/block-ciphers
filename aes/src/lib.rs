@@ -94,7 +94,7 @@
 #![warn(missing_docs, rust_2018_idioms)]
 
 #[cfg(all(feature = "hazmat", not(feature = "force-soft")))]
-pub mod round;
+pub mod hazmat;
 
 mod soft;
 
