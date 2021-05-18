@@ -46,6 +46,15 @@ pub(crate) unsafe fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block
     vst1q_u8(block.as_mut_ptr(), state);
 }
 
+/// AES mix columns function.
+#[allow(clippy::cast_ptr_alignment)]
+#[target_feature(enable = "crypto")]
+pub(crate) unsafe fn mix_columns(block: &mut Block) {
+    let b = vld1q_u8(block.as_ptr());
+    let out = vaesmcq_u8(b);
+    vst1q_u8(block.as_mut_ptr(), out);
+}
+
 /// AES inverse mix columns function.
 #[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "crypto")]

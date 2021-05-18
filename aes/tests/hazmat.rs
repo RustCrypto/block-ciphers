@@ -92,6 +92,13 @@ fn equiv_inv_cipher_round_fips197_vectors() {
 }
 
 #[test]
+fn mix_columns_fips197_vector() {
+    let mut block = Block::from(hex!("6353e08c0960e104cd70b751bacad0e7"));
+    aes::hazmat::mix_columns(&mut block);
+    assert_eq!(block.as_slice(), &hex!("5f72641557f5bc92f7be3b291db9f91a"))
+}
+
+#[test]
 fn inv_mix_columns_fips197_vector() {
     let mut block = Block::from(hex!("bd6e7c3df2b5779e0b61216e8b10b689"));
     aes::hazmat::inv_mix_columns(&mut block);
