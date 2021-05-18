@@ -29,6 +29,21 @@ pub(crate) unsafe fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block
     _mm_storeu_si128(block.as_mut_ptr() as *mut __m128i, out);
 }
 
+/// AES mix columns function.
+#[allow(clippy::cast_ptr_alignment)]
+#[target_feature(enable = "aes")]
+pub(crate) unsafe fn mix_columns(block: &mut Block) {
+    // Safety: `loadu` and `storeu` support unaligned access
+    let mut state = _mm_loadu_si128(block.as_ptr() as *const __m128i);
+
+    // Emulate mix columns by performing three inverse mix columns operations
+    state = _mm_aesimc_si128(state);
+    state = _mm_aesimc_si128(state);
+    state = _mm_aesimc_si128(state);
+
+    _mm_storeu_si128(block.as_mut_ptr() as *mut __m128i, state);
+}
+
 /// AES inverse mix columns function.
 #[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]

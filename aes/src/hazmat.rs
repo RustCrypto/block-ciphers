@@ -74,6 +74,20 @@ pub fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
     }
 }
 
+/// ⚠️ AES mix columns function.
+///
+/// # ☢️️ WARNING: HAZARDOUS API ☢️
+///
+/// Use this function with great care! See the [module-level documentation][crate::round]
+/// for more information.
+pub fn mix_columns(block: &mut Block) {
+    if aes_intrinsics::get() {
+        unsafe { intrinsics::mix_columns(block) };
+    } else {
+        todo!("soft fallback for AES hazmat functions is not yet implemented");
+    }
+}
+
 /// ⚠️ AES inverse mix columns function.
 ///
 /// This function is equivalent to the Intel AES-NI `AESIMC` instruction.
