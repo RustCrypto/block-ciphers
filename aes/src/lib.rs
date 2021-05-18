@@ -82,13 +82,19 @@
 //! [`block-modes`]: https://docs.rs/block-modes
 
 #![no_std]
+#![cfg_attr(
+    all(feature = "armv8", target_arch = "aarch64"),
+    feature(stdsimd, aarch64_target_feature)
+)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![cfg_attr(feature = "armv8", feature(stdsimd, aarch64_target_feature))]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"
 )]
 #![warn(missing_docs, rust_2018_idioms)]
+
+#[cfg(all(feature = "hazmat", not(feature = "force-soft")))]
+pub mod round;
 
 mod soft;
 
