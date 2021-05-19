@@ -24,14 +24,16 @@ pub struct Kuznyechik {
 
 #[inline(always)]
 unsafe fn sub_bytes(block: __m128i, sbox: &[u8; 256]) -> __m128i {
-    let t0 = _mm_extract_epi16(block, 0);
-    let t1 = _mm_extract_epi16(block, 1);
-    let t2 = _mm_extract_epi16(block, 2);
-    let t3 = _mm_extract_epi16(block, 3);
-    let t4 = _mm_extract_epi16(block, 4);
-    let t5 = _mm_extract_epi16(block, 5);
-    let t6 = _mm_extract_epi16(block, 6);
-    let t7 = _mm_extract_epi16(block, 7);
+    // note: without ` & 0xFFFF` Rust generates wrong code prior to Rust 1.47
+    // TODO: remove it on MSRV bump
+    let t0 = _mm_extract_epi16(block, 0) & 0xFFFF;
+    let t1 = _mm_extract_epi16(block, 1) & 0xFFFF;
+    let t2 = _mm_extract_epi16(block, 2) & 0xFFFF;
+    let t3 = _mm_extract_epi16(block, 3) & 0xFFFF;
+    let t4 = _mm_extract_epi16(block, 4) & 0xFFFF;
+    let t5 = _mm_extract_epi16(block, 5) & 0xFFFF;
+    let t6 = _mm_extract_epi16(block, 6) & 0xFFFF;
+    let t7 = _mm_extract_epi16(block, 7) & 0xFFFF;
 
     _mm_set_epi8(
         sbox[(t7 >> 8) as usize] as i8,
@@ -57,7 +59,9 @@ unsafe fn sub_bytes(block: __m128i, sbox: &[u8; 256]) -> __m128i {
 unsafe fn transform(block: __m128i, table: &Table) -> __m128i {
     macro_rules! get {
         ($table:expr, $ind:expr, $i:expr) => {{
-            let idx = _mm_extract_epi16($ind, $i) as usize;
+            // note: without ` & 0xFFFF` Rust generates wrong code prior to Rust 1.47
+            // TODO: remove it on MSRV bump
+            let idx = _mm_extract_epi16($ind, $i) as usize & 0xFFFF;
             let p = &($table.0[idx]) as *const u8 as *const __m128i;
             // correct aligment of `p` is guaranteed since offset values
             // are shifted by 4 bits left and the table is aligned to 16 bytes
@@ -126,7 +130,7 @@ impl NewBlockCipher for Kuznyechik {
             enc_keys[1] = k2;
 
             let mut cidx = 0;
-            for i in (2..10).step_by(2) {
+            for i in 1..5 {
                 for _ in 0..4 {
                     let mut t = _mm_xor_si128(k1, next_const!(cidx));
                     t = transform(t, &ENC_TABLE);
@@ -137,8 +141,8 @@ impl NewBlockCipher for Kuznyechik {
                     k1 = _mm_xor_si128(k1, t);
                 }
 
-                enc_keys[i] = k1;
-                enc_keys[i + 1] = k2;
+                enc_keys[2 * i] = k1;
+                enc_keys[2 * i + 1] = k2;
             }
 
             for i in 1..9 {
