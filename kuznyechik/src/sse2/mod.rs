@@ -24,16 +24,14 @@ pub struct Kuznyechik {
 
 #[inline(always)]
 unsafe fn sub_bytes(block: __m128i, sbox: &[u8; 256]) -> __m128i {
-    // note: without ` & 0xFFFF` Rust generates wrong code prior to Rust 1.47
-    // TODO: remove it on MSRV bump
-    let t0 = _mm_extract_epi16(block, 0) & 0xFFFF;
-    let t1 = _mm_extract_epi16(block, 1) & 0xFFFF;
-    let t2 = _mm_extract_epi16(block, 2) & 0xFFFF;
-    let t3 = _mm_extract_epi16(block, 3) & 0xFFFF;
-    let t4 = _mm_extract_epi16(block, 4) & 0xFFFF;
-    let t5 = _mm_extract_epi16(block, 5) & 0xFFFF;
-    let t6 = _mm_extract_epi16(block, 6) & 0xFFFF;
-    let t7 = _mm_extract_epi16(block, 7) & 0xFFFF;
+    let t0 = _mm_extract_epi16(block, 0) as u16;
+    let t1 = _mm_extract_epi16(block, 1) as u16;
+    let t2 = _mm_extract_epi16(block, 2) as u16;
+    let t3 = _mm_extract_epi16(block, 3) as u16;
+    let t4 = _mm_extract_epi16(block, 4) as u16;
+    let t5 = _mm_extract_epi16(block, 5) as u16;
+    let t6 = _mm_extract_epi16(block, 6) as u16;
+    let t7 = _mm_extract_epi16(block, 7) as u16;
 
     _mm_set_epi8(
         sbox[(t7 >> 8) as usize] as i8,
@@ -59,9 +57,7 @@ unsafe fn sub_bytes(block: __m128i, sbox: &[u8; 256]) -> __m128i {
 unsafe fn transform(block: __m128i, table: &Table) -> __m128i {
     macro_rules! get {
         ($table:expr, $ind:expr, $i:expr) => {{
-            // note: without ` & 0xFFFF` Rust generates wrong code prior to Rust 1.47
-            // TODO: remove it on MSRV bump
-            let idx = _mm_extract_epi16($ind, $i) as usize & 0xFFFF;
+            let idx = _mm_extract_epi16($ind, $i) as u16 as usize;
             let p = &($table.0[idx]) as *const u8 as *const __m128i;
             // correct aligment of `p` is guaranteed since offset values
             // are shifted by 4 bits left and the table is aligned to 16 bytes
