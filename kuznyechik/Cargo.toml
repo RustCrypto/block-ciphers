@@ -1,6 +1,6 @@
 [package]
 name = "kuznyechik"
-version = "0.7.0"
+version = "0.7.1"
 description = "Kuznyechik (GOST R 34.12-2015) block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -13,7 +13,6 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 cipher = "0.3"
-opaque-debug = "0.3"
 
 [dev-dependencies]
 cipher = { version = "0.3", features = ["dev"] }
@@ -23,3 +22,5 @@ hex-literal = "0.2"
 # disables loop unrolling, which reduces resulting binary size,
 # but degrades performance in return
 no_unroll = []
+# force software implementation which uses smaller tables
+force-soft = []
