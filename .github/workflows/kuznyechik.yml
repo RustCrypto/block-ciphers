@@ -53,3 +53,5 @@ jobs:
         profile: minimal
     - run: cargo test
     - run: cargo test --features no_unroll
+    - run: cargo test --features force-soft
+    - run: cargo test --features force-soft,no_unroll
