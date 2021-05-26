@@ -44,15 +44,15 @@
 //!
 //! # Usage example
 //! ```
-//! use aes::Aes128;
+//! use aes::{Aes128, Block, ParBlocks};
 //! use aes::cipher::{
 //!     BlockCipher, BlockEncrypt, BlockDecrypt, NewBlockCipher,
 //!     generic_array::GenericArray,
 //! };
 //!
 //! let key = GenericArray::from_slice(&[0u8; 16]);
-//! let mut block = GenericArray::clone_from_slice(&[0u8; 16]);
-//! let mut block8 = GenericArray::clone_from_slice(&[block; 8]);
+//! let mut block = Block::default();
+//! let mut block8 = ParBlocks::default();
 //!
 //! // Initialize cipher
 //! let cipher = Aes128::new(&key);
