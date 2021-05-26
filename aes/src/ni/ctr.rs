@@ -8,6 +8,7 @@ use super::arch::*;
 use core::mem;
 
 use super::{Aes128, Aes192, Aes256};
+use crate::BLOCK_SIZE;
 use cipher::{
     consts::U16,
     errors::{LoopError, OverflowError},
@@ -15,7 +16,6 @@ use cipher::{
     BlockCipher, FromBlockCipher, SeekNum, StreamCipher, StreamCipherSeek,
 };
 
-const BLOCK_SIZE: usize = 16;
 const PAR_BLOCKS: usize = 8;
 const PAR_BLOCKS_SIZE: usize = PAR_BLOCKS * BLOCK_SIZE;
 

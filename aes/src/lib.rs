@@ -133,3 +133,6 @@ pub type Block = cipher::generic_array::GenericArray<u8, cipher::consts::U16>;
 
 /// 8 x 128-bit AES blocks to be processed in parallel
 pub type ParBlocks = cipher::generic_array::GenericArray<Block, cipher::consts::U8>;
+
+/// Size of an AES block (128-bits; 16-bytes)
+pub const BLOCK_SIZE: usize = 16;
