@@ -41,7 +41,7 @@ cpufeatures::new!(aes_intrinsics, "aes");
 ///
 /// # ☢️️ WARNING: HAZARDOUS API ☢️
 ///
-/// Use this function with great care! See the [module-level documentation][crate::round]
+/// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
 pub fn cipher_round(block: &mut Block, round_key: &Block) {
     if aes_intrinsics::get() {
@@ -64,7 +64,7 @@ pub fn cipher_round(block: &mut Block, round_key: &Block) {
 ///
 /// # ☢️️ WARNING: HAZARDOUS API ☢️
 ///
-/// Use this function with great care! See the [module-level documentation][crate::round]
+/// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
 pub fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
     if aes_intrinsics::get() {
@@ -78,7 +78,7 @@ pub fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
 ///
 /// # ☢️️ WARNING: HAZARDOUS API ☢️
 ///
-/// Use this function with great care! See the [module-level documentation][crate::round]
+/// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
 pub fn mix_columns(block: &mut Block) {
     if aes_intrinsics::get() {
@@ -94,7 +94,7 @@ pub fn mix_columns(block: &mut Block) {
 ///
 /// # ☢️️ WARNING: HAZARDOUS API ☢️
 ///
-/// Use this function with great care! See the [module-level documentation][crate::round]
+/// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
 pub fn inv_mix_columns(block: &mut Block) {
     if aes_intrinsics::get() {
