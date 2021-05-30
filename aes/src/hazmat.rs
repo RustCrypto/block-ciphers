@@ -11,21 +11,22 @@
 //! We do NOT recommending using it to implement any algorithm which has not
 //! received extensive peer review by cryptographers.
 
-use crate::Block;
+use crate::{soft::fixslice::hazmat as soft, Block};
 
-#[cfg(all(target_arch = "aarch64", feature = "armv8"))]
+#[cfg(all(
+    target_arch = "aarch64",
+    feature = "armv8",
+    not(feature = "force-soft")
+))]
 use crate::armv8::hazmat as intrinsics;
 
-#[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
+#[cfg(all(
+    any(target_arch = "x86_64", target_arch = "x86"),
+    not(feature = "force-soft")
+))]
 use crate::ni::hazmat as intrinsics;
 
-#[cfg(not(any(
-    target_arch = "x86_64",
-    target_arch = "x86",
-    all(target_arch = "aarch64", feature = "armv8")
-)))]
-compile_error!("the `hazmat` feature is currently only available on x86/x86-64 or aarch64");
-
+#[cfg(not(feature = "force-soft"))]
 cpufeatures::new!(aes_intrinsics, "aes");
 
 /// ⚠️ AES cipher (encrypt) round function.
@@ -44,11 +45,13 @@ cpufeatures::new!(aes_intrinsics, "aes");
 /// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
 pub fn cipher_round(block: &mut Block, round_key: &Block) {
+    #[cfg(not(feature = "force-soft"))]
     if aes_intrinsics::get() {
         unsafe { intrinsics::cipher_round(block, round_key) };
-    } else {
-        todo!("soft fallback for AES hazmat functions is not yet implemented");
+        return;
     }
+
+    soft::cipher_round(block, round_key);
 }
 
 /// ⚠️ AES equivalent inverse cipher (decrypt) round function.
@@ -67,11 +70,13 @@ pub fn cipher_round(block: &mut Block, round_key: &Block) {
 /// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
 pub fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
+    #[cfg(not(feature = "force-soft"))]
     if aes_intrinsics::get() {
         unsafe { intrinsics::equiv_inv_cipher_round(block, round_key) };
-    } else {
-        todo!("soft fallback for AES hazmat functions is not yet implemented");
+        return;
     }
+
+    soft::equiv_inv_cipher_round(block, round_key);
 }
 
 /// ⚠️ AES mix columns function.
@@ -81,11 +86,13 @@ pub fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
 /// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
 pub fn mix_columns(block: &mut Block) {
+    #[cfg(not(feature = "force-soft"))]
     if aes_intrinsics::get() {
         unsafe { intrinsics::mix_columns(block) };
-    } else {
-        todo!("soft fallback for AES hazmat functions is not yet implemented");
+        return;
     }
+
+    soft::mix_columns(block);
 }
 
 /// ⚠️ AES inverse mix columns function.
@@ -97,9 +104,11 @@ pub fn mix_columns(block: &mut Block) {
 /// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
 pub fn inv_mix_columns(block: &mut Block) {
+    #[cfg(not(feature = "force-soft"))]
     if aes_intrinsics::get() {
         unsafe { intrinsics::inv_mix_columns(block) };
-    } else {
-        todo!("soft fallback for AES hazmat functions is not yet implemented");
+        return;
     }
+
+    soft::inv_mix_columns(block);
 }

@@ -1372,3 +1372,37 @@ fn rotate_rows_and_columns_2_2(x: u32) -> u32 {
     (ror(x, ror_distance(2, 2)) & 0x0f0f0f0f) |
     (ror(x, ror_distance(1, 2)) & 0xf0f0f0f0)
 }
+
+/// Low-level "hazmat" AES functions.
+///
+/// Note: this isn't actually used in the `Aes128`/`Aes192`/`Aes256`
+/// implementations in this crate, but instead provides raw access to
+/// the AES round function gated under the `hazmat` crate feature.
+#[cfg(feature = "hazmat")]
+pub(crate) mod hazmat {
+    use crate::Block;
+
+    /// AES cipher (encrypt) round function.
+    #[inline]
+    pub(crate) fn cipher_round(_block: &mut Block, _round_key: &Block) {
+        todo!();
+    }
+
+    /// AES cipher (encrypt) round function.
+    #[inline]
+    pub(crate) fn equiv_inv_cipher_round(_block: &mut Block, _round_key: &Block) {
+        todo!();
+    }
+
+    /// AES mix columns function.
+    #[inline]
+    pub(crate) fn mix_columns(_block: &mut Block) {
+        todo!();
+    }
+
+    /// AES inverse mix columns function.
+    #[inline]
+    pub(crate) fn inv_mix_columns(_block: &mut Block) {
+        todo!();
+    }
+}
