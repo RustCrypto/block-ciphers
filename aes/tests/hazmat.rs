@@ -1,5 +1,6 @@
 //! Tests for low-level "hazmat" AES functions.
 
+// TODO(tarcieri): support for using the hazmat functions with the `soft` backend
 #![cfg(all(feature = "hazmat", not(feature = "force-soft")))]
 
 use aes::Block;
