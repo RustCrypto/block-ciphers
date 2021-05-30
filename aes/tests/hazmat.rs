@@ -1,7 +1,7 @@
 //! Tests for low-level "hazmat" AES functions.
 
 // TODO(tarcieri): support for using the hazmat functions with the `soft` backend
-#![cfg(all(feature = "hazmat", not(feature = "force-soft")))]
+#![cfg(feature = "hazmat")]
 
 use aes::Block;
 use hex_literal::hex;

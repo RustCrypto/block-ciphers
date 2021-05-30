@@ -317,7 +317,7 @@ pub(crate) fn aes128_decrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
 
     add_round_key(&mut state, &rkeys[..8]);
 
-    inv_bitslice(&mut state, blocks);
+    inv_bitslice(&state, blocks);
 }
 
 /// Fully-fixsliced AES-128 encryption (the ShiftRows is completely omitted).
@@ -374,7 +374,7 @@ pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
     sub_bytes(&mut state);
     add_round_key(&mut state, &rkeys[80..]);
 
-    inv_bitslice(&mut state, blocks);
+    inv_bitslice(&state, blocks);
 }
 
 /// Fully-fixsliced AES-192 decryption (the InvShiftRows is completely omitted).
@@ -425,7 +425,7 @@ pub(crate) fn aes192_decrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
 
     add_round_key(&mut state, &rkeys[..8]);
 
-    inv_bitslice(&mut state, blocks);
+    inv_bitslice(&state, blocks);
 }
 
 /// Fully-fixsliced AES-192 encryption (the ShiftRows is completely omitted).
@@ -476,7 +476,7 @@ pub(crate) fn aes192_encrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
     sub_bytes(&mut state);
     add_round_key(&mut state, &rkeys[96..]);
 
-    inv_bitslice(&mut state, blocks);
+    inv_bitslice(&state, blocks);
 }
 
 /// Fully-fixsliced AES-256 decryption (the InvShiftRows is completely omitted).
@@ -533,7 +533,7 @@ pub(crate) fn aes256_decrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
 
     add_round_key(&mut state, &rkeys[..8]);
 
-    inv_bitslice(&mut state, blocks);
+    inv_bitslice(&state, blocks);
 }
 
 /// Fully-fixsliced AES-256 encryption (the ShiftRows is completely omitted).
@@ -590,7 +590,7 @@ pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
     sub_bytes(&mut state);
     add_round_key(&mut state, &rkeys[112..]);
 
-    inv_bitslice(&mut state, blocks);
+    inv_bitslice(&state, blocks);
 }
 
 /// Note that the 4 bitwise NOT (^= 0xffffffffffffffff) are accounted for here so that it is a true
@@ -1132,7 +1132,7 @@ fn delta_swap_2(a: &mut u64, b: &mut u64, shift: u32, mask: u64) {
 }
 
 /// Applies ShiftRows once on an AES state (or key).
-#[cfg(not(feature = "compact"))]
+#[cfg(any(not(feature = "compact"), feature = "hazmat"))]
 #[inline]
 fn shift_rows_1(state: &mut [u64]) {
     debug_assert_eq!(state.len(), 8);
@@ -1274,7 +1274,7 @@ fn bitslice(output: &mut [u64], input0: &[u8], input1: &[u8], input2: &[u8], inp
 }
 
 /// Un-bitslice a 512-bit internal state into four 128-bit blocks of output.
-fn inv_bitslice(input: &mut [u64], output: &mut [Block]) {
+fn inv_bitslice(input: &[u64], output: &mut [Block]) {
     debug_assert_eq!(input.len(), 8);
     debug_assert_eq!(output.len(), 4);
 
@@ -1434,29 +1434,76 @@ fn rotate_rows_and_columns_2_2(x: u64) -> u64 {
 /// the AES round function gated under the `hazmat` crate feature.
 #[cfg(feature = "hazmat")]
 pub(crate) mod hazmat {
+    use super::{
+        add_round_key, bitslice, inv_bitslice, inv_mix_columns_0, inv_shift_rows_1, inv_sub_bytes,
+        mix_columns_0, shift_rows_1, sub_bytes, sub_bytes_nots, State,
+    };
     use crate::Block;
 
     /// AES cipher (encrypt) round function.
     #[inline]
-    pub(crate) fn cipher_round(_block: &mut Block, _round_key: &Block) {
-        todo!();
+    pub(crate) fn cipher_round(block: &mut Block, round_key: &Block) {
+        let mut rkeys = [0u64; 8];
+        let mut state = State::default();
+
+        // TODO(tarcieri): parallel operation
+        bitslice(&mut rkeys, &round_key, &round_key, &round_key, &round_key);
+        bitslice(&mut state, &block, &block, &block, &block);
+        sub_bytes(&mut state);
+        sub_bytes_nots(&mut state);
+        shift_rows_1(&mut state);
+        mix_columns_0(&mut state);
+        add_round_key(&mut state, &rkeys);
+
+        let mut out = [Block::default(); 4];
+        inv_bitslice(&state, &mut out);
+        block.copy_from_slice(&out[0]);
     }
 
     /// AES cipher (encrypt) round function.
     #[inline]
-    pub(crate) fn equiv_inv_cipher_round(_block: &mut Block, _round_key: &Block) {
-        todo!();
+    pub(crate) fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
+        let mut rkeys = [0u64; 8];
+        let mut state = State::default();
+
+        // TODO(tarcieri): parallel operation
+        bitslice(&mut rkeys, &round_key, &round_key, &round_key, &round_key);
+        bitslice(&mut state, &block, &block, &block, &block);
+
+        sub_bytes_nots(&mut state);
+        inv_sub_bytes(&mut state);
+        inv_shift_rows_1(&mut state);
+        inv_mix_columns_0(&mut state);
+        add_round_key(&mut state, &rkeys);
+
+        let mut out = [Block::default(); 4];
+        inv_bitslice(&state, &mut out);
+        block.copy_from_slice(&out[0]);
     }
 
     /// AES mix columns function.
     #[inline]
-    pub(crate) fn mix_columns(_block: &mut Block) {
-        todo!();
+    pub(crate) fn mix_columns(block: &mut Block) {
+        let mut state = State::default();
+        bitslice(&mut state, &block, &block, &block, &block);
+
+        mix_columns_0(&mut state);
+
+        let mut out = [Block::default(); 4];
+        inv_bitslice(&state, &mut out);
+        block.copy_from_slice(&out[0]);
     }
 
     /// AES inverse mix columns function.
     #[inline]
-    pub(crate) fn inv_mix_columns(_block: &mut Block) {
-        todo!();
+    pub(crate) fn inv_mix_columns(block: &mut Block) {
+        let mut state = State::default();
+        bitslice(&mut state, &block, &block, &block, &block);
+
+        inv_mix_columns_0(&mut state);
+
+        let mut out = [Block::default(); 4];
+        inv_bitslice(&state, &mut out);
+        block.copy_from_slice(&out[0]);
     }
 }
