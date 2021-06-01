@@ -26,7 +26,14 @@ use crate::armv8::hazmat as intrinsics;
 ))]
 use crate::ni::hazmat as intrinsics;
 
-#[cfg(not(feature = "force-soft"))]
+#[cfg(all(
+    any(
+        target_arch = "x86",
+        target_arch = "x86_64",
+        all(target_arch = "aarch64", feature = "armv8")
+    ),
+    not(feature = "force-soft")
+))]
 cpufeatures::new!(aes_intrinsics, "aes");
 
 /// ⚠️ AES cipher (encrypt) round function.
@@ -45,7 +52,14 @@ cpufeatures::new!(aes_intrinsics, "aes");
 /// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
 pub fn cipher_round(block: &mut Block, round_key: &Block) {
-    #[cfg(not(feature = "force-soft"))]
+    #[cfg(all(
+        any(
+            target_arch = "x86",
+            target_arch = "x86_64",
+            all(target_arch = "aarch64", feature = "armv8")
+        ),
+        not(feature = "force-soft")
+    ))]
     if aes_intrinsics::get() {
         unsafe { intrinsics::cipher_round(block, round_key) };
         return;
@@ -64,7 +78,14 @@ pub fn cipher_round(block: &mut Block, round_key: &Block) {
 /// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
 pub fn cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
-    #[cfg(not(feature = "force-soft"))]
+    #[cfg(all(
+        any(
+            target_arch = "x86",
+            target_arch = "x86_64",
+            all(target_arch = "aarch64", feature = "armv8")
+        ),
+        not(feature = "force-soft")
+    ))]
     if aes_intrinsics::get() {
         unsafe { intrinsics::cipher_round_par(blocks, round_keys) };
         return;
@@ -89,7 +110,14 @@ pub fn cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
 /// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
 pub fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
-    #[cfg(not(feature = "force-soft"))]
+    #[cfg(all(
+        any(
+            target_arch = "x86",
+            target_arch = "x86_64",
+            all(target_arch = "aarch64", feature = "armv8")
+        ),
+        not(feature = "force-soft")
+    ))]
     if aes_intrinsics::get() {
         unsafe { intrinsics::equiv_inv_cipher_round(block, round_key) };
         return;
@@ -98,7 +126,7 @@ pub fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
     soft::equiv_inv_cipher_round(block, round_key);
 }
 
-/// ⚠️ AES equivalent inverse cipher (decrypt) round function.
+/// ⚠️ AES equivalent inverse cipher (decrypt) round function: parallel version.
 ///
 /// Equivalent to [`equiv_inv_cipher_round`], but acts on 8 blocks-at-a-time,
 /// applying the same number of round keys.
@@ -108,7 +136,14 @@ pub fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
 /// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
 pub fn equiv_inv_cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
-    #[cfg(not(feature = "force-soft"))]
+    #[cfg(all(
+        any(
+            target_arch = "x86",
+            target_arch = "x86_64",
+            all(target_arch = "aarch64", feature = "armv8")
+        ),
+        not(feature = "force-soft")
+    ))]
     if aes_intrinsics::get() {
         unsafe { intrinsics::equiv_inv_cipher_round_par(blocks, round_keys) };
         return;
@@ -124,7 +159,14 @@ pub fn equiv_inv_cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks
 /// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
 pub fn mix_columns(block: &mut Block) {
-    #[cfg(not(feature = "force-soft"))]
+    #[cfg(all(
+        any(
+            target_arch = "x86",
+            target_arch = "x86_64",
+            all(target_arch = "aarch64", feature = "armv8")
+        ),
+        not(feature = "force-soft")
+    ))]
     if aes_intrinsics::get() {
         unsafe { intrinsics::mix_columns(block) };
         return;
@@ -142,7 +184,14 @@ pub fn mix_columns(block: &mut Block) {
 /// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
 pub fn inv_mix_columns(block: &mut Block) {
-    #[cfg(not(feature = "force-soft"))]
+    #[cfg(all(
+        any(
+            target_arch = "x86",
+            target_arch = "x86_64",
+            all(target_arch = "aarch64", feature = "armv8")
+        ),
+        not(feature = "force-soft")
+    ))]
     if aes_intrinsics::get() {
         unsafe { intrinsics::inv_mix_columns(block) };
         return;

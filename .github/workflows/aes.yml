@@ -41,6 +41,7 @@ jobs:
       - run: cargo build --release --target ${{ matrix.target }} --features compact
       - run: cargo build --release --target ${{ matrix.target }} --features ctr
       - run: cargo build --release --target ${{ matrix.target }} --features force-soft
+      - run: cargo build --release --target ${{ matrix.target }} --features hazmat
       - run: cargo build --release --target ${{ matrix.target }} --features compact,ctr,force-soft
 
   # Tests for the AES-NI backend
@@ -80,6 +81,7 @@ jobs:
       - run: cargo test --release --target ${{ matrix.target }} --features ctr
       - run: cargo test --release --target ${{ matrix.target }} --features force-soft
       - run: cargo test --release --target ${{ matrix.target }} --features hazmat
+      - run: cargo test --release --target ${{ matrix.target }} --all-features
 
   # Tests for CPU feature autodetection with fallback to portable software implementation
   autodetect:
@@ -146,7 +148,7 @@ jobs:
       - run: cargo test --release --target ${{ matrix.target }} --features force-soft
       - run: cargo test --release --target ${{ matrix.target }} --features force-soft,compact
       - run: cargo test --release --target ${{ matrix.target }} --features force-soft,ctr
-      - run: cargo build --release --target ${{ matrix.target }} --features compact,ctr,force-soft
+      - run: cargo test --release --target ${{ matrix.target }} --features force-soft,compact,ctr
 
   # Cross-compiled tests
   cross:
@@ -179,7 +181,8 @@ jobs:
       - run: cross test --release --target ${{ matrix.target }} --features compact
       - run: cross test --release --target ${{ matrix.target }} --features ctr
       - run: cross test --release --target ${{ matrix.target }} --features force-soft
-      - run: cross test --release --target ${{ matrix.target }} --features compact,ctr,force-soft
+      - run: cross test --release --target ${{ matrix.target }} --features hazmat
+      - run: cross test --release --target ${{ matrix.target }} --features compact,ctr,force-soft,hazmat
 
   # ARMv8 cross-compiled tests for AES intrinsics (nightly-only)
   armv8:
@@ -216,4 +219,4 @@ jobs:
           components: clippy
           override: true
           profile: minimal
-      - run: cargo clippy --features compact,ctr,force-soft -- -D warnings
+      - run: cargo clippy --features compact,ctr,hazmat -- -D warnings

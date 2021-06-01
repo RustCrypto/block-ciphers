@@ -109,7 +109,7 @@ cfg_if! {
         #[cfg(feature = "ctr")]
         pub use autodetect::ctr::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
     } else if #[cfg(all(
-        any(target_arch = "x86_64", target_arch = "x86"),
+        any(target_arch = "x86", target_arch = "x86_64"),
         not(feature = "force-soft")
     ))] {
         mod autodetect;
