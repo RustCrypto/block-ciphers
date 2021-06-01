@@ -5,7 +5,7 @@
 //! access to the AES round function gated under the `hazmat` crate feature.
 
 use super::vst1q_u8;
-use crate::Block;
+use crate::{Block, ParBlocks};
 use core::arch::aarch64::*;
 
 /// AES cipher (encrypt) round function.
@@ -27,6 +27,26 @@ pub(crate) unsafe fn cipher_round(block: &mut Block, round_key: &Block) {
     vst1q_u8(block.as_mut_ptr(), state);
 }
 
+/// AES cipher (encrypt) round function: parallel version.
+#[allow(clippy::cast_ptr_alignment)]
+#[target_feature(enable = "crypto")]
+pub(crate) unsafe fn cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+    for i in 0..8 {
+        let mut state = vld1q_u8(blocks[i].as_ptr());
+
+        // AES single round encryption
+        state = vaeseq_u8(state, vdupq_n_u8(0));
+
+        // AES mix columns
+        state = vaesmcq_u8(state);
+
+        // AES add round key (bitwise XOR)
+        state = veorq_u8(state, vld1q_u8(round_keys[i].as_ptr()));
+
+        vst1q_u8(blocks[i].as_mut_ptr(), state);
+    }
+}
+
 /// AES equivalent inverse cipher (decrypt) round function.
 #[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "crypto")]
@@ -44,6 +64,26 @@ pub(crate) unsafe fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block
     state = veorq_u8(state, k);
 
     vst1q_u8(block.as_mut_ptr(), state);
+}
+
+/// AES equivalent inverse cipher (decrypt) round function: parallel version.
+#[allow(clippy::cast_ptr_alignment)]
+#[target_feature(enable = "crypto")]
+pub(crate) unsafe fn equiv_inv_cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+    for i in 0..8 {
+        let mut state = vld1q_u8(blocks[i].as_ptr());
+
+        // AES single round decryption (all-zero round key, deferred until the end)
+        state = vaesdq_u8(state, vdupq_n_u8(0));
+
+        // AES inverse mix columns (the `vaesdq_u8` instruction otherwise omits this step)
+        state = vaesimcq_u8(state);
+
+        // AES add round key (bitwise XOR)
+        state = veorq_u8(state, vld1q_u8(round_keys[i].as_ptr()));
+
+        vst1q_u8(blocks[i].as_mut_ptr(), state);
+    }
 }
 
 /// AES mix columns function.

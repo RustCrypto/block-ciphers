@@ -11,7 +11,7 @@
 //! We do NOT recommending using it to implement any algorithm which has not
 //! received extensive peer review by cryptographers.
 
-use crate::{soft::fixslice::hazmat as soft, Block};
+use crate::{soft::fixslice::hazmat as soft, Block, ParBlocks};
 
 #[cfg(all(
     target_arch = "aarch64",
@@ -54,6 +54,25 @@ pub fn cipher_round(block: &mut Block, round_key: &Block) {
     soft::cipher_round(block, round_key);
 }
 
+/// ⚠️ AES cipher (encrypt) round function: parallel version.
+///
+/// Equivalent to [`cipher_round`], but acts on 8 blocks-at-a-time, applying
+/// the same number of round keys.
+///
+/// # ☢️️ WARNING: HAZARDOUS API ☢️
+///
+/// Use this function with great care! See the [module-level documentation][crate::hazmat]
+/// for more information.
+pub fn cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+    #[cfg(not(feature = "force-soft"))]
+    if aes_intrinsics::get() {
+        unsafe { intrinsics::cipher_round_par(blocks, round_keys) };
+        return;
+    }
+
+    soft::cipher_round_par(blocks, round_keys);
+}
+
 /// ⚠️ AES equivalent inverse cipher (decrypt) round function.
 ///
 /// This API performs the following steps as described in FIPS 197 Appendix C:
@@ -77,6 +96,25 @@ pub fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
     }
 
     soft::equiv_inv_cipher_round(block, round_key);
+}
+
+/// ⚠️ AES equivalent inverse cipher (decrypt) round function.
+///
+/// Equivalent to [`equiv_inv_cipher_round`], but acts on 8 blocks-at-a-time,
+/// applying the same number of round keys.
+///
+/// # ☢️️ WARNING: HAZARDOUS API ☢️
+///
+/// Use this function with great care! See the [module-level documentation][crate::hazmat]
+/// for more information.
+pub fn equiv_inv_cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+    #[cfg(not(feature = "force-soft"))]
+    if aes_intrinsics::get() {
+        unsafe { intrinsics::equiv_inv_cipher_round_par(blocks, round_keys) };
+        return;
+    }
+
+    soft::equiv_inv_cipher_round_par(blocks, round_keys);
 }
 
 /// ⚠️ AES mix columns function.
