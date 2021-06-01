@@ -1435,75 +1435,106 @@ fn rotate_rows_and_columns_2_2(x: u64) -> u64 {
 #[cfg(feature = "hazmat")]
 pub(crate) mod hazmat {
     use super::{
-        add_round_key, bitslice, inv_bitslice, inv_mix_columns_0, inv_shift_rows_1, inv_sub_bytes,
-        mix_columns_0, shift_rows_1, sub_bytes, sub_bytes_nots, State,
+        bitslice, inv_bitslice, inv_mix_columns_0, inv_shift_rows_1, inv_sub_bytes, mix_columns_0,
+        shift_rows_1, sub_bytes, sub_bytes_nots, State,
     };
-    use crate::Block;
+    use crate::{Block, ParBlocks};
+
+    /// XOR the `src` block into the `dst` block in-place.
+    fn xor_in_place(dst: &mut Block, src: &Block) {
+        for (a, b) in dst.iter_mut().zip(src.as_slice()) {
+            *a ^= *b;
+        }
+    }
+
+    /// Perform a bitslice operation, loading a single block.
+    fn bitslice_block(block: &Block) -> State {
+        let mut state = State::default();
+        bitslice(&mut state, block, block, block, block);
+        state
+    }
+
+    /// Perform an inverse bitslice operation, extracting a single block.
+    fn inv_bitslice_block(block: &mut Block, state: &State) {
+        let mut out = [Block::default(); 4];
+        inv_bitslice(state, &mut out);
+        block.copy_from_slice(&out[0]);
+    }
 
     /// AES cipher (encrypt) round function.
     #[inline]
     pub(crate) fn cipher_round(block: &mut Block, round_key: &Block) {
-        let mut rkeys = [0u64; 8];
-        let mut state = State::default();
-
-        // TODO(tarcieri): parallel operation
-        bitslice(&mut rkeys, &round_key, &round_key, &round_key, &round_key);
-        bitslice(&mut state, &block, &block, &block, &block);
+        let mut state = bitslice_block(block);
         sub_bytes(&mut state);
         sub_bytes_nots(&mut state);
         shift_rows_1(&mut state);
         mix_columns_0(&mut state);
-        add_round_key(&mut state, &rkeys);
+        inv_bitslice_block(block, &state);
+        xor_in_place(block, round_key);
+    }
 
-        let mut out = [Block::default(); 4];
-        inv_bitslice(&state, &mut out);
-        block.copy_from_slice(&out[0]);
+    /// AES cipher (encrypt) round function: parallel version.
+    #[inline]
+    pub(crate) fn cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+        for (chunk, keys) in blocks.chunks_exact_mut(4).zip(round_keys.chunks_exact(4)) {
+            let mut state = State::default();
+            bitslice(&mut state, &chunk[0], &chunk[1], &chunk[2], &chunk[3]);
+            sub_bytes(&mut state);
+            sub_bytes_nots(&mut state);
+            shift_rows_1(&mut state);
+            mix_columns_0(&mut state);
+            inv_bitslice(&state, chunk);
+
+            for i in 0..4 {
+                xor_in_place(&mut chunk[i], &keys[i]);
+            }
+        }
     }
 
     /// AES cipher (encrypt) round function.
     #[inline]
     pub(crate) fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
-        let mut rkeys = [0u64; 8];
         let mut state = State::default();
-
-        // TODO(tarcieri): parallel operation
-        bitslice(&mut rkeys, &round_key, &round_key, &round_key, &round_key);
         bitslice(&mut state, &block, &block, &block, &block);
-
         sub_bytes_nots(&mut state);
         inv_sub_bytes(&mut state);
         inv_shift_rows_1(&mut state);
         inv_mix_columns_0(&mut state);
-        add_round_key(&mut state, &rkeys);
+        inv_bitslice_block(block, &state);
+        xor_in_place(block, round_key);
+    }
 
-        let mut out = [Block::default(); 4];
-        inv_bitslice(&state, &mut out);
-        block.copy_from_slice(&out[0]);
+    /// AES cipher (encrypt) round function: parallel version.
+    #[inline]
+    pub(crate) fn equiv_inv_cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+        for (chunk, keys) in blocks.chunks_exact_mut(4).zip(round_keys.chunks_exact(4)) {
+            let mut state = State::default();
+            bitslice(&mut state, &chunk[0], &chunk[1], &chunk[2], &chunk[3]);
+            sub_bytes_nots(&mut state);
+            inv_sub_bytes(&mut state);
+            inv_shift_rows_1(&mut state);
+            inv_mix_columns_0(&mut state);
+            inv_bitslice(&state, chunk);
+
+            for i in 0..4 {
+                xor_in_place(&mut chunk[i], &keys[i]);
+            }
+        }
     }
 
     /// AES mix columns function.
     #[inline]
     pub(crate) fn mix_columns(block: &mut Block) {
-        let mut state = State::default();
-        bitslice(&mut state, &block, &block, &block, &block);
-
+        let mut state = bitslice_block(block);
         mix_columns_0(&mut state);
-
-        let mut out = [Block::default(); 4];
-        inv_bitslice(&state, &mut out);
-        block.copy_from_slice(&out[0]);
+        inv_bitslice_block(block, &state);
     }
 
     /// AES inverse mix columns function.
     #[inline]
     pub(crate) fn inv_mix_columns(block: &mut Block) {
-        let mut state = State::default();
-        bitslice(&mut state, &block, &block, &block, &block);
-
+        let mut state = bitslice_block(block);
         inv_mix_columns_0(&mut state);
-
-        let mut out = [Block::default(); 4];
-        inv_bitslice(&state, &mut out);
-        block.copy_from_slice(&out[0]);
+        inv_bitslice_block(block, &state);
     }
 }

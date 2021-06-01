@@ -4,8 +4,11 @@
 //! implementations in this crate, but instead provides raw AES-NI accelerated
 //! access to the AES round function gated under the `hazmat` crate feature.
 
-use super::arch::*;
-use crate::Block;
+use super::{
+    arch::*,
+    utils::{load8, store8},
+};
+use crate::{Block, ParBlocks};
 
 /// AES cipher (encrypt) round function.
 #[allow(clippy::cast_ptr_alignment)]
@@ -18,6 +21,20 @@ pub(crate) unsafe fn cipher_round(block: &mut Block, round_key: &Block) {
     _mm_storeu_si128(block.as_mut_ptr() as *mut __m128i, out);
 }
 
+/// AES cipher (encrypt) round function: parallel version.
+#[allow(clippy::cast_ptr_alignment)]
+#[target_feature(enable = "aes")]
+pub(crate) unsafe fn cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+    let xmm_keys = load8(round_keys);
+    let mut xmm_blocks = load8(blocks);
+
+    for i in 0..8 {
+        xmm_blocks[i] = _mm_aesenc_si128(xmm_blocks[i], xmm_keys[i]);
+    }
+
+    store8(blocks, xmm_blocks);
+}
+
 /// AES cipher (encrypt) round function.
 #[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
@@ -27,6 +44,20 @@ pub(crate) unsafe fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block
     let k = _mm_loadu_si128(round_key.as_ptr() as *const __m128i);
     let out = _mm_aesdec_si128(b, k);
     _mm_storeu_si128(block.as_mut_ptr() as *mut __m128i, out);
+}
+
+/// AES cipher (encrypt) round function: parallel version.
+#[allow(clippy::cast_ptr_alignment)]
+#[target_feature(enable = "aes")]
+pub(crate) unsafe fn equiv_inv_cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+    let xmm_keys = load8(round_keys);
+    let mut xmm_blocks = load8(blocks);
+
+    for i in 0..8 {
+        xmm_blocks[i] = _mm_aesdec_si128(xmm_blocks[i], xmm_keys[i]);
+    }
+
+    store8(blocks, xmm_blocks);
 }
 
 /// AES mix columns function.

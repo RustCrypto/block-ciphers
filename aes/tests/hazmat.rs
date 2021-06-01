@@ -3,7 +3,7 @@
 // TODO(tarcieri): support for using the hazmat functions with the `soft` backend
 #![cfg(feature = "hazmat")]
 
-use aes::Block;
+use aes::{Block, ParBlocks};
 use hex_literal::hex;
 
 /// Round function tests vectors.
@@ -84,11 +84,59 @@ fn cipher_round_fips197_vectors() {
 }
 
 #[test]
+fn cipher_round_par_fips197_vectors() {
+    let mut blocks = ParBlocks::default();
+    let mut round_keys = ParBlocks::default();
+
+    for i in 0..4 {
+        let vector = &CIPHER_ROUND_TEST_VECTORS[i];
+
+        blocks[i] = Block::from(vector.start);
+        blocks[i + 4] = Block::from(vector.start);
+
+        round_keys[i] = Block::from(vector.k_sch);
+        round_keys[i + 4] = Block::from(vector.k_sch);
+    }
+
+    aes::hazmat::cipher_round_par(&mut blocks, &round_keys);
+
+    for i in 0..4 {
+        let vector = &CIPHER_ROUND_TEST_VECTORS[i];
+        assert_eq!(blocks[i].as_slice(), &vector.output);
+        assert_eq!(blocks[i + 4].as_slice(), &vector.output);
+    }
+}
+
+#[test]
 fn equiv_inv_cipher_round_fips197_vectors() {
     for vector in EQUIV_INV_CIPHER_ROUND_TEST_VECTORS {
         let mut block = Block::from(vector.start);
         aes::hazmat::equiv_inv_cipher_round(&mut block, &vector.k_sch.into());
         assert_eq!(block.as_slice(), &vector.output);
+    }
+}
+
+#[test]
+fn equiv_inv_cipher_round_par_fips197_vectors() {
+    let mut blocks = ParBlocks::default();
+    let mut round_keys = ParBlocks::default();
+
+    for i in 0..4 {
+        let vector = &EQUIV_INV_CIPHER_ROUND_TEST_VECTORS[i];
+
+        blocks[i] = Block::from(vector.start);
+        blocks[i + 4] = Block::from(vector.start);
+
+        round_keys[i] = Block::from(vector.k_sch);
+        round_keys[i + 4] = Block::from(vector.k_sch);
+    }
+
+    aes::hazmat::equiv_inv_cipher_round_par(&mut blocks, &round_keys);
+
+    for i in 0..4 {
+        let vector = &EQUIV_INV_CIPHER_ROUND_TEST_VECTORS[i];
+        assert_eq!(blocks[i].as_slice(), &vector.output);
+        assert_eq!(blocks[i + 4].as_slice(), &vector.output);
     }
 }
 

@@ -199,7 +199,7 @@ jobs:
           profile: minimal
           override: true
       - run: cargo install cross
-      - run: cross test --release --target ${{ matrix.target }}
+      - run: cross test --release --target ${{ matrix.target }} --features armv8
       - run: cross test --release --target ${{ matrix.target }} --features armv8,compact
       - run: cross test --release --target ${{ matrix.target }} --features armv8,ctr
       - run: cross test --release --target ${{ matrix.target }} --features armv8,force-soft
