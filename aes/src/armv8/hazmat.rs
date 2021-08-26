@@ -4,7 +4,6 @@
 //! implementations in this crate, but instead provides raw AES-NI accelerated
 //! access to the AES round function gated under the `hazmat` crate feature.
 
-use super::vst1q_u8;
 use crate::{Block, ParBlocks};
 use core::arch::aarch64::*;
 

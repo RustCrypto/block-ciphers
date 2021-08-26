@@ -1,6 +1,5 @@
 //! AES encryption support
 
-use super::vst1q_u8;
 use crate::{Block, ParBlocks};
 use core::arch::aarch64::*;
 
