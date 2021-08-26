@@ -5,13 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## 0.7.5 (2021-08-26)
 ### Changed
-- Use the `aes` target feature instead of `crypto` on ARMv8. ([#279])
 - Bump `ctr` dependency to v0.8 ([#275])
+- Use the `aes` target feature instead of `crypto` on ARMv8 ([#279])
+- Use `core::arch::aarch64::vst1q_u8` intrinsic on `armv8` ([#280])
+- Bump `cpufeatures` dependency to v0.2 ([#281])
 
 [#275]: https://github.com/RustCrypto/block-ciphers/pull/275
 [#279]: https://github.com/RustCrypto/block-ciphers/pull/279
+[#280]: https://github.com/RustCrypto/block-ciphers/pull/280
+[#281]: https://github.com/RustCrypto/block-ciphers/pull/281
 
 ## 0.7.4 (2021-06-01)
 ### Added
