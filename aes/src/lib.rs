@@ -26,7 +26,7 @@
 //! `armv8` crate feature.
 //!
 //! On Linux and macOS, when the `armv8` feature is enabled support for AES
-//! intrinsics is autodetected at runtime. On other platforms the `crypto`
+//! intrinsics is autodetected at runtime. On other platforms the `aes`
 //! target feature must be enabled via RUSTFLAGS.
 //!
 //! ## `x86`/`x86_64` intrinsics (AES-NI)
