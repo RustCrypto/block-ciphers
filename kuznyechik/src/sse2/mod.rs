@@ -2,15 +2,29 @@
 
 pub use cipher;
 
+use crate::consts::{P, P_INV};
 use cipher::{
-    consts::{U1, U16, U32},
-    generic_array::GenericArray,
+    consts::{U16, U32},
+    generic_array::{typenum::Unsigned, GenericArray},
     BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
-use consts::{Table, DEC_TABLE, ENC_TABLE};
 use core::arch::x86_64::*;
 
+type ParBlocks = cipher::consts::U4;
+
+#[rustfmt::skip]
+macro_rules! unroll_par {
+    ($var:ident, $body:block) => {
+        { let $var: usize = 0; $body; }
+        { let $var: usize = 1; $body; }
+        { let $var: usize = 2; $body; }
+        { let $var: usize = 3; $body; }
+    };
+}
+
 mod consts;
+
+use consts::{Table, DEC_TABLE, ENC_TABLE};
 
 type Block = GenericArray<u8, U16>;
 
@@ -142,7 +156,7 @@ impl NewBlockCipher for Kuznyechik {
             }
 
             for i in 1..9 {
-                let k = sub_bytes(enc_keys[i], &consts::P);
+                let k = sub_bytes(enc_keys[i], &P);
                 dec_keys[8 - i] = transform(k, &DEC_TABLE);
             }
 
@@ -153,24 +167,57 @@ impl NewBlockCipher for Kuznyechik {
 
 impl BlockCipher for Kuznyechik {
     type BlockSize = U16;
-    type ParBlocks = U1;
+    type ParBlocks = ParBlocks;
 }
 
 impl BlockEncrypt for Kuznyechik {
     #[inline]
     fn encrypt_block(&self, block: &mut Block) {
+        let k = self.enc_keys;
         unsafe {
             let block_ptr = block.as_ptr() as *mut __m128i;
             let mut block = _mm_loadu_si128(block_ptr);
 
             unroll9! {
                 i, {
-                    block = _mm_xor_si128(block, self.enc_keys[i]);
+                    block = _mm_xor_si128(block, k[i]);
                     block = transform(block, &ENC_TABLE);
                 }
-            }
-            block = _mm_xor_si128(block, self.enc_keys[9]);
+            };
+            block = _mm_xor_si128(block, k[9]);
             _mm_storeu_si128(block_ptr, block)
+        }
+    }
+
+    #[inline]
+    fn encrypt_par_blocks(&self, blocks: &mut GenericArray<Block, ParBlocks>) {
+        let k = self.enc_keys;
+        unsafe {
+            let bptr = blocks.as_ptr() as *mut __m128i;
+            let mut blocks = [_mm_setzero_si128(); ParBlocks::USIZE];
+            unroll_par! {
+                i, {
+                    blocks[i] = _mm_loadu_si128(bptr.add(i));
+                }
+            };
+
+            unroll9! {
+                i, {
+                    unroll_par!{
+                        j, {
+                            let t = _mm_xor_si128(blocks[j], k[i]);
+                            blocks[j] = transform(t, &ENC_TABLE);
+                        }
+                    }
+                }
+            }
+
+            unroll_par! {
+                i, {
+                    let t = _mm_xor_si128(blocks[i], k[9]);
+                    _mm_storeu_si128(bptr.add(i), t);
+                }
+            }
         }
     }
 }
@@ -178,25 +225,69 @@ impl BlockEncrypt for Kuznyechik {
 impl BlockDecrypt for Kuznyechik {
     #[inline]
     fn decrypt_block(&self, block: &mut Block) {
+        let ek = self.enc_keys;
+        let dk = self.dec_keys;
         unsafe {
             let block_ptr = block.as_ptr() as *mut __m128i;
             let mut block = _mm_loadu_si128(block_ptr);
 
-            block = _mm_xor_si128(block, self.enc_keys[9]);
+            block = _mm_xor_si128(block, ek[9]);
 
-            block = sub_bytes(block, &consts::P);
+            block = sub_bytes(block, &P);
             block = transform(block, &DEC_TABLE);
 
             unroll8! {
                 i, {
                     block = transform(block, &DEC_TABLE);
-                    block = _mm_xor_si128(block, self.dec_keys[i]);
+                    block = _mm_xor_si128(block, dk[i]);
                 }
             }
 
-            block = sub_bytes(block, &consts::P_INV);
-            block = _mm_xor_si128(block, self.enc_keys[0]);
+            block = sub_bytes(block, &P_INV);
+            block = _mm_xor_si128(block, ek[0]);
             _mm_storeu_si128(block_ptr, block)
+        }
+    }
+
+    #[inline]
+    fn decrypt_par_blocks(&self, blocks: &mut GenericArray<Block, ParBlocks>) {
+        let ek = self.enc_keys;
+        let dk = self.dec_keys;
+        unsafe {
+            let bptr = blocks.as_ptr() as *mut __m128i;
+            let mut blocks = [_mm_setzero_si128(); ParBlocks::USIZE];
+            unroll_par! {
+                i, {
+                    blocks[i] = _mm_loadu_si128(bptr.add(i));
+                }
+            };
+
+            unroll_par! {
+                i, {
+                    let t = _mm_xor_si128(blocks[i], ek[9]);
+                    let t = sub_bytes(t, &P);
+                    blocks[i] = transform(t, &DEC_TABLE);
+                }
+            }
+
+            unroll8! {
+                i, {
+                    unroll_par!{
+                        j, {
+                            let t = transform(blocks[j], &DEC_TABLE);
+                            blocks[j] = _mm_xor_si128(t, dk[i]);
+                        }
+                    }
+                }
+            }
+
+            unroll_par! {
+                i, {
+                    let t = sub_bytes(blocks[i], &P_INV);
+                    let t2 = _mm_xor_si128(t, ek[0]);
+                    _mm_storeu_si128(bptr.add(i), t2)
+                }
+            }
         }
     }
 }

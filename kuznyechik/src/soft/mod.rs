@@ -1,5 +1,6 @@
 pub use cipher;
 
+use crate::consts::{P, P_INV};
 use cipher::{
     consts::{U1, U16, U32},
     generic_array::GenericArray,
@@ -56,7 +57,7 @@ fn l_step(msg: &mut [u8; 16], i: usize) {
 fn lsx(msg: &mut [u8; 16], key: &[u8; 16]) {
     x(msg, key);
     // s
-    unroll16! {i, { msg[i] = consts::P[msg[i] as usize]; }};
+    unroll16! {i, { msg[i] = P[msg[i] as usize]; }};
     // l
     unroll16! {i, { l_step(msg, i) }};
 }
@@ -67,7 +68,7 @@ fn lsx_inv(msg: &mut [u8; 16], key: &[u8; 16]) {
     // l_inv
     unroll16! {i, { l_step(msg, 15 - i) }};
     // s_inv
-    unroll16! {i, { msg[15 - i] = consts::P_INV[msg[15 - i] as usize]; }};
+    unroll16! {i, { msg[15 - i] = P_INV[msg[15 - i] as usize]; }};
 }
 
 fn get_c(n: usize) -> [u8; 16] {
