@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
-- Use `aes` target features instead of crypto on ARMv8. ([#279])
+- Use the `aes` target feature instead of `crypto` on ARMv8. ([#279])
 - Bump `ctr` dependency to v0.8 ([#275])
 
 [#275]: https://github.com/RustCrypto/block-ciphers/pull/275
