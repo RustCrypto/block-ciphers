@@ -2,12 +2,12 @@
 
 pub use cipher;
 
+use crate::consts::{P, P_INV};
 use cipher::{
     consts::{U16, U32},
     generic_array::{typenum::Unsigned, GenericArray},
     BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
-use consts::{Table, DEC_TABLE, ENC_TABLE};
 use core::arch::x86_64::*;
 
 type ParBlocks = cipher::consts::U4;
@@ -23,6 +23,8 @@ macro_rules! unroll_par {
 }
 
 mod consts;
+
+use consts::{Table, DEC_TABLE, ENC_TABLE};
 
 type Block = GenericArray<u8, U16>;
 
@@ -154,7 +156,7 @@ impl NewBlockCipher for Kuznyechik {
             }
 
             for i in 1..9 {
-                let k = sub_bytes(enc_keys[i], &consts::P);
+                let k = sub_bytes(enc_keys[i], &P);
                 dec_keys[8 - i] = transform(k, &DEC_TABLE);
             }
 
@@ -231,7 +233,7 @@ impl BlockDecrypt for Kuznyechik {
 
             block = _mm_xor_si128(block, ek[9]);
 
-            block = sub_bytes(block, &consts::P);
+            block = sub_bytes(block, &P);
             block = transform(block, &DEC_TABLE);
 
             unroll8! {
@@ -241,7 +243,7 @@ impl BlockDecrypt for Kuznyechik {
                 }
             }
 
-            block = sub_bytes(block, &consts::P_INV);
+            block = sub_bytes(block, &P_INV);
             block = _mm_xor_si128(block, ek[0]);
             _mm_storeu_si128(block_ptr, block)
         }
@@ -263,7 +265,7 @@ impl BlockDecrypt for Kuznyechik {
             unroll_par! {
                 i, {
                     let t = _mm_xor_si128(blocks[i], ek[9]);
-                    let t = sub_bytes(t, &consts::P);
+                    let t = sub_bytes(t, &P);
                     blocks[i] = transform(t, &DEC_TABLE);
                 }
             }
@@ -281,7 +283,7 @@ impl BlockDecrypt for Kuznyechik {
 
             unroll_par! {
                 i, {
-                    let t = sub_bytes(blocks[i], &consts::P_INV);
+                    let t = sub_bytes(blocks[i], &P_INV);
                     let t2 = _mm_xor_si128(t, ek[0]);
                     _mm_storeu_si128(bptr.add(i), t2)
                 }

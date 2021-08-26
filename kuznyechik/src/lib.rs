@@ -14,6 +14,7 @@ use core::fmt;
 
 #[macro_use]
 mod macros;
+mod consts;
 
 #[cfg(all(
     any(target_arch = "x86_64", target_arch = "x86"),
