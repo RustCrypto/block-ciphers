@@ -4,7 +4,7 @@ pub use cipher;
 
 use cipher::{
     consts::{U16, U32},
-    generic_array::{GenericArray, typenum::Unsigned},
+    generic_array::{typenum::Unsigned, GenericArray},
     BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
 };
 use consts::{Table, DEC_TABLE, ENC_TABLE};
@@ -12,6 +12,7 @@ use core::arch::x86_64::*;
 
 type ParBlocks = cipher::consts::U4;
 
+#[rustfmt::skip]
 macro_rules! unroll_par {
     ($var:ident, $body:block) => {
         { let $var: usize = 0; $body; }
@@ -175,7 +176,7 @@ impl BlockEncrypt for Kuznyechik {
             let block_ptr = block.as_ptr() as *mut __m128i;
             let mut block = _mm_loadu_si128(block_ptr);
 
-            unroll9!{
+            unroll9! {
                 i, {
                     block = _mm_xor_si128(block, k[i]);
                     block = transform(block, &ENC_TABLE);
@@ -187,18 +188,18 @@ impl BlockEncrypt for Kuznyechik {
     }
 
     #[inline]
-    fn encrypt_par_blocks(&self, blocks: &mut  GenericArray<Block, ParBlocks>) {
+    fn encrypt_par_blocks(&self, blocks: &mut GenericArray<Block, ParBlocks>) {
         let k = self.enc_keys;
         unsafe {
             let bptr = blocks.as_ptr() as *mut __m128i;
             let mut blocks = [_mm_setzero_si128(); ParBlocks::USIZE];
-            unroll_par!{
+            unroll_par! {
                 i, {
                     blocks[i] = _mm_loadu_si128(bptr.add(i));
                 }
             };
 
-            unroll9!{
+            unroll9! {
                 i, {
                     unroll_par!{
                         j, {
@@ -209,7 +210,7 @@ impl BlockEncrypt for Kuznyechik {
                 }
             }
 
-            unroll_par!{
+            unroll_par! {
                 i, {
                     let t = _mm_xor_si128(blocks[i], k[9]);
                     _mm_storeu_si128(bptr.add(i), t);
@@ -233,7 +234,7 @@ impl BlockDecrypt for Kuznyechik {
             block = sub_bytes(block, &consts::P);
             block = transform(block, &DEC_TABLE);
 
-            unroll8!{
+            unroll8! {
                 i, {
                     block = transform(block, &DEC_TABLE);
                     block = _mm_xor_si128(block, dk[i]);
@@ -253,13 +254,13 @@ impl BlockDecrypt for Kuznyechik {
         unsafe {
             let bptr = blocks.as_ptr() as *mut __m128i;
             let mut blocks = [_mm_setzero_si128(); ParBlocks::USIZE];
-            unroll_par!{
+            unroll_par! {
                 i, {
                     blocks[i] = _mm_loadu_si128(bptr.add(i));
                 }
             };
 
-            unroll_par!{
+            unroll_par! {
                 i, {
                     let t = _mm_xor_si128(blocks[i], ek[9]);
                     let t = sub_bytes(t, &consts::P);
@@ -267,7 +268,7 @@ impl BlockDecrypt for Kuznyechik {
                 }
             }
 
-            unroll8!{
+            unroll8! {
                 i, {
                     unroll_par!{
                         j, {
@@ -278,7 +279,7 @@ impl BlockDecrypt for Kuznyechik {
                 }
             }
 
-            unroll_par!{
+            unroll_par! {
                 i, {
                     let t = sub_bytes(blocks[i], &consts::P_INV);
                     let t2 = _mm_xor_si128(t, ek[0]);
