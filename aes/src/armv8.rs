@@ -172,17 +172,9 @@ define_aes_impl!(Aes128, Aes128Enc, Aes128Dec, U16, 11, "AES-128");
 define_aes_impl!(Aes192, Aes192Enc, Aes192Dec, U24, 13, "AES-192");
 define_aes_impl!(Aes256, Aes256Enc, Aes256Dec, U32, 15, "AES-256");
 
-// TODO(tarcieri): use `stdarch` intrinsic for this when it becomes available
-#[inline(always)]
-unsafe fn vst1q_u8(dst: *mut u8, src: uint8x16_t) {
-    dst.copy_from_nonoverlapping(&src as *const _ as *const u8, 16);
-}
-
 #[cfg(test)]
 mod tests {
-    use super::{
-        decrypt, decrypt8, encrypt, encrypt8, expand_key, inv_expanded_keys, vst1q_u8, ParBlocks,
-    };
+    use super::{decrypt, decrypt8, encrypt, encrypt8, expand_key, inv_expanded_keys, ParBlocks};
     use core::{arch::aarch64::*, convert::TryInto};
     use hex_literal::hex;
 
