@@ -79,9 +79,9 @@ dependencies = [
 
 [[package]]
 name = "cpufeatures"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9cc47dfc37fe9455a291c6aef98ac51376b771fa9779aa7a2f9a86f0700a7a20"
+checksum = "95059428f66df56b63431fdb4e1947ed2190586af5c5a8a8b71122bdf5a7f469"
 dependencies = [
  "libc",
 ]
