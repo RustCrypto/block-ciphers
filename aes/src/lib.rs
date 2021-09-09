@@ -104,7 +104,7 @@ cfg_if! {
     if #[cfg(all(target_arch = "aarch64", feature = "armv8", not(feature = "force-soft")))] {
         mod armv8;
         mod autodetect;
-        pub use autodetect::{Aes128, Aes192, Aes256};
+        pub use autodetect::{Aes128, Aes192, Aes256, is_hwaccel_available};
 
         #[cfg(feature = "ctr")]
         pub use autodetect::ctr::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
@@ -114,10 +114,10 @@ cfg_if! {
     ))] {
         mod autodetect;
         mod ni;
-        pub use autodetect::{Aes128, Aes192, Aes256};
+        pub use autodetect::{Aes128, Aes192, Aes256, is_hwaccel_available};
 
         #[cfg(feature = "ctr")]
-        pub use autodetect::ctr::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
+        pub use autodetect::ctr::{Aes128Ctr, Aes192Ctr, Aes256Ctr, is_ctr_hwaccel_available};
     } else {
         pub use soft::{Aes128, Aes192, Aes256};
 

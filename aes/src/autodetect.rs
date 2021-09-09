@@ -17,6 +17,11 @@ use crate::ni as intrinsics;
 
 cpufeatures::new!(aes_intrinsics, "aes");
 
+/// Returns whether hardware acceleration will be used for AES.
+pub fn is_hwaccel_available() -> bool {
+    aes_intrinsics::get()
+}
+
 macro_rules! define_aes_impl {
     (
         $name:tt,
@@ -159,6 +164,11 @@ pub(crate) mod ctr {
     use core::mem::ManuallyDrop;
 
     cpufeatures::new!(aes_ssse3_cpuid, "aes", "ssse3");
+
+    /// Returns whether hardware acceleration will be used for AES in CTR mode.
+    pub fn is_ctr_hwaccel_available() -> bool {
+        aes_ssse3_cpuid::get()
+    }
 
     macro_rules! define_aes_ctr_impl {
         (
