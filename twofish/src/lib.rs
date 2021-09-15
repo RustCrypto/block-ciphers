@@ -25,6 +25,7 @@ use crate::consts::{MDS_POLY, QBOX, QORD, RS, RS_POLY};
 type Block = GenericArray<u8, U16>;
 
 /// Twofish block cipher
+#[derive(Clone)]
 pub struct Twofish {
     s: [u8; 16],  // S-box key
     k: [u32; 40], // Subkeys
