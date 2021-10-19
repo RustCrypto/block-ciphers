@@ -62,7 +62,9 @@ macro_rules! expand_round_last {
 
 #[inline(always)]
 pub(super) fn expand(key: &[u8; 32]) -> (RoundKeys, RoundKeys) {
-    // Safety: `loadu` and `storeu` support unaligned access
+    // SAFETY:
+    // - `RoundKeys` is a `[__m128i; 15]` which can be initialized with all zeroes.
+    // - `loadu` and `storeu` support unaligned access
     #[allow(clippy::cast_ptr_alignment)]
     unsafe {
         let mut enc_keys: RoundKeys = mem::zeroed();
