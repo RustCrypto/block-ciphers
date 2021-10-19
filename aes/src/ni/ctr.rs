@@ -83,6 +83,8 @@ macro_rules! impl_ctr {
             #[inline(always)]
             fn gen_block(&mut self) {
                 let block = self.cipher.encrypt(swap_bytes(self.ctr));
+                // SAFETY: All three expansions of this macro have a `$cipher` whose
+                // `encrypt(...)` method returns an `__m128i`, and `BLOCK_SIZE == 16`.
                 self.block = unsafe { mem::transmute(block) }
             }
 
@@ -96,6 +98,7 @@ macro_rules! impl_ctr {
             #[inline(always)]
             fn next_block8(&mut self) -> [__m128i; 8] {
                 let mut ctr = self.ctr;
+                // SAFETY: `[__m128i; 8]` can be initialized with all zeroes.
                 let mut block8: [__m128i; 8] = unsafe { mem::zeroed() };
                 for i in 0..8 {
                     block8[i] = swap_bytes(ctr);

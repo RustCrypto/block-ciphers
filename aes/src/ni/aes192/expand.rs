@@ -37,6 +37,8 @@ macro_rules! shuffle {
 #[inline(always)]
 pub(super) fn expand(key: &[u8; 24]) -> (RoundKeys, RoundKeys) {
     unsafe {
+        // SAFETY: `RoundKeys` is a `[__m128i; 13]` which can be initialized
+        // with all zeroes.
         let mut enc_keys: RoundKeys = mem::zeroed();
         let mut dec_keys: RoundKeys = mem::zeroed();
 
