@@ -19,7 +19,7 @@ generic-array = "0.14"
 kuznyechik = { version = "0.7", path = "../kuznyechik" }
 magma = { version = "0.7", path = "../magma" }
 cipher = { version = "0.3", features = ["dev"] }
-hex-literal = "0.2"
+hex-literal = "0.3"
 
 [features]
 default = ["std"]
