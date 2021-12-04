@@ -4,12 +4,14 @@ Collection of [block ciphers][1] and [block modes][2] written in pure Rust.
 
 ## Warnings
 
-Currently only the `aes` crate provides constant-time implementation.
-If you do not really know what you are doing, it's generally recommended not to
-use other cipher implementations in this repository.
+Currently only the `aes` crate provides constant-time implementation and has received
+a third-party security audit.
 
-Additionally, crates in this repository have not yet received any formal
-cryptographic and security reviews.
+Other crates in this repository are not implemented in a constant-time manner and have
+not yet received any formal cryptographic and security reviews.
+
+It's generally recommended not to use other cipher implementations in this repository
+besides the `aes` crate.
 
 **USE AT YOUR OWN RISK.**
 
