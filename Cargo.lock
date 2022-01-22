@@ -162,6 +162,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "speck"
+version = "0.0.1"
+dependencies = [
+ "cipher",
+ "hex-literal",
+]
+
+[[package]]
 name = "threefish"
 version = "0.5.1"
 dependencies = [

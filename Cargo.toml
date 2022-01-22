@@ -10,6 +10,7 @@ members = [
     "rc2",
     "serpent",
     "sm4",
+    "speck",
     "twofish",
     "threefish",
 ]
