@@ -9,7 +9,7 @@ repository = "https://github.com/RustCrypto/block-ciphers/tree/master/sm4"
 readme = "README.md"
 edition = "2018"
 keywords = ["crypto", "sm4", "block-cipher"]
-categories = ["cryptography"]
+categories = ["cryptography", "no-std"]
 
 [dependencies]
 cipher = "0.3"
