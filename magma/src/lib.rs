@@ -1,6 +1,14 @@
 //! Pure Rust implementation of the [Magma] block cipher defined in GOST 28147-89
 //! and [GOST R 34.12-2015].
 //!
+//! # ⚠️ Security Warning: Hazmat!
+//!
+//! This crate implements only the low-level block cipher function, and is intended
+//! for use for implementing higher-level constructions *only*. It is NOT
+//! intended for direct use in applications.
+//!
+//! USE AT YOUR OWN RISK!
+//!
 //! # Examples
 //! ```
 //! use magma::Magma;

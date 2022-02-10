@@ -1,6 +1,14 @@
 //! Pure Rust implementation of the [CAST5] block cipher ([RFC 2144]).
 //!
-//! # Usage example
+//! # ⚠️ Security Warning: Hazmat!
+//!
+//! This crate implements only the low-level block cipher function, and is intended
+//! for use for implementing higher-level constructions *only*. It is NOT
+//! intended for direct use in applications.
+//!
+//! USE AT YOUR OWN RISK!
+//!
+//! # Examples
 //! ```
 //! use cast5::cipher::generic_array::GenericArray;
 //! use cast5::cipher::{Key, Block, BlockEncrypt, BlockDecrypt, KeyInit};

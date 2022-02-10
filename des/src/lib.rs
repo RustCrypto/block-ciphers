@@ -1,6 +1,14 @@
 //! Pure Rust implementation of the [Data Encryption Standard][DES] (DES),
 //! including [Triple DES] (TDES, 3DES) block ciphers.
 //!
+//! # ⚠️ Security Warning: Hazmat!
+//!
+//! This crate implements only the low-level block cipher function, and is intended
+//! for use for implementing higher-level constructions *only*. It is NOT
+//! intended for direct use in applications.
+//!
+//! USE AT YOUR OWN RISK!
+//!
 //! [DES]: https://en.wikipedia.org/wiki/Data_Encryption_Standard
 //! [Triple DES]: https://en.wikipedia.org/wiki/Triple_DES
 

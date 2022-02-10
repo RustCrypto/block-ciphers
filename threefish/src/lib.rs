@@ -1,5 +1,13 @@
 //! Pure Rust implementation of the [Threefish] block ciphers.
 //!
+//! # ⚠️ Security Warning: Hazmat!
+//!
+//! This crate implements only the low-level block cipher function, and is intended
+//! for use for implementing higher-level constructions *only*. It is NOT
+//! intended for direct use in applications.
+//!
+//! USE AT YOUR OWN RISK!
+//!
 //! [Threefish]: https://en.wikipedia.org/wiki/Threefish
 
 #![no_std]

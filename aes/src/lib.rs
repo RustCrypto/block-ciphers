@@ -1,6 +1,14 @@
 //! Pure Rust implementation of the [Advanced Encryption Standard][AES]
 //! (AES, a.k.a. Rijndael).
 //!
+//! # ⚠️ Security Warning: Hazmat!
+//!
+//! This crate implements only the low-level block cipher function, and is intended
+//! for use for implementing higher-level constructions *only*. It is NOT
+//! intended for direct use in applications.
+//!
+//! USE AT YOUR OWN RISK!
+//!
 //! # Supported backends
 //! This crate provides multiple backends including a portable pure Rust
 //! backend as well as ones based on CPU intrinsics.
@@ -42,7 +50,7 @@
 //! Note: runtime detection is not possible on SGX targets. Please use the
 //! afforementioned `RUSTFLAGS` to leverage AES-NI on these targets.
 //!
-//! # Usage example
+//! # Examples
 //! ```
 //! use aes::Aes128;
 //! use aes::cipher::{
@@ -84,8 +92,8 @@
 //! }
 //! ```
 //!
-//! For implementations of block cipher modes of operation see
-//! [`block-modes`] crate.
+//! For implementation of block cipher modes of operation see
+//! [`block-modes`] repository.
 //!
 //! # Configuration Flags
 //!
@@ -102,7 +110,7 @@
 //! [AES]: https://en.wikipedia.org/wiki/Advanced_Encryption_Standard
 //! [fixslicing]: https://eprint.iacr.org/2020/1123.pdf
 //! [AES-NI]: https://en.wikipedia.org/wiki/AES_instruction_set
-//! [`block-modes`]: https://docs.rs/block-modes
+//! [`block-modes`]: https://github.com/RustCrypto/block-modes/
 
 #![no_std]
 #![doc(
