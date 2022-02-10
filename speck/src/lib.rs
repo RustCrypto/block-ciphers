@@ -8,16 +8,16 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
     html_root_url = "https://docs.rs/speck/0.0.1"
 )]
-#![deny(unsafe_code)]
+#![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
 
 pub use cipher;
 
 use cipher::{
-    consts::U12, consts::U16, consts::U18, consts::U24, consts::U32, consts::U4, consts::U6,
-    consts::U8, consts::U9, AlgorithmName, BlockCipher, Key, KeyInit, KeySizeUser,
+    consts::{U12, U16, U18, U24, U32, U4, U6, U8, U9},
+    AlgorithmName, BlockCipher, Key, KeyInit, KeySizeUser,
 };
-use core::{convert::TryInto, fmt};
+use core::fmt;
 
 macro_rules! define_speck_impl {
     (
