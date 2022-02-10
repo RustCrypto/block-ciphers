@@ -32,9 +32,12 @@ dependencies = [
 
 [[package]]
 name = "block-padding"
-version = "0.2.1"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d696c370c750c948ada61c69a0ee2cbbb9c50b1019ddb86d9317157a99c2cae"
+checksum = "5808df4b2412175c4db3afb115c83d8d0cd26ca4f30a042026cddef8580e526a"
+dependencies = [
+ "generic-array",
+]
 
 [[package]]
 name = "blowfish"

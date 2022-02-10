@@ -11,7 +11,7 @@ repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "block-cipher", "ciphers"]
 
 [dependencies]
-block-padding = "0.2"
+block-padding = "0.3"
 cipher = "0.3"
 
 [dev-dependencies]
