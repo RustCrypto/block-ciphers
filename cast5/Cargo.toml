@@ -12,12 +12,12 @@ keywords = ["crypto", "cast5", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.3"
+cipher = "0.4"
 opaque-debug = "0.3"
 byteorder = { version = "1", default-features = false }
 
 [dev-dependencies]
-cipher = { version = "0.3", features = ["dev"] }
+cipher = { version = "0.4", features = ["dev"] }
 hex-literal = "0.2"
 
 [features]

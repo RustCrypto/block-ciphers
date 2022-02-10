@@ -12,7 +12,7 @@ keywords = ["crypto", "block-cipher", "ciphers"]
 
 [dependencies]
 block-padding = "0.2"
-cipher = "0.3"
+cipher = "0.4"
 
 [dev-dependencies]
 aes = { version = "0.7", path = "../aes", features = ["force-soft"] }

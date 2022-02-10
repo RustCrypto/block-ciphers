@@ -11,7 +11,7 @@ repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "threefish", "gost", "block-cipher"]
 
 [dependencies]
-cipher = "0.3"
+cipher = "0.4"
 
 [dev-dependencies]
-cipher = { version = "0.3", features = ["dev"] }
+cipher = { version = "0.4", features = ["dev"] }

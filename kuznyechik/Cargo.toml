@@ -12,10 +12,10 @@ keywords = ["crypto", "kuznyechik", "gost", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.3"
+cipher = "0.4"
 
 [dev-dependencies]
-cipher = { version = "0.3", features = ["dev"] }
+cipher = { version = "0.4", features = ["dev"] }
 hex-literal = "0.2"
 
 [features]

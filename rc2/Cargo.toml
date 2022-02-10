@@ -12,8 +12,8 @@ keywords = ["crypto", "rc2", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.3"
+cipher = "0.4"
 opaque-debug = "0.3"
 
 [dev-dependencies]
-cipher = { version = "0.3", features = ["dev"] }
+cipher = { version = "0.4", features = ["dev"] }
