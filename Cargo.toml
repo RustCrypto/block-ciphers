@@ -2,8 +2,6 @@
 members = [
     "aes",
     "blowfish",
-    "block-modes",
-    "gost-modes",
     "cast5",
     "des",
     "idea",
@@ -15,3 +13,6 @@ members = [
     "twofish",
     "threefish",
 ]
+
+[profile.dev]
+opt-level = 2

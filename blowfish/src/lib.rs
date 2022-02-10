@@ -1,33 +1,37 @@
-//! Blowfish block cipher
+//! Pure Rust implementation of the [Blowfish] block cipher.
+//!
+//! [Blowfish]: https://en.wikipedia.org/wiki/Blowfish_(cipher)
 
 #![no_std]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
+    html_root_url = "https://docs.rs/blowfish/0.9.0"
 )]
-#![forbid(unsafe_code)]
+#![deny(unsafe_code)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 
 pub use cipher;
 
 use byteorder::{ByteOrder, BE, LE};
 use cipher::{
-    consts::{U1, U56, U8},
-    errors::InvalidLength,
-    generic_array::GenericArray,
-    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
+    consts::{U56, U8},
+    AlgorithmName, BlockCipher, InvalidLength, Key, KeyInit, KeySizeUser,
 };
+use core::fmt;
 use core::marker::PhantomData;
+
+#[cfg(feature = "zeroize")]
+use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 
 mod consts;
 
 /// Blowfish variant which uses Little Endian byte order read/writes.s.
 pub type BlowfishLE = Blowfish<LE>;
 
-type Block = GenericArray<u8, U8>;
-
 /// Blowfish block cipher instance.
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct Blowfish<T: ByteOrder = BE> {
     s: [[u32; 256]; 4],
     p: [u32; 18],
@@ -60,17 +64,17 @@ impl<T: ByteOrder> Blowfish<T> {
         for i in 0..18 {
             self.p[i] ^= next_u32_wrap(key, &mut key_pos);
         }
-        let mut lr = (0u32, 0u32);
+        let mut lr = [0u32; 2];
         for i in 0..9 {
-            lr = self.encrypt(lr.0, lr.1);
-            self.p[2 * i] = lr.0;
-            self.p[2 * i + 1] = lr.1;
+            lr = self.encrypt(lr);
+            self.p[2 * i] = lr[0];
+            self.p[2 * i + 1] = lr[1];
         }
         for i in 0..4 {
             for j in 0..128 {
-                lr = self.encrypt(lr.0, lr.1);
-                self.s[i][2 * j] = lr.0;
-                self.s[i][2 * j + 1] = lr.1;
+                lr = self.encrypt(lr);
+                self.s[i][2 * j] = lr[0];
+                self.s[i][2 * j + 1] = lr[1];
             }
         }
     }
@@ -84,7 +88,7 @@ impl<T: ByteOrder> Blowfish<T> {
         (a.wrapping_add(b) ^ c).wrapping_add(d)
     }
 
-    fn encrypt(&self, mut l: u32, mut r: u32) -> (u32, u32) {
+    fn encrypt(&self, [mut l, mut r]: [u32; 2]) -> [u32; 2] {
         for i in 0..8 {
             l ^= self.p[2 * i];
             r ^= self.round_function(l);
@@ -93,10 +97,10 @@ impl<T: ByteOrder> Blowfish<T> {
         }
         l ^= self.p[16];
         r ^= self.p[17];
-        (r, l)
+        [r, l]
     }
 
-    fn decrypt(&self, mut l: u32, mut r: u32) -> (u32, u32) {
+    fn decrypt(&self, [mut l, mut r]: [u32; 2]) -> [u32; 2] {
         for i in (1..9).rev() {
             l ^= self.p[2 * i + 1];
             r ^= self.round_function(l);
@@ -105,15 +109,19 @@ impl<T: ByteOrder> Blowfish<T> {
         }
         l ^= self.p[1];
         r ^= self.p[0];
-        (r, l)
+        [r, l]
     }
 }
 
-impl<T: ByteOrder> NewBlockCipher for Blowfish<T> {
-    type KeySize = U56;
+impl<T: ByteOrder> BlockCipher for Blowfish<T> {}
 
-    fn new(key: &GenericArray<u8, U56>) -> Self {
-        Self::new_from_slice(&key).unwrap()
+impl<T: ByteOrder> KeySizeUser for Blowfish<T> {
+    type KeySize = U56;
+}
+
+impl<T: ByteOrder> KeyInit for Blowfish<T> {
+    fn new(key: &Key<Self>) -> Self {
+        Self::new_from_slice(&key[..]).unwrap()
     }
 
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
@@ -126,32 +134,58 @@ impl<T: ByteOrder> NewBlockCipher for Blowfish<T> {
     }
 }
 
-impl<T: ByteOrder> BlockCipher for Blowfish<T> {
-    type BlockSize = U8;
-    type ParBlocks = U1;
-}
-
-impl<T: ByteOrder> BlockEncrypt for Blowfish<T> {
-    #[inline]
-    fn encrypt_block(&self, block: &mut Block) {
-        let l = T::read_u32(&block[..4]);
-        let r = T::read_u32(&block[4..]);
-        let (l, r) = self.encrypt(l, r);
-        T::write_u32(&mut block[..4], l);
-        T::write_u32(&mut block[4..], r);
+impl fmt::Debug for Blowfish<BE> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Blowfish<BE> { ... }")
     }
 }
 
-impl<T: ByteOrder> BlockDecrypt for Blowfish<T> {
-    #[inline]
-    fn decrypt_block(&self, block: &mut Block) {
-        let l = T::read_u32(&block[..4]);
-        let r = T::read_u32(&block[4..]);
-        let (l, r) = self.decrypt(l, r);
-        T::write_u32(&mut block[..4], l);
-        T::write_u32(&mut block[4..], r);
+impl AlgorithmName for Blowfish<BE> {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Blowfish<BE>")
     }
 }
+
+impl fmt::Debug for Blowfish<LE> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Blowfish<LE> { ... }")
+    }
+}
+
+impl AlgorithmName for Blowfish<LE> {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Blowfish<LE>")
+    }
+}
+
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl<T: ByteOrder> Drop for Blowfish<T> {
+    fn drop(&mut self) {
+        self.s.zeroize();
+        self.p.zeroize();
+    }
+}
+
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl<T: ByteOrder> ZeroizeOnDrop for Blowfish<T> {}
+
+cipher::impl_simple_block_encdec!(
+    <T: ByteOrder> Blowfish, U8, cipher, block,
+    encrypt: {
+        let mut b = [0u32; 2];
+        T::read_u32_into(block.get_in(), &mut b);
+        b = cipher.encrypt(b);
+        T::write_u32_into(&b, block.get_out());
+    }
+    decrypt: {
+        let mut b = [0u32; 2];
+        T::read_u32_into(block.get_in(), &mut b);
+        b = cipher.decrypt(b);
+        T::write_u32_into(&b, block.get_out());
+    }
+);
 
 /// Bcrypt extension of blowfish
 #[cfg(feature = "bcrypt")]
@@ -162,31 +196,31 @@ impl Blowfish<BE> {
         for i in 0..18 {
             self.p[i] ^= next_u32_wrap(key, &mut key_pos);
         }
-        let mut lr = (0u32, 0u32);
+        let mut lr = [0u32; 2];
         let mut salt_pos = 0;
         for i in 0..9 {
-            let lk = next_u32_wrap(salt, &mut salt_pos);
-            let rk = next_u32_wrap(salt, &mut salt_pos);
-            lr = self.encrypt(lr.0 ^ lk, lr.1 ^ rk);
+            lr[0] ^= next_u32_wrap(salt, &mut salt_pos);
+            lr[1] ^= next_u32_wrap(salt, &mut salt_pos);
+            lr = self.encrypt(lr);
 
-            self.p[2 * i] = lr.0;
-            self.p[2 * i + 1] = lr.1;
+            self.p[2 * i] = lr[0];
+            self.p[2 * i + 1] = lr[1];
         }
         for i in 0..4 {
             for j in 0..64 {
-                let lk = next_u32_wrap(salt, &mut salt_pos);
-                let rk = next_u32_wrap(salt, &mut salt_pos);
-                lr = self.encrypt(lr.0 ^ lk, lr.1 ^ rk);
+                lr[0] ^= next_u32_wrap(salt, &mut salt_pos);
+                lr[1] ^= next_u32_wrap(salt, &mut salt_pos);
+                lr = self.encrypt(lr);
 
-                self.s[i][4 * j] = lr.0;
-                self.s[i][4 * j + 1] = lr.1;
+                self.s[i][4 * j] = lr[0];
+                self.s[i][4 * j + 1] = lr[1];
 
-                let lk = next_u32_wrap(salt, &mut salt_pos);
-                let rk = next_u32_wrap(salt, &mut salt_pos);
-                lr = self.encrypt(lr.0 ^ lk, lr.1 ^ rk);
+                lr[0] ^= next_u32_wrap(salt, &mut salt_pos);
+                lr[1] ^= next_u32_wrap(salt, &mut salt_pos);
+                lr = self.encrypt(lr);
 
-                self.s[i][4 * j + 2] = lr.0;
-                self.s[i][4 * j + 3] = lr.1;
+                self.s[i][4 * j + 2] = lr[0];
+                self.s[i][4 * j + 3] = lr[1];
             }
         }
     }
@@ -197,8 +231,8 @@ impl Blowfish<BE> {
     }
 
     /// Encrypt
-    pub fn bc_encrypt(&self, l: u32, r: u32) -> (u32, u32) {
-        self.encrypt(l, r)
+    pub fn bc_encrypt(&self, lr: [u32; 2]) -> [u32; 2] {
+        self.encrypt(lr)
     }
 
     /// Expand key
@@ -206,5 +240,3 @@ impl Blowfish<BE> {
         self.expand_key(key)
     }
 }
-
-opaque_debug::implement!(Blowfish);

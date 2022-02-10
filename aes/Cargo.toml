@@ -1,14 +1,12 @@
 [package]
 name = "aes"
-version = "0.7.5"
-description = """
-Pure Rust implementation of the Advanced Encryption Standard (a.k.a. Rijndael)
-including support for AES in counter mode (a.k.a. AES-CTR)
-"""
+version = "0.8.0" # Also update html_root_url in lib.rs when bumping this
+description = "Pure Rust implementation of the Advanced Encryption Standard (a.k.a. Rijndael)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
+edition = "2021"
+rust-version = "1.56"
 readme = "README.md"
-edition = "2018"
 documentation = "https://docs.rs/aes"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "aes", "rijndael", "block-cipher"]
@@ -16,23 +14,19 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 cfg-if = "1"
-cipher = "0.3"
-ctr = { version = "0.8", optional = true }
-opaque-debug = "0.3"
-
-[dev-dependencies]
-cipher = { version = "0.3", features = ["dev"] }
-hex-literal = "0.2"
+cipher = "0.4"
 
 [target.'cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))'.dependencies]
 cpufeatures = "0.2"
 
+[dev-dependencies]
+cipher = { version = "0.4", features = ["dev"] }
+hex-literal = "0.3"
+
 [features]
-armv8      = [] # Enable ARMv8 AES intrinsics (nightly-only)
-compact    = [] # Reduce code size at the cost of slower performance
-force-soft = [] # Disable support for AES hardware intrinsics
 hazmat     = [] # Expose cryptographically hazardous APIs
+zeroize = ["cipher/zeroize"]
 
 [package.metadata.docs.rs]
-features = ["ctr"]
+all-features = true
 rustdoc-args = ["--cfg", "docsrs"]

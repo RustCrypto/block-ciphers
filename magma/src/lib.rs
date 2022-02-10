@@ -1,21 +1,24 @@
-//! Implementation of the [block cipher][1] defined in GOST 28147-89
-//! and GOST R 34.12-2015.
+//! Pure Rust implementation of the [Magma] block cipher defined in GOST 28147-89
+//! and [GOST R 34.12-2015].
 //!
 //! # Examples
 //! ```
-//! use magma::{Magma, BlockCipher, BlockEncrypt, BlockDecrypt, NewBlockCipher};
-//! use magma::cipher::generic_array::GenericArray;
+//! use magma::Magma;
+//! use magma::cipher::{
+//!     generic_array::GenericArray,
+//!     BlockEncrypt, BlockDecrypt, KeyInit,
+//! };
 //! use hex_literal::hex;
 //!
 //! // Example vector from GOST 34.12-2018
-//! let key = hex!("
-//!     FFEEDDCCBBAA99887766554433221100
-//!     F0F1F2F3F4F5F6F7F8F9FAFBFCFDFEFF
-//! ");
+//! let key = hex!(
+//!     "FFEEDDCCBBAA99887766554433221100"
+//!     "F0F1F2F3F4F5F6F7F8F9FAFBFCFDFEFF"
+//! );
 //! let plaintext = hex!("FEDCBA9876543210");
 //! let ciphertext = hex!("4EE901E5C2D8CA3D");
 //!
-//! let cipher = Magma::new(GenericArray::from_slice(&key));
+//! let cipher = Magma::new(&key.into());
 //!
 //! let mut block = GenericArray::clone_from_slice(&plaintext);
 //! cipher.encrypt_block(&mut block);
@@ -25,89 +28,122 @@
 //! assert_eq!(&plaintext, block.as_slice());
 //! ```
 //!
-//! [1]: https://en.wikipedia.org/wiki/GOST_(block_cipher)
+//! [Magma]: https://en.wikipedia.org/wiki/GOST_(block_cipher)
+//! [GOST R 34.12-2015]: https://tc26.ru/standard/gost/GOST_R_3412-2015.pdf
 #![no_std]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
+    html_root_url = "https://docs.rs/magma/0.8.0"
 )]
 #![deny(unsafe_code)]
-#![warn(rust_2018_idioms)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![warn(missing_docs, rust_2018_idioms)]
 
-pub use cipher::{self, BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher};
+pub use cipher;
 
 use cipher::{
-    consts::{U1, U32, U8},
-    generic_array::GenericArray,
+    consts::{U32, U8},
+    AlgorithmName, BlockCipher, Key, KeyInit, KeySizeUser,
 };
-use core::{convert::TryInto, marker::PhantomData};
+use core::{fmt, marker::PhantomData};
+
+#[cfg(feature = "zeroize")]
+use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 
 mod sboxes;
 
 pub use sboxes::Sbox;
 
 /// Block cipher defined in GOST 28147-89 generic over S-box
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct Gost89<S: Sbox> {
     key: [u32; 8],
     _p: PhantomData<S>,
 }
 
-impl<S: Sbox> NewBlockCipher for Gost89<S> {
-    type KeySize = U32;
+impl<S: Sbox> BlockCipher for Gost89<S> {}
 
-    fn new(key: &GenericArray<u8, U32>) -> Self {
+impl<S: Sbox> KeySizeUser for Gost89<S> {
+    type KeySize = U32;
+}
+
+impl<S: Sbox> KeyInit for Gost89<S> {
+    fn new(key: &Key<Self>) -> Self {
         let mut key_u32 = [0u32; 8];
         key.chunks_exact(4)
             .zip(key_u32.iter_mut())
             .for_each(|(chunk, v)| *v = to_u32(chunk));
         Self {
             key: key_u32,
-            _p: Default::default(),
+            _p: PhantomData,
         }
     }
 }
 
-impl<S: Sbox> BlockCipher for Gost89<S> {
-    type BlockSize = U8;
-    type ParBlocks = U1;
+impl<S: Sbox> fmt::Debug for Gost89<S> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Gost89<")?;
+        f.write_str(S::NAME)?;
+        f.write_str("> { ... }")
+    }
 }
 
-impl<S: Sbox> BlockEncrypt for Gost89<S> {
-    #[inline]
-    fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
-        let mut v = (to_u32(&block[0..4]), to_u32(&block[4..8]));
+impl<S: Sbox> AlgorithmName for Gost89<S> {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Gost89<")?;
+        f.write_str(S::NAME)?;
+        f.write_str("> { ... }")
+    }
+}
+
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl<S: Sbox> Drop for Gost89<S> {
+    fn drop(&mut self) {
+        self.key.zeroize();
+    }
+}
+
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl<S: Sbox> ZeroizeOnDrop for Gost89<S> {}
+
+cipher::impl_simple_block_encdec!(
+    <S: Sbox> Gost89, U8, cipher, block,
+    encrypt: {
+        let b = block.get_in();
+        let mut v = (to_u32(&b[0..4]), to_u32(&b[4..8]));
         for _ in 0..3 {
             for i in 0..8 {
-                v = (v.1, v.0 ^ S::g(v.1, self.key[i]));
+                v = (v.1, v.0 ^ S::g(v.1, cipher.key[i]));
             }
         }
         for i in (0..8).rev() {
-            v = (v.1, v.0 ^ S::g(v.1, self.key[i]));
+            v = (v.1, v.0 ^ S::g(v.1, cipher.key[i]));
         }
+        let block = block.get_out();
         block[0..4].copy_from_slice(&v.1.to_be_bytes());
         block[4..8].copy_from_slice(&v.0.to_be_bytes());
     }
-}
-
-impl<S: Sbox> BlockDecrypt for Gost89<S> {
-    #[inline]
-    fn decrypt_block(&self, block: &mut GenericArray<u8, U8>) {
-        let mut v = (to_u32(&block[0..4]), to_u32(&block[4..8]));
+    decrypt: {
+        let b = block.get_in();
+        let mut v = (to_u32(&b[0..4]), to_u32(&b[4..8]));
 
         for i in 0..8 {
-            v = (v.1, v.0 ^ S::g(v.1, self.key[i]));
+            v = (v.1, v.0 ^ S::g(v.1, cipher.key[i]));
         }
 
         for _ in 0..3 {
             for i in (0..8).rev() {
-                v = (v.1, v.0 ^ S::g(v.1, self.key[i]));
+                v = (v.1, v.0 ^ S::g(v.1, cipher.key[i]));
             }
         }
+        let block = block.get_out();
         block[0..4].copy_from_slice(&v.1.to_be_bytes());
         block[4..8].copy_from_slice(&v.0.to_be_bytes());
     }
-}
+);
 
 /// Block cipher defined in GOST R 34.12-2015 (Magma)
 pub type Magma = Gost89<sboxes::Tc26>;
@@ -122,6 +158,7 @@ pub type Gost89CryptoProC = Gost89<sboxes::CryptoProC>;
 /// Block cipher defined in GOST 28147-89 with CryptoPro S-box version D
 pub type Gost89CryptoProD = Gost89<sboxes::CryptoProD>;
 
+#[inline(always)]
 fn to_u32(chunk: &[u8]) -> u32 {
     u32::from_be_bytes(chunk.try_into().unwrap())
 }

@@ -1,6 +1,6 @@
 //! AES key expansion support.
 
-use core::{arch::aarch64::*, convert::TryInto, mem, slice};
+use core::{arch::aarch64::*, mem, slice};
 
 /// There are 4 AES words in a block.
 const BLOCK_WORDS: usize = 4;

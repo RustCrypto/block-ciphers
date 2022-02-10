@@ -1,5 +1,5 @@
-//! Pure Rust implementation of the Advanced Encryption Standard
-//! (a.k.a. Rijndael)
+//! Pure Rust implementation of the [Advanced Encryption Standard][AES]
+//! (AES, a.k.a. Rijndael).
 //!
 //! # Supported backends
 //! This crate provides multiple backends including a portable pure Rust
@@ -44,15 +44,14 @@
 //!
 //! # Usage example
 //! ```
-//! use aes::{Aes128, Block, ParBlocks};
+//! use aes::Aes128;
 //! use aes::cipher::{
-//!     BlockCipher, BlockEncrypt, BlockDecrypt, NewBlockCipher,
+//!     BlockCipher, BlockEncrypt, BlockDecrypt, KeyInit,
 //!     generic_array::GenericArray,
 //! };
 //!
-//! let key = GenericArray::from_slice(&[0u8; 16]);
-//! let mut block = Block::default();
-//! let mut block8 = ParBlocks::default();
+//! let key = GenericArray::from([0u8; 16]);
+//! let mut block = GenericArray::from([42u8; 16]);
 //!
 //! // Initialize cipher
 //! let cipher = Aes128::new(&key);
@@ -66,32 +65,57 @@
 //! cipher.decrypt_block(&mut block);
 //! assert_eq!(block, block_copy);
 //!
-//! // We can encrypt 8 blocks simultaneously using
-//! // instruction-level parallelism
-//! let block8_copy = block8.clone();
-//! cipher.encrypt_par_blocks(&mut block8);
-//! cipher.decrypt_par_blocks(&mut block8);
-//! assert_eq!(block8, block8_copy);
+//! // implementation supports parrallel block processing
+//! // number of blocks processed in parallel depends in general
+//! // on hardware capabilities
+//! let mut blocks = [block; 100];
+//! cipher.encrypt_blocks(&mut blocks);
+//!
+//! for block in blocks.iter_mut() {
+//!     cipher.decrypt_block(block);
+//!     assert_eq!(block, &block_copy);
+//! }
+//!
+//! cipher.decrypt_blocks(&mut blocks);
+//!
+//! for block in blocks.iter_mut() {
+//!     cipher.encrypt_block(block);
+//!     assert_eq!(block, &block_copy);
+//! }
 //! ```
 //!
 //! For implementations of block cipher modes of operation see
 //! [`block-modes`] crate.
 //!
+//! # Configuration Flags
+//!
+//! You can modify crate using the following configuration flags:
+//!
+//! - `aes_armv8`: enable ARMv8 AES intrinsics (nightly-only).
+//! - `aes_force_soft`: force software implementation.
+//! - `aes_compact`: reduce code size at the cost of slower performance
+//! (affects only software backend).
+//!
+//! It can be enabled using `RUSTFLAGS` enviromental variable
+//! (e.g. `RUSTFLAGS="--cfg aes_compact"`) or by modifying `.cargo/config`.
+//!
+//! [AES]: https://en.wikipedia.org/wiki/Advanced_Encryption_Standard
 //! [fixslicing]: https://eprint.iacr.org/2020/1123.pdf
 //! [AES-NI]: https://en.wikipedia.org/wiki/AES_instruction_set
 //! [`block-modes`]: https://docs.rs/block-modes
 
 #![no_std]
-#![cfg_attr(
-    all(feature = "armv8", target_arch = "aarch64"),
-    feature(stdsimd, aarch64_target_feature)
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
+    html_root_url = "https://docs.rs/aes/0.8.0"
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"
-)]
 #![warn(missing_docs, rust_2018_idioms)]
+#![cfg_attr(
+    all(aes_armv8, target_arch = "aarch64"),
+    feature(stdsimd, aarch64_target_feature)
+)]
 
 #[cfg(feature = "hazmat")]
 pub mod hazmat;
@@ -101,38 +125,29 @@ mod soft;
 use cfg_if::cfg_if;
 
 cfg_if! {
-    if #[cfg(all(target_arch = "aarch64", feature = "armv8", not(feature = "force-soft")))] {
+    if #[cfg(all(target_arch = "aarch64", aes_armv8, not(aes_force_soft)))] {
         mod armv8;
         mod autodetect;
-        pub use autodetect::{Aes128, Aes192, Aes256};
-
-        #[cfg(feature = "ctr")]
-        pub use autodetect::ctr::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
+        pub use autodetect::*;
     } else if #[cfg(all(
         any(target_arch = "x86", target_arch = "x86_64"),
-        not(feature = "force-soft")
+        not(aes_force_soft)
     ))] {
         mod autodetect;
         mod ni;
-        pub use autodetect::{Aes128, Aes192, Aes256};
-
-        #[cfg(feature = "ctr")]
-        pub use autodetect::ctr::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
+        pub use autodetect::*;
     } else {
-        pub use soft::{Aes128, Aes192, Aes256};
-
-        #[cfg(feature = "ctr")]
-        pub use soft::{Aes128Ctr, Aes192Ctr, Aes256Ctr};
+        pub use soft::*;
     }
 }
 
-pub use cipher::{self, BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher};
+pub use cipher;
+use cipher::{
+    consts::{U16, U8},
+    generic_array::GenericArray,
+};
 
 /// 128-bit AES block
-pub type Block = cipher::generic_array::GenericArray<u8, cipher::consts::U16>;
-
-/// 8 x 128-bit AES blocks to be processed in parallel
-pub type ParBlocks = cipher::generic_array::GenericArray<Block, cipher::consts::U8>;
-
-/// Size of an AES block (128-bits; 16-bytes)
-pub const BLOCK_SIZE: usize = 16;
+pub type Block = GenericArray<u8, U16>;
+/// Eight 128-bit AES blocks
+pub type Block8 = GenericArray<Block, U8>;

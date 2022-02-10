@@ -4,7 +4,7 @@
 #![allow(clippy::needless_range_loop)]
 
 use super::arch::*;
-use crate::ParBlocks;
+use crate::{Block, Block8};
 
 pub type U128x8 = [__m128i; 8];
 
@@ -18,32 +18,34 @@ pub(crate) fn check(a: &[__m128i], b: &[[u64; 2]]) {
 }
 
 #[inline(always)]
-pub(crate) fn load8(blocks: &ParBlocks) -> U128x8 {
+pub(crate) fn load8(blocks: *const Block8) -> U128x8 {
     unsafe {
+        let p = blocks as *const Block;
         [
-            _mm_loadu_si128(blocks[0].as_ptr() as *const __m128i),
-            _mm_loadu_si128(blocks[1].as_ptr() as *const __m128i),
-            _mm_loadu_si128(blocks[2].as_ptr() as *const __m128i),
-            _mm_loadu_si128(blocks[3].as_ptr() as *const __m128i),
-            _mm_loadu_si128(blocks[4].as_ptr() as *const __m128i),
-            _mm_loadu_si128(blocks[5].as_ptr() as *const __m128i),
-            _mm_loadu_si128(blocks[6].as_ptr() as *const __m128i),
-            _mm_loadu_si128(blocks[7].as_ptr() as *const __m128i),
+            _mm_loadu_si128(p.add(0) as *const __m128i),
+            _mm_loadu_si128(p.add(1) as *const __m128i),
+            _mm_loadu_si128(p.add(2) as *const __m128i),
+            _mm_loadu_si128(p.add(3) as *const __m128i),
+            _mm_loadu_si128(p.add(4) as *const __m128i),
+            _mm_loadu_si128(p.add(5) as *const __m128i),
+            _mm_loadu_si128(p.add(6) as *const __m128i),
+            _mm_loadu_si128(p.add(7) as *const __m128i),
         ]
     }
 }
 
 #[inline(always)]
-pub(crate) fn store8(blocks: &mut ParBlocks, b: U128x8) {
+pub(crate) fn store8(blocks: *mut Block8, b: U128x8) {
     unsafe {
-        _mm_storeu_si128(blocks[0].as_mut_ptr() as *mut __m128i, b[0]);
-        _mm_storeu_si128(blocks[1].as_mut_ptr() as *mut __m128i, b[1]);
-        _mm_storeu_si128(blocks[2].as_mut_ptr() as *mut __m128i, b[2]);
-        _mm_storeu_si128(blocks[3].as_mut_ptr() as *mut __m128i, b[3]);
-        _mm_storeu_si128(blocks[4].as_mut_ptr() as *mut __m128i, b[4]);
-        _mm_storeu_si128(blocks[5].as_mut_ptr() as *mut __m128i, b[5]);
-        _mm_storeu_si128(blocks[6].as_mut_ptr() as *mut __m128i, b[6]);
-        _mm_storeu_si128(blocks[7].as_mut_ptr() as *mut __m128i, b[7]);
+        let p = blocks as *mut Block;
+        _mm_storeu_si128(p.add(0) as *mut __m128i, b[0]);
+        _mm_storeu_si128(p.add(1) as *mut __m128i, b[1]);
+        _mm_storeu_si128(p.add(2) as *mut __m128i, b[2]);
+        _mm_storeu_si128(p.add(3) as *mut __m128i, b[3]);
+        _mm_storeu_si128(p.add(4) as *mut __m128i, b[4]);
+        _mm_storeu_si128(p.add(5) as *mut __m128i, b[5]);
+        _mm_storeu_si128(p.add(6) as *mut __m128i, b[6]);
+        _mm_storeu_si128(p.add(7) as *mut __m128i, b[7]);
     }
 }
 

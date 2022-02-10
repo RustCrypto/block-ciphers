@@ -3,7 +3,7 @@
 // TODO(tarcieri): support for using the hazmat functions with the `soft` backend
 #![cfg(feature = "hazmat")]
 
-use aes::{Block, ParBlocks};
+use aes::{Block, Block8};
 use hex_literal::hex;
 
 /// Round function tests vectors.
@@ -85,8 +85,8 @@ fn cipher_round_fips197_vectors() {
 
 #[test]
 fn cipher_round_par_fips197_vectors() {
-    let mut blocks = ParBlocks::default();
-    let mut round_keys = ParBlocks::default();
+    let mut blocks = Block8::default();
+    let mut round_keys = Block8::default();
 
     for i in 0..4 {
         let vector = &CIPHER_ROUND_TEST_VECTORS[i];
@@ -118,8 +118,8 @@ fn equiv_inv_cipher_round_fips197_vectors() {
 
 #[test]
 fn equiv_inv_cipher_round_par_fips197_vectors() {
-    let mut blocks = ParBlocks::default();
-    let mut round_keys = ParBlocks::default();
+    let mut blocks = Block8::default();
+    let mut round_keys = Block8::default();
 
     for i in 0..4 {
         let vector = &EQUIV_INV_CIPHER_ROUND_TEST_VECTORS[i];

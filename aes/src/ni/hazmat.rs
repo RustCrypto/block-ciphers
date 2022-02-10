@@ -8,10 +8,9 @@ use super::{
     arch::*,
     utils::{load8, store8},
 };
-use crate::{Block, ParBlocks};
+use crate::{Block, Block8};
 
 /// AES cipher (encrypt) round function.
-#[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
 pub(crate) unsafe fn cipher_round(block: &mut Block, round_key: &Block) {
     // Safety: `loadu` and `storeu` support unaligned access
@@ -22,9 +21,8 @@ pub(crate) unsafe fn cipher_round(block: &mut Block, round_key: &Block) {
 }
 
 /// AES cipher (encrypt) round function: parallel version.
-#[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
-pub(crate) unsafe fn cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+pub(crate) unsafe fn cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
     let xmm_keys = load8(round_keys);
     let mut xmm_blocks = load8(blocks);
 
@@ -36,7 +34,6 @@ pub(crate) unsafe fn cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBl
 }
 
 /// AES cipher (encrypt) round function.
-#[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
 pub(crate) unsafe fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
     // Safety: `loadu` and `storeu` support unaligned access
@@ -47,9 +44,8 @@ pub(crate) unsafe fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block
 }
 
 /// AES cipher (encrypt) round function: parallel version.
-#[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
-pub(crate) unsafe fn equiv_inv_cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+pub(crate) unsafe fn equiv_inv_cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
     let xmm_keys = load8(round_keys);
     let mut xmm_blocks = load8(blocks);
 
@@ -61,7 +57,6 @@ pub(crate) unsafe fn equiv_inv_cipher_round_par(blocks: &mut ParBlocks, round_ke
 }
 
 /// AES mix columns function.
-#[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
 pub(crate) unsafe fn mix_columns(block: &mut Block) {
     // Safety: `loadu` and `storeu` support unaligned access
@@ -76,7 +71,6 @@ pub(crate) unsafe fn mix_columns(block: &mut Block) {
 }
 
 /// AES inverse mix columns function.
-#[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
 pub(crate) unsafe fn inv_mix_columns(block: &mut Block) {
     // Safety: `loadu` and `storeu` support unaligned access

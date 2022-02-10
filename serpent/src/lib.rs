@@ -1,27 +1,27 @@
-//! An implementation of the [Serpent1][1] block cipher.
-//! Inspired by [Serpent reference implementation][2] and [Lars Viklund Rust implementation][3].
-//! [1]: https://www.cl.cam.ac.uk/~rja14/Papers/serpent.pdf
-//! [2]: https://www.cl.cam.ac.uk/~fms27/serpent/
-//! [3]: https://github.com/efb9-860a-e752-0dac/serpent
+//! Pure Rust implementation of the [Serpent] block cipher.
+//!
+//! [Serpent]: https://en.wikipedia.org/wiki/Serpent_(cipher)
 
 #![no_std]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
+    html_root_url = "https://docs.rs/serpent/0.5.0"
 )]
-#![forbid(unsafe_code)]
+#![deny(unsafe_code)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::needless_range_loop)]
 
 pub use cipher;
 
+// TODO: remove dependency on byteorder
 use byteorder::{ByteOrder, LE};
-use cipher::{
-    consts::{U1, U16},
-    errors::InvalidLength,
-    generic_array::GenericArray,
-    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
-};
+use cipher::{consts::U16, AlgorithmName, BlockCipher, InvalidLength, KeyInit, KeySizeUser};
+use core::fmt;
+
+#[cfg(feature = "zeroize")]
+use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 
 mod consts;
 use consts::{PHI, ROUNDS, S, S_INVERSE};
@@ -31,7 +31,7 @@ type Subkeys = [Key; ROUNDS + 1];
 type Block128 = [u8; 16];
 type Word = [u8; 16];
 
-/// Serpent block cipher
+/// Serpent block cipher.
 #[derive(Clone)]
 pub struct Serpent {
     k: Subkeys,
@@ -173,7 +173,7 @@ fn xor_block(b1: Block128, k: Key) -> Block128 {
 }
 
 fn expand_key(source: &[u8], len_bits: usize, key: &mut [u8; 32]) {
-    key[..source.len()].copy_from_slice(&source);
+    key[..source.len()].copy_from_slice(source);
     if len_bits < 256 {
         let byte_i = len_bits / 8;
         let bit_i = len_bits % 8;
@@ -233,10 +233,14 @@ impl Serpent {
     }
 }
 
-impl NewBlockCipher for Serpent {
-    type KeySize = U16;
+impl BlockCipher for Serpent {}
 
-    fn new(key: &GenericArray<u8, U16>) -> Self {
+impl KeySizeUser for Serpent {
+    type KeySize = U16;
+}
+
+impl KeyInit for Serpent {
+    fn new(key: &cipher::Key<Self>) -> Self {
         Self::new_from_slice(key).unwrap()
     }
 
@@ -252,40 +256,44 @@ impl NewBlockCipher for Serpent {
     }
 }
 
-impl BlockCipher for Serpent {
-    type BlockSize = U16;
-    type ParBlocks = U1;
+impl fmt::Debug for Serpent {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Serpent { ... }")
+    }
 }
 
-impl BlockEncrypt for Serpent {
-    fn encrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
-        let mut b = [0u8; 16];
+impl AlgorithmName for Serpent {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Serpent")
+    }
+}
 
-        for (i, v) in block.iter().enumerate() {
-            b[i] = *v;
-        }
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl Drop for Serpent {
+    fn drop(&mut self) {
+        self.k.zeroize();
+    }
+}
 
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl ZeroizeOnDrop for Serpent {}
+
+cipher::impl_simple_block_encdec!(
+    Serpent, U16, cipher, block,
+    encrypt: {
+        let mut b = block.clone_in().into();
         for i in 0..ROUNDS {
-            round_bitslice(i, b, self.k, &mut b);
+            round_bitslice(i, b, cipher.k, &mut b);
         }
-        *block = *GenericArray::from_slice(&b);
+        *block.get_out() = b.into();
     }
-}
-
-impl BlockDecrypt for Serpent {
-    fn decrypt_block(&self, block: &mut GenericArray<u8, Self::BlockSize>) {
-        let mut b = [0u8; 16];
-
-        for (i, v) in block.iter().enumerate() {
-            b[i] = *v;
-        }
-
+    decrypt: {
+        let mut b = block.clone_in().into();
         for i in (0..ROUNDS).rev() {
-            round_inverse_bitslice(i, b, self.k, &mut b);
+            round_inverse_bitslice(i, b, cipher.k, &mut b);
         }
-
-        *block = *GenericArray::from_slice(&b);
+        *block.get_out() = b.into();
     }
-}
-
-opaque_debug::implement!(Serpent);
+);

@@ -4,7 +4,7 @@
 //! implementations in this crate, but instead provides raw AES-NI accelerated
 //! access to the AES round function gated under the `hazmat` crate feature.
 
-use crate::{Block, ParBlocks};
+use crate::{Block, Block8};
 use core::arch::aarch64::*;
 
 /// AES cipher (encrypt) round function.
@@ -29,7 +29,7 @@ pub(crate) unsafe fn cipher_round(block: &mut Block, round_key: &Block) {
 /// AES cipher (encrypt) round function: parallel version.
 #[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
-pub(crate) unsafe fn cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+pub(crate) unsafe fn cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
     for i in 0..8 {
         let mut state = vld1q_u8(blocks[i].as_ptr());
 
@@ -68,7 +68,7 @@ pub(crate) unsafe fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block
 /// AES equivalent inverse cipher (decrypt) round function: parallel version.
 #[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
-pub(crate) unsafe fn equiv_inv_cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+pub(crate) unsafe fn equiv_inv_cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
     for i in 0..8 {
         let mut state = vld1q_u8(blocks[i].as_ptr());
 

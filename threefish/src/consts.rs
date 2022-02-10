@@ -4,7 +4,7 @@
 pub const C240: u64 = 0x1BD11BDAA9FC1A22;
 
 // Rotation constants for the different key lengths
-pub const R_256: [[u32; 2]; 8] = [
+pub const R256: [[u8; 2]; 8] = [
     [14, 16],
     [52, 57],
     [23, 40],
@@ -15,7 +15,7 @@ pub const R_256: [[u32; 2]; 8] = [
     [32, 32],
 ];
 
-pub const R_512: [[u32; 4]; 8] = [
+pub const R512: [[u8; 4]; 8] = [
     [46, 36, 19, 37],
     [33, 27, 14, 42],
     [17, 49, 36, 39],
@@ -26,7 +26,7 @@ pub const R_512: [[u32; 4]; 8] = [
     [8, 35, 56, 22],
 ];
 
-pub const R_1024: [[u32; 8]; 8] = [
+pub const R1024: [[u8; 8]; 8] = [
     [24, 13, 8, 47, 8, 17, 22, 37],
     [38, 19, 10, 55, 49, 18, 23, 52],
     [33, 4, 51, 13, 34, 41, 59, 17],
@@ -38,6 +38,6 @@ pub const R_1024: [[u32; 8]; 8] = [
 ];
 
 // Permutation tables for the different key lengths
-pub const P_256: [usize; 4] = [0, 3, 2, 1];
-pub const P_512: [usize; 8] = [6, 1, 0, 7, 2, 5, 4, 3];
-pub const P_1024: [usize; 16] = [0, 15, 2, 11, 6, 13, 4, 9, 14, 1, 8, 5, 10, 3, 12, 7];
+pub const P256: [u8; 4] = [0, 3, 2, 1];
+pub const P512: [u8; 8] = [6, 1, 0, 7, 2, 5, 4, 3];
+pub const P1024: [u8; 16] = [0, 15, 2, 11, 6, 13, 4, 9, 14, 1, 8, 5, 10, 3, 12, 7];

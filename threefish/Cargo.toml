@@ -1,17 +1,27 @@
 [package]
 name = "threefish"
-version = "0.4.0"
+version = "0.5.0" # Also update html_root_url in lib.rs when bumping this
+description = "Threefish block cipher"
 authors = ["The Rust-Crypto Project Developers"]
 license = "MIT OR Apache-2.0"
-description = "Threefish block cipher"
-documentation = "https://docs.rs/threefish"
+edition = "2021"
+rust-version = "1.56"
 readme = "README.md"
-edition = "2018"
+documentation = "https://docs.rs/threefish"
 repository = "https://github.com/RustCrypto/block-ciphers"
-keywords = ["crypto", "threefish", "gost", "block-cipher"]
+keywords = ["crypto", "threefish", "block-cipher"]
+categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.3"
+cipher = "0.4"
 
 [dev-dependencies]
-cipher = { version = "0.3", features = ["dev"] }
+cipher = { version = "0.4", features = ["dev"] }
+hex-literal = "0.3"
+
+[features]
+zeroize = ["cipher/zeroize"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
