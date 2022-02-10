@@ -2,17 +2,16 @@
 
 #![allow(clippy::unreadable_literal)]
 
-use byteorder::{ByteOrder, BE};
-use cipher::{
-    consts::{U1, U8},
-    generic_array::GenericArray,
-    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
-};
+use cipher::{consts::U8, AlgorithmName, BlockCipher, Key, KeyInit, KeySizeUser};
+use core::fmt;
+
+#[cfg(feature = "zeroize")]
+use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 
 use crate::consts::{SBOXES, SHIFTS};
 
 /// Data Encryption Standard (DES) block cipher.
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct Des {
     pub(crate) keys: [u64; 16],
 }
@@ -186,33 +185,54 @@ impl Des {
     }
 }
 
-impl NewBlockCipher for Des {
+impl BlockCipher for Des {}
+
+impl KeySizeUser for Des {
     type KeySize = U8;
+}
 
-    fn new(key: &GenericArray<u8, U8>) -> Self {
-        Des {
-            keys: gen_keys(BE::read_u64(key)),
-        }
+impl KeyInit for Des {
+    #[inline]
+    fn new(key: &Key<Self>) -> Self {
+        let keys = gen_keys(u64::from_be_bytes(key.clone().into()));
+        Self { keys }
     }
 }
 
-impl BlockCipher for Des {
-    type BlockSize = U8;
-    type ParBlocks = U1;
-}
-
-impl BlockEncrypt for Des {
-    fn encrypt_block(&self, block: &mut GenericArray<u8, U8>) {
-        let data = BE::read_u64(block);
-        BE::write_u64(block, self.encrypt(data));
+impl fmt::Debug for Des {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Des { ... }")
     }
 }
 
-impl BlockDecrypt for Des {
-    fn decrypt_block(&self, block: &mut GenericArray<u8, U8>) {
-        let data = BE::read_u64(block);
-        BE::write_u64(block, self.decrypt(data));
+impl AlgorithmName for Des {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Des")
     }
 }
 
-opaque_debug::implement!(Des);
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl Drop for Des {
+    fn drop(&mut self) {
+        self.keys.zeroize();
+    }
+}
+
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl ZeroizeOnDrop for Des {}
+
+cipher::impl_simple_block_encdec!(
+    Des, U8, cipher, block,
+    encrypt: {
+        let mut data = u64::from_be_bytes(block.clone_in().into());
+        data = cipher.encrypt(data);
+        block.get_out().copy_from_slice(&data.to_be_bytes());
+    }
+    decrypt: {
+        let mut data = u64::from_be_bytes(block.clone_in().into());
+        data = cipher.decrypt(data);
+        block.get_out().copy_from_slice(&data.to_be_bytes());
+    }
+);

@@ -1,26 +1,27 @@
 [package]
 name = "kuznyechik"
-version = "0.7.2"
+version = "0.8.0" # Also update html_root_url in lib.rs when bumping this
 description = "Kuznyechik (GOST R 34.12-2015) block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
+edition = "2021"
+rust-version = "1.56"
 readme = "README.md"
-edition = "2018"
 documentation = "https://docs.rs/kuznyechik"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "kuznyechik", "gost", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.3"
+cipher = "0.4"
 
 [dev-dependencies]
-cipher = { version = "0.3", features = ["dev"] }
-hex-literal = "0.2"
+cipher = { version = "0.4", features = ["dev"] }
+hex-literal = "0.3"
 
 [features]
-# disables loop unrolling, which reduces resulting binary size,
-# but may degrade performance in return
-no_unroll = []
-# force software implementation which uses smaller tables
-force-soft = []
+zeroize = ["cipher/zeroize"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

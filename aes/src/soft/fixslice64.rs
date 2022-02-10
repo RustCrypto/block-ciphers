@@ -16,13 +16,12 @@
 #![allow(clippy::unreadable_literal)]
 
 use crate::Block;
-use cipher::{
-    consts::{U16, U24, U32},
-    generic_array::GenericArray,
-};
+use cipher::{consts::U4, generic_array::GenericArray};
 
 /// AES block batch size for this implementation
-pub(crate) const FIXSLICE_BLOCKS: usize = 4;
+pub(crate) type FixsliceBlocks = U4;
+
+pub(crate) type BatchBlocks = GenericArray<Block, FixsliceBlocks>;
 
 /// AES-128 round keys
 pub(crate) type FixsliceKeys128 = [u64; 88];
@@ -37,7 +36,7 @@ pub(crate) type FixsliceKeys256 = [u64; 120];
 pub(crate) type State = [u64; 8];
 
 /// Fully bitsliced AES-128 key schedule to match the fully-fixsliced representation.
-pub(crate) fn aes128_key_schedule(key: &GenericArray<u8, U16>) -> FixsliceKeys128 {
+pub(crate) fn aes128_key_schedule(key: &[u8; 16]) -> FixsliceKeys128 {
     let mut rkeys = [0u64; 88];
 
     bitslice(&mut rkeys[..8], key, key, key, key);
@@ -63,13 +62,13 @@ pub(crate) fn aes128_key_schedule(key: &GenericArray<u8, U16>) -> FixsliceKeys12
     }
 
     // Adjust to match fixslicing format
-    #[cfg(feature = "compact")]
+    #[cfg(aes_compact)]
     {
         for i in (8..88).step_by(16) {
             inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
         }
     }
-    #[cfg(not(feature = "compact"))]
+    #[cfg(not(aes_compact))]
     {
         for i in (8..72).step_by(32) {
             inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
@@ -88,7 +87,7 @@ pub(crate) fn aes128_key_schedule(key: &GenericArray<u8, U16>) -> FixsliceKeys12
 }
 
 /// Fully bitsliced AES-192 key schedule to match the fully-fixsliced representation.
-pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys192 {
+pub(crate) fn aes192_key_schedule(key: &[u8; 24]) -> FixsliceKeys192 {
     let mut rkeys = [0u64; 104];
     let mut tmp = [0u64; 8];
 
@@ -169,13 +168,13 @@ pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys19
     }
 
     // Adjust to match fixslicing format
-    #[cfg(feature = "compact")]
+    #[cfg(aes_compact)]
     {
         for i in (8..104).step_by(16) {
             inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
         }
     }
-    #[cfg(not(feature = "compact"))]
+    #[cfg(not(aes_compact))]
     {
         for i in (0..96).step_by(32) {
             inv_shift_rows_1(&mut rkeys[(i + 8)..(i + 16)]);
@@ -193,7 +192,7 @@ pub(crate) fn aes192_key_schedule(key: &GenericArray<u8, U24>) -> FixsliceKeys19
 }
 
 /// Fully bitsliced AES-256 key schedule to match the fully-fixsliced representation.
-pub(crate) fn aes256_key_schedule(key: &GenericArray<u8, U32>) -> FixsliceKeys256 {
+pub(crate) fn aes256_key_schedule(key: &[u8; 32]) -> FixsliceKeys256 {
     let mut rkeys = [0u64; 120];
 
     bitslice(
@@ -239,13 +238,13 @@ pub(crate) fn aes256_key_schedule(key: &GenericArray<u8, U32>) -> FixsliceKeys25
     }
 
     // Adjust to match fixslicing format
-    #[cfg(feature = "compact")]
+    #[cfg(aes_compact)]
     {
         for i in (8..120).step_by(16) {
             inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
         }
     }
-    #[cfg(not(feature = "compact"))]
+    #[cfg(not(aes_compact))]
     {
         for i in (8..104).step_by(32) {
             inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
@@ -266,8 +265,7 @@ pub(crate) fn aes256_key_schedule(key: &GenericArray<u8, U32>) -> FixsliceKeys25
 /// Fully-fixsliced AES-128 decryption (the InvShiftRows is completely omitted).
 ///
 /// Decrypts four blocks in-place and in parallel.
-pub(crate) fn aes128_decrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
-    debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
+pub(crate) fn aes128_decrypt(rkeys: &FixsliceKeys128, blocks: &BatchBlocks) -> BatchBlocks {
     let mut state = State::default();
 
     bitslice(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
@@ -275,14 +273,14 @@ pub(crate) fn aes128_decrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
     add_round_key(&mut state, &rkeys[80..]);
     inv_sub_bytes(&mut state);
 
-    #[cfg(not(feature = "compact"))]
+    #[cfg(not(aes_compact))]
     {
         inv_shift_rows_2(&mut state);
     }
 
     let mut rk_off = 72;
     loop {
-        #[cfg(feature = "compact")]
+        #[cfg(aes_compact)]
         {
             inv_shift_rows_2(&mut state);
         }
@@ -301,7 +299,7 @@ pub(crate) fn aes128_decrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
         inv_sub_bytes(&mut state);
         rk_off -= 8;
 
-        #[cfg(not(feature = "compact"))]
+        #[cfg(not(aes_compact))]
         {
             add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
             inv_mix_columns_3(&mut state);
@@ -317,14 +315,13 @@ pub(crate) fn aes128_decrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
 
     add_round_key(&mut state, &rkeys[..8]);
 
-    inv_bitslice(&state, blocks);
+    inv_bitslice(&state)
 }
 
 /// Fully-fixsliced AES-128 encryption (the ShiftRows is completely omitted).
 ///
 /// Encrypts four blocks in-place and in parallel.
-pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
-    debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
+pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &BatchBlocks) -> BatchBlocks {
     let mut state = State::default();
 
     bitslice(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
@@ -338,7 +335,7 @@ pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
         add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
         rk_off += 8;
 
-        #[cfg(feature = "compact")]
+        #[cfg(aes_compact)]
         {
             shift_rows_2(&mut state);
         }
@@ -347,7 +344,7 @@ pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
             break;
         }
 
-        #[cfg(not(feature = "compact"))]
+        #[cfg(not(aes_compact))]
         {
             sub_bytes(&mut state);
             mix_columns_2(&mut state);
@@ -366,7 +363,7 @@ pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
         rk_off += 8;
     }
 
-    #[cfg(not(feature = "compact"))]
+    #[cfg(not(aes_compact))]
     {
         shift_rows_2(&mut state);
     }
@@ -374,14 +371,13 @@ pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &mut [Block]) {
     sub_bytes(&mut state);
     add_round_key(&mut state, &rkeys[80..]);
 
-    inv_bitslice(&state, blocks);
+    inv_bitslice(&state)
 }
 
 /// Fully-fixsliced AES-192 decryption (the InvShiftRows is completely omitted).
 ///
 /// Decrypts four blocks in-place and in parallel.
-pub(crate) fn aes192_decrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
-    debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
+pub(crate) fn aes192_decrypt(rkeys: &FixsliceKeys192, blocks: &BatchBlocks) -> BatchBlocks {
     let mut state = State::default();
 
     bitslice(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
@@ -391,11 +387,11 @@ pub(crate) fn aes192_decrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
 
     let mut rk_off = 88;
     loop {
-        #[cfg(feature = "compact")]
+        #[cfg(aes_compact)]
         {
             inv_shift_rows_2(&mut state);
         }
-        #[cfg(not(feature = "compact"))]
+        #[cfg(not(aes_compact))]
         {
             add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
             inv_mix_columns_3(&mut state);
@@ -425,14 +421,13 @@ pub(crate) fn aes192_decrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
 
     add_round_key(&mut state, &rkeys[..8]);
 
-    inv_bitslice(&state, blocks);
+    inv_bitslice(&state)
 }
 
 /// Fully-fixsliced AES-192 encryption (the ShiftRows is completely omitted).
 ///
 /// Encrypts four blocks in-place and in parallel.
-pub(crate) fn aes192_encrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
-    debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
+pub(crate) fn aes192_encrypt(rkeys: &FixsliceKeys192, blocks: &BatchBlocks) -> BatchBlocks {
     let mut state = State::default();
 
     bitslice(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
@@ -446,11 +441,11 @@ pub(crate) fn aes192_encrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
         add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
         rk_off += 8;
 
-        #[cfg(feature = "compact")]
+        #[cfg(aes_compact)]
         {
             shift_rows_2(&mut state);
         }
-        #[cfg(not(feature = "compact"))]
+        #[cfg(not(aes_compact))]
         {
             sub_bytes(&mut state);
             mix_columns_2(&mut state);
@@ -476,14 +471,13 @@ pub(crate) fn aes192_encrypt(rkeys: &FixsliceKeys192, blocks: &mut [Block]) {
     sub_bytes(&mut state);
     add_round_key(&mut state, &rkeys[96..]);
 
-    inv_bitslice(&state, blocks);
+    inv_bitslice(&state)
 }
 
 /// Fully-fixsliced AES-256 decryption (the InvShiftRows is completely omitted).
 ///
 /// Decrypts four blocks in-place and in parallel.
-pub(crate) fn aes256_decrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
-    debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
+pub(crate) fn aes256_decrypt(rkeys: &FixsliceKeys256, blocks: &BatchBlocks) -> BatchBlocks {
     let mut state = State::default();
 
     bitslice(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
@@ -491,14 +485,14 @@ pub(crate) fn aes256_decrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
     add_round_key(&mut state, &rkeys[112..]);
     inv_sub_bytes(&mut state);
 
-    #[cfg(not(feature = "compact"))]
+    #[cfg(not(aes_compact))]
     {
         inv_shift_rows_2(&mut state);
     }
 
     let mut rk_off = 104;
     loop {
-        #[cfg(feature = "compact")]
+        #[cfg(aes_compact)]
         {
             inv_shift_rows_2(&mut state);
         }
@@ -517,7 +511,7 @@ pub(crate) fn aes256_decrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
         inv_sub_bytes(&mut state);
         rk_off -= 8;
 
-        #[cfg(not(feature = "compact"))]
+        #[cfg(not(aes_compact))]
         {
             add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
             inv_mix_columns_3(&mut state);
@@ -533,14 +527,13 @@ pub(crate) fn aes256_decrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
 
     add_round_key(&mut state, &rkeys[..8]);
 
-    inv_bitslice(&state, blocks);
+    inv_bitslice(&state)
 }
 
 /// Fully-fixsliced AES-256 encryption (the ShiftRows is completely omitted).
 ///
 /// Encrypts four blocks in-place and in parallel.
-pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
-    debug_assert_eq!(blocks.len(), FIXSLICE_BLOCKS);
+pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &BatchBlocks) -> BatchBlocks {
     let mut state = State::default();
 
     bitslice(&mut state, &blocks[0], &blocks[1], &blocks[2], &blocks[3]);
@@ -554,7 +547,7 @@ pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
         add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
         rk_off += 8;
 
-        #[cfg(feature = "compact")]
+        #[cfg(aes_compact)]
         {
             shift_rows_2(&mut state);
         }
@@ -563,7 +556,7 @@ pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
             break;
         }
 
-        #[cfg(not(feature = "compact"))]
+        #[cfg(not(aes_compact))]
         {
             sub_bytes(&mut state);
             mix_columns_2(&mut state);
@@ -582,7 +575,7 @@ pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
         rk_off += 8;
     }
 
-    #[cfg(not(feature = "compact"))]
+    #[cfg(not(aes_compact))]
     {
         shift_rows_2(&mut state);
     }
@@ -590,7 +583,7 @@ pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &mut [Block]) {
     sub_bytes(&mut state);
     add_round_key(&mut state, &rkeys[112..]);
 
-    inv_bitslice(&state, blocks);
+    inv_bitslice(&state)
 }
 
 /// Note that the 4 bitwise NOT (^= 0xffffffffffffffff) are accounted for here so that it is a true
@@ -1102,7 +1095,7 @@ define_mix_columns!(
     rotate_rows_and_columns_2_2
 );
 
-#[cfg(not(feature = "compact"))]
+#[cfg(not(aes_compact))]
 define_mix_columns!(
     mix_columns_2,
     inv_mix_columns_2,
@@ -1110,7 +1103,7 @@ define_mix_columns!(
     rotate_rows_2
 );
 
-#[cfg(not(feature = "compact"))]
+#[cfg(not(aes_compact))]
 define_mix_columns!(
     mix_columns_3,
     inv_mix_columns_3,
@@ -1132,7 +1125,7 @@ fn delta_swap_2(a: &mut u64, b: &mut u64, shift: u32, mask: u64) {
 }
 
 /// Applies ShiftRows once on an AES state (or key).
-#[cfg(any(not(feature = "compact"), feature = "hazmat"))]
+#[cfg(any(not(aes_compact), feature = "hazmat"))]
 #[inline]
 fn shift_rows_1(state: &mut [u64]) {
     debug_assert_eq!(state.len(), 8);
@@ -1171,7 +1164,7 @@ fn inv_shift_rows_2(state: &mut [u64]) {
     shift_rows_2(state);
 }
 
-#[cfg(not(feature = "compact"))]
+#[cfg(not(aes_compact))]
 #[inline(always)]
 fn inv_shift_rows_3(state: &mut [u64]) {
     shift_rows_1(state);
@@ -1274,9 +1267,8 @@ fn bitslice(output: &mut [u64], input0: &[u8], input1: &[u8], input2: &[u8], inp
 }
 
 /// Un-bitslice a 512-bit internal state into four 128-bit blocks of output.
-fn inv_bitslice(input: &[u64], output: &mut [Block]) {
+fn inv_bitslice(input: &[u64]) -> BatchBlocks {
     debug_assert_eq!(input.len(), 8);
-    debug_assert_eq!(output.len(), 4);
 
     // Unbitslicing is a bit index manipulation. 512 bits of data means each bit is positioned at
     // a 9-bit index. AES data is 4 blocks, each one a 4x4 column-major matrix of bytes, so the
@@ -1333,6 +1325,7 @@ fn inv_bitslice(input: &[u64], output: &mut [Block]) {
         output[0xb] = (columns >> 0x38) as u8;
     }
 
+    let mut output = BatchBlocks::default();
     // Reorder by relabeling (note the order of output)
     //     c0 b1 b0 __ __ __ __ __ __ => b1 b0 c0 __ __ __ __ __ __
     // Reorder each block's bytes on output
@@ -1348,6 +1341,7 @@ fn inv_bitslice(input: &[u64], output: &mut [Block]) {
 
     // Final AES bit index, as desired:
     //     b1 b0 c1 c0 r1 r0 p2 p1 p0
+    output
 }
 
 /// Copy 32-bytes within the provided slice to an 8-byte offset
@@ -1404,7 +1398,7 @@ fn rotate_rows_and_columns_1_1(x: u64) -> u64 {
     (ror(x, ror_distance(0, 1)) & 0xf000f000f000f000)
 }
 
-#[cfg(not(feature = "compact"))]
+#[cfg(not(aes_compact))]
 #[inline(always)]
 #[rustfmt::skip]
 fn rotate_rows_and_columns_1_2(x: u64) -> u64 {
@@ -1412,7 +1406,7 @@ fn rotate_rows_and_columns_1_2(x: u64) -> u64 {
     (ror(x, ror_distance(0, 2)) & 0xff00ff00ff00ff00)
 }
 
-#[cfg(not(feature = "compact"))]
+#[cfg(not(aes_compact))]
 #[inline(always)]
 #[rustfmt::skip]
 fn rotate_rows_and_columns_1_3(x: u64) -> u64 {
@@ -1438,7 +1432,7 @@ pub(crate) mod hazmat {
         bitslice, inv_bitslice, inv_mix_columns_0, inv_shift_rows_1, inv_sub_bytes, mix_columns_0,
         shift_rows_1, sub_bytes, sub_bytes_nots, State,
     };
-    use crate::{Block, ParBlocks};
+    use crate::{Block, Block8};
 
     /// XOR the `src` block into the `dst` block in-place.
     fn xor_in_place(dst: &mut Block, src: &Block) {
@@ -1456,9 +1450,7 @@ pub(crate) mod hazmat {
 
     /// Perform an inverse bitslice operation, extracting a single block.
     fn inv_bitslice_block(block: &mut Block, state: &State) {
-        let mut out = [Block::default(); 4];
-        inv_bitslice(state, &mut out);
-        block.copy_from_slice(&out[0]);
+        block.copy_from_slice(&inv_bitslice(state)[0]);
     }
 
     /// AES cipher (encrypt) round function.
@@ -1475,7 +1467,7 @@ pub(crate) mod hazmat {
 
     /// AES cipher (encrypt) round function: parallel version.
     #[inline]
-    pub(crate) fn cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+    pub(crate) fn cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
         for (chunk, keys) in blocks.chunks_exact_mut(4).zip(round_keys.chunks_exact(4)) {
             let mut state = State::default();
             bitslice(&mut state, &chunk[0], &chunk[1], &chunk[2], &chunk[3]);
@@ -1483,9 +1475,10 @@ pub(crate) mod hazmat {
             sub_bytes_nots(&mut state);
             shift_rows_1(&mut state);
             mix_columns_0(&mut state);
-            inv_bitslice(&state, chunk);
+            let res = inv_bitslice(&state);
 
             for i in 0..4 {
+                chunk[i] = res[i];
                 xor_in_place(&mut chunk[i], &keys[i]);
             }
         }
@@ -1495,7 +1488,7 @@ pub(crate) mod hazmat {
     #[inline]
     pub(crate) fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
         let mut state = State::default();
-        bitslice(&mut state, &block, &block, &block, &block);
+        bitslice(&mut state, block, block, block, block);
         sub_bytes_nots(&mut state);
         inv_sub_bytes(&mut state);
         inv_shift_rows_1(&mut state);
@@ -1506,7 +1499,7 @@ pub(crate) mod hazmat {
 
     /// AES cipher (encrypt) round function: parallel version.
     #[inline]
-    pub(crate) fn equiv_inv_cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+    pub(crate) fn equiv_inv_cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
         for (chunk, keys) in blocks.chunks_exact_mut(4).zip(round_keys.chunks_exact(4)) {
             let mut state = State::default();
             bitslice(&mut state, &chunk[0], &chunk[1], &chunk[2], &chunk[3]);
@@ -1514,9 +1507,10 @@ pub(crate) mod hazmat {
             inv_sub_bytes(&mut state);
             inv_shift_rows_1(&mut state);
             inv_mix_columns_0(&mut state);
-            inv_bitslice(&state, chunk);
+            let res = inv_bitslice(&state);
 
             for i in 0..4 {
+                chunk[i] = res[i];
                 xor_in_place(&mut chunk[i], &keys[i]);
             }
         }

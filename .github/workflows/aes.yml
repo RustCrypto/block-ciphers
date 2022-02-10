@@ -23,7 +23,7 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.49.0 # MSRV
+          - 1.56.0 # MSRV
           - stable
         target:
           - thumbv7em-none-eabi
@@ -36,13 +36,25 @@ jobs:
           target: ${{ matrix.target }}
           profile: minimal
           override: true
-      - run: cargo check --features compact,ctr,force-soft
-      - run: cargo build --release --target ${{ matrix.target }}
-      - run: cargo build --release --target ${{ matrix.target }} --features compact
-      - run: cargo build --release --target ${{ matrix.target }} --features ctr
-      - run: cargo build --release --target ${{ matrix.target }} --features force-soft
-      - run: cargo build --release --target ${{ matrix.target }} --features hazmat
-      - run: cargo build --release --target ${{ matrix.target }} --features compact,ctr,force-soft
+      - run: cargo check
+      - run: |
+        cargo build --target ${{ matrix.target }}
+        cargo build --target ${{ matrix.target }} --features hazmat
+      - env:
+          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
+        run: |
+          cargo build --target ${{ matrix.target }}
+          cargo build --target ${{ matrix.target }} --features hazmat
+      - env:
+          RUSTFLAGS: "-Dwarnings --cfg aes_compact"
+        run: |
+          cargo build --target ${{ matrix.target }}
+          cargo build --target ${{ matrix.target }} --features hazmat
+      - env:
+          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft --cfg aes_compact"
+        run: |
+          cargo build --target ${{ matrix.target }}
+          cargo build --target ${{ matrix.target }} --features hazmat
 
   # Tests for the AES-NI backend
   aesni:
@@ -56,7 +68,7 @@ jobs:
         include:
           # 32-bit Linux
           - target: i686-unknown-linux-gnu
-            rust: 1.49.0 # MSRV
+            rust: 1.56.0 # MSRV
             deps: sudo apt update && sudo apt install gcc-multilib
           - target: i686-unknown-linux-gnu
             rust: stable
@@ -64,7 +76,7 @@ jobs:
 
           # 64-bit Linux
           - target: x86_64-unknown-linux-gnu
-            rust: 1.49.0 # MSRV
+            rust: 1.56.0 # MSRV
           - target: x86_64-unknown-linux-gnu
             rust: stable
     steps:
@@ -76,12 +88,9 @@ jobs:
           profile: minimal
           override: true
       - run: ${{ matrix.deps }}
-      - run: cargo test --release --target ${{ matrix.target }}
-      - run: cargo test --release --target ${{ matrix.target }} --features compact
-      - run: cargo test --release --target ${{ matrix.target }} --features ctr
-      - run: cargo test --release --target ${{ matrix.target }} --features force-soft
-      - run: cargo test --release --target ${{ matrix.target }} --features hazmat
-      - run: cargo test --release --target ${{ matrix.target }} --all-features
+      - run: cargo test --target ${{ matrix.target }}
+      - run: cargo test --target ${{ matrix.target }} --features hazmat
+      - run: cargo test --target ${{ matrix.target }} --all-features
 
   # Tests for CPU feature autodetection with fallback to portable software implementation
   autodetect:
@@ -91,7 +100,7 @@ jobs:
         include:
           # 32-bit Linux
           - target: i686-unknown-linux-gnu
-            rust: 1.49.0 # MSRV
+            rust: 1.56.0 # MSRV
             deps: sudo apt update && sudo apt install gcc-multilib
           - target: i686-unknown-linux-gnu
             rust: stable
@@ -99,7 +108,7 @@ jobs:
 
           # 64-bit Linux
           - target: x86_64-unknown-linux-gnu
-            rust: 1.49.0 # MSRV
+            rust: 1.56.0 # MSRV
           - target: x86_64-unknown-linux-gnu
             rust: stable
     steps:
@@ -111,21 +120,21 @@ jobs:
           profile: minimal
           override: true
       - run: ${{ matrix.deps }}
-      - run: cargo test --release --target ${{ matrix.target }}
-      - run: cargo test --release --target ${{ matrix.target }} --features compact
-      - run: cargo test --release --target ${{ matrix.target }} --features ctr
-      - run: cargo test --release --target ${{ matrix.target }} --features hazmat
-      - run: cargo test --release --target ${{ matrix.target }} --all-features
+      - run: cargo test --target ${{ matrix.target }}
+      - run: cargo test --target ${{ matrix.target }} --features hazmat
+      - run: cargo test --target ${{ matrix.target }} --all-features
 
-  # Tests for the portable software backend (i.e. `force-soft`-only)
+  # Tests for the portable software backend (i.e. `aes_force_soft`-only)
   soft:
     runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
     strategy:
       matrix:
         include:
           # 32-bit Linux
           - target: i686-unknown-linux-gnu
-            rust: 1.41.0 # MSRV (temporarily lower than with CPU feature auto-detection)
+            rust: 1.56.0 # MSRV
             deps: sudo apt update && sudo apt install gcc-multilib
           - target: i686-unknown-linux-gnu
             rust: stable
@@ -133,7 +142,7 @@ jobs:
 
           # 64-bit Linux
           - target: x86_64-unknown-linux-gnu
-            rust: 1.41.0 # MSRV (temporarily lower than with CPU feature auto-detection)
+            rust: 1.56.0 # MSRV
           - target: x86_64-unknown-linux-gnu
             rust: stable
     steps:
@@ -145,10 +154,9 @@ jobs:
           profile: minimal
           override: true
       - run: ${{ matrix.deps }}
-      - run: cargo test --release --target ${{ matrix.target }} --features force-soft
-      - run: cargo test --release --target ${{ matrix.target }} --features force-soft,compact
-      - run: cargo test --release --target ${{ matrix.target }} --features force-soft,ctr
-      - run: cargo test --release --target ${{ matrix.target }} --features force-soft,compact,ctr
+      - run: cargo test --target ${{ matrix.target }}
+      - run: cargo test --target ${{ matrix.target }} --all-features
+
 
   # Cross-compiled tests
   cross:
@@ -157,16 +165,20 @@ jobs:
         include:
           # ARM64
           - target: aarch64-unknown-linux-gnu
-            rust: 1.49.0 # MSRV
+            rust: 1.56.0 # MSRV
           - target: aarch64-unknown-linux-gnu
             rust: stable
 
           # PPC32
           - target: powerpc-unknown-linux-gnu
-            rust: 1.49.0 # MSRV
+            rust: 1.56.0 # MSRV
           - target: powerpc-unknown-linux-gnu
             rust: stable
     runs-on: ubuntu-latest
+    # Cross mounts only current package, i.e. by default it ignores workspace's Cargo.toml
+    defaults:
+      run:
+        working-directory: .
     steps:
       - uses: actions/checkout@v1
       - run: ${{ matrix.deps }}
@@ -176,22 +188,45 @@ jobs:
           target: ${{ matrix.target }}
           profile: minimal
           override: true
-      - run: cargo install cross
-      - run: cross test --release --target ${{ matrix.target }}
-      - run: cross test --release --target ${{ matrix.target }} --features compact
-      - run: cross test --release --target ${{ matrix.target }} --features ctr
-      - run: cross test --release --target ${{ matrix.target }} --features force-soft
-      - run: cross test --release --target ${{ matrix.target }} --features hazmat
-      - run: cross test --release --target ${{ matrix.target }} --features compact,ctr,force-soft,hazmat
+      - name: Install pre-compiled cross
+        run: |
+          export URL=$(curl -s https://api.github.com/repos/cross-rs/cross/releases/latest | jq -r '.assets[] | select(.name | contains("x86_64-unknown-linux-gnu.tar.gz")) | .browser_download_url')
+          wget -O /tmp/binaries.tar.gz $URL
+          tar -C /tmp -xzf /tmp/binaries.tar.gz
+          mv /tmp/cross ~/.cargo/bin
+      - run: |
+        cross test --package aes --target ${{ matrix.target }}
+        cross test --package aes --target ${{ matrix.target }} --features hazmat
+      - env:
+          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
+        run: |
+          cross test --package aes --target ${{ matrix.target }}
+          cross test --package aes --target ${{ matrix.target }} --features hazmat
+      - env:
+          RUSTFLAGS: "-Dwarnings --cfg aes_compact"
+        run: |
+          cross test --package aes --target ${{ matrix.target }}
+          cross test --package aes --target ${{ matrix.target }} --features hazmat
+      - env:
+          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft --cfg aes_compact"
+        run: |
+          cross test --package aes --target ${{ matrix.target }}
+          cross test --package aes --target ${{ matrix.target }} --features hazmat
 
   # ARMv8 cross-compiled tests for AES intrinsics (nightly-only)
   armv8:
+    env:
+      RUSTFLAGS: "-Dwarnings --cfg aes_armv8"
     strategy:
       matrix:
         include:
           - target: aarch64-unknown-linux-gnu
             rust: nightly
     runs-on: ubuntu-latest
+    # Cross mounts only current package, i.e. by default it ignores workspace's Cargo.toml
+    defaults:
+      run:
+        working-directory: .
     steps:
       - uses: actions/checkout@v1
       - run: ${{ matrix.deps }}
@@ -201,22 +236,26 @@ jobs:
           target: ${{ matrix.target }}
           profile: minimal
           override: true
-      - run: cargo install cross
-      - run: cross test --release --target ${{ matrix.target }} --features armv8
-      - run: cross test --release --target ${{ matrix.target }} --features armv8,compact
-      - run: cross test --release --target ${{ matrix.target }} --features armv8,ctr
-      - run: cross test --release --target ${{ matrix.target }} --features armv8,force-soft
-      - run: cross test --release --target ${{ matrix.target }} --features armv8,hazmat
-      - run: cross test --release --target ${{ matrix.target }} --all-features
+      - name: Install pre-compiled cross
+        run: |
+          export URL=$(curl -s https://api.github.com/repos/cross-rs/cross/releases/latest | jq -r '.assets[] | select(.name | contains("x86_64-unknown-linux-gnu.tar.gz")) | .browser_download_url')
+          wget -O /tmp/binaries.tar.gz $URL
+          tar -C /tmp -xzf /tmp/binaries.tar.gz
+          mv /tmp/cross ~/.cargo/bin
+      - run: cross test --package aes --target ${{ matrix.target }}
+      - run: cross test --package aes --target ${{ matrix.target }} --features hazmat
+      - run: cross test --package aes --target ${{ matrix.target }} --all-features
 
   clippy:
+    env:
+      RUSTFLAGS: "-Dwarnings --cfg aes_compact"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: 1.49.0 # MSRV
+          toolchain: 1.56.0 # MSRV
           components: clippy
           override: true
           profile: minimal
-      - run: cargo clippy --features compact,ctr,hazmat -- -D warnings
+      - run: cargo clippy --features hazmat -- -D warnings

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.8.0 (2022-02-10)
+### Changed
+- Bump `cipher` dependency to v0.4 ([#284])
+
+### Added
+- Encrypt-only and decrypt-only cipher types ([#284])
+
+[#284]: https://github.com/RustCrypto/block-ciphers/pull/284
+
 ## 0.7.5 (2021-08-26)
 ### Changed
 - Bump `ctr` dependency to v0.8 ([#275])
@@ -58,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use `cfg-if` crate ([#203])
 - Rename `semi_fixslice` feature to `compact` ([#204])
 - Refactor NI backend ([#224], [#225])
-- Bump `cipher` crate dependency to v0.3 release ([#235])
+- Bump `cipher` crate dependency to v0.3 ([#235])
 - Bump `ctr` crate dependency to v0.7 ([#237])
 
 [#200]: https://github.com/RustCrypto/block-ciphers/pull/200

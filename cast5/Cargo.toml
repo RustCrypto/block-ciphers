@@ -1,24 +1,27 @@
 [package]
 name = "cast5"
-version = "0.10.0"
+version = "0.11.0" # Also update html_root_url in lib.rs when bumping this
 description = "CAST5 block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
+edition = "2021"
+rust-version = "1.56"
 readme = "README.md"
-edition = "2018"
 documentation = "https://docs.rs/cast5"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "cast5", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.3"
-opaque-debug = "0.3"
-byteorder = { version = "1", default-features = false }
+cipher = "0.4"
 
 [dev-dependencies]
-cipher = { version = "0.3", features = ["dev"] }
-hex-literal = "0.2"
+cipher = { version = "0.4", features = ["dev"] }
+hex-literal = "0.3"
 
 [features]
-default = []
+zeroize = ["cipher/zeroize"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

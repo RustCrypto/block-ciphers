@@ -11,28 +11,21 @@
 //! We do NOT recommending using it to implement any algorithm which has not
 //! received extensive peer review by cryptographers.
 
-use crate::{soft::fixslice::hazmat as soft, Block, ParBlocks};
+use crate::{soft::fixslice::hazmat as soft, Block, Block8};
 
-#[cfg(all(
-    target_arch = "aarch64",
-    feature = "armv8",
-    not(feature = "force-soft")
-))]
+#[cfg(all(target_arch = "aarch64", aes_armv8, not(aes_force_soft)))]
 use crate::armv8::hazmat as intrinsics;
 
-#[cfg(all(
-    any(target_arch = "x86_64", target_arch = "x86"),
-    not(feature = "force-soft")
-))]
+#[cfg(all(any(target_arch = "x86_64", target_arch = "x86"), not(aes_force_soft)))]
 use crate::ni::hazmat as intrinsics;
 
 #[cfg(all(
     any(
         target_arch = "x86",
         target_arch = "x86_64",
-        all(target_arch = "aarch64", feature = "armv8")
+        all(target_arch = "aarch64", aes_armv8)
     ),
-    not(feature = "force-soft")
+    not(aes_force_soft)
 ))]
 cpufeatures::new!(aes_intrinsics, "aes");
 
@@ -44,9 +37,9 @@ macro_rules! if_intrinsics_available {
             any(
                 target_arch = "x86",
                 target_arch = "x86_64",
-                all(target_arch = "aarch64", feature = "armv8")
+                all(target_arch = "aarch64", aes_armv8)
             ),
-            not(feature = "force-soft")
+            not(aes_force_soft)
         ))]
         if aes_intrinsics::get() {
             unsafe { $body }
@@ -87,7 +80,7 @@ pub fn cipher_round(block: &mut Block, round_key: &Block) {
 ///
 /// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
-pub fn cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+pub fn cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
     if_intrinsics_available! {
         intrinsics::cipher_round_par(blocks, round_keys)
     }
@@ -127,7 +120,7 @@ pub fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
 ///
 /// Use this function with great care! See the [module-level documentation][crate::hazmat]
 /// for more information.
-pub fn equiv_inv_cipher_round_par(blocks: &mut ParBlocks, round_keys: &ParBlocks) {
+pub fn equiv_inv_cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
     if_intrinsics_available! {
         intrinsics::equiv_inv_cipher_round_par(blocks, round_keys)
     }

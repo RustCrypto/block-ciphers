@@ -1,11 +1,12 @@
 [package]
 name = "serpent"
-version = "0.4.0"
+version = "0.5.0" # Also update html_root_url in lib.rs when bumping this
 description = "Serpent block cipher"
 authors = ["RustCrypto Developers"]
-license = "Apache-2.0 OR MIT"
+license = "MIT OR Apache-2.0"
+edition = "2021"
+rust-version = "1.56"
 readme = "README.md"
-edition = "2018"
 documentation = "https://docs.rs/serpent"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "serpent", "block-cipher"]
@@ -13,8 +14,14 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 byteorder = { version = "1", default-features = false }
-cipher = "0.3"
-opaque-debug = "0.3"
+cipher = "0.4"
 
 [dev-dependencies]
-cipher = { version = "0.3", features = ["dev"] }
+cipher = { version = "0.4", features = ["dev"] }
+
+[features]
+zeroize = ["cipher/zeroize"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

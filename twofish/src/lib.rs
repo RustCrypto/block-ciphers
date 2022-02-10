@@ -1,28 +1,39 @@
-//! Twofish block cipher
+//! Pure Rust implementation of the [Twofish] block cipher.
+//!
+//! # ⚠️ Security Warning: Hazmat!
+//!
+//! This crate implements only the low-level block cipher function, and is intended
+//! for use for implementing higher-level constructions *only*. It is NOT
+//! intended for direct use in applications.
+//!
+//! USE AT YOUR OWN RISK!
+//!
+//! [Twofish]: https://en.wikipedia.org/wiki/Twofish
 
 #![no_std]
 #![doc(
-    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
+    html_root_url = "https://docs.rs/twofish/0.7.0"
 )]
-#![forbid(unsafe_code)]
+#![deny(unsafe_code)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::needless_range_loop, clippy::unreadable_literal)]
 
 pub use cipher;
 
-use byteorder::{ByteOrder, LE};
 use cipher::{
-    consts::{U1, U16, U32},
-    errors::InvalidLength,
-    generic_array::GenericArray,
-    BlockCipher, BlockDecrypt, BlockEncrypt, NewBlockCipher,
+    consts::{U16, U32},
+    AlgorithmName, BlockCipher, InvalidLength, Key, KeyInit, KeySizeUser,
 };
+use core::fmt;
+
+#[cfg(feature = "zeroize")]
+use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 
 mod consts;
 use crate::consts::{MDS_POLY, QBOX, QORD, RS, RS_POLY};
-
-type Block = GenericArray<u8, U16>;
 
 /// Twofish block cipher
 #[derive(Clone)]
@@ -71,7 +82,7 @@ fn mds_column_mult(x: u8, column: usize) -> u32 {
         3 => [x5b, x, xef, x5b],
         _ => unreachable!(),
     };
-    LE::read_u32(&v)
+    u32::from_le_bytes(v)
 }
 
 fn mds_mult(y: [u8; 4]) -> u32 {
@@ -93,8 +104,7 @@ fn rs_mult(m: &[u8], out: &mut [u8]) {
 
 #[allow(clippy::many_single_char_names)]
 fn h(x: u32, m: &[u8], k: usize, offset: usize) -> u32 {
-    let mut y = [0u8; 4];
-    LE::write_u32(&mut y, x);
+    let mut y = x.to_le_bytes();
 
     if k == 4 {
         y[0] = sbox(1, y[0]) ^ m[4 * (6 + offset)];
@@ -162,13 +172,19 @@ impl Twofish {
     }
 }
 
-impl NewBlockCipher for Twofish {
-    type KeySize = U32;
+impl BlockCipher for Twofish {}
 
-    fn new(key: &GenericArray<u8, U32>) -> Self {
+impl KeySizeUser for Twofish {
+    type KeySize = U32;
+}
+
+impl KeyInit for Twofish {
+    #[inline]
+    fn new(key: &Key<Self>) -> Self {
         Self::new_from_slice(key).unwrap()
     }
 
+    #[inline]
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
         let n = key.len();
         if n != 16 && n != 24 && n != 32 {
@@ -184,79 +200,112 @@ impl NewBlockCipher for Twofish {
     }
 }
 
-impl BlockCipher for Twofish {
-    type BlockSize = U16;
-    type ParBlocks = U1;
+impl fmt::Debug for Twofish {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Twofish { ... }")
+    }
 }
 
-impl BlockEncrypt for Twofish {
-    fn encrypt_block(&self, block: &mut Block) {
-        let mut p = [0u32; 4];
-        LE::read_u32_into(block, &mut p);
+impl AlgorithmName for Twofish {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Twofish")
+    }
+}
+
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl Drop for Twofish {
+    fn drop(&mut self) {
+        self.s.zeroize();
+        self.k.zeroize();
+        self.start.zeroize();
+    }
+}
+
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl ZeroizeOnDrop for Twofish {}
+
+cipher::impl_simple_block_encdec!(
+    Twofish, U16, cipher, block,
+    encrypt: {
+        let b = block.get_in();
+        let mut p = [
+            u32::from_le_bytes(b[0..4].try_into().unwrap()),
+            u32::from_le_bytes(b[4..8].try_into().unwrap()),
+            u32::from_le_bytes(b[8..12].try_into().unwrap()),
+            u32::from_le_bytes(b[12..16].try_into().unwrap()),
+        ];
 
         // Input whitening
         for i in 0..4 {
-            p[i] ^= self.k[i];
+            p[i] ^= cipher.k[i];
         }
 
         for r in 0..8 {
             let k = 4 * r + 8;
 
-            let t1 = self.g_func(p[1].rotate_left(8));
-            let t0 = self.g_func(p[0]).wrapping_add(t1);
-            p[2] = (p[2] ^ (t0.wrapping_add(self.k[k]))).rotate_right(1);
-            let t2 = t1.wrapping_add(t0).wrapping_add(self.k[k + 1]);
+            let t1 = cipher.g_func(p[1].rotate_left(8));
+            let t0 = cipher.g_func(p[0]).wrapping_add(t1);
+            p[2] = (p[2] ^ (t0.wrapping_add(cipher.k[k]))).rotate_right(1);
+            let t2 = t1.wrapping_add(t0).wrapping_add(cipher.k[k + 1]);
             p[3] = p[3].rotate_left(1) ^ t2;
 
-            let t1 = self.g_func(p[3].rotate_left(8));
-            let t0 = self.g_func(p[2]).wrapping_add(t1);
-            p[0] = (p[0] ^ (t0.wrapping_add(self.k[k + 2]))).rotate_right(1);
-            let t2 = t1.wrapping_add(t0).wrapping_add(self.k[k + 3]);
+            let t1 = cipher.g_func(p[3].rotate_left(8));
+            let t0 = cipher.g_func(p[2]).wrapping_add(t1);
+            p[0] = (p[0] ^ (t0.wrapping_add(cipher.k[k + 2]))).rotate_right(1);
+            let t2 = t1.wrapping_add(t0).wrapping_add(cipher.k[k + 3]);
             p[1] = (p[1].rotate_left(1)) ^ t2;
         }
 
         // Undo last swap and output whitening
-        LE::write_u32(&mut block[0..4], p[2] ^ self.k[4]);
-        LE::write_u32(&mut block[4..8], p[3] ^ self.k[5]);
-        LE::write_u32(&mut block[8..12], p[0] ^ self.k[6]);
-        LE::write_u32(&mut block[12..16], p[1] ^ self.k[7]);
+        p[2] ^= cipher.k[4];
+        p[3] ^= cipher.k[5];
+        p[0] ^= cipher.k[6];
+        p[1] ^= cipher.k[7];
+
+        let block = block.get_out();
+        block[0..4].copy_from_slice(&p[2].to_le_bytes());
+        block[4..8].copy_from_slice(&p[3].to_le_bytes());
+        block[8..12].copy_from_slice(&p[0].to_le_bytes());
+        block[12..16].copy_from_slice(&p[1].to_le_bytes());
     }
-}
-
-impl BlockDecrypt for Twofish {
-    fn decrypt_block(&self, block: &mut Block) {
-        let mut c = [0u32; 4];
-
-        c[0] = LE::read_u32(&block[8..12]) ^ self.k[6];
-        c[1] = LE::read_u32(&block[12..16]) ^ self.k[7];
-        c[2] = LE::read_u32(&block[0..4]) ^ self.k[4];
-        c[3] = LE::read_u32(&block[4..8]) ^ self.k[5];
+    decrypt: {
+        let b = block.get_in();
+        let mut c = [
+            u32::from_le_bytes(b[8..12].try_into().unwrap()) ^ cipher.k[6],
+            u32::from_le_bytes(b[12..16].try_into().unwrap()) ^ cipher.k[7],
+            u32::from_le_bytes(b[0..4].try_into().unwrap()) ^ cipher.k[4],
+            u32::from_le_bytes(b[4..8].try_into().unwrap()) ^ cipher.k[5],
+        ];
 
         for r in (0..8).rev() {
             let k = 4 * r + 8;
 
-            let t1 = self.g_func(c[3].rotate_left(8));
-            let t0 = self.g_func(c[2]).wrapping_add(t1);
-            c[0] = c[0].rotate_left(1) ^ (t0.wrapping_add(self.k[k + 2]));
-            let t2 = t1.wrapping_add(t0).wrapping_add(self.k[k + 3]);
+            let t1 = cipher.g_func(c[3].rotate_left(8));
+            let t0 = cipher.g_func(c[2]).wrapping_add(t1);
+            c[0] = c[0].rotate_left(1) ^ (t0.wrapping_add(cipher.k[k + 2]));
+            let t2 = t1.wrapping_add(t0).wrapping_add(cipher.k[k + 3]);
             c[1] = (c[1] ^ t2).rotate_right(1);
 
-            let t1 = self.g_func(c[1].rotate_left(8));
-            let t0 = self.g_func(c[0]).wrapping_add(t1);
-            c[2] = c[2].rotate_left(1) ^ (t0.wrapping_add(self.k[k]));
-            let t2 = t1.wrapping_add(t0).wrapping_add(self.k[k + 1]);
+            let t1 = cipher.g_func(c[1].rotate_left(8));
+            let t0 = cipher.g_func(c[0]).wrapping_add(t1);
+            c[2] = c[2].rotate_left(1) ^ (t0.wrapping_add(cipher.k[k]));
+            let t2 = t1.wrapping_add(t0).wrapping_add(cipher.k[k + 1]);
             c[3] = (c[3] ^ t2).rotate_right(1);
         }
 
         for i in 0..4 {
-            c[i] ^= self.k[i];
+            c[i] ^= cipher.k[i];
         }
 
-        LE::write_u32_into(&c[..], block);
+        let block = block.get_out();
+        block[0..4].copy_from_slice(&c[0].to_le_bytes());
+        block[4..8].copy_from_slice(&c[1].to_le_bytes());
+        block[8..12].copy_from_slice(&c[2].to_le_bytes());
+        block[12..16].copy_from_slice(&c[3].to_le_bytes());
     }
-}
-
-opaque_debug::implement!(Twofish);
+);
 
 #[cfg(test)]
 mod tests;

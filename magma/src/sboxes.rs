@@ -3,7 +3,7 @@
 type ExpSbox = [[u8; 256]; 4];
 type SmallSbox = [[u8; 16]; 8];
 
-/// Trait implemented for the GOST 28147-89 cipher S-boxes
+/// Trait implemented for the GOST 28147-89 cipher S-boxes.
 pub trait Sbox {
     /// Expanded S-box
     const EXP_SBOX: ExpSbox;
@@ -11,6 +11,10 @@ pub trait Sbox {
     /// Unexpanded S-box
     const SBOX: SmallSbox;
 
+    /// S-Box name
+    const NAME: &'static str;
+
+    /// Generate expanded version of S-box.
     #[allow(clippy::needless_range_loop)]
     fn gen_exp_sbox() -> ExpSbox {
         let mut out = [[0u8; 256]; 4];
@@ -26,6 +30,7 @@ pub trait Sbox {
         out
     }
 
+    /// Apply S-box and return result.
     fn apply_sbox(a: u32) -> u32 {
         let mut v = 0;
         for i in 0..4 {
@@ -36,15 +41,17 @@ pub trait Sbox {
         v
     }
 
+    /// Function `g` based on the S-box.
     fn g(a: u32, k: u32) -> u32 {
         Self::apply_sbox(a.wrapping_add(k)).rotate_left(11)
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub enum Tc26 {}
 
 impl Sbox for Tc26 {
+    const NAME: &'static str = "Tc26";
     const EXP_SBOX: ExpSbox = [
         [
             108, 100, 102, 98, 106, 101, 107, 105, 110, 104, 109, 103, 96, 99, 111, 97, 140, 132,
@@ -124,10 +131,11 @@ impl Sbox for Tc26 {
     ];
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub enum TestSbox {}
 
 impl Sbox for TestSbox {
+    const NAME: &'static str = "TestSbox";
     const EXP_SBOX: ExpSbox = [
         [
             228, 234, 233, 226, 237, 232, 224, 238, 230, 235, 225, 236, 231, 239, 229, 227, 180,
@@ -207,10 +215,11 @@ impl Sbox for TestSbox {
     ];
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub enum CryptoProA {}
 
 impl Sbox for CryptoProA {
+    const NAME: &'static str = "CryptoProA";
     const EXP_SBOX: ExpSbox = [
         [
             57, 54, 51, 50, 56, 59, 49, 55, 58, 52, 62, 63, 60, 48, 61, 53, 121, 118, 115, 114,
@@ -290,10 +299,11 @@ impl Sbox for CryptoProA {
     ];
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub enum CryptoProB {}
 
 impl Sbox for CryptoProB {
+    const NAME: &'static str = "CryptoProB";
     const EXP_SBOX: ExpSbox = [
         [
             8, 4, 11, 1, 3, 5, 0, 9, 2, 14, 10, 12, 13, 6, 7, 15, 24, 20, 27, 17, 19, 21, 16, 25,
@@ -373,10 +383,11 @@ impl Sbox for CryptoProB {
     ];
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub enum CryptoProC {}
 
 impl Sbox for CryptoProC {
+    const NAME: &'static str = "CryptoProC";
     const EXP_SBOX: ExpSbox = [
         [
             1, 11, 12, 2, 9, 13, 0, 15, 4, 5, 8, 14, 10, 7, 6, 3, 17, 27, 28, 18, 25, 29, 16, 31,
@@ -456,10 +467,11 @@ impl Sbox for CryptoProC {
     ];
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub enum CryptoProD {}
 
 impl Sbox for CryptoProD {
+    const NAME: &'static str = "CryptoProD";
     const EXP_SBOX: ExpSbox = [
         [
             90, 84, 85, 86, 88, 81, 83, 87, 93, 92, 94, 80, 89, 82, 91, 95, 250, 244, 245, 246,
