@@ -13,11 +13,10 @@ keywords = ["crypto", "magma", "gost", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.4.1"
-typenum = "1.14"
+cipher = "0.4.2"
 
 [dev-dependencies]
-cipher = { version = "0.4.1", features = ["dev"] }
+cipher = { version = "0.4.2", features = ["dev"] }
 hex-literal = "0.3.3"
 
 [features]

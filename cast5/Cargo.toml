@@ -13,10 +13,10 @@ keywords = ["crypto", "cast5", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.4.1"
+cipher = "0.4.2"
 
 [dev-dependencies]
-cipher = { version = "0.4.1", features = ["dev"] }
+cipher = { version = "0.4.2", features = ["dev"] }
 hex-literal = "0.3"
 
 [features]
