@@ -42,7 +42,7 @@ macro_rules! impl_test {
 }
 
 impl_test! {
-    test_threefish_256,
+    threefish_256,
     Threefish256,
     [
         Vector {
@@ -73,7 +73,7 @@ impl_test! {
 }
 
 impl_test! {
-    test_threefish_512,
+    threefish_512,
     Threefish512,
     [
         Vector {
@@ -181,7 +181,7 @@ impl_test! {
 }
 
 impl_test! {
-    test_threefish_1024,
+    threefish_1024,
     Threefish1024,
     [
         Vector {

@@ -1,6 +1,6 @@
 [package]
 name = "kuznyechik"
-version = "0.8.0" # Also update html_root_url in lib.rs when bumping this
+version = "0.8.1" # Also update html_root_url in lib.rs when bumping this
 description = "Kuznyechik (GOST R 34.12-2015) block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -13,11 +13,11 @@ keywords = ["crypto", "kuznyechik", "gost", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.4"
+cipher = "0.4.1"
 
 [dev-dependencies]
-cipher = { version = "0.4", features = ["dev"] }
-hex-literal = "0.3"
+cipher = { version = "0.4.1", features = ["dev"] }
+hex-literal = "0.3.3"
 
 [features]
 zeroize = ["cipher/zeroize"]
