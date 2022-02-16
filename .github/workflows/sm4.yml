@@ -47,7 +47,6 @@ jobs:
         override: true
         profile: minimal
     - run: rm ../Cargo.toml
-    - run: rm ../Cargo.lock
     - run: cargo update -Z minimal-versions
     - run: cargo test --release
     - run: cargo test --release --all-features
