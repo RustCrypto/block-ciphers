@@ -44,7 +44,7 @@ macro_rules! new_test {
 }
 
 new_test!(
-    encrypt_ecb128,
+    twofish_128bit_key,
     16,
     "9F589F5CF6122C32B6BFEC2F2AE8C35A",
     "D491DB16E7B1C39E86CB086B789F5419",
@@ -55,7 +55,7 @@ new_test!(
 );
 
 new_test!(
-    encrypt_ecb192,
+    twofish_192bit_key,
     24,
     "EFA71F788965BD4453F860178FC19101",
     "88B2B2706B105E36B446BB6D731A1E88",
@@ -66,7 +66,7 @@ new_test!(
 );
 
 new_test!(
-    encrypt_ecb256,
+    twofish_256bit_key,
     32,
     "57FF739D4DC92C1BD7FC01700CC8216F",
     "D43BB7556EA32E46F2A282B7D45B4E0D",

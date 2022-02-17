@@ -1,6 +1,6 @@
 [package]
 name = "aes"
-version = "0.8.0" # Also update html_root_url in lib.rs when bumping this
+version = "0.8.1" # Also update html_root_url in lib.rs when bumping this
 description = "Pure Rust implementation of the Advanced Encryption Standard (a.k.a. Rijndael)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -14,13 +14,13 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 cfg-if = "1"
-cipher = "0.4"
+cipher = "0.4.2"
 
 [target.'cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))'.dependencies]
 cpufeatures = "0.2"
 
 [dev-dependencies]
-cipher = { version = "0.4", features = ["dev"] }
+cipher = { version = "0.4.2", features = ["dev"] }
 hex-literal = "0.3"
 
 [features]

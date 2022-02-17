@@ -14,7 +14,7 @@
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
-    html_root_url = "https://docs.rs/serpent/0.5.0"
+    html_root_url = "https://docs.rs/serpent/0.5.1"
 )]
 #![deny(unsafe_code)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
