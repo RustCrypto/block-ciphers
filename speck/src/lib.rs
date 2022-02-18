@@ -18,6 +18,7 @@ use cipher::{
     AlgorithmName, BlockCipher, Key, KeyInit, KeySizeUser,
 };
 use core::fmt;
+use core::mem::size_of;
 
 macro_rules! define_speck_impl {
     (
@@ -42,26 +43,19 @@ macro_rules! define_speck_impl {
 
         impl $name {
             #[inline]
-            fn from_be_bytes(bytes: [u8; $n / 8]) -> $word_type {
-                // We can't use $word_type::from_be_bytes here because the word size might be different from the word type.
-                let mut word = 0;
-                for i in 0..($n / 8) {
-                    word <<= 8;
-                    word |= <$word_type>::from(bytes[i]);
-                }
-                word
+            fn from_be_bytes(bytes: &[u8]) -> $word_type {
+                let mut tmp = [0u8; size_of::<$word_type>()];
+                let offset = size_of::<$word_type>() - $n / 8;
+                tmp[offset..].copy_from_slice(bytes);
+                <$word_type>::from_be_bytes(tmp)
             }
 
             #[inline]
             #[allow(clippy::wrong_self_convention)]
-            fn to_be_bytes(mut word: $word_type) -> [u8; $n / 8] {
-                // We can't use $word_type.to_be_bytes here because the word size might be different from the word type.
-                let mut bytes = [0; $n / 8];
-                for i in (0..($n / 8)).rev() {
-                    bytes[i] = (word & 0xFF).try_into().unwrap();
-                    word >>= 8;
-                }
-                bytes
+            fn to_be_bytes(word: $word_type) -> [u8; $n / 8] {
+                let tmp = word.to_be_bytes();
+                let offset = size_of::<$word_type>() - $n / 8;
+                tmp[offset..].try_into().unwrap()
             }
 
             #[inline]
@@ -115,13 +109,11 @@ macro_rules! define_speck_impl {
             fn new(key: &Key<Self>) -> Self {
                 let mut k = [0; $rounds];
                 let mut l = [0; $m - 1 + $rounds - 1];
-                k[0] = $name::from_be_bytes(
-                    key[($m - 1) * ($n / 8)..($m) * ($n / 8)].try_into().unwrap()
-                );
+                k[0] = $name::from_be_bytes(&key[($m - 1) * ($n / 8)..($m) * ($n / 8)]);
 
                 for i in 0..$m - 1 {
                     l[i] = $name::from_be_bytes(
-                        key[($m - 2 - i) * ($n / 8)..($m - 1 - i) * ($n / 8)].try_into().unwrap()
+                        &key[($m - 2 - i) * ($n / 8)..($m - 1 - i) * ($n / 8)]
                     );
                 }
 
@@ -150,8 +142,8 @@ macro_rules! define_speck_impl {
         cipher::impl_simple_block_encdec!($name, $block_size, cipher, block,
             encrypt: {
                 let b = block.get_in();
-                let mut x = $name::from_be_bytes(b[0..($n / 8)].try_into().unwrap());
-                let mut y = $name::from_be_bytes(b[($n / 8)..2 * ($n / 8)].try_into().unwrap());
+                let mut x = $name::from_be_bytes(&b[0..($n / 8)]);
+                let mut y = $name::from_be_bytes(&b[($n / 8)..2 * ($n / 8)]);
                 for i in 0..$rounds {
                     let res = $name::round_function(cipher.k[i], x, y);
                     x = res.0;
@@ -164,8 +156,8 @@ macro_rules! define_speck_impl {
             }
             decrypt: {
                 let b = block.get_in();
-                let mut x = $name::from_be_bytes(b[0..($n / 8)].try_into().unwrap());
-                let mut y = $name::from_be_bytes(b[($n / 8)..2 * ($n / 8)].try_into().unwrap());
+                let mut x = $name::from_be_bytes(&b[0..($n / 8)]);
+                let mut y = $name::from_be_bytes(&b[($n / 8)..2 * ($n / 8)]);
                 for i in (0..$rounds).rev() {
                     let res = $name::inverse_round_function(cipher.k[i], x, y);
                     x = res.0;
