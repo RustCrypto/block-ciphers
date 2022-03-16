@@ -122,6 +122,9 @@ macro_rules! define_aes_impl {
             }
         }
 
+        #[cfg(feature = "zeroize")]
+        impl zeroize::ZeroizeOnDrop for $name {}
+
         #[doc=$doc]
         #[doc = "block cipher (encrypt-only)"]
         #[derive(Clone)]
@@ -171,6 +174,17 @@ macro_rules! define_aes_impl {
                 f.write_str(stringify!($name_enc))
             }
         }
+
+        impl Drop for $name_enc {
+            #[inline]
+            fn drop(&mut self) {
+                #[cfg(feature = "zeroize")]
+                zeroize::Zeroize::zeroize(&mut self.round_keys);
+            }
+        }
+
+        #[cfg(feature = "zeroize")]
+        impl zeroize::ZeroizeOnDrop for $name_enc {}
 
         #[doc=$doc]
         #[doc = "block cipher (decrypt-only)"]
@@ -234,6 +248,17 @@ macro_rules! define_aes_impl {
                 f.write_str(stringify!($name_dec))
             }
         }
+
+        impl Drop for $name_dec {
+            #[inline]
+            fn drop(&mut self) {
+                #[cfg(feature = "zeroize")]
+                zeroize::Zeroize::zeroize(&mut self.round_keys);
+            }
+        }
+
+        #[cfg(feature = "zeroize")]
+        impl zeroize::ZeroizeOnDrop for $name_dec {}
 
         pub(crate) struct $name_back_enc<'a>(&'a $name_enc);
 
