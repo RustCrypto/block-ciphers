@@ -3,6 +3,7 @@ name: aes
 on:
   pull_request:
     paths:
+      - ".github/workflows/aes.yml"
       - "aes/**"
       - "Cargo.*"
   push:
@@ -39,8 +40,8 @@ jobs:
           override: true
       - run: cargo check
       - run: |
-        cargo build --target ${{ matrix.target }}
-        cargo build --target ${{ matrix.target }} --features hazmat
+          cargo build --target ${{ matrix.target }}
+          cargo build --target ${{ matrix.target }} --features hazmat
       - env:
           RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
         run: |
@@ -205,8 +206,8 @@ jobs:
           tar -C /tmp -xzf /tmp/binaries.tar.gz
           mv /tmp/cross ~/.cargo/bin
       - run: |
-        cross test --package aes --target ${{ matrix.target }}
-        cross test --package aes --target ${{ matrix.target }} --features hazmat
+          cross test --package aes --target ${{ matrix.target }}
+          cross test --package aes --target ${{ matrix.target }} --features hazmat
       - env:
           RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
         run: |

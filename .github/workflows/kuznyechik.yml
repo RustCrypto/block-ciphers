@@ -3,6 +3,7 @@ name: kuznyechik
 on:
   pull_request:
     paths:
+      - ".github/workflows/kuznyechik.yml"
       - "kuznyechik/**"
       - "Cargo.*"
   push:
@@ -62,8 +63,8 @@ jobs:
           override: true
           profile: minimal
       - run: |
-        cargo test
-        cargo test --all-features
+          cargo test
+          cargo test --all-features
       - env:
           RUSTFLAGS: "-Dwarnings --cfg kuznyechik_force_soft"
         run: |
