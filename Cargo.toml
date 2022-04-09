@@ -2,6 +2,7 @@
 members = [
     "aes",
     "blowfish",
+    "camellia",
     "cast5",
     "des",
     "idea",
