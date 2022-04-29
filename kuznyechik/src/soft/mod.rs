@@ -1,7 +1,7 @@
 use crate::{BlockSize, Key, KeySize};
 use cipher::{
-    AlgorithmName, BlockCipher, BlockClosure, BlockDecrypt, BlockEncrypt, BlockSizeUser, KeyInit,
-    KeySizeUser,
+    consts::U1, AlgorithmName, BlockCipher, BlockClosure, BlockDecrypt, BlockEncrypt,
+    BlockSizeUser, KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
 use core::fmt;
 
@@ -63,6 +63,10 @@ impl BlockDecrypt for Kuznyechik {
     fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = BlockSize>) {
         f.call(&mut DecBackend(&self.keys));
     }
+}
+
+impl ParBlocksSizeUser for Kuznyechik {
+    type ParBlocksSize = U1;
 }
 
 impl fmt::Debug for Kuznyechik {
