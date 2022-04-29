@@ -13,7 +13,7 @@ use core::arch::x86_64::*;
 
 pub(super) type RoundKeys = [__m128i; 10];
 
-type ParBlocksSize = U4;
+pub(crate) type ParBlocksSize = U4;
 
 #[rustfmt::skip]
 macro_rules! unroll_par {
