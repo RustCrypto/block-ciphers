@@ -121,6 +121,10 @@ macro_rules! define_aes_impl {
             }
         }
 
+        impl ParBlocksSizeUser for $name {
+            type ParBlocksSize = U8;
+        }
+
         impl fmt::Debug for $name {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
                 f.write_str(concat!(stringify!($name), " { .. }"))
