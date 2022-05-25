@@ -284,7 +284,7 @@ macro_rules! impl_camellia {
         #[cfg(feature = "zeroize")]
         #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
         impl Drop for $name {
-            fn drop(&mut self){
+            fn drop(&mut self) {
                 self.k.zeroize();
             }
         }
