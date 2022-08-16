@@ -5,6 +5,7 @@ members = [
     "camellia",
     "cast5",
     "des",
+    "gift",
     "idea",
     "kuznyechik",
     "magma",
