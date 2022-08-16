@@ -1,16 +1,24 @@
-// This implementation is based on the 
+// This implementation is based on the
 // 32-bit word oriented C implementation https://github.com/aadomn/gift/tree/master/crypto_bc/gift128/opt32 from https://github.com/aadomn/gift
 
-use cipher::{
-    consts::{U16},
-    BlockCipher, Key, KeyInit, KeySizeUser,
-};
+use cipher::{consts::U16, BlockCipher, Key, KeyInit, KeySizeUser};
 use core::fmt;
 
 #[cfg(feature = "zeroize")]
 use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 
-use crate::{consts::{GIFT_RC}, primitives::{u32big, swapmovesingle, packing, unpacking, quintuple_round, inv_quintuple_round}, key_schedule::{key_update, rearrange_rkey_0, rearrange_rkey_1, rearrange_rkey_2, rearrange_rkey_3, key_triple_update_0, key_double_update_1, key_triple_update_2, key_triple_update_3, key_double_update_4, key_triple_update_1, key_double_update_2, key_double_update_3, key_triple_update_4}};
+use crate::{
+    consts::GIFT_RC,
+    key_schedule::{
+        key_double_update_1, key_double_update_2, key_double_update_3, key_double_update_4,
+        key_triple_update_0, key_triple_update_1, key_triple_update_2, key_triple_update_3,
+        key_triple_update_4, key_update, rearrange_rkey_0, rearrange_rkey_1, rearrange_rkey_2,
+        rearrange_rkey_3,
+    },
+    primitives::{
+        inv_quintuple_round, packing, quintuple_round, swapmovesingle, u32big, unpacking,
+    },
+};
 
 impl Gift128 {
     #[inline]
@@ -20,37 +28,37 @@ impl Gift128 {
         rkey[1] = u32big(&(key[4..8]));
         rkey[2] = u32big(&(key[8..12]));
         rkey[3] = u32big(&(key[0..4]));
-    
+
         for i in (0..16).step_by(2) {
-            rkey[i+4] = rkey[i+1];
-            rkey[i+5] = key_update(&rkey[i]);
+            rkey[i + 4] = rkey[i + 1];
+            rkey[i + 5] = key_update(&rkey[i]);
         }
-    
+
         for i in (0..20).step_by(10) {
             rkey[i] = rearrange_rkey_0(&rkey[i]);
-            rkey[i+1] = rearrange_rkey_0(&rkey[i+1]);
-            rkey[i+2]	= rearrange_rkey_1(&rkey[i + 2]);
-            rkey[i+3]	= rearrange_rkey_1(&rkey[i + 3]);
-            rkey[i+4]	= rearrange_rkey_2(&rkey[i + 4]);
-            rkey[i+5]	= rearrange_rkey_2(&rkey[i + 5]);
-            rkey[i+6]	= rearrange_rkey_3(&rkey[i + 6]);
-            rkey[i+7]	= rearrange_rkey_3(&rkey[i + 7]);
+            rkey[i + 1] = rearrange_rkey_0(&rkey[i + 1]);
+            rkey[i + 2] = rearrange_rkey_1(&rkey[i + 2]);
+            rkey[i + 3] = rearrange_rkey_1(&rkey[i + 3]);
+            rkey[i + 4] = rearrange_rkey_2(&rkey[i + 4]);
+            rkey[i + 5] = rearrange_rkey_2(&rkey[i + 5]);
+            rkey[i + 6] = rearrange_rkey_3(&rkey[i + 6]);
+            rkey[i + 7] = rearrange_rkey_3(&rkey[i + 7]);
         }
-    
+
         for i in (20..80).step_by(10) {
-            rkey[i] = rkey[i-19];
-            rkey[i+1] = key_triple_update_0(&rkey[i-20]);
-            rkey[i+2] = key_double_update_1(&rkey[i-17]);
-            rkey[i+3] = key_triple_update_1(&rkey[i-18]);
-            rkey[i+4] = key_double_update_2(&rkey[i-15]);
-            rkey[i+5] = key_triple_update_2(&rkey[i-16]);
-            rkey[i+6] = key_double_update_3(&rkey[i-13]);
-            rkey[i+7] = key_triple_update_3(&rkey[i-14]);
-            rkey[i+8] = key_double_update_4(&rkey[i-11]);
-            rkey[i+9] = key_triple_update_4(&rkey[i-12]);
-            swapmovesingle(&mut rkey[i],  0x00003333, 16);
-            swapmovesingle(&mut rkey[i],  0x55554444, 1);
-            swapmovesingle(&mut rkey[i+1],  0x55551100, 1);
+            rkey[i] = rkey[i - 19];
+            rkey[i + 1] = key_triple_update_0(&rkey[i - 20]);
+            rkey[i + 2] = key_double_update_1(&rkey[i - 17]);
+            rkey[i + 3] = key_triple_update_1(&rkey[i - 18]);
+            rkey[i + 4] = key_double_update_2(&rkey[i - 15]);
+            rkey[i + 5] = key_triple_update_2(&rkey[i - 16]);
+            rkey[i + 6] = key_double_update_3(&rkey[i - 13]);
+            rkey[i + 7] = key_triple_update_3(&rkey[i - 14]);
+            rkey[i + 8] = key_double_update_4(&rkey[i - 11]);
+            rkey[i + 9] = key_triple_update_4(&rkey[i - 12]);
+            swapmovesingle(&mut rkey[i], 0x00003333, 16);
+            swapmovesingle(&mut rkey[i], 0x55554444, 1);
+            swapmovesingle(&mut rkey[i + 1], 0x55551100, 1);
         }
 
         Self { k: rkey }

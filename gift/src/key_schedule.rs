@@ -2,42 +2,42 @@ use crate::primitives::{ror, swapmovesingle};
 
 #[inline]
 pub(crate) fn rearrange_rkey_0(x: &u32) -> u32 {
-	let mut tmp = *x;
+    let mut tmp = *x;
     swapmovesingle(&mut tmp, 0x00550055, 9);
     swapmovesingle(&mut tmp, 0x000f000f, 12);
     swapmovesingle(&mut tmp, 0x00003333, 18);
     swapmovesingle(&mut tmp, 0x000000ff, 24);
-	tmp
+    tmp
 }
 
 #[inline]
-pub(crate) fn rearrange_rkey_1(x: &u32) -> u32{
-	let mut tmp = *x;
+pub(crate) fn rearrange_rkey_1(x: &u32) -> u32 {
+    let mut tmp = *x;
     swapmovesingle(&mut tmp, 0x11111111, 3);
     swapmovesingle(&mut tmp, 0x03030303, 6);
     swapmovesingle(&mut tmp, 0x000f000f, 12);
     swapmovesingle(&mut tmp, 0x000000ff, 24);
-	tmp
+    tmp
 }
 
 #[inline]
 pub(crate) fn rearrange_rkey_2(x: &u32) -> u32 {
-	let mut tmp = *x;
+    let mut tmp = *x;
     swapmovesingle(&mut tmp, 0x0000aaaa, 15);
     swapmovesingle(&mut tmp, 0x00003333, 18);
     swapmovesingle(&mut tmp, 0x0000f0f0, 12);
     swapmovesingle(&mut tmp, 0x000000ff, 24);
-	tmp
+    tmp
 }
 
 #[inline]
 pub(crate) fn rearrange_rkey_3(x: &u32) -> u32 {
-	let mut tmp = *x;
+    let mut tmp = *x;
     swapmovesingle(&mut tmp, 0x0a0a0a0a, 3);
     swapmovesingle(&mut tmp, 0x00cc00cc, 6);
     swapmovesingle(&mut tmp, 0x0000f0f0, 12);
     swapmovesingle(&mut tmp, 0x000000ff, 24);
-	tmp
+    tmp
 }
 
 #[inline]

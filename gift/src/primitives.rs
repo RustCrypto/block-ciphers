@@ -1,9 +1,6 @@
 #[inline]
 pub(crate) fn u32big(x: &[u8]) -> u32 {
-    ((x[0] as u32) << 24) |
-    ((x[1] as u32) << 16) |
-    ((x[2] as u32) <<  8) |
-    (x[3] as u32)
+    ((x[0] as u32) << 24) | ((x[1] as u32) << 16) | ((x[2] as u32) << 8) | (x[3] as u32)
 }
 
 #[inline]
@@ -94,14 +91,22 @@ pub(crate) fn inv_sbox(s0: &mut u32, s1: &mut u32, s2: &mut u32, s3: &mut u32) {
 
 #[inline]
 pub(crate) fn packing(state: &mut [u32], input: &[u8]) {
-    let mut s0 =	((input[6] as u32) << 24)	| ((input[7] as u32) << 16)	|
-				((input[14] as u32) << 8)	| input[15] as u32;
-	let mut s1 =	((input[4] as u32) << 24)	| ((input[5] as u32) << 16)	|
-				((input[12] as u32) << 8)	| input[13] as u32;
-	let mut s2 =	((input[2] as u32) << 24)	| ((input[3] as u32) << 16)	|
-				((input[10] as u32 ) << 8)	| input[11] as u32;
-	let mut s3 =	((input[0] as u32) << 24)	| ((input[1] as u32) << 16)	|
-				((input[8] as u32) << 8)		| input[9] as u32;
+    let mut s0 = ((input[6] as u32) << 24)
+        | ((input[7] as u32) << 16)
+        | ((input[14] as u32) << 8)
+        | input[15] as u32;
+    let mut s1 = ((input[4] as u32) << 24)
+        | ((input[5] as u32) << 16)
+        | ((input[12] as u32) << 8)
+        | input[13] as u32;
+    let mut s2 = ((input[2] as u32) << 24)
+        | ((input[3] as u32) << 16)
+        | ((input[10] as u32) << 8)
+        | input[11] as u32;
+    let mut s3 = ((input[0] as u32) << 24)
+        | ((input[1] as u32) << 16)
+        | ((input[8] as u32) << 8)
+        | input[9] as u32;
     swapmovesingle(&mut s0, 0x0a0a0a0a, 3);
     swapmovesingle(&mut s0, 0x00cc00cc, 6);
     swapmovesingle(&mut s1, 0x0a0a0a0a, 3);
@@ -125,10 +130,10 @@ pub(crate) fn unpacking(state: &[u32], output: &mut [u8]) {
 
     swapmove(&mut s2, &mut s3, 0x0f000f00, 4);
     swapmove(&mut s1, &mut s3, 0x00f000f0, 8);
-    swapmove(&mut s1,&mut  s2, 0x00f000f0, 4);
-    swapmove(&mut s0,&mut  s3, 0x000f000f, 12);
-    swapmove(&mut s0,&mut  s2, 0x000f000f, 8);
-    swapmove(&mut s0,&mut  s1, 0x000f000f, 4);
+    swapmove(&mut s1, &mut s2, 0x00f000f0, 4);
+    swapmove(&mut s0, &mut s3, 0x000f000f, 12);
+    swapmove(&mut s0, &mut s2, 0x000f000f, 8);
+    swapmove(&mut s0, &mut s1, 0x000f000f, 4);
     swapmovesingle(&mut s3, 0x00cc00cc, 6);
     swapmovesingle(&mut s3, 0x0a0a0a0a, 3);
     swapmovesingle(&mut s2, 0x00cc00cc, 6);
@@ -137,14 +142,22 @@ pub(crate) fn unpacking(state: &[u32], output: &mut [u8]) {
     swapmovesingle(&mut s1, 0x0a0a0a0a, 3);
     swapmovesingle(&mut s0, 0x00cc00cc, 6);
     swapmovesingle(&mut s0, 0x0a0a0a0a, 3);
-	output[0] = (s3 >> 24) as u8; output[1] = ((s3 >> 16) & 0xff) as u8;
-	output[2] = (s2 >> 24) as u8; output[3] = ((s2 >> 16) & 0xff) as u8;
-	output[4] = (s1 >> 24) as u8; output[5] = ((s1 >> 16) & 0xff) as u8;
-	output[6] = (s0 >> 24) as u8; output[7] = ((s0 >> 16) & 0xff) as u8;
-	output[8] = ((s3 >> 8) & 0xff) as u8; output[9] = (s3 & 0xff) as u8;
-	output[10] = ((s2 >> 8) & 0xff) as u8; output[11] = (s2 & 0xff) as u8;
-	output[12] = ((s1 >> 8) & 0xff) as u8; output[13] = (s1 & 0xff) as u8;
-	output[14] = ((s0 >> 8) & 0xff) as u8; output[15] = (s0 & 0xff) as u8;
+    output[0] = (s3 >> 24) as u8;
+    output[1] = ((s3 >> 16) & 0xff) as u8;
+    output[2] = (s2 >> 24) as u8;
+    output[3] = ((s2 >> 16) & 0xff) as u8;
+    output[4] = (s1 >> 24) as u8;
+    output[5] = ((s1 >> 16) & 0xff) as u8;
+    output[6] = (s0 >> 24) as u8;
+    output[7] = ((s0 >> 16) & 0xff) as u8;
+    output[8] = ((s3 >> 8) & 0xff) as u8;
+    output[9] = (s3 & 0xff) as u8;
+    output[10] = ((s2 >> 8) & 0xff) as u8;
+    output[11] = (s2 & 0xff) as u8;
+    output[12] = ((s1 >> 8) & 0xff) as u8;
+    output[13] = (s1 & 0xff) as u8;
+    output[14] = ((s0 >> 8) & 0xff) as u8;
+    output[15] = (s0 & 0xff) as u8;
 }
 
 #[inline]
@@ -214,29 +227,29 @@ pub(crate) fn inv_quintuple_round(state: &mut [u32; 4], rkey: &[u32], rconst: &[
     s0 = byte_ror_2(&s0);
     s1 = byte_ror_4(&s1);
     s2 = byte_ror_6(&s2);
-    inv_sbox(&mut s0, &mut s1, &mut s2, &mut s3);		
-	s1 ^= rkey[4];									
-	s2 ^= rkey[5];									
-	s0 ^= rconst[2];								
-	swapmovesingle(&mut s3, 0x55550000, 1);			
-	swapmovesingle(&mut s1, 0x55555555, 1);			
-	swapmovesingle(&mut s2, 0x00005555, 1);			
-	s3 = ror(&s3, &16);							
-	s2 = ror(&s2, &16);							
-	inv_sbox(&mut s3, &mut s1, &mut s2, &mut s0);
-	s1 ^= rkey[2];									
-	s2 ^= rkey[3];									
-	s3 ^= rconst[1];								
-	s0 = half_ror_12(&s0);						
-	s1 = half_ror_8(&s1);						
-	s2 = half_ror_4(&s2);						
-	inv_sbox(&mut s0, &mut s1, &mut s2, &mut s3);		
-	s1 ^= rkey[0];									
-	s2 ^= rkey[1];									
-	s0 ^= rconst[0];								
-	s3 = nibble_ror_3(&s3);						
-	s1 = nibble_ror_2(&s1);						
-	s2 = nibble_ror_1(&s2);						
-	inv_sbox(&mut s3, &mut s1, &mut s2, &mut s0);
+    inv_sbox(&mut s0, &mut s1, &mut s2, &mut s3);
+    s1 ^= rkey[4];
+    s2 ^= rkey[5];
+    s0 ^= rconst[2];
+    swapmovesingle(&mut s3, 0x55550000, 1);
+    swapmovesingle(&mut s1, 0x55555555, 1);
+    swapmovesingle(&mut s2, 0x00005555, 1);
+    s3 = ror(&s3, &16);
+    s2 = ror(&s2, &16);
+    inv_sbox(&mut s3, &mut s1, &mut s2, &mut s0);
+    s1 ^= rkey[2];
+    s2 ^= rkey[3];
+    s3 ^= rconst[1];
+    s0 = half_ror_12(&s0);
+    s1 = half_ror_8(&s1);
+    s2 = half_ror_4(&s2);
+    inv_sbox(&mut s0, &mut s1, &mut s2, &mut s3);
+    s1 ^= rkey[0];
+    s2 ^= rkey[1];
+    s0 ^= rconst[0];
+    s3 = nibble_ror_3(&s3);
+    s1 = nibble_ror_2(&s1);
+    s2 = nibble_ror_1(&s2);
+    inv_sbox(&mut s3, &mut s1, &mut s2, &mut s0);
     (state[0], state[1], state[2], state[3]) = (s0, s1, s2, s3);
 }
