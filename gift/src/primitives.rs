@@ -121,7 +121,10 @@ pub(crate) fn packing(state: &mut [u32], input: &[u8]) {
     swapmove(&mut s1, &mut s2, 0x00f000f0, 4);
     swapmove(&mut s1, &mut s3, 0x00f000f0, 8);
     swapmove(&mut s2, &mut s3, 0x0f000f00, 4);
-    (state[0], state[1], state[2], state[3]) = (s0, s1, s2, s3);
+    state[0] = s0;
+    state[1] = s1;
+    state[2] = s2;
+    state[3] = s3;
 }
 
 #[inline]
@@ -204,7 +207,10 @@ pub(crate) fn quintuple_round(state: &mut [u32; 4], rkey: &[u32], rconst: &[u32]
     s2 ^= rkey[9];
     s0 ^= rconst[4];
     core::mem::swap(&mut s0, &mut s3);
-    (state[0], state[1], state[2], state[3]) = (s0, s1, s2, s3);
+    state[0] = s0;
+    state[1] = s1;
+    state[2] = s2;
+    state[3] = s3;
 }
 
 #[inline]
@@ -251,5 +257,8 @@ pub(crate) fn inv_quintuple_round(state: &mut [u32; 4], rkey: &[u32], rconst: &[
     s1 = nibble_ror_2(&s1);
     s2 = nibble_ror_1(&s2);
     inv_sbox(&mut s3, &mut s1, &mut s2, &mut s0);
-    (state[0], state[1], state[2], state[3]) = (s0, s1, s2, s3);
+    state[0] = s0;
+    state[1] = s1;
+    state[2] = s2;
+    state[3] = s3;
 }
