@@ -280,7 +280,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "gift"
+name = "gift_cipher"
 version = "0.0.1"
 dependencies = [
  "cipher",

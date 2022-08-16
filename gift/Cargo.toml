@@ -1,5 +1,5 @@
 [package]
-name = "gift"
+name = "gift_cipher"
 version = "0.0.1"
 description = "Gift block cipher"
 authors = ["RustCrypto Developers", "Schmid7k"]
@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 rust-version = "1.56"
 edition = "2021"
 readme = "README.md"
-documentation = "https://docs.rs/gift"
+documentation = "https://docs.rs/gift-cipher"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "gift", "block-cipher"]
 categories = ["cryptography", "no-std"]

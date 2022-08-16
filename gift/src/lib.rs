@@ -10,9 +10,9 @@
 //!
 //! # Examples
 //! ```
-//! use gift::cipher::generic_array::GenericArray;
-//! use gift::cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
-//! use gift::Gift128;
+//! use gift_cipher::cipher::generic_array::GenericArray;
+//! use gift_cipher::cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
+//! use gift_cipher::Gift128;
 //!
 //! let key = GenericArray::from([0u8; 16]);
 //! let mut block = GenericArray::from([0u8; 16]);
@@ -37,7 +37,7 @@
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
-    html_root_url = "https://docs.rs/gift/0.0.1"
+    html_root_url = "https://docs.rs/gift-cipher/0.0.1"
 )]
 #![deny(unsafe_code)]
 #![cfg_attr(docsrs, feature(doc_cfg))]

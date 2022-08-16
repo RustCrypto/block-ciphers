@@ -1,7 +1,5 @@
 # RustCrypto: Gift Cipher
 
-# RustCrypto: gift Cipher
-
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
 ![Apache2/MIT licensed][license-image]
@@ -55,18 +53,18 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]: https://img.shields.io/crates/v/gift.svg
-[crate-link]: https://crates.io/crates/gift
-[docs-image]: https://docs.rs/gift/badge.svg
-[docs-link]: https://docs.rs/gift/
+[crate-image]: https://img.shields.io/crates/v/gift_cipher.svg
+[crate-link]: https://crates.io/crates/gift_cipher
+[docs-image]: https://docs.rs/gift_cipher/badge.svg
+[docs-link]: https://docs.rs/gift_cipher/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg
 [hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
 [hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260039-block-ciphers
-[build-image]: https://github.com/RustCrypto/block-ciphers/workflows/gift/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/block-ciphers/actions?query=workflow%3Agift
+[build-image]: https://github.com/RustCrypto/block-ciphers/workflows/gift_cipher/badge.svg?branch=master&event=push
+[build-link]: https://github.com/RustCrypto/block-ciphers/actions?query=workflow%3Agift_cipher
 
 [//]: # (general links)
 
