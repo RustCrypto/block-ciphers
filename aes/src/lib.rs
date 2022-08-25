@@ -120,12 +120,10 @@
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
-#![cfg_attr(
-    all(aes_armv8, target_arch = "aarch64"),
-    feature(stdsimd, aarch64_target_feature)
-)]
+#![cfg_attr(all(aes_armv8, target_arch = "aarch64"), feature(stdsimd))]
 
 #[cfg(feature = "hazmat")]
+#[cfg_attr(docsrs, doc(cfg(feature = "hazmat")))]
 pub mod hazmat;
 
 mod soft;
