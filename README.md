@@ -34,6 +34,7 @@ It's generally recommended not to use other cipher implementations in this repos
 | [SM4](https://en.wikipedia.org/wiki/SM4_(cipher)) | `sm4` | [![crates.io](https://img.shields.io/crates/v/sm4.svg)](https://crates.io/crates/sm4) | [![Documentation](https://docs.rs/sm4/badge.svg)](https://docs.rs/sm4) | ![MSRV 1.56][msrv-1.56] |
 | [Threefish](https://en.wikipedia.org/wiki/Threefish) | `threefish` | [![crates.io](https://img.shields.io/crates/v/threefish.svg)](https://crates.io/crates/threefish) | [![Documentation](https://docs.rs/threefish/badge.svg)](https://docs.rs/threefish) | ![MSRV 1.56][msrv-1.56] |
 | [Twofish](https://en.wikipedia.org/wiki/Twofish) | `twofish` | [![crates.io](https://img.shields.io/crates/v/twofish.svg)](https://crates.io/crates/twofish) | [![Documentation](https://docs.rs/twofish/badge.svg)](https://docs.rs/twofish) | ![MSRV 1.56][msrv-1.56] |
+| [Belt-Block](https://ru.wikipedia.org/wiki/BelT) | `belt-block` | [![crates.io](https://img.shields.io/crates/v/belt-block.svg)](https://crates.io/crates/belt-block) | [![Documentation](https://docs.rs/belt-block/badge.svg)](https://docs.rs/belt-block) | ![MSRV 1.56][msrv-1.56] |
 
 ### Minimum Supported Rust Version (MSRV) Policy
 
