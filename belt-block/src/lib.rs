@@ -10,12 +10,14 @@
 //!
 //! [belt-block]: https://ru.wikipedia.org/wiki/BelT
 
+#![no_std]
+
 use crate::consts::{H13, H21, H29, H5};
 pub use cipher;
 use cipher::consts::{U16, U32};
 use cipher::{AlgorithmName, BlockCipher, Key, KeyInit, KeySizeUser};
-use std::fmt;
-use std::ptr::{slice_from_raw_parts, slice_from_raw_parts_mut};
+use core::fmt;
+use core::ptr::{slice_from_raw_parts, slice_from_raw_parts_mut};
 
 mod consts;
 
@@ -116,7 +118,7 @@ impl BeltBlock {
         let data_u32 = unsafe {
             &mut *slice_from_raw_parts_mut(
                 data.as_mut_ptr() as *mut u32,
-                data.len() / std::mem::size_of::<u32>(),
+                data.len() / core::mem::size_of::<u32>(),
             )
         };
 
@@ -144,7 +146,7 @@ impl BeltBlock {
         let data_u32 = unsafe {
             &mut *slice_from_raw_parts_mut(
                 data.as_mut_ptr() as *mut u32,
-                data.len() / std::mem::size_of::<u32>(),
+                data.len() / core::mem::size_of::<u32>(),
             )
         };
 
@@ -178,7 +180,7 @@ impl KeyInit for BeltBlock {
         let key: [u32; 8] = unsafe {
             (&*slice_from_raw_parts(
                 key.as_ptr() as *const u32,
-                key.len() / std::mem::size_of::<u32>(),
+                key.len() / core::mem::size_of::<u32>(),
             ))
                 .try_into()
                 .unwrap()
