@@ -1,0 +1,26 @@
+[package]
+name = "belt-block"
+version = "0.1.0"
+description = "betl-block block cipher implementation"
+authors = ["RustCrypto Developers"]
+license = "MIT OR Apache-2.0"
+rust-version = "1.56"
+edition = "2021"
+readme = "README.md"
+documentation = "https://docs.rs/belt-block"
+repository = "https://github.com/RustCrypto/block-ciphers"
+keywords = ["crypto", "belt-block", "belt", "stb"]
+
+[dependencies]
+cipher = "0.4.3"
+
+[dev-dependencies]
+cipher = { version = "0.4.3", features = ["dev"] }
+hex-literal = "0.3.4"
+
+[features]
+zeroize = ["cipher/zeroize"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
