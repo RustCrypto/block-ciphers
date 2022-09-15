@@ -2,7 +2,7 @@ use cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
 use hex_literal::hex;
 use belt_block::BeltBlock;
 
-/// Example vector from STB 34.101.31 (2020)
+/// Example vector from [STB 34.101.31 (2020)](http://apmi.bsu.by/assets/files/std/belt-spec371.pdf) (Appendix A, table A.1, A.2)
 #[test]
 fn belt_block() {
     let key_enc = hex!("E9DEE72C 8F0C0FA6 2DDB49F4 6F739647 06075316 ED247A37 39CBA383 03A98BF6");
