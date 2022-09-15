@@ -1,6 +1,6 @@
+use belt_block::BeltBlock;
 use cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
 use hex_literal::hex;
-use belt_block::BeltBlock;
 
 /// Example vector from [STB 34.101.31 (2020)](http://apmi.bsu.by/assets/files/std/belt-spec371.pdf) (Appendix A, table A.1, A.2)
 #[test]

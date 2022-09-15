@@ -1,8 +1,8 @@
 #![feature(test)]
 extern crate test;
 
-use cipher::{block_decryptor_bench, block_encryptor_bench};
 use belt_block::BeltBlock;
+use cipher::{block_decryptor_bench, block_encryptor_bench};
 
 block_encryptor_bench!(
     Key: BeltBlock,

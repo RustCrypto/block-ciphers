@@ -10,8 +10,8 @@
 //!
 //! [belt-block]: https://ru.wikipedia.org/wiki/BelT
 
-pub use cipher;
 use crate::consts::{H13, H21, H29, H5};
+pub use cipher;
 use cipher::consts::{U16, U32};
 use cipher::{AlgorithmName, BlockCipher, Key, KeyInit, KeySizeUser};
 use std::fmt;
