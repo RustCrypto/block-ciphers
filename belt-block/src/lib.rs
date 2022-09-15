@@ -197,7 +197,9 @@ impl AlgorithmName for BeltBlock {
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl Drop for BeltBlock {
     fn drop(&mut self) {
-        self.key.zeroize();
+        for val in self.key.iter_mut() {
+            val.0.zeroize();
+        }
     }
 }
 
