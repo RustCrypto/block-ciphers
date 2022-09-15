@@ -1,4 +1,4 @@
-name: magma
+name: belt-block
 
 on:
   pull_request:
