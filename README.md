@@ -7,7 +7,9 @@
 
 Collection of [block ciphers] written in pure Rust.
 
-Crates in this repository implement ONLY block cipher functionality defined by traits in the [`cipher`] crate.
+## Higher level constructions
+
+Crates in this repository implement ONLY raw block cipher functionality defined by traits in the [`cipher`] crate.
 In practice block ciphers are rarely used in isolation.
 Instead, they usually play role of a building block for higher level constructions.
 In RustCrypto such constructions are implemented generically over block ciphers in separate repositories:
