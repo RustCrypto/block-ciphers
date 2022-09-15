@@ -7,6 +7,21 @@
 
 Collection of [block ciphers] written in pure Rust.
 
+## Higher level constructions
+
+Crates in this repository implement ONLY raw block cipher functionality defined by traits in the [`cipher`] crate.
+In practice block ciphers are rarely used in isolation.
+Instead, they usually play role of a building block for higher level constructions.
+In RustCrypto such constructions are implemented generically over block ciphers in separate repositories:
+- [AEADs](https://github.com/RustCrypto/AEADs): GCM, SIV, CCM, MGM, etc.
+- [MACs](https://github.com/RustCrypto/MACs): CMAC, PMAC.
+- [Block modes](https://github.com/RustCrypto/block-modes): CTR, CBC, CFB, etc.
+- [Key wrapping](https://github.com/RustCrypto/key-wraps): AES-KW. 
+
+Most users should use constructions defined in these repositories without directly relying on raw block cipher functionality.
+
+[`cipher`]: https://docs.rs/cipher
+
 ## Warnings
 
 Currently only the `aes` crate provides constant-time implementation and has received a third-party security audit.
