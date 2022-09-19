@@ -85,32 +85,34 @@ impl BeltBlock {
 
         // Step 5
         for i in 1..9 {
-            // 5.1) b <- b xor G5(a+K[7i-6])
+            // 5.1) b ← b ⊕ G₅(a ⊞ k[7i-6])
             b ^= g5(a + key[idx(i, 6)]);
-            // 5.2) c <- c xor G21(a+K[7i-5])
+            // 5.2) c ← c ⊕ G₂₁(d ⊞ k[7i-5])
             c ^= g21(d + key[idx(i, 5)]);
-            // 5.3) a <- a - G13(a+K[7i-4])
+            // 5.3) a ← a ⊟ G₁₃(b ⊞ k[7i-4])
             a -= g13(b + key[idx(i, 4)]);
-            // 5.4) e <- G21(b+c+K[7i-3])+<i>_32
+            // 5.4) e ← G₂₁(b ⊞ c ⊞ k[7i-3]) ⊕ ⟨i⟩₃₂ ;
             let e = g21(b + c + key[idx(i, 3)]) ^ Wrapping(i as u32);
-            // 5.5) b <- b+e
+            // 5.5) b ← b ⊞ e
             b += e;
-            // 5.6) c <- c-e
+            // 5.6) c ← c ⊟ e
             c -= e;
-            // 5.7) d <- d xor G13(c+K[7i-2])
+            // 5.7) d ← d ⊞ G₁₃(c ⊞ 𝑘[7i-2])
             d += g13(c + key[idx(i, 2)]);
-            // 5.8) b <- b xor G21(a + K[7i-1])
+            // 5.8) b ← b ⊕ G₂₁(a ⊞ 𝑘[(7i-1])
             b ^= g21(a + key[idx(i, 1)]);
-            // 5.9) c <- c xor G5(d+K[7i])
+            // 5.9) c ← c ⊕ G₅(d ⊞ 𝑘[7i])
             c ^= g5(d + key[idx(i, 0)]);
-            // 5.10-5.12)
+            // 5.10) a ↔ b
             swap(&mut a, &mut b);
+            // 5.11) c ↔ d
             swap(&mut c, &mut d);
+            // 5.12) b ↔ c
             swap(&mut b, &mut c);
         }
 
         let block_out = block.get_out();
-        // Step 6
+        // 6) Y ← b ‖ d ‖ a ‖ c
         set_u32(b, block_out, 0);
         set_u32(d, block_out, 1);
         set_u32(a, block_out, 2);
@@ -130,33 +132,34 @@ impl BeltBlock {
 
         // Step 5
         for i in (1..9).rev() {
-            // 5.1) b <- b xor G5(a+K[7i])
+            // 5.1) b ← b ⊕ G₅(a ⊞ 𝑘[7i])
             b ^= g5(a + key[idx(i, 0)]);
-            // 5.2) c <- c xor G21(a+K[7i-1])
+            // 5.2) c ← c ⊕ G₂₁(d ⊞ 𝑘[7i-1])
             c ^= g21(d + key[idx(i, 1)]);
-            // 5.3) a <- a - G13(a+K[7i-2])
+            // 5.3) a ← a ⊟ G₁₃(b ⊞ 𝑘[7i-2])
             a -= g13(b + key[idx(i, 2)]);
-            // 5.4) e <- G21(b+c+K[7i-3])+<i>_32
+            // 5.4) e ← G₂₁(b ⊞ c ⊞ 𝑘[7i-3]) ⊕ ⟨i⟩₃₂
             let e = g21(b + c + key[idx(i, 3)]) ^ Wrapping(i as u32);
-            // 5.5) b <- b+e
+            // 5.5) b ← b ⊞ e
             b += e;
-            // 5.6) c <- c-e
+            // 5.6) c ← c ⊟ e
             c -= e;
-            // 5.7) d <- d xor G13(c+K[7i-4])
+            // 5.7) d ← d ⊞ G₁₃(c ⊞ 𝑘[7i-4])
             d += g13(c + key[idx(i, 4)]);
-            // 5.8) b <- b xor G21(a + K[7i-5])
+            // 5.8) b ← b ⊕ G₂₁(a ⊞ 𝑘[7i-5])
             b ^= g21(a + key[idx(i, 5)]);
-            // 5.9) c <- c xor G5(d+K[7i-6])
+            // 5.9) c ← c ⊕ G₅(d ⊞ 𝑘[7i-6])
             c ^= g5(d + key[idx(i, 6)]);
-
-            // 5.10-5.12)
+            // 5.10) a ↔ b
             swap(&mut a, &mut b);
+            // 5.11) c ↔ d
             swap(&mut c, &mut d);
+            // 5.12) a ↔ d
             swap(&mut a, &mut d);
         }
 
         let block_out = block.get_out();
-        // Step 6
+        // 6) 𝑋 ← c ‖ a ‖ d ‖ b
         set_u32(c, block_out, 0);
         set_u32(a, block_out, 1);
         set_u32(d, block_out, 2);
