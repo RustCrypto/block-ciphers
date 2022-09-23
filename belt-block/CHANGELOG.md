@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.1.1 (2022-09-23)
 ### Added
-- `belt_block_raw` function ([#333])
+- `belt_block_raw` function and `cipher` crate feature (enabled by default) ([#333])
 
 [#333]: https://github.com/RustCrypto/block-ciphers/pull/333
 
