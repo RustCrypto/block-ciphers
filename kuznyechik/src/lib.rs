@@ -14,7 +14,7 @@
 //!
 //! - `kuznyechik_force_soft`: force software implementation.
 //!
-//! It can be enabled using `RUSTFLAGS` enviromental variable
+//! It can be enabled using `RUSTFLAGS` environmental variable
 //! (e.g. `RUSTFLAGS="--cfg kuznyechik_force_soft"`) or by modifying
 //! `.cargo/config`.
 //!
