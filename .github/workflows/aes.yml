@@ -30,7 +30,7 @@ jobs:
           - thumbv7em-none-eabi
           - wasm32-unknown-unknown
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: actions-rs/toolchain@v1
         with:
@@ -87,7 +87,7 @@ jobs:
           - target: x86_64-unknown-linux-gnu
             rust: stable
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: actions-rs/toolchain@v1
         with:
@@ -120,7 +120,7 @@ jobs:
           - target: x86_64-unknown-linux-gnu
             rust: stable
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: actions-rs/toolchain@v1
         with:
@@ -155,7 +155,7 @@ jobs:
           - target: x86_64-unknown-linux-gnu
             rust: stable
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: actions-rs/toolchain@v1
         with:
@@ -190,7 +190,7 @@ jobs:
       run:
         working-directory: .
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
       - run: ${{ matrix.deps }}
       - uses: actions-rs/toolchain@v1
@@ -239,7 +239,7 @@ jobs:
       run:
         working-directory: .
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
       - run: ${{ matrix.deps }}
       - uses: actions-rs/toolchain@v1
@@ -263,7 +263,7 @@ jobs:
       RUSTFLAGS: "-Dwarnings --cfg aes_compact"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: actions-rs/toolchain@v1
         with:
