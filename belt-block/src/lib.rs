@@ -1,4 +1,5 @@
-//! Pure Rust implementation of the [BelT] block cipher.
+//! Pure Rust implementation of the [BelT] block cipher specified in
+//! [STB 34.101.31-2020].
 //!
 //! # ⚠️ Security Warning: Hazmat!
 //!
@@ -9,6 +10,7 @@
 //! USE AT YOUR OWN RISK!
 //!
 //! [BelT]: https://ru.wikipedia.org/wiki/BelT
+//! [STB 34.101.31-2020]: http://apmi.bsu.by/assets/files/std/belt-spec371.pdf
 
 #![no_std]
 #![doc(
