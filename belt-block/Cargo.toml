@@ -1,6 +1,6 @@
 [package]
 name = "belt-block"
-version = "0.1.0"
+version = "0.1.1"
 description = "belt-block block cipher implementation"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -12,13 +12,14 @@ repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "belt-block", "belt", "stb"]
 
 [dependencies]
-cipher = "0.4.3"
+cipher = { version = "0.4.3", optional = true }
 
 [dev-dependencies]
 cipher = { version = "0.4.3", features = ["dev"] }
 hex-literal = "0.3.4"
 
 [features]
+default = ["cipher"]
 zeroize = ["cipher/zeroize"]
 
 [package.metadata.docs.rs]

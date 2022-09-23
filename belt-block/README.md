@@ -8,7 +8,7 @@
 [![Build Status][build-image]][build-link]
 [![HAZMAT][hazmat-image]][hazmat-link]
 
-Pure Rust implementation of the [belt-block][1].
+Pure Rust implementation of the [BelT] block cipher specified in [STB 34.101.31-2020].
 
 [Documentation][docs-link]
 
@@ -68,4 +68,5 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (general links)
 
-[1]: https://ru.wikipedia.org/wiki/BelT
+[BelT]: https://ru.wikipedia.org/wiki/BelT
+[STB 34.101.31-2020]: http://apmi.bsu.by/assets/files/std/belt-spec371.pdf
