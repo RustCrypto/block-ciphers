@@ -73,7 +73,7 @@
 //! cipher.decrypt_block(&mut block);
 //! assert_eq!(block, block_copy);
 //!
-//! // implementation supports parrallel block processing
+//! // implementation supports parallel block processing
 //! // number of blocks processed in parallel depends in general
 //! // on hardware capabilities
 //! let mut blocks = [block; 100];
@@ -104,7 +104,7 @@
 //! - `aes_compact`: reduce code size at the cost of slower performance
 //! (affects only software backend).
 //!
-//! It can be enabled using `RUSTFLAGS` enviromental variable
+//! It can be enabled using `RUSTFLAGS` environmental variable
 //! (e.g. `RUSTFLAGS="--cfg aes_compact"`) or by modifying `.cargo/config`.
 //!
 //! [AES]: https://en.wikipedia.org/wiki/Advanced_Encryption_Standard
