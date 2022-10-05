@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "aes",
+    "aria",
     "belt-block",
     "blowfish",
     "camellia",
