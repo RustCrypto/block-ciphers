@@ -1,6 +1,6 @@
 [package]
 name = "sm4"
-version = "0.5.1" # Also update html_root_url in lib.rs when bumping this
+version = "0.5.1"
 description = "SM4 block cipher algorithm"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
