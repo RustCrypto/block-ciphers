@@ -37,6 +37,7 @@ It's generally recommended not to use other cipher implementations in this repos
 | Name | Crate name | crates.io | Docs | MSRV |
 |------|------------|-----------|------|------|
 | [AES] (Rijndael) | [`aes`] | [![crates.io](https://img.shields.io/crates/v/aes.svg)](https://crates.io/crates/aes) | [![Documentation](https://docs.rs/aes/badge.svg)](https://docs.rs/aes) | ![MSRV 1.56][msrv-1.56] |
+| [ARIA] | [`aria`] | [![crates.io](https://img.shields.io/crates/v/aria.svg)](https://crates.io/crates/aria) | [![Documentation](https://docs.rs/aria/badge.svg)](https://docs.rs/aria) | ![MSRV 1.56][msrv-1.56] |
 | [BelT] block cipher | [`belt-block`] | [![crates.io](https://img.shields.io/crates/v/belt-block.svg)](https://crates.io/crates/belt-block) | [![Documentation](https://docs.rs/belt-block/badge.svg)](https://docs.rs/belt-block) | ![MSRV 1.56][msrv-1.56] |
 | [Blowfish] | [`blowfish`] | [![crates.io](https://img.shields.io/crates/v/blowfish.svg)](https://crates.io/crates/blowfish) | [![Documentation](https://docs.rs/blowfish/badge.svg)](https://docs.rs/blowfish) | ![MSRV 1.56][msrv-1.56] |
 | [Camellia] | [`camellia`] | [![crates.io](https://img.shields.io/crates/v/camellia.svg)](https://crates.io/crates/camellia) | [![Documentation](https://docs.rs/camellia/badge.svg)](https://docs.rs/camellia) | ![MSRV 1.56][msrv-1.56] |
@@ -83,6 +84,7 @@ dual licensed as above, without any additional terms or conditions.
 [//]: # (crates)
 
 [`aes`]: ./aes
+[`aria`]: ./aria
 [`belt-block`]: ./belt-block
 [`blowfish`]: ./blowfish
 [`camellia`]: ./camellia
@@ -104,6 +106,7 @@ dual licensed as above, without any additional terms or conditions.
 [//]: # (algorithms)
 
 [AES]: https://en.wikipedia.org/wiki/Advanced_Encryption_Standard
+[ARIA]: https://en.wikipedia.org/wiki/ARIA_(cipher)
 [BelT]: https://ru.wikipedia.org/wiki/BelT
 [Blowfish]: https://en.wikipedia.org/wiki/Blowfish_(cipher)
 [Camellia]: https://en.wikipedia.org/wiki/Camellia_(cipher)
