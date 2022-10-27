@@ -8,11 +8,9 @@
 [![Build Status][build-image]][build-link]
 [![HAZMAT][hazmat-image]][hazmat-link]
 
-Pure Rust implementation of the [ARIA block cipher][1].
+Pure Rust implementation of the [ARIA] block cipher.
 
 [Documentation][docs-link]
-
-<img src="https://raw.githubusercontent.com/RustCrypto/meta/master/img/block-ciphers/aria.png" width="480px">
 
 ## ⚠️ Security Warning: [Hazmat!][hazmat-link]
 
@@ -70,4 +68,4 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (general links)
 
-[1]: https://en.wikipedia.org/wiki/ARIA_(cipher)
+[ARIA]: https://en.wikipedia.org/wiki/ARIA_(cipher)
