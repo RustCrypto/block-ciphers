@@ -22,7 +22,7 @@
 //! implemented entirely in terms of bitwise arithmetic with no use of any
 //! lookup tables or data-dependent branches.
 //!
-//! Enabling the `compact` Cargo feature will reduce the code size of this
+//! Enabling the `aes_compact` configuration flag will reduce the code size of this
 //! backend at the cost of decreased performance (using a modified form of
 //! the fixslicing technique called "semi-fixslicing").
 //!
@@ -31,9 +31,9 @@
 //! targets such as `aarch64-unknown-linux-gnu` and `aarch64-unknown-linux-musl`,
 //! support for using AES intrinsics provided by the ARMv8 Cryptography Extensions
 //! is available when using the nightly compiler, and can be enabled using the
-//! `armv8` crate feature.
+//! `aes_armv8` configuration flag.
 //!
-//! On Linux and macOS, when the `armv8` feature is enabled support for AES
+//! On Linux and macOS, when the `aes_armv8` flag is enabled support for AES
 //! intrinsics is autodetected at runtime. On other platforms the `aes`
 //! target feature must be enabled via RUSTFLAGS.
 //!
@@ -73,7 +73,7 @@
 //! cipher.decrypt_block(&mut block);
 //! assert_eq!(block, block_copy);
 //!
-//! // implementation supports parrallel block processing
+//! // implementation supports parallel block processing
 //! // number of blocks processed in parallel depends in general
 //! // on hardware capabilities
 //! let mut blocks = [block; 100];
@@ -104,7 +104,7 @@
 //! - `aes_compact`: reduce code size at the cost of slower performance
 //! (affects only software backend).
 //!
-//! It can be enabled using `RUSTFLAGS` enviromental variable
+//! It can be enabled using `RUSTFLAGS` environmental variable
 //! (e.g. `RUSTFLAGS="--cfg aes_compact"`) or by modifying `.cargo/config`.
 //!
 //! [AES]: https://en.wikipedia.org/wiki/Advanced_Encryption_Standard
@@ -115,8 +115,7 @@
 #![no_std]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
-    html_root_url = "https://docs.rs/aes/0.8.1"
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]

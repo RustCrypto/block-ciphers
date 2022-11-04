@@ -1,6 +1,6 @@
 [package]
 name = "rc2"
-version = "0.8.1" # Also update html_root_url in lib.rs when bumping this
+version = "0.8.1"
 description = "RC2 block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"

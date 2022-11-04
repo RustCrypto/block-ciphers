@@ -1,16 +1,16 @@
-name: sm4
+name: aria
 
 on:
   pull_request:
     paths:
-      - "sm4/**"
+      - "aria/**"
       - "Cargo.*"
   push:
     branches: master
 
 defaults:
   run:
-    working-directory: sm4
+    working-directory: aria
 
 env:
   CARGO_INCREMENTAL: 0

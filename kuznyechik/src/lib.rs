@@ -14,7 +14,7 @@
 //!
 //! - `kuznyechik_force_soft`: force software implementation.
 //!
-//! It can be enabled using `RUSTFLAGS` enviromental variable
+//! It can be enabled using `RUSTFLAGS` environmental variable
 //! (e.g. `RUSTFLAGS="--cfg kuznyechik_force_soft"`) or by modifying
 //! `.cargo/config`.
 //!
@@ -23,8 +23,7 @@
 #![no_std]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
-    html_root_url = "https://docs.rs/kuznyechik/0.8.1"
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]

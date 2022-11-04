@@ -1,6 +1,12 @@
+#[cfg(feature = "cipher")]
 use belt_block::BeltBlock;
+#[cfg(feature = "cipher")]
 use cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
 use hex_literal::hex;
+
+fn get_u32(block: &[u8], i: usize) -> u32 {
+    u32::from_le_bytes(block[4 * i..][..4].try_into().unwrap())
+}
 
 /// Example vectors from STB 34.101.31 (2020):
 /// http://apmi.bsu.by/assets/files/std/belt-spec371.pdf
@@ -16,11 +22,30 @@ fn belt_block() {
     let ct2 = hex!("E12BDC1A E28257EC 703FCCF0 95EE8DF1");
 
     for (key, pt, ct) in [(key1, pt1, ct1), (key2, pt2, ct2)] {
-        let cipher = BeltBlock::new(&key.into());
-        let mut block = pt.into();
-        cipher.encrypt_block(&mut block);
-        assert_eq!(block, ct.into());
-        cipher.decrypt_block(&mut block);
-        assert_eq!(block, pt.into());
+        let mut k = [0u32; 8];
+        for i in 0..8 {
+            k[i] = get_u32(&key, i);
+        }
+        let mut x = [0u32; 4];
+        for i in 0..4 {
+            x[i] = get_u32(&pt, i);
+        }
+        let mut y = [0u32; 4];
+        for i in 0..4 {
+            y[i] = get_u32(&ct, i);
+        }
+
+        let res = belt_block::belt_block_raw(x, &k);
+        assert_eq!(res, y);
+
+        #[cfg(feature = "cipher")]
+        {
+            let cipher = BeltBlock::new(&key.into());
+            let mut block = pt.into();
+            cipher.encrypt_block(&mut block);
+            assert_eq!(block, ct.into());
+            cipher.decrypt_block(&mut block);
+            assert_eq!(block, pt.into());
+        }
     }
 }

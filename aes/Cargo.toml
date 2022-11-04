@@ -1,6 +1,6 @@
 [package]
 name = "aes"
-version = "0.8.1" # Also update html_root_url in lib.rs when bumping this
+version = "0.8.2"
 description = "Pure Rust implementation of the Advanced Encryption Standard (a.k.a. Rijndael)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"

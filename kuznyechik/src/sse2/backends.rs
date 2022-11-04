@@ -62,7 +62,7 @@ unsafe fn transform(block: __m128i, table: &Table) -> __m128i {
         ($table:expr, $ind:expr, $i:expr) => {{
             let idx = _mm_extract_epi16($ind, $i) as u16 as usize;
             let p = &($table.0[idx]) as *const u8 as *const __m128i;
-            // correct aligment of `p` is guaranteed since offset values
+            // correct alignment of `p` is guaranteed since offset values
             // are shifted by 4 bits left and the table is aligned to 16 bytes
             debug_assert_eq!(p as usize % 16, 0);
             _mm_load_si128(p)
@@ -106,7 +106,7 @@ pub(super) fn expand_enc_keys(key: &Key) -> RoundKeys {
     macro_rules! next_const {
         ($i:expr) => {{
             let p = RKEY_GEN.0.as_ptr() as *const __m128i;
-            // correct aligment of `p` is guaranteed since the table
+            // correct alignment of `p` is guaranteed since the table
             // is aligned to 16 bytes
             let p = p.add($i);
             debug_assert_eq!(p as usize % 16, 0);

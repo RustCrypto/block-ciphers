@@ -1,6 +1,6 @@
 [package]
 name = "blowfish"
-version = "0.9.1" # Also update html_root_url in lib.rs when bumping this
+version = "0.9.1"
 description = "Blowfish block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"

@@ -30,7 +30,7 @@ jobs:
           - thumbv7em-none-eabi
           - wasm32-unknown-unknown
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: actions-rs/toolchain@v1
         with:
@@ -87,7 +87,7 @@ jobs:
           - target: x86_64-unknown-linux-gnu
             rust: stable
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: actions-rs/toolchain@v1
         with:
@@ -120,7 +120,7 @@ jobs:
           - target: x86_64-unknown-linux-gnu
             rust: stable
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: actions-rs/toolchain@v1
         with:
@@ -155,7 +155,7 @@ jobs:
           - target: x86_64-unknown-linux-gnu
             rust: stable
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: actions-rs/toolchain@v1
         with:
@@ -190,21 +190,16 @@ jobs:
       run:
         working-directory: .
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
-      - run: ${{ matrix.deps }}
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
           profile: minimal
           override: true
-      - name: Install pre-compiled cross
-        run: |
-          export URL=$(curl -s https://api.github.com/repos/cross-rs/cross/releases/latest | jq -r '.assets[] | select(.name | contains("x86_64-unknown-linux-gnu.tar.gz")) | .browser_download_url')
-          wget -O /tmp/binaries.tar.gz $URL
-          tar -C /tmp -xzf /tmp/binaries.tar.gz
-          mv /tmp/cross ~/.cargo/bin
+      - uses: RustCrypto/actions/cross-install@master
+      - run: ${{ matrix.deps }}
       - run: |
           cross test --package aes --target ${{ matrix.target }}
           cross test --package aes --target ${{ matrix.target }} --features hazmat
@@ -239,7 +234,7 @@ jobs:
       run:
         working-directory: .
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
       - run: ${{ matrix.deps }}
       - uses: actions-rs/toolchain@v1
@@ -248,12 +243,7 @@ jobs:
           target: ${{ matrix.target }}
           profile: minimal
           override: true
-      - name: Install pre-compiled cross
-        run: |
-          export URL=$(curl -s https://api.github.com/repos/cross-rs/cross/releases/latest | jq -r '.assets[] | select(.name | contains("x86_64-unknown-linux-gnu.tar.gz")) | .browser_download_url')
-          wget -O /tmp/binaries.tar.gz $URL
-          tar -C /tmp -xzf /tmp/binaries.tar.gz
-          mv /tmp/cross ~/.cargo/bin
+      - uses: RustCrypto/actions/cross-install@master
       - run: cross test --package aes --target ${{ matrix.target }}
       - run: cross test --package aes --target ${{ matrix.target }} --features hazmat
       - run: cross test --package aes --target ${{ matrix.target }} --all-features
@@ -263,7 +253,7 @@ jobs:
       RUSTFLAGS: "-Dwarnings --cfg aes_compact"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: actions-rs/toolchain@v1
         with:
