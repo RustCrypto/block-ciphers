@@ -1,4 +1,4 @@
-use std::ops::{Add, BitXor};
+use core::ops::{Add, BitXor};
 
 use cipher::{
     generic_array::{ArrayLength, GenericArray},
@@ -66,7 +66,7 @@ impl Word for u32 {
     }
 
     fn from_le_bytes(bytes: &GenericArray<u8, Self::Bytes>) -> Self {
-        u32::from_le_bytes(bytes.to_owned().into())
+        u32::from_le_bytes(bytes.as_slice().try_into().unwrap())
     }
 
     fn to_le_bytes(self) -> GenericArray<u8, Self::Bytes> {

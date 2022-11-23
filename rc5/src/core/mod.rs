@@ -4,7 +4,7 @@
 mod primitives;
 pub use primitives::*;
 
-use std::{
+use core::{
     cmp::max,
     convert::TryInto,
     ops::{Add, Div, Mul, Sub},
