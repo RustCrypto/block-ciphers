@@ -15,6 +15,7 @@ members = [
     "sm4",
     "twofish",
     "threefish",
+    "rc5"
 ]
 
 [profile.dev]
