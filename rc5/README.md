@@ -1,4 +1,4 @@
-# RustCrypto: RC2 Cipher
+# RustCrypto: RC5 Cipher
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
@@ -53,18 +53,18 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]: https://img.shields.io/crates/v/rc2.svg
-[crate-link]: https://crates.io/crates/rc2
-[docs-image]: https://docs.rs/rc2/badge.svg
-[docs-link]: https://docs.rs/rc2/
+[crate-image]: https://img.shields.io/crates/v/rc5.svg
+[crate-link]: https://crates.io/crates/rc5
+[docs-image]: https://docs.rs/rc5/badge.svg
+[docs-link]: https://docs.rs/rc5/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg
 [hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
 [hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260039-block-ciphers
-[build-image]: https://github.com/RustCrypto/block-ciphers/workflows/rc2/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/block-ciphers/actions?query=workflow%3Arc2
+[build-image]: https://github.com/RustCrypto/block-ciphers/workflows/rc5/badge.svg?branch=master&event=push
+[build-link]: https://github.com/RustCrypto/block-ciphers/actions?query=workflow%3Arc5
 
 [//]: # (general links)
 

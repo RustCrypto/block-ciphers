@@ -36,7 +36,7 @@ impl KeyInit for RC5_32_20_16 {
 
 impl AlgorithmName for RC5_32_20_16 {
     fn write_alg_name(f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.write_str("RC5-32/12/16")
+        f.write_str("RC5-32/20/16")
     }
 }
 
