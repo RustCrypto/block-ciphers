@@ -1,4 +1,4 @@
-use cipher::consts::{U16, U20};
+use cipher::consts::{U12, U16};
 
 use crate::core::{BlockSize, ExpandedKeyTable, RC5};
 use cipher::{impl_simple_block_encdec, AlgorithmName, KeyInit};
@@ -67,4 +67,5 @@ macro_rules! impl_rc5 {
     };
 }
 
-impl_rc5!(cipher: RC5_32_20_16, name: "RC5 - 32/16/16", word: u32, rounds: U20, key_bytes: U16);
+impl_rc5!(cipher: RC5_32_12_16, name: "RC5 - 32/12/16", word: u32, rounds: U12, key_bytes: U16);
+impl_rc5!(cipher: RC5_32_16_16, name: "RC5 - 32/16/16", word: u32, rounds: U16, key_bytes: U16);
