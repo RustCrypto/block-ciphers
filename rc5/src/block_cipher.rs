@@ -53,15 +53,12 @@ macro_rules! impl_rc5 {
         );
 
         #[cfg(feature = "zeroize")]
-        use cipher::zeroize::Zeroize;
-
-        #[cfg(feature = "zeroize")]
         impl cipher::zeroize::ZeroizeOnDrop for $cipher {}
 
         #[cfg(feature = "zeroize")]
         impl Drop for $cipher {
             fn drop(&mut self) {
-                self.key_table.zeroize()
+                cipher::zeroize::Zeroize::zeroize(&mut *self.key_table)
             }
         }
     };
