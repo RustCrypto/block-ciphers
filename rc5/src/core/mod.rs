@@ -13,25 +13,28 @@ use core::{
 use cipher::{
     generic_array::{sequence::GenericSequence, ArrayLength, GenericArray},
     inout::InOut,
-    typenum::{Diff, Sum, Unsigned, U1, U2},
+    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U2, U256},
 };
 
 pub trait RC5<W, R, B>
 where
-    // u16 or u32 or u64
     W: Word,
-    // Block size is 2 * W::Bytes
+    // Block size
     W::Bytes: Mul<U2>,
     BlockSize<W>: ArrayLength<u8>,
-    // Rounds are an uint in the range 0-255
+    // Rounds range
     R: Unsigned,
-    // expanded key table size = (R + 1) * 2
+    R: IsLess<U256>,
+    Le<R, U256>: NonZero,
+    // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
-    // key size is an uint in the range 0-255
+    // Key range
     B: ArrayLength<u8>,
-    // key as words size = div_ceil(B, W::Bytes)
+    B: IsLess<U256>,
+    Le<B, U256>: NonZero,
+    // KeyAsWordsSize
     B: Add<W::Bytes>,
     Sum<B, W::Bytes>: Sub<U1>,
     Diff<Sum<B, W::Bytes>, U1>: Div<W::Bytes>,
