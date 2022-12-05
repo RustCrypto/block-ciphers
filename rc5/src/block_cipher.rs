@@ -1,7 +1,4 @@
-use core::{
-    marker::PhantomData,
-    ops::{Add, Div, Mul, Sub},
-};
+use core::ops::{Add, Div, Mul, Sub};
 
 use cipher::{
     generic_array::ArrayLength,
@@ -11,54 +8,7 @@ use cipher::{
     KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
 
-use crate::core::{
-    BlockSize, ExpandedKeyTable, ExpandedKeyTableSize, KeyAsWordsSize, Word, RC5 as RC5Trait,
-};
-
-pub struct RC5<W, R, B>
-where
-    W: Word,
-    // Block size
-    W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
-    // Rounds range
-    R: Unsigned,
-    R: IsLess<U256>,
-    Le<R, U256>: NonZero,
-    // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
-{
-    key_table: ExpandedKeyTable<W, R>,
-    _key_size: PhantomData<B>,
-}
-
-impl<W, R, B> RC5Trait<W, R, B> for RC5<W, R, B>
-where
-    W: Word,
-    // Block size
-    W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
-    // Rounds range
-    R: Unsigned,
-    R: IsLess<U256>,
-    Le<R, U256>: NonZero,
-    // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
-    // Key range
-    B: ArrayLength<u8>,
-    B: IsLess<U256>,
-    Le<B, U256>: NonZero,
-    // KeyAsWordsSize
-    B: Add<W::Bytes>,
-    Sum<B, W::Bytes>: Sub<U1>,
-    Diff<Sum<B, W::Bytes>, U1>: Div<W::Bytes>,
-    KeyAsWordsSize<W, B>: ArrayLength<W>,
-{
-}
+use crate::core::{BlockSize, ExpandedKeyTableSize, KeyAsWordsSize, Word, RC5};
 
 impl<W, R, B> KeyInit for RC5<W, R, B>
 where
@@ -85,10 +35,7 @@ where
     KeyAsWordsSize<W, B>: ArrayLength<W>,
 {
     fn new(key: &cipher::Key<Self>) -> Self {
-        Self {
-            key_table: Self::substitute_key(key),
-            _key_size: PhantomData,
-        }
+        Self::new(key)
     }
 }
 
@@ -255,7 +202,7 @@ where
     #[inline(always)]
     fn proc_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
         let backend = self.enc_dec;
-        RC5::<W, R, B>::encrypt(block, &backend.key_table)
+        backend.encrypt(block)
     }
 }
 
@@ -368,7 +315,7 @@ where
     #[inline(always)]
     fn proc_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
         let backend = self.enc_dec;
-        RC5::<W, R, B>::decrypt(block, &backend.key_table)
+        backend.decrypt(block)
     }
 }
 
@@ -395,45 +342,6 @@ where
             <R as Unsigned>::to_u8(),
             <R as Unsigned>::to_u8(),
         )
-    }
-}
-
-#[cfg(feature = "zeroize")]
-impl<W, R, B> cipher::zeroize::ZeroizeOnDrop for RC5<W, R, B>
-where
-    W: Word,
-    // Block size
-    W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
-    // Rounds range
-    R: Unsigned,
-    R: IsLess<U256>,
-    Le<R, U256>: NonZero,
-    // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
-{
-}
-
-#[cfg(feature = "zeroize")]
-impl<W, R, B> Drop for RC5<W, R, B>
-where
-    W: Word,
-    // Block size
-    W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
-    // Rounds range
-    R: Unsigned,
-    R: IsLess<U256>,
-    Le<R, U256>: NonZero,
-    // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
-{
-    fn drop(&mut self) {
-        cipher::zeroize::Zeroize::zeroize(&mut *self.key_table)
     }
 }
 
