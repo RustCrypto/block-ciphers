@@ -49,30 +49,36 @@ impl Word for u32 {
     const P: Self = 0xb7e15163;
     const Q: Self = 0x9e3779b9;
 
+    #[inline(always)]
     fn wrapping_add(self, rhs: Self) -> Self {
         u32::wrapping_add(self, rhs)
     }
-
+    #[inline(always)]
     fn wrapping_sub(self, rhs: Self) -> Self {
         u32::wrapping_sub(self, rhs)
     }
 
+    #[inline(always)]
     fn rotate_left(self, n: Self) -> Self {
         u32::rotate_left(self, n)
     }
 
+    #[inline(always)]
     fn rotate_right(self, n: Self) -> Self {
         u32::rotate_right(self, n)
     }
 
+    #[inline(always)]
     fn from_le_bytes(bytes: &GenericArray<u8, Self::Bytes>) -> Self {
         u32::from_le_bytes(bytes.as_slice().try_into().unwrap())
     }
 
+    #[inline(always)]
     fn to_le_bytes(self) -> GenericArray<u8, Self::Bytes> {
         u32::to_le_bytes(self).into()
     }
 
+    #[inline(always)]
     fn bitxor(self, other: Self) -> Self {
         <u32 as BitXor>::bitxor(self, other)
     }
