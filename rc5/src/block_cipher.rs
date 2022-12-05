@@ -3,7 +3,7 @@ use core::ops::{Add, Div, Mul, Sub};
 use cipher::{
     generic_array::ArrayLength,
     inout::InOut,
-    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U12, U16, U2, U256},
+    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U12, U16, U2, U24, U256, U8},
     AlgorithmName, Block, BlockBackend, BlockCipher, BlockDecrypt, BlockEncrypt, BlockSizeUser,
     KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
@@ -347,3 +347,5 @@ where
 
 pub type RC5_32_12_16 = RC5<u32, U12, U16>;
 pub type RC5_32_16_16 = RC5<u32, U16, U16>;
+pub type RC5_16_16_8 = RC5<u16, U16, U8>;
+pub type RC5_64_24_24 = RC5<u64, U24, U24>;
