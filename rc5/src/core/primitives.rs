@@ -17,7 +17,9 @@ pub type ExpandedKeyTableSize<R> = Prod<Sum<R, U1>, U2>;
 pub type KeyAsWords<W, B> = GenericArray<W, KeyAsWordsSize<W, B>>;
 pub type KeyAsWordsSize<W, B> = Quot<Diff<Sum<B, <W as Word>::Bytes>, U1>, <W as Word>::Bytes>;
 
-pub trait Word: Default + Copy + From<u8> + Add<Output = Self> + DefaultIsZeroes + Default {
+pub trait Word:
+    Default + Copy + From<u8> + Add<Output = Self> + DefaultIsZeroes + Default + private::Sealed
+{
     type Bytes: ArrayLength<u8>;
 
     const ZERO: Self;
@@ -37,6 +39,12 @@ pub trait Word: Default + Copy + From<u8> + Add<Output = Self> + DefaultIsZeroes
     fn to_le_bytes(self) -> GenericArray<u8, Self::Bytes>;
 
     fn bitxor(self, other: Self) -> Self;
+}
+
+mod private {
+    pub trait Sealed {}
+
+    impl Sealed for u32 {}
 }
 
 impl Word for u32 {
