@@ -11,11 +11,11 @@ members = [
     "kuznyechik",
     "magma",
     "rc2",
+    "rc5",
     "serpent",
     "sm4",
     "twofish",
     "threefish",
-    "rc5"
 ]
 
 [profile.dev]
