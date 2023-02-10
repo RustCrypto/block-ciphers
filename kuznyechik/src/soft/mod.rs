@@ -81,7 +81,7 @@ impl AlgorithmName for Kuznyechik {
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl Drop for Kuznyechik {
     fn drop(&mut self) {
-        self.keys.zeroize();
+        self.keys.iter_mut().for_each(|key| key.zeroize());
     }
 }
 
@@ -135,7 +135,7 @@ impl AlgorithmName for KuznyechikEnc {
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl Drop for KuznyechikEnc {
     fn drop(&mut self) {
-        self.keys.zeroize();
+        self.keys.iter_mut().for_each(|key| key.zeroize());
     }
 }
 
@@ -205,7 +205,7 @@ impl AlgorithmName for KuznyechikDec {
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl Drop for KuznyechikDec {
     fn drop(&mut self) {
-        self.keys.zeroize();
+        self.keys.iter_mut().for_each(|key| key.zeroize());
     }
 }
 

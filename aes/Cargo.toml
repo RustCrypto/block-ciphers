@@ -1,6 +1,6 @@
 [package]
 name = "aes"
-version = "0.8.1" # Also update html_root_url in lib.rs when bumping this
+version = "0.8.2"
 description = "Pure Rust implementation of the Advanced Encryption Standard (a.k.a. Rijndael)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -19,13 +19,19 @@ cipher = "0.4.2"
 [target.'cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))'.dependencies]
 cpufeatures = "0.2"
 
+[target.'cfg(not(all(aes_armv8, target_arch = "aarch64")))'.dependencies]
+zeroize = { version = "1.5.6", optional = true, default_features = false }
+
+# TODO(tarcieri): unconditionally enable `aarch64` feature when MSRV is 1.59
+[target.'cfg(all(aes_armv8, target_arch = "aarch64"))'.dependencies]
+zeroize = { version = "1.5.6", optional = true, default_features = false, features = ["aarch64"] }
+
 [dev-dependencies]
 cipher = { version = "0.4.2", features = ["dev"] }
 hex-literal = "0.3"
 
 [features]
-hazmat     = [] # Expose cryptographically hazardous APIs
-zeroize = ["cipher/zeroize"]
+hazmat = [] # Expose cryptographically hazardous APIs
 
 [package.metadata.docs.rs]
 all-features = true

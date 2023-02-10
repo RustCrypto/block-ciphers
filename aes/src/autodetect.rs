@@ -180,6 +180,20 @@ macro_rules! define_aes_impl {
             }
         }
 
+        impl Drop for $name {
+            #[inline]
+            fn drop(&mut self) {
+                if self.token.get() {
+                    unsafe { ManuallyDrop::drop(&mut self.inner.intrinsics) };
+                } else {
+                    unsafe { ManuallyDrop::drop(&mut self.inner.soft) };
+                };
+            }
+        }
+
+        #[cfg(feature = "zeroize")]
+        impl zeroize::ZeroizeOnDrop for $name {}
+
         #[doc=$doc]
         #[doc = "block cipher (encrypt-only)"]
         pub struct $name_enc {
@@ -265,6 +279,20 @@ macro_rules! define_aes_impl {
                 f.write_str(stringify!($name_enc))
             }
         }
+
+        impl Drop for $name_enc {
+            #[inline]
+            fn drop(&mut self) {
+                if self.token.get() {
+                    unsafe { ManuallyDrop::drop(&mut self.inner.intrinsics) };
+                } else {
+                    unsafe { ManuallyDrop::drop(&mut self.inner.soft) };
+                };
+            }
+        }
+
+        #[cfg(feature = "zeroize")]
+        impl zeroize::ZeroizeOnDrop for $name_enc {}
 
         #[doc=$doc]
         #[doc = "block cipher (decrypt-only)"]
@@ -380,6 +408,20 @@ macro_rules! define_aes_impl {
                 f.write_str(stringify!($name_dec))
             }
         }
+
+        impl Drop for $name_dec {
+            #[inline]
+            fn drop(&mut self) {
+                if self.token.get() {
+                    unsafe { ManuallyDrop::drop(&mut self.inner.intrinsics) };
+                } else {
+                    unsafe { ManuallyDrop::drop(&mut self.inner.soft) };
+                };
+            }
+        }
+
+        #[cfg(feature = "zeroize")]
+        impl zeroize::ZeroizeOnDrop for $name_dec {}
     };
 }
 

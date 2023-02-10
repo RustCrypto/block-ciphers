@@ -1,6 +1,6 @@
 [package]
 name = "threefish"
-version = "0.5.1" # Also update html_root_url in lib.rs when bumping this
+version = "0.5.1"
 description = "Threefish block cipher"
 authors = ["The Rust-Crypto Project Developers"]
 license = "MIT OR Apache-2.0"

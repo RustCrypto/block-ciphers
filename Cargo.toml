@@ -1,13 +1,17 @@
 [workspace]
 members = [
     "aes",
+    "aria",
+    "belt-block",
     "blowfish",
+    "camellia",
     "cast5",
     "des",
     "idea",
     "kuznyechik",
     "magma",
     "rc2",
+    "rc5",
     "serpent",
     "sm4",
     "speck",

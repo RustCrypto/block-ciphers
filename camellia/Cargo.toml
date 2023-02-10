@@ -1,0 +1,26 @@
+[package]
+name = "camellia"
+version = "0.1.0"
+description = "Camellia block cipher"
+authors = ["RustCrypto Developers"]
+license = "MIT OR Apache-2.0"
+edition = "2021"
+rust-version = "1.56"
+readme = "README.md"
+documentation = "https://docs.rs/camellia"
+repository = "https://github.com/RustCrypto/block-ciphers"
+keywords = ["crypto", "camellia", "block-cipher"]
+categories = ["cryptography", "no-std"]
+
+[dependencies]
+byteorder = { version = "1.1", default-features = false }
+cipher = "0.4.2"
+
+[dev-dependencies]
+cipher = { version = "0.4.2", features = ["dev"] }
+
+[features]
+zeroize = ["cipher/zeroize"]
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "docsrs"]
