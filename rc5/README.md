@@ -1,14 +1,14 @@
-# RustCrypto: RC5 Cipher
+# [RustCrypto]: RC5 Cipher
 
 [![crate][crate-image]][crate-link]
 [![Docs][docs-image]][docs-link]
+[![Build Status][build-image]][build-link]
 ![Apache2/MIT licensed][license-image]
 ![Rust Version][rustc-image]
 [![Project Chat][chat-image]][chat-link]
-[![Build Status][build-image]][build-link]
 [![HAZMAT][hazmat-image]][hazmat-link]
 
-Pure Rust implementation of the [RC5 block cipher][1].
+Pure Rust implementation of the [RC5] block cipher.
 
 [Documentation][docs-link]
 
@@ -57,15 +57,16 @@ dual licensed as above, without any additional terms or conditions.
 [crate-link]: https://crates.io/crates/rc5
 [docs-image]: https://docs.rs/rc5/badge.svg
 [docs-link]: https://docs.rs/rc5/
+[build-image]: https://github.com/RustCrypto/block-ciphers/actions/workflows/rc5.yml/badge.svg
+[build-link]: https://github.com/RustCrypto/block-ciphers/actions/workflows/rc5.yml
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg
 [hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
 [hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260039-block-ciphers
-[build-image]: https://github.com/RustCrypto/block-ciphers/workflows/rc5/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/block-ciphers/actions?query=workflow%3Arc5
 
 [//]: # (general links)
 
-[1]: https://en.wikipedia.org/wiki/RC5
+[RustCrypto]: https://github.com/RustCrypto/
+[RC5]: https://en.wikipedia.org/wiki/RC5
