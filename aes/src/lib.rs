@@ -42,7 +42,7 @@
 //! in order to determine if AES-NI is available, and if it is not, it will
 //! fallback to using a constant-time software implementation.
 //!
-//! Passing `RUSTFLAGS=-Ctarget-feature=+aes,+ssse3` explicitly at compile-time
+//! Passing `RUSTFLAGS=-C target-feature=+aes,+ssse3` explicitly at compile-time
 //! will override runtime detection and ensure that AES-NI is always used.
 //! Programs built in this manner will crash with an illegal instruction on
 //! CPUs which do not have AES-NI enabled.
@@ -73,9 +73,10 @@
 //! cipher.decrypt_block(&mut block);
 //! assert_eq!(block, block_copy);
 //!
-//! // implementation supports parallel block processing
-//! // number of blocks processed in parallel depends in general
-//! // on hardware capabilities
+//! // Implementation supports parallel block processing. Number of blocks
+//! // processed in parallel depends in general on hardware capabilities.
+//! // This is achieved by instruction-level parallelism (ILP) on a single
+//! // CPU core, which is differen from multi-threaded parallelism.
 //! let mut blocks = [block; 100];
 //! cipher.encrypt_blocks(&mut blocks);
 //!
@@ -84,6 +85,7 @@
 //!     assert_eq!(block, &block_copy);
 //! }
 //!
+//! // `decrypt_blocks` also supports parallel block processing.
 //! cipher.decrypt_blocks(&mut blocks);
 //!
 //! for block in blocks.iter_mut() {
