@@ -29,23 +29,19 @@ jobs:
           - wasm32-unknown-unknown
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
           toolchain: ${{ matrix.rust }}
-          target: ${{ matrix.target }}
-          override: true
+          targets: ${{ matrix.target }}
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
 
   minimal-versions:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
+    - uses: dtolnay/rust-toolchain@master
       with:
         toolchain: nightly
-        override: true
-        profile: minimal
     - run: rm ../Cargo.toml
     - run: cargo update -Z minimal-versions
     - run: cargo test --release
@@ -60,11 +56,9 @@ jobs:
           - stable
     steps:
     - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
+    - uses: dtolnay/rust-toolchain@master
       with:
         toolchain: ${{ matrix.rust }}
-        override: true
-        profile: minimal
     - run: cargo check --all-features
     - run: cargo test --no-default-features
     - run: cargo test
