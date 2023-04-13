@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.1.2 (2023-04-13)
+### Added
+- `wblock_enc` and `wblock_dec` functions ([#362])
+### Changed
+- Bump `hex-literal` dependency to v0.4 ([#362])
+- Bump MSRV to 1.57 ([#362])
+
+[#362]: https://github.com/RustCrypto/block-ciphers/pull/362
+
 ## 0.1.1 (2022-09-23)
 ### Added
 - `belt_block_raw` function and `cipher` crate feature (enabled by default) ([#333])
