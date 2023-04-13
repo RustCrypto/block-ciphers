@@ -23,7 +23,7 @@ dependencies = [
 
 [[package]]
 name = "belt-block"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "cipher",
  "hex-literal 0.4.1",
@@ -204,7 +204,7 @@ name = "speck"
 version = "0.0.1"
 dependencies = [
  "cipher",
- "hex-literal",
+ "hex-literal 0.3.4",
 ]
 
 [[package]]
