@@ -34,8 +34,8 @@ It's generally recommended not to use other cipher implementations in this repos
 
 ## Supported algorithms
 
-| Name | Crate name | crates.io | Docs | MSRV                    |
-|------|------------|-----------|------|-------------------------|
+| Name | Crate name | crates.io | Docs | MSRV |
+|------|------------|-----------|------|------|
 | [AES] (Rijndael) | [`aes`] | [![crates.io](https://img.shields.io/crates/v/aes.svg)](https://crates.io/crates/aes) | [![Documentation](https://docs.rs/aes/badge.svg)](https://docs.rs/aes) | ![MSRV 1.56][msrv-1.56] |
 | [ARIA] | [`aria`] | [![crates.io](https://img.shields.io/crates/v/aria.svg)](https://crates.io/crates/aria) | [![Documentation](https://docs.rs/aria/badge.svg)](https://docs.rs/aria) | ![MSRV 1.56][msrv-1.56] |
 | [BelT] block cipher | [`belt-block`] | [![crates.io](https://img.shields.io/crates/v/belt-block.svg)](https://crates.io/crates/belt-block) | [![Documentation](https://docs.rs/belt-block/badge.svg)](https://docs.rs/belt-block) | ![MSRV 1.56][msrv-1.56] |
