@@ -11,7 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Bump `hex-literal` dependency to v0.4 ([#362])
 - Bump `cipher` dependency to v0.4.4 ([#362])
-- Bump MSRV to 1.57 ([#362])
 
 [#362]: https://github.com/RustCrypto/block-ciphers/pull/362
 
