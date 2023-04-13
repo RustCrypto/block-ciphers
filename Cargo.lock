@@ -9,7 +9,7 @@ dependencies = [
  "cfg-if",
  "cipher",
  "cpufeatures",
- "hex-literal",
+ "hex-literal 0.3.4",
  "zeroize",
 ]
 
@@ -18,7 +18,7 @@ name = "aria"
 version = "0.1.0"
 dependencies = [
  "cipher",
- "hex-literal",
+ "hex-literal 0.3.4",
 ]
 
 [[package]]
@@ -26,7 +26,7 @@ name = "belt-block"
 version = "0.1.1"
 dependencies = [
  "cipher",
- "hex-literal",
+ "hex-literal 0.4.1",
 ]
 
 [[package]]
@@ -62,7 +62,7 @@ name = "cast5"
 version = "0.11.1"
 dependencies = [
  "cipher",
- "hex-literal",
+ "hex-literal 0.3.4",
 ]
 
 [[package]]
@@ -126,6 +126,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ebdb29d2ea9ed0083cd8cece49bbd968021bd99b0849edb4a9a7ee0fdf6a4e0"
 
 [[package]]
+name = "hex-literal"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6fe2267d4ed49bc07b63801559be28c718ea06c4738b7a03c94df7386d2cde46"
+
+[[package]]
 name = "idea"
 version = "0.5.1"
 dependencies = [
@@ -146,7 +152,7 @@ name = "kuznyechik"
 version = "0.8.1"
 dependencies = [
  "cipher",
- "hex-literal",
+ "hex-literal 0.3.4",
 ]
 
 [[package]]
@@ -160,7 +166,7 @@ name = "magma"
 version = "0.8.1"
 dependencies = [
  "cipher",
- "hex-literal",
+ "hex-literal 0.3.4",
 ]
 
 [[package]]
@@ -183,7 +189,7 @@ name = "sm4"
 version = "0.5.1"
 dependencies = [
  "cipher",
- "hex-literal",
+ "hex-literal 0.3.4",
 ]
 
 [[package]]
@@ -191,7 +197,7 @@ name = "threefish"
 version = "0.5.1"
 dependencies = [
  "cipher",
- "hex-literal",
+ "hex-literal 0.3.4",
 ]
 
 [[package]]
@@ -199,7 +205,7 @@ name = "twofish"
 version = "0.7.1"
 dependencies = [
  "cipher",
- "hex-literal",
+ "hex-literal 0.3.4",
 ]
 
 [[package]]
