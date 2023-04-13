@@ -51,6 +51,7 @@ fn belt_block() {
 }
 
 #[test]
+#[cfg(feature = "cipher")]
 fn stb_34_101_31_a6() {
     let k = hex!("E9DEE72C 8F0C0FA6 2DDB49F4 6F739647 06075316 ED247A37 39CBA383 03A98BF6");
     let mut x1 = hex!("B194BAC8 0A08F53B 366D008E 584A5DE4 8504FA9D 1BB6C7AC 252E72C2 02FDCE0D 5BE3D612 17B96181 FE6786AD 716B890B");
@@ -59,26 +60,24 @@ fn stb_34_101_31_a6() {
     let mut x2 = hex!("B194BAC8 0A08F53B 366D008E 584A5DE4 8504FA9D 1BB6C7AC 252E72C2 02FDCE0D 5BE3D612 17B96181 FE6786AD 716B89");
     let y2 = hex!("F08EF22D CAA06C81 FB127219 74221CA7 AB82C628 56FCF2F9 FCA006E0 19A28F16 E5821A51 F5735946 25DBAB8F 6A5C94");
 
-    #[cfg(feature = "cipher")]
-    {
-        let belt = BeltBlock::new_from_slice(&k).unwrap();
+    let belt = BeltBlock::new_from_slice(&k).unwrap();
 
-        let x_bkp = x1;
+    let x_bkp = x1;
 
-        belt.wblock_enc(&mut x1);
-        assert_eq!(x1, y1);
-        belt.wblock_dec(&mut x1);
-        assert_eq!(x1, x_bkp);
+    belt.wblock_enc(&mut x1);
+    assert_eq!(x1, y1);
+    belt.wblock_dec(&mut x1);
+    assert_eq!(x1, x_bkp);
 
-        let x_bkp = x2;
-        belt.wblock_enc(&mut x2);
-        assert_eq!(x2, y2);
-        belt.wblock_dec(&mut x2);
-        assert_eq!(x2, x_bkp);
-    }
+    let x_bkp = x2;
+    belt.wblock_enc(&mut x2);
+    assert_eq!(x2, y2);
+    belt.wblock_dec(&mut x2);
+    assert_eq!(x2, x_bkp);
 }
 
 #[test]
+#[cfg(feature = "cipher")]
 fn stb_34_101_31_a7() {
     let k = hex!("92BD9B1C E5D14101 5445FBC9 5E4D0EF2 682080AA 227D642F 2687F934 90405511");
     let mut y1 = hex!("E12BDC1A E28257EC 703FCCF0 95EE8DF1 C1AB7638 9FE678CA F7C6F860 D5BB9C4F F33C657B 637C306A DD4EA779 9EB23D31");
@@ -93,17 +92,14 @@ fn stb_34_101_31_a7() {
 
     let y_bkp = y1;
 
-    #[cfg(feature = "cipher")]
-    {
-        belt.wblock_dec(&mut y1);
-        assert_eq!(y1, x1);
-        belt.wblock_enc(&mut y1);
-        assert_eq!(y1, y_bkp);
+    belt.wblock_dec(&mut y1);
+    assert_eq!(y1, x1);
+    belt.wblock_enc(&mut y1);
+    assert_eq!(y1, y_bkp);
 
-        let y_bkp = y2;
-        belt.wblock_dec(&mut y2);
-        assert_eq!(y2, x2);
-        belt.wblock_enc(&mut y2);
-        assert_eq!(y2, y_bkp);
-    }
+    let y_bkp = y2;
+    belt.wblock_dec(&mut y2);
+    assert_eq!(y2, x2);
+    belt.wblock_enc(&mut y2);
+    assert_eq!(y2, y_bkp);
 }
