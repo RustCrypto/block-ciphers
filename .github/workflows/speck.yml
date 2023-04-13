@@ -1,16 +1,16 @@
-name: idea
+name: speck
 
 on:
   pull_request:
     paths:
-      - "idea/**"
+      - "speck/**"
       - "Cargo.*"
   push:
     branches: master
 
 defaults:
   run:
-    working-directory: idea
+    working-directory: speck
 
 env:
   CARGO_INCREMENTAL: 0
@@ -29,7 +29,6 @@ jobs:
           - wasm32-unknown-unknown
     steps:
       - uses: actions/checkout@v3
-      - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
@@ -37,9 +36,16 @@ jobs:
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
 
   minimal-versions:
-    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
-    with:
-        working-directory: ${{ github.workflow }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: nightly
+    - run: rm ../Cargo.toml
+    - run: cargo update -Z minimal-versions
+    - run: cargo test --release
+    - run: cargo test --release --all-features
 
   test:
     runs-on: ubuntu-latest
@@ -49,12 +55,11 @@ jobs:
           - 1.56.0 # MSRV
           - stable
     steps:
-      - uses: actions/checkout@v3
-      - uses: RustCrypto/actions/cargo-cache@master
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.rust }}
-      - run: cargo check --all-features
-      - run: cargo test --no-default-features
-      - run: cargo test
-      - run: cargo test --all-features
+    - uses: actions/checkout@v3
+    - uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: ${{ matrix.rust }}
+    - run: cargo check --all-features
+    - run: cargo test --no-default-features
+    - run: cargo test
+    - run: cargo test --all-features

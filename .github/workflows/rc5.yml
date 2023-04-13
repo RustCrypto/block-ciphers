@@ -1,16 +1,15 @@
-name: idea
-
+name: rc5
 on:
   pull_request:
     paths:
-      - "idea/**"
+      - "rc5/**"
       - "Cargo.*"
   push:
     branches: master
 
 defaults:
   run:
-    working-directory: idea
+    working-directory: rc5
 
 env:
   CARGO_INCREMENTAL: 0

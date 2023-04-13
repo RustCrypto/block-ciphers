@@ -8,7 +8,7 @@
 //! There are very few valid uses cases for this API. It's intended to be used
 //! for implementing well-reviewed higher-level constructions.
 //!
-//! We do NOT recommending using it to implement any algorithm which has not
+//! We do NOT recommend using it to implement any algorithm which has not
 //! received extensive peer review by cryptographers.
 
 use crate::{soft::fixslice::hazmat as soft, Block, Block8};

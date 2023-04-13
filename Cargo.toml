@@ -11,8 +11,10 @@ members = [
     "kuznyechik",
     "magma",
     "rc2",
+    "rc5",
     "serpent",
     "sm4",
+    "speck",
     "twofish",
     "threefish",
 ]

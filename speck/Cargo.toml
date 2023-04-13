@@ -1,0 +1,20 @@
+[package]
+name = "speck"
+version = "0.0.1" # Also update html_root_url in lib.rs when bumping this
+authors = ["RustCrypto Developers"]
+license = "Apache-2.0 OR MIT"
+description = "Speck block cipher algorithm"
+documentation = "https://docs.rs/speck"
+repository = "https://github.com/RustCrypto/block-ciphers/tree/master/speck"
+readme = "README.md"
+edition = "2021"
+rust-version = "1.56"
+keywords = ["crypto", "speck", "block-cipher"]
+categories = ["cryptography", "no-std"]
+
+[dependencies]
+cipher = "0.4.2"
+
+[dev-dependencies]
+cipher = { version = "0.4.2", features = ["dev"] }
+hex-literal = "0.3"
