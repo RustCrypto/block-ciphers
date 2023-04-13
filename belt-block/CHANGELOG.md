@@ -7,10 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.1.2 (2023-04-13)
 ### Added
-- `wblock_enc` and `wblock_dec` functions ([#362])
-### Changed
-- Bump `hex-literal` dependency to v0.4 ([#362])
-- Bump `cipher` dependency to v0.4.4 ([#362])
+- `wblock_enc` and `wblock_dec` methods ([#362])
 
 [#362]: https://github.com/RustCrypto/block-ciphers/pull/362
 
