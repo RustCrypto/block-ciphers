@@ -59,20 +59,23 @@ fn stb_34_101_31_a6() {
     let mut x2 = hex!("B194BAC8 0A08F53B 366D008E 584A5DE4 8504FA9D 1BB6C7AC 252E72C2 02FDCE0D 5BE3D612 17B96181 FE6786AD 716B89");
     let y2 = hex!("F08EF22D CAA06C81 FB127219 74221CA7 AB82C628 56FCF2F9 FCA006E0 19A28F16 E5821A51 F5735946 25DBAB8F 6A5C94");
 
-    let belt = BeltBlock::new_from_slice(&k).unwrap();
+    #[cfg(feature = "cipher")]
+    {
+        let belt = BeltBlock::new_from_slice(&k).unwrap();
 
-    let x_bkp = x1;
+        let x_bkp = x1;
 
-    belt.wblock_enc(&mut x1);
-    assert_eq!(x1, y1);
-    belt.wblock_dec(&mut x1);
-    assert_eq!(x1, x_bkp);
+        belt.wblock_enc(&mut x1);
+        assert_eq!(x1, y1);
+        belt.wblock_dec(&mut x1);
+        assert_eq!(x1, x_bkp);
 
-    let x_bkp = x2;
-    belt.wblock_enc(&mut x2);
-    assert_eq!(x2, y2);
-    belt.wblock_dec(&mut x2);
-    assert_eq!(x2, x_bkp);
+        let x_bkp = x2;
+        belt.wblock_enc(&mut x2);
+        assert_eq!(x2, y2);
+        belt.wblock_dec(&mut x2);
+        assert_eq!(x2, x_bkp);
+    }
 }
 
 #[test]
@@ -90,14 +93,17 @@ fn stb_34_101_31_a7() {
 
     let y_bkp = y1;
 
-    belt.wblock_dec(&mut y1);
-    assert_eq!(y1, x1);
-    belt.wblock_enc(&mut y1);
-    assert_eq!(y1, y_bkp);
+    #[cfg(feature = "cipher")]
+    {
+        belt.wblock_dec(&mut y1);
+        assert_eq!(y1, x1);
+        belt.wblock_enc(&mut y1);
+        assert_eq!(y1, y_bkp);
 
-    let y_bkp = y2;
-    belt.wblock_dec(&mut y2);
-    assert_eq!(y2, x2);
-    belt.wblock_enc(&mut y2);
-    assert_eq!(y2, y_bkp);
+        let y_bkp = y2;
+        belt.wblock_dec(&mut y2);
+        assert_eq!(y2, x2);
+        belt.wblock_enc(&mut y2);
+        assert_eq!(y2, y_bkp);
+    }
 }
