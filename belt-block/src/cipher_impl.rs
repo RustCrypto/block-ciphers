@@ -17,7 +17,7 @@ pub struct BeltBlock {
 }
 
 impl BeltBlock {
-    /// Wide block encryption as described in section 6.1.3
+    /// Encryption as described in section 6.1.3
     #[inline]
     fn encrypt(&self, mut block: InOut<'_, '_, Block>) {
         let block_in = block.get_in();
@@ -38,7 +38,7 @@ impl BeltBlock {
         }
     }
 
-    /// Wide block decryption as described in section 6.1.4
+    /// Decryption as described in section 6.1.4
     #[inline]
     fn decrypt(&self, mut block: InOut<'_, '_, Block>) {
         let key = &self.key;
@@ -129,7 +129,7 @@ impl BeltBlock {
             let s = Block::clone_from_slice(&data[tail_pos..]);
             data.copy_within(..tail_pos, BLOCK_SIZE);
 
-            let mut s2 = s.clone();
+            let mut s2 = s;
             self.encrypt_block(&mut s2);
             xor_set(&mut data[tail_pos..], &s2);
             xor_set(&mut data[tail_pos..], &i.to_le_bytes());
