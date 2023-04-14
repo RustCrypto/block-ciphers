@@ -1,12 +1,13 @@
 use crate::{belt_block_raw, g13, g21, g5, key_idx};
 use cipher::consts::{U16, U32};
-use cipher::{
-    inout::InOut, AlgorithmName, Block, BlockCipher, BlockEncrypt, Key, KeyInit, KeySizeUser,
-};
+use cipher::{inout::InOut, AlgorithmName, BlockCipher, BlockEncrypt, Key, KeyInit, KeySizeUser};
 use core::{fmt, mem::swap, num::Wrapping};
 
 #[cfg(feature = "zeroize")]
 use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
+
+type Block = cipher::Block<BeltBlock>;
+const BLOCK_SIZE: usize = 16;
 
 /// BelT block cipher.
 #[derive(Clone)]
@@ -16,9 +17,9 @@ pub struct BeltBlock {
 }
 
 impl BeltBlock {
-    /// Encryption as described in section 6.1.3
+    /// Wide block encryption as described in section 6.1.3
     #[inline]
-    fn encrypt(&self, mut block: InOut<'_, '_, Block<Self>>) {
+    fn encrypt(&self, mut block: InOut<'_, '_, Block>) {
         let block_in = block.get_in();
         // Steps 1 and 4
         let x = [
@@ -37,9 +38,9 @@ impl BeltBlock {
         }
     }
 
-    /// Decryption as described in section 6.1.4
+    /// Wide block decryption as described in section 6.1.4
     #[inline]
-    fn decrypt(&self, mut block: InOut<'_, '_, Block<Self>>) {
+    fn decrypt(&self, mut block: InOut<'_, '_, Block>) {
         let key = &self.key;
         let block_in = block.get_in();
         // Steps 1 and 4
@@ -85,57 +86,59 @@ impl BeltBlock {
     }
 
     /// Wide block encryption as described in section 6.2.3.
+    ///
+    /// # Panics
+    /// If length of `data` is less than 32 bytes.
     #[inline]
     pub fn wblock_enc(&self, data: &mut [u8]) {
+        if data.len() < 32 {
+            panic!("data length must be bigger or equal to 32 bytes");
+        }
+
         let len = data.len();
-        let n = (len + 15) / 16;
-        // For i = 1,2,...,2n execute:
-        for i in 1..=2 * n {
-            let mut block: Block<BeltBlock> = Default::default();
-            block.copy_from_slice(&data[..16]);
+        let n = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
+        for i in 1..(2 * n + 1) {
+            let mut s = data[..len - 1]
+                .chunks_exact(BLOCK_SIZE)
+                .fold(Block::default(), xor);
 
-            // 𝑠←𝑟1 ⊕𝑟2 ⊕...⊕𝑟𝑛−1
-            for i in (16..len - 16).step_by(16) {
-                xor_set(&mut block, &data[i..i + 16]);
-            }
+            data.copy_within(BLOCK_SIZE.., 0);
+            let (tail1, tail2) = data[len - 2 * BLOCK_SIZE..].split_at_mut(BLOCK_SIZE);
+            tail2.copy_from_slice(&s);
 
-            // 𝑟←ShLo128(𝑟)
-            data.copy_from_slice(&[&data[16..len], &block[..]].concat());
-            // 𝑟* ← 𝑟* ⊕ belt-block(𝑠, 𝐾) ⊕ ⟨𝑖⟩128
-            data[len - 16..].copy_from_slice(&block);
-            self.encrypt_block(&mut block);
-            xor_set(&mut block, &i.to_le_bytes());
-            // 𝑟* ← 𝑠.
-            xor_set(&mut data[len - 32..], &block);
+            self.encrypt_block(&mut s);
+            xor_set(tail1, &s);
+            xor_set(tail1, &i.to_le_bytes());
         }
     }
 
     /// Wide block decryption as described in section 6.2.4.
+    ///
+    /// # Panics
+    /// If length of `data` is less than 32 bytes.
     #[inline]
     pub fn wblock_dec(&self, data: &mut [u8]) {
+        if data.len() < 32 {
+            panic!("data length must be bigger or equal to 32 bytes");
+        }
+
         let len = data.len();
-        let n = (len + 15) / 16;
-        // For i = 2n,2n−1,...,1 execute:
-        for i in (1..=2 * n).rev() {
-            // block <- r*
-            let mut block: Block<BeltBlock> = Default::default();
-            block.copy_from_slice(&data[len - 16..]);
+        let n = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
+        for i in (1..(2 * n + 1)).rev() {
+            let tail_pos = len - BLOCK_SIZE;
+            let s = Block::clone_from_slice(&data[tail_pos..]);
+            data.copy_within(..tail_pos, BLOCK_SIZE);
 
-            // r <- ShHi^128(r)
-            // r1 <- block
-            data.copy_from_slice(&[&block[..], &data[..len - 16]].concat());
+            let mut s2 = s.clone();
+            self.encrypt_block(&mut s2);
+            xor_set(&mut data[tail_pos..], &s2);
+            xor_set(&mut data[tail_pos..], &i.to_le_bytes());
 
-            self.encrypt_block(&mut block);
-            xor_set(&mut block, &i.to_le_bytes());
-            xor_set(&mut data[len - 16..], &block);
-
-            let mut t: Block<BeltBlock> = Default::default();
-            t.copy_from_slice(&data[..16]);
-            // 𝑠←𝑟1 ⊕𝑟2 ⊕...⊕𝑟𝑛−1
-            for i in (16..len - 16).step_by(16) {
-                xor_set(&mut t, &data[i..i + 16]);
-            }
-            data[..16].copy_from_slice(&t);
+            let r1 = data[..len - 1]
+                .chunks_exact(BLOCK_SIZE)
+                .skip(1)
+                .fold(s, xor);
+            data[..BLOCK_SIZE].copy_from_slice(&r1);
         }
     }
 }
@@ -204,4 +207,10 @@ fn set_u32(block: &mut [u8], val: &[u32; 4], i: usize) {
 #[inline(always)]
 fn xor_set(block: &mut [u8], val: &[u8]) {
     block.iter_mut().zip(val.iter()).for_each(|(a, b)| *a ^= b);
+}
+
+#[inline(always)]
+fn xor(mut block: Block, val: &[u8]) -> Block {
+    block.iter_mut().zip(val.iter()).for_each(|(a, b)| *a ^= b);
+    block
 }
