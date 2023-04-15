@@ -23,7 +23,7 @@ dependencies = [
 
 [[package]]
 name = "belt-block"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "cipher",
  "hex-literal",

@@ -1,4 +1,4 @@
-use crate::{belt_block_raw, g13, g21, g5, key_idx};
+use crate::{belt_block_raw, from_u32, g13, g21, g5, key_idx, to_u32};
 use cipher::consts::{U16, U32};
 use cipher::{inout::InOut, AlgorithmName, Block, BlockCipher, Key, KeyInit, KeySizeUser};
 use core::{fmt, mem::swap, num::Wrapping};
@@ -17,34 +17,25 @@ impl BeltBlock {
     /// Encryption as described in section 6.1.3
     #[inline]
     fn encrypt(&self, mut block: InOut<'_, '_, Block<Self>>) {
-        let block_in = block.get_in();
         // Steps 1 and 4
-        let x = [
-            get_u32(block_in, 0),
-            get_u32(block_in, 1),
-            get_u32(block_in, 2),
-            get_u32(block_in, 3),
-        ];
-
+        let x = to_u32(block.get_in());
         let y = belt_block_raw(x, &self.key);
 
         let block_out = block.get_out();
         // 6) Y ← b ‖ d ‖ a ‖ c
-        for i in 0..4 {
-            set_u32(block_out, &y, i);
-        }
+        *block_out = from_u32(&y).into();
     }
 
     /// Decryption as described in section 6.1.4
     #[inline]
     fn decrypt(&self, mut block: InOut<'_, '_, Block<Self>>) {
         let key = &self.key;
-        let block_in = block.get_in();
+        let block_in: [u32; 4] = to_u32(block.get_in());
         // Steps 1 and 4
-        let mut a = Wrapping(get_u32(block_in, 0));
-        let mut b = Wrapping(get_u32(block_in, 1));
-        let mut c = Wrapping(get_u32(block_in, 2));
-        let mut d = Wrapping(get_u32(block_in, 3));
+        let mut a = Wrapping(block_in[0]);
+        let mut b = Wrapping(block_in[1]);
+        let mut c = Wrapping(block_in[2]);
+        let mut d = Wrapping(block_in[3]);
 
         // Step 5
         for i in (1..9).rev() {
@@ -77,9 +68,7 @@ impl BeltBlock {
         let block_out = block.get_out();
         // 6) 𝑋 ← c ‖ a ‖ d ‖ b
         let x = [c.0, a.0, d.0, b.0];
-        for i in 0..4 {
-            set_u32(block_out, &x, i);
-        }
+        *block_out = from_u32(&x).into();
     }
 }
 
@@ -91,18 +80,7 @@ impl KeySizeUser for BeltBlock {
 
 impl KeyInit for BeltBlock {
     fn new(key: &Key<Self>) -> Self {
-        Self {
-            key: [
-                get_u32(key, 0),
-                get_u32(key, 1),
-                get_u32(key, 2),
-                get_u32(key, 3),
-                get_u32(key, 4),
-                get_u32(key, 5),
-                get_u32(key, 6),
-                get_u32(key, 7),
-            ],
-        }
+        Self { key: to_u32(key) }
     }
 }
 
@@ -133,13 +111,3 @@ cipher::impl_simple_block_encdec!(
         cipher.decrypt(block);
     }
 );
-
-#[inline(always)]
-fn get_u32(block: &[u8], i: usize) -> u32 {
-    u32::from_le_bytes(block[4 * i..][..4].try_into().unwrap())
-}
-
-#[inline(always)]
-fn set_u32(block: &mut [u8], val: &[u32; 4], i: usize) {
-    block[4 * i..][..4].copy_from_slice(&val[i].to_le_bytes());
-}
