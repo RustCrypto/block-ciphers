@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.1.2 (2023-04-15)
 ### Added
-- `belt_wblock_enc`, `belt_wblock_dec`, and `key_to_u32` functions ([#362])
+- `belt_wblock_enc`, `belt_wblock_dec`, and `to_u32` functions ([#362])
 
 [#362]: https://github.com/RustCrypto/block-ciphers/pull/362
 

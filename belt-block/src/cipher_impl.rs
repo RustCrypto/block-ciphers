@@ -18,7 +18,7 @@ impl BeltBlock {
     #[inline]
     fn encrypt(&self, mut block: InOut<'_, '_, Block<Self>>) {
         // Steps 1 and 4
-        let x = to_u32(&(*block.get_in()).into());
+        let x = to_u32(block.get_in());
         let y = belt_block_raw(x, &self.key);
 
         let block_out = block.get_out();
@@ -30,7 +30,7 @@ impl BeltBlock {
     #[inline]
     fn decrypt(&self, mut block: InOut<'_, '_, Block<Self>>) {
         let key = &self.key;
-        let block_in: [u32; 4] = to_u32(&(*block.get_in()).into());
+        let block_in: [u32; 4] = to_u32(block.get_in());
         // Steps 1 and 4
         let mut a = Wrapping(block_in[0]);
         let mut b = Wrapping(block_in[1]);
@@ -80,8 +80,7 @@ impl KeySizeUser for BeltBlock {
 
 impl KeyInit for BeltBlock {
     fn new(key: &Key<Self>) -> Self {
-        let key = to_u32(&(*key).into());
-        Self { key }
+        Self { key: to_u32(key) }
     }
 }
 

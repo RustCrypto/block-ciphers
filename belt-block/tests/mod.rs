@@ -1,20 +1,12 @@
 //! Example vectors from STB 34.101.31 (2020):
 //! http://apmi.bsu.by/assets/files/std/belt-spec371.pdf
-use belt_block::{belt_block_raw, belt_wblock_dec, belt_wblock_enc, key_to_u32};
+use belt_block::{belt_block_raw, belt_wblock_dec, belt_wblock_enc, to_u32};
 #[cfg(feature = "cipher")]
 use belt_block::{
     cipher::{BlockDecrypt, BlockEncrypt, KeyInit},
     BeltBlock,
 };
 use hex_literal::hex;
-
-fn block_to_u32(block: &[u8; 16]) -> [u32; 4] {
-    let mut res = [0u32; 4];
-    res.iter_mut()
-        .zip(block.chunks_exact(4))
-        .for_each(|(dst, src)| *dst = u32::from_le_bytes(src.try_into().unwrap()));
-    res
-}
 
 #[test]
 fn belt_block() {
@@ -34,8 +26,8 @@ fn belt_block() {
     let ct2 = hex!("E12BDC1A E28257EC 703FCCF0 95EE8DF1");
 
     for (key, pt, ct) in [(key1, pt1, ct1), (key2, pt2, ct2)] {
-        let res = belt_block_raw(block_to_u32(&pt), &key_to_u32(&key));
-        assert_eq!(res, block_to_u32(&ct));
+        let res = belt_block_raw(to_u32(&pt), &to_u32(&key));
+        assert_eq!(res, to_u32(&ct));
 
         #[cfg(feature = "cipher")]
         {
@@ -52,10 +44,10 @@ fn belt_block() {
 #[test]
 fn belt_wblock() {
     // Table A.6
-    let k1 = key_to_u32(&hex!(
+    let k1 = hex!(
         "E9DEE72C 8F0C0FA6 2DDB49F4 6F739647"
         "06075316 ED247A37 39CBA383 03A98BF6"
-    ));
+    );
     let x1 = hex!(
         "B194BAC8 0A08F53B 366D008E 584A5DE4"
         "8504FA9D 1BB6C7AC 252E72C2 02FDCE0D"
@@ -78,10 +70,10 @@ fn belt_wblock() {
     );
 
     // Table A.7
-    let k2 = key_to_u32(&hex!(
+    let k2 = hex!(
         "92BD9B1C E5D14101 5445FBC9 5E4D0EF2"
         "682080AA 227D642F 2687F934 90405511"
-    ));
+    );
     let y3 = hex!(
         "E12BDC1A E28257EC 703FCCF0 95EE8DF1"
         "C1AB7638 9FE678CA F7C6F860 D5BB9C4F"
@@ -103,27 +95,18 @@ fn belt_wblock() {
         "F33C657B"
     );
 
-    let mut t1 = x1;
-    belt_wblock_enc(&mut t1, &k1).unwrap();
-    assert_eq!(t1, y1);
-    belt_wblock_dec(&mut t1, &k1).unwrap();
-    assert_eq!(t1, x1);
-
-    let mut t2 = x2;
-    belt_wblock_enc(&mut t2, &k1).unwrap();
-    assert_eq!(t2, y2);
-    belt_wblock_dec(&mut t2, &k1).unwrap();
-    assert_eq!(t2, x2);
-
-    let mut t3 = x3;
-    belt_wblock_enc(&mut t3, &k2).unwrap();
-    assert_eq!(t3, y3);
-    belt_wblock_dec(&mut t3, &k2).unwrap();
-    assert_eq!(t3, x3);
-
-    let mut t4 = x4;
-    belt_wblock_enc(&mut t4, &k2).unwrap();
-    assert_eq!(t4, y4);
-    belt_wblock_dec(&mut t4, &k2).unwrap();
-    assert_eq!(t4, x4);
+    let tests = [
+        (k1, &x1[..], &y1[..]),
+        (k1, &x2[..], &y2[..]),
+        (k2, &x3[..], &y3[..]),
+        (k2, &x4[..], &y4[..]),
+    ];
+    for (key, x, y) in tests {
+        let k = to_u32(&key);
+        let mut t = x.to_vec();
+        belt_wblock_enc(&mut t, &k).unwrap();
+        assert_eq!(t, y);
+        belt_wblock_dec(&mut t, &k).unwrap();
+        assert_eq!(t, x);
+    }
 }

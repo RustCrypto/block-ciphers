@@ -124,7 +124,7 @@ pub fn belt_wblock_enc(data: &mut [u8], key: &[u32; 8]) -> Result<(), InvalidLen
         tail2.copy_from_slice(&s);
 
         let s = belt_block_raw(to_u32(&s), key);
-        xor_set(tail1, &from_u32::<16, 4>(&s));
+        xor_set(tail1, &from_u32::<16>(&s));
         xor_set(tail1, &i.to_le_bytes());
     }
 
@@ -148,7 +148,7 @@ pub fn belt_wblock_dec(data: &mut [u8], key: &[u32; 8]) -> Result<(), InvalidLen
         data.copy_within(..tail_pos, BLOCK_SIZE);
 
         let s_enc = belt_block_raw(to_u32(&s), key);
-        xor_set(&mut data[tail_pos..], &from_u32::<16, 4>(&s_enc));
+        xor_set(&mut data[tail_pos..], &from_u32::<16>(&s_enc));
         xor_set(&mut data[tail_pos..], &i.to_le_bytes());
 
         let r1 = data[..len - 1]
@@ -164,11 +164,29 @@ pub fn belt_wblock_dec(data: &mut [u8], key: &[u32; 8]) -> Result<(), InvalidLen
 #[derive(Debug, Copy, Clone)]
 pub struct InvalidLengthError;
 
-/// Transform `belt-block` key from `[u8; 32]` to `[u32; 8]` for use in
-/// [`belt_block_raw`], [`belt_wblock_enc`], and [`belt_wblock_dec`] functions.
+/// Helper function for transforming BelT keys and blocks from a byte array
+/// to an array of `u32`s.
+///
+/// # Panics
+/// If length of `src` is not equal to `4 * N`.
 #[inline(always)]
-pub fn key_to_u32(key: &[u8; 32]) -> [u32; 8] {
-    to_u32(key)
+pub fn to_u32<const N: usize>(src: &[u8]) -> [u32; N] {
+    assert_eq!(src.len(), 4 * N);
+    let mut res = [0u32; N];
+    res.iter_mut()
+        .zip(src.chunks_exact(4))
+        .for_each(|(dst, src)| *dst = u32::from_le_bytes(src.try_into().unwrap()));
+    res
+}
+
+#[inline(always)]
+fn from_u32<const N: usize>(src: &[u32]) -> [u8; N] {
+    assert_eq!(N, 4 * src.len());
+    let mut res = [0u8; N];
+    res.chunks_exact_mut(4)
+        .zip(src.iter())
+        .for_each(|(dst, src)| dst.copy_from_slice(&src.to_le_bytes()));
+    res
 }
 
 #[inline(always)]
@@ -180,24 +198,4 @@ fn xor_set(block: &mut [u8], val: &[u8]) {
 fn xor(mut block: Block, val: &[u8]) -> Block {
     block.iter_mut().zip(val.iter()).for_each(|(a, b)| *a ^= b);
     block
-}
-
-#[inline(always)]
-fn to_u32<const N: usize, const M: usize>(v: &[u8; N]) -> [u32; M] {
-    assert_eq!(N, 4 * M);
-    let mut res = [0u32; M];
-    res.iter_mut()
-        .zip(v.chunks_exact(4))
-        .for_each(|(dst, src)| *dst = u32::from_le_bytes(src.try_into().unwrap()));
-    res
-}
-
-#[inline(always)]
-fn from_u32<const N: usize, const M: usize>(v: &[u32; M]) -> [u8; N] {
-    assert_eq!(N, 4 * M);
-    let mut res = [0u8; N];
-    res.chunks_exact_mut(4)
-        .zip(v.iter())
-        .for_each(|(dst, src)| dst.copy_from_slice(&src.to_le_bytes()));
-    res
 }
