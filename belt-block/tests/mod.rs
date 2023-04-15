@@ -107,6 +107,20 @@ fn belt_wblock() {
         belt_wblock_enc(&mut t, &k).unwrap();
         assert_eq!(t, y);
         belt_wblock_dec(&mut t, &k).unwrap();
-        assert_eq!(t, x);
+        assert_eq!(t, x)
+    }
+
+    // synthetic round-trip tests
+    let k = to_u32(&k1);
+    let x: Vec<u8> = (0u8..255).collect();
+    for i in 32..x.len() {
+        let mut t = x[..i].to_vec();
+        for _ in 0..16 {
+            belt_wblock_enc(&mut t, &k).unwrap();
+        }
+        for _ in 0..16 {
+            belt_wblock_dec(&mut t, &k).unwrap();
+        }
+        assert_eq!(t, x[..i]);
     }
 }
