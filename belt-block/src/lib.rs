@@ -99,3 +99,105 @@ pub fn belt_block_raw(x: [u32; 4], key: &[u32; 8]) -> [u32; 4] {
     // Step 6
     [b.0, d.0, a.0, c.0]
 }
+
+const BLOCK_SIZE: usize = 16;
+type Block = [u8; BLOCK_SIZE];
+
+/// Wide block encryption as described in section 6.2.3 of the standard.
+///
+/// Returns [`InvalidLengthError`] if `data` is smaller than 32 bytes.
+#[inline]
+pub fn belt_wblock_enc(data: &mut [u8], key: &[u32; 8]) -> Result<(), InvalidLengthError> {
+    if data.len() < 2 * BLOCK_SIZE {
+        return Err(InvalidLengthError);
+    }
+
+    let len = data.len();
+    let n = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    for i in 1..(2 * n + 1) {
+        let s = data[..len - 1]
+            .chunks_exact(BLOCK_SIZE)
+            .fold(Block::default(), xor);
+
+        data.copy_within(BLOCK_SIZE.., 0);
+        let (tail1, tail2) = data[len - 2 * BLOCK_SIZE..].split_at_mut(BLOCK_SIZE);
+        tail2.copy_from_slice(&s);
+
+        let s = belt_block_raw(to_u32(&s), key);
+        xor_set(tail1, &from_u32::<16, 4>(&s));
+        xor_set(tail1, &i.to_le_bytes());
+    }
+
+    Ok(())
+}
+
+/// Wide block decryption as described in section 6.2.4 of the standard.
+///
+/// Returns [`InvalidLengthError`] if `data` is smaller than 32 bytes.
+#[inline]
+pub fn belt_wblock_dec(data: &mut [u8], key: &[u32; 8]) -> Result<(), InvalidLengthError> {
+    if data.len() < 2 * BLOCK_SIZE {
+        return Err(InvalidLengthError);
+    }
+
+    let len = data.len();
+    let n = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    for i in (1..(2 * n + 1)).rev() {
+        let tail_pos = len - BLOCK_SIZE;
+        let s = Block::try_from(&data[tail_pos..]).unwrap();
+        data.copy_within(..tail_pos, BLOCK_SIZE);
+
+        let s_enc = belt_block_raw(to_u32(&s), key);
+        xor_set(&mut data[tail_pos..], &from_u32::<16, 4>(&s_enc));
+        xor_set(&mut data[tail_pos..], &i.to_le_bytes());
+
+        let r1 = data[..len - 1]
+            .chunks_exact(BLOCK_SIZE)
+            .skip(1)
+            .fold(s, xor);
+        data[..BLOCK_SIZE].copy_from_slice(&r1);
+    }
+    Ok(())
+}
+
+/// Error used when data smaller than 32 bytes is passed to the `belt-wblock` functions.
+#[derive(Debug, Copy, Clone)]
+pub struct InvalidLengthError;
+
+/// Transform `belt-block` key from `[u8; 32]` to `[u32; 8]` for use in
+/// [`belt_block_raw`], [`belt_wblock_enc`], and [`belt_wblock_dec`] functions.
+#[inline(always)]
+pub fn key_to_u32(key: &[u8; 32]) -> [u32; 8] {
+    to_u32(key)
+}
+
+#[inline(always)]
+fn xor_set(block: &mut [u8], val: &[u8]) {
+    block.iter_mut().zip(val.iter()).for_each(|(a, b)| *a ^= b);
+}
+
+#[inline(always)]
+fn xor(mut block: Block, val: &[u8]) -> Block {
+    block.iter_mut().zip(val.iter()).for_each(|(a, b)| *a ^= b);
+    block
+}
+
+#[inline(always)]
+fn to_u32<const N: usize, const M: usize>(v: &[u8; N]) -> [u32; M] {
+    assert_eq!(N, 4 * M);
+    let mut res = [0u32; M];
+    res.iter_mut()
+        .zip(v.chunks_exact(4))
+        .for_each(|(dst, src)| *dst = u32::from_le_bytes(src.try_into().unwrap()));
+    res
+}
+
+#[inline(always)]
+fn from_u32<const N: usize, const M: usize>(v: &[u32; M]) -> [u8; N] {
+    assert_eq!(N, 4 * M);
+    let mut res = [0u8; N];
+    res.chunks_exact_mut(4)
+        .zip(v.iter())
+        .for_each(|(dst, src)| dst.copy_from_slice(&src.to_le_bytes()));
+    res
+}
