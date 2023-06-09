@@ -1,6 +1,6 @@
 [package]
 name = "threefish"
-version = "0.5.1"
+version = "0.5.2"
 description = "Threefish block cipher"
 authors = ["The Rust-Crypto Project Developers"]
 license = "MIT OR Apache-2.0"
@@ -13,14 +13,15 @@ keywords = ["crypto", "threefish", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.4.2"
+cipher = { version = "0.4.2", optional = true }
+zeroize = { version = "1.6", optional = true, default-features = false }
 
 [dev-dependencies]
-cipher = { version = "0.4.2", features = ["dev"] }
+cipher = { version = "0.4.2", features = ["dev"]}
 hex-literal = "0.3.3"
 
 [features]
-zeroize = ["cipher/zeroize"]
+default = ["cipher"]
 
 [package.metadata.docs.rs]
 all-features = true
