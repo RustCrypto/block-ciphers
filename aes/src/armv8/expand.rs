@@ -2,6 +2,10 @@
 
 use core::{arch::aarch64::*, mem, slice};
 
+// Stable "polyfills" for unstable core::arch::aarch64 intrinsics
+// TODO(tarcieri): remove when these intrinsics have been stabilized
+use super::intrinsics::{vaeseq_u8, vaesimcq_u8};
+
 /// There are 4 AES words in a block.
 const BLOCK_WORDS: usize = 4;
 
