@@ -223,7 +223,7 @@ macro_rules! define_aes_impl {
         impl From<&$name_enc> for $name_dec {
             fn from(enc: &$name_enc) -> $name_dec {
                 let mut round_keys = enc.round_keys;
-                inv_expanded_keys(&mut round_keys);
+                unsafe { inv_expanded_keys(&mut round_keys) };
                 Self { round_keys }
             }
         }
