@@ -57,7 +57,6 @@ pub(super) fn expand_key<const L: usize, const N: usize>(key: &[u8; L]) -> [uint
 /// This is the reverse of the encryption keys, with the Inverse Mix Columns
 /// operation applied to all but the first and last expanded key.
 #[target_feature(enable = "aes")]
-#[target_feature(enable = "neon")]
 pub(super) unsafe fn inv_expanded_keys<const N: usize>(expanded_keys: &mut [uint8x16_t; N]) {
     assert!(N == 11 || N == 13 || N == 15);
 
@@ -70,7 +69,6 @@ pub(super) unsafe fn inv_expanded_keys<const N: usize>(expanded_keys: &mut [uint
 
 /// Sub bytes for a single AES word: used for key expansion.
 #[target_feature(enable = "aes")]
-#[target_feature(enable = "neon")]
 unsafe fn sub_word(input: u32) -> u32 {
     let input = vreinterpretq_u8_u32(vdupq_n_u32(input));
 

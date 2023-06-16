@@ -5,7 +5,8 @@
 use core::arch::{aarch64::uint8x16_t, asm};
 
 /// AES single round encryption.
-#[inline(always)]
+#[inline]
+#[target_feature(enable = "aes")]
 pub(super) unsafe fn vaeseq_u8(mut data: uint8x16_t, key: uint8x16_t) -> uint8x16_t {
     asm!(
         "AESE {d:v}.16B, {k:v}.16B",
@@ -17,7 +18,7 @@ pub(super) unsafe fn vaeseq_u8(mut data: uint8x16_t, key: uint8x16_t) -> uint8x1
 }
 
 /// AES single round decryption.
-#[inline(always)]
+#[inline]
 pub(super) unsafe fn vaesdq_u8(mut data: uint8x16_t, key: uint8x16_t) -> uint8x16_t {
     asm!(
         "AESD {d:v}.16B, {k:v}.16B",
@@ -30,7 +31,8 @@ pub(super) unsafe fn vaesdq_u8(mut data: uint8x16_t, key: uint8x16_t) -> uint8x1
 
 /// AES mix columns.
 #[cfg(feature = "hazmat")]
-#[inline(always)]
+#[inline]
+#[target_feature(enable = "aes")]
 pub(super) unsafe fn vaesmcq_u8(mut data: uint8x16_t) -> uint8x16_t {
     asm!(
         "AESMC {d:v}.16B, {d:v}.16B",
@@ -41,7 +43,8 @@ pub(super) unsafe fn vaesmcq_u8(mut data: uint8x16_t) -> uint8x16_t {
 }
 
 /// AES inverse mix columns.
-#[inline(always)]
+#[inline]
+#[target_feature(enable = "aes")]
 pub(super) unsafe fn vaesimcq_u8(mut data: uint8x16_t) -> uint8x16_t {
     asm!(
         "AESIMC {d:v}.16B, {d:v}.16B",
@@ -55,7 +58,8 @@ pub(super) unsafe fn vaesimcq_u8(mut data: uint8x16_t) -> uint8x16_t {
 ///
 /// These two instructions are combined into a single assembly block to ensure
 /// that instructions fuse properly.
-#[inline(always)]
+#[inline]
+#[target_feature(enable = "aes")]
 pub(super) unsafe fn vaeseq_u8_and_vaesmcq_u8(mut data: uint8x16_t, key: uint8x16_t) -> uint8x16_t {
     asm!(
         "AESE {d:v}.16B, {k:v}.16B",
@@ -71,7 +75,8 @@ pub(super) unsafe fn vaeseq_u8_and_vaesmcq_u8(mut data: uint8x16_t, key: uint8x1
 ///
 /// These two instructions are combined into a single assembly block to ensure
 /// that instructions fuse properly.
-#[inline(always)]
+#[inline]
+#[target_feature(enable = "aes")]
 pub(super) unsafe fn vaesdq_u8_and_vaesimcq_u8(
     mut data: uint8x16_t,
     key: uint8x16_t,
