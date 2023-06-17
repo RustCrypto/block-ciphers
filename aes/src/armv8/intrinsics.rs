@@ -19,6 +19,7 @@ pub(super) unsafe fn vaeseq_u8(mut data: uint8x16_t, key: uint8x16_t) -> uint8x1
 
 /// AES single round decryption.
 #[inline]
+#[target_feature(enable = "aes")]
 pub(super) unsafe fn vaesdq_u8(mut data: uint8x16_t, key: uint8x16_t) -> uint8x16_t {
     asm!(
         "AESD {d:v}.16B, {k:v}.16B",
