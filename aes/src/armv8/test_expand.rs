@@ -113,7 +113,7 @@ fn aes128_key_expansion() {
 #[test]
 fn aes128_key_expansion_inv() {
     let mut ek = load_expanded_keys(AES128_EXP_KEYS);
-    inv_expanded_keys(&mut ek);
+    unsafe { inv_expanded_keys(&mut ek) };
     assert_eq!(store_expanded_keys(ek), AES128_EXP_INVKEYS);
 }
 
