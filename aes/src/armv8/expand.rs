@@ -15,21 +15,18 @@ const WORD_SIZE: usize = 4;
 /// AES round constants.
 const ROUND_CONSTS: [u32; 10] = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36];
 
-/// AES key expansion
-// TODO(tarcieri): big endian support?
-#[inline]
-pub(super) fn expand_key<const L: usize, const N: usize>(key: &[u8; L]) -> [uint8x16_t; N] {
+/// AES key expansion.
+#[target_feature(enable = "aes")]
+pub unsafe fn expand_key<const L: usize, const N: usize>(key: &[u8; L]) -> [uint8x16_t; N] {
     assert!((L == 16 && N == 11) || (L == 24 && N == 13) || (L == 32 && N == 15));
 
-    let mut expanded_keys: [uint8x16_t; N] = unsafe { mem::zeroed() };
+    let mut expanded_keys: [uint8x16_t; N] = mem::zeroed();
 
-    // TODO(tarcieri): construct expanded keys using `vreinterpretq_u8_u32`
-    let ek_words = unsafe {
-        slice::from_raw_parts_mut(expanded_keys.as_mut_ptr() as *mut u32, N * BLOCK_WORDS)
-    };
+    let columns =
+        slice::from_raw_parts_mut(expanded_keys.as_mut_ptr() as *mut u32, N * BLOCK_WORDS);
 
     for (i, chunk) in key.chunks_exact(WORD_SIZE).enumerate() {
-        ek_words[i] = u32::from_ne_bytes(chunk.try_into().unwrap());
+        columns[i] = u32::from_ne_bytes(chunk.try_into().unwrap());
     }
 
     // From "The Rijndael Block Cipher" Section 4.1:
@@ -38,15 +35,15 @@ pub(super) fn expand_key<const L: usize, const N: usize>(key: &[u8; L]) -> [uint
     let nk = L / WORD_SIZE;
 
     for i in nk..(N * BLOCK_WORDS) {
-        let mut word = ek_words[i - 1];
+        let mut word = columns[i - 1];
 
         if i % nk == 0 {
-            word = unsafe { sub_word(word) }.rotate_right(8) ^ ROUND_CONSTS[i / nk - 1];
+            word = sub_word(word).rotate_right(8) ^ ROUND_CONSTS[i / nk - 1];
         } else if nk > 6 && i % nk == 4 {
-            word = unsafe { sub_word(word) };
+            word = sub_word(word);
         }
 
-        ek_words[i] = ek_words[i - nk] ^ word;
+        columns[i] = columns[i - nk] ^ word;
     }
 
     expanded_keys
@@ -68,6 +65,7 @@ pub(super) unsafe fn inv_expanded_keys<const N: usize>(expanded_keys: &mut [uint
 }
 
 /// Sub bytes for a single AES word: used for key expansion.
+#[inline]
 #[target_feature(enable = "aes")]
 unsafe fn sub_word(input: u32) -> u32 {
     let input = vreinterpretq_u8_u32(vdupq_n_u32(input));
