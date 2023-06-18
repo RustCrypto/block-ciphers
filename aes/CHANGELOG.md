@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.8.3 (2023-06-17)
+### Added
+- Support `aes_armv8` on Rust 1.61+ using `asm!` ([#365])
+
+[#365]: https://github.com/RustCrypto/block-ciphers/pull/365
+
 ## 0.8.2 (2022-10-27)
 ### Fixed
 - Crate documentation around configuration flags ([#343])
