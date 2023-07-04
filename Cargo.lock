@@ -178,6 +178,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "rc6"
+version = "0.1.0"
+
+[[package]]
 name = "serpent"
 version = "0.5.1"
 dependencies = [
