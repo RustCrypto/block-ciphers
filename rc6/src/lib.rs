@@ -2,3 +2,5 @@
 
 mod block_cipher;
 mod core;
+
+pub use block_cipher::*;
