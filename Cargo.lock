@@ -180,6 +180,9 @@ dependencies = [
 [[package]]
 name = "rc6"
 version = "0.1.0"
+dependencies = [
+ "cipher",
+]
 
 [[package]]
 name = "serpent"
