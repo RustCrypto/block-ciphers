@@ -1,7 +1,7 @@
 /// generated using the code in: https://www.ietf.org/archive/id/draft-krovetz-rc6-rc5-vectors-00.txt
 #[cfg(test)]
 mod tests {
-    use cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, KeyInit};
+    use cipher::{generic_array::GenericArray, BlockEncrypt, KeyInit};
     use rc6::{RC6_16_16_8, RC6_32_20_16, RC6_64_24_24, RC6_8_12_4};
 
     #[test]
