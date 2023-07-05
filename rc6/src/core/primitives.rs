@@ -6,13 +6,13 @@ use cipher::{
     zeroize::DefaultIsZeroes,
 };
 
-pub type BlockSize<W> = Prod<<W as Word>::Bytes, U2>;
+pub type BlockSize<W> = Prod<<W as Word>::Bytes, U4>;
 pub type Block<W> = GenericArray<u8, BlockSize<W>>;
 
 pub type Key<B> = GenericArray<u8, B>;
 
 pub type ExpandedKeyTable<W, R> = GenericArray<W, ExpandedKeyTableSize<R>>;
-pub type ExpandedKeyTableSize<R> = Prod<Sum<R, U1>, U2>;
+pub type ExpandedKeyTableSize<R> = Prod<Sum<R, U1>, U4>;
 
 pub type KeyAsWords<W, B> = GenericArray<W, KeyAsWordsSize<W, B>>;
 pub type KeyAsWordsSize<W, B> = Quot<Diff<Sum<B, <W as Word>::Bytes>, U1>, <W as Word>::Bytes>;
