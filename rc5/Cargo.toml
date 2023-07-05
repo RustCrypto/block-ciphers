@@ -16,6 +16,7 @@ cipher = { version = "0.4.3", features = ["zeroize"] }
 
 [dev-dependencies]
 cipher = { version = "0.4.3", features = ["dev"] }
+rand = { version = "0.8.5" }
 
 [features]
 zeroize = []

@@ -227,3 +227,31 @@ where
         cipher::zeroize::Zeroize::zeroize(&mut *self.key_table)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::block_cipher::{RC5_16_16_8, RC5_32_12_16, RC5_32_16_16, RC5_64_24_24};
+    use crate::core::backend::GenericArray;
+    use rand::{thread_rng, Rng};
+
+    #[macro_export]
+    macro_rules! words_block_conv {
+        ($rc_tyoe:ident, $key_size:expr) => {
+            let mut pt = [0u8; $key_size];
+            thread_rng().fill(&mut pt[..]);
+            let block = GenericArray::clone_from_slice(&pt);
+            let mut after_block = block.clone();
+            let (a, b) = $rc_tyoe::words_from_block(&block);
+            $rc_tyoe::block_from_words(a, b, &mut after_block);
+            assert_eq!(block, after_block);
+        };
+    }
+
+    #[test]
+    fn words_block_test() {
+        words_block_conv!(RC5_16_16_8, 4);
+        words_block_conv!(RC5_32_12_16, 8);
+        words_block_conv!(RC5_32_16_16, 8);
+        words_block_conv!(RC5_64_24_24, 16);
+    }
+}
