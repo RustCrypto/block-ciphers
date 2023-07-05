@@ -7,8 +7,7 @@ use core::{
 use cipher::{
     generic_array::{sequence::GenericSequence, ArrayLength, GenericArray},
     inout::InOut,
-    typenum::{Diff, IsLess, Le, NonZero, Sum, U1, U2},
-    typenum::{Unsigned, U256},
+    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U256, U4},
 };
 
 use super::{
@@ -22,7 +21,7 @@ where
     R: IsLess<U256>,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     key_table: ExpandedKeyTable<W, R>,
@@ -33,7 +32,7 @@ impl<W, R, B> RC6<W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -41,7 +40,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
     // Key range
     B: ArrayLength<u8>,
@@ -127,7 +126,7 @@ impl<W, R, B> RC6<W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -135,7 +134,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     pub fn encrypt(&self, mut block: InOut<'_, '_, Block<W>>) {

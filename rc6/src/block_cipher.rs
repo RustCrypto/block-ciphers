@@ -3,7 +3,7 @@ use core::ops::{Add, Div, Mul, Sub};
 use cipher::{
     generic_array::ArrayLength,
     inout::InOut,
-    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U12, U16, U2, U20, U24, U256, U4, U8},
+    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U12, U16, U20, U24, U256, U4, U8},
     AlgorithmName, Block, BlockBackend, BlockCipher, BlockDecrypt, BlockEncrypt, BlockSizeUser,
     KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
@@ -14,7 +14,7 @@ impl<W, R, B> KeyInit for RC6<W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -22,7 +22,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
     // Key range
     B: ArrayLength<u8>,
@@ -43,7 +43,7 @@ impl<W, R, B> KeySizeUser for RC6<W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -51,7 +51,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
     B: ArrayLength<u8>,
 {
@@ -62,7 +62,7 @@ impl<W, R, B> BlockCipher for RC6<W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -70,7 +70,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
 }
@@ -79,7 +79,7 @@ impl<W, R, B> BlockSizeUser for RC6<W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -87,7 +87,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     type BlockSize = BlockSize<W>;
@@ -97,7 +97,7 @@ impl<W, R, B> BlockEncrypt for RC6<W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -105,7 +105,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
     // Key range
     B: ArrayLength<u8>,
@@ -126,7 +126,7 @@ struct RC6EncryptBackend<'a, W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -134,7 +134,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     enc_dec: &'a RC6<W, R, B>,
@@ -143,7 +143,7 @@ impl<'a, W, R, B> BlockSizeUser for RC6EncryptBackend<'a, W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -151,7 +151,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     type BlockSize = BlockSize<W>;
@@ -161,7 +161,7 @@ impl<'a, W, R, B> ParBlocksSizeUser for RC6EncryptBackend<'a, W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -169,7 +169,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     type ParBlocksSize = U1;
@@ -179,7 +179,7 @@ impl<'a, W, R, B> BlockBackend for RC6EncryptBackend<'a, W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -187,7 +187,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
     // Key range
     B: ArrayLength<u8>,
@@ -210,7 +210,7 @@ impl<W, R, B> BlockDecrypt for RC6<W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -218,7 +218,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
     // Key range
     B: ArrayLength<u8>,
@@ -239,7 +239,7 @@ struct RC6DecryptBackend<'a, W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -247,7 +247,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     enc_dec: &'a RC6<W, R, B>,
@@ -256,7 +256,7 @@ impl<'a, W, R, B> BlockSizeUser for RC6DecryptBackend<'a, W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -264,7 +264,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     type BlockSize = BlockSize<W>;
@@ -274,7 +274,7 @@ impl<'a, W, R, B> ParBlocksSizeUser for RC6DecryptBackend<'a, W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -282,7 +282,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     type ParBlocksSize = U1;
@@ -292,7 +292,7 @@ impl<'a, W, R, B> BlockBackend for RC6DecryptBackend<'a, W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -300,7 +300,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
     // Key range
     B: ArrayLength<u8>,
@@ -323,7 +323,7 @@ impl<W, R, B> AlgorithmName for RC6<W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
@@ -331,7 +331,7 @@ where
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
     R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    Sum<R, U1>: Mul<U4>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     fn write_alg_name(f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {

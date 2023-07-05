@@ -11,9 +11,9 @@ mod tests {
         let pt = [0x00, 0x01, 0x02, 0x03];
         let ct = [0xAE, 0xFC, 0x46, 0x12];
 
-        let rc5 = <RC6_16_16_8 as KeyInit>::new_from_slice(&key).unwrap();
+        let rc6 = <RC6_8_12_4 as KeyInit>::new_from_slice(&key).unwrap();
         let mut block = GenericArray::clone_from_slice(&pt);
-        rc5.encrypt_block(&mut block);
+        rc6.encrypt_block(&mut block);
 
         assert_eq!(ct, block[..]);
     }
@@ -25,9 +25,9 @@ mod tests {
         let pt = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07];
         let ct = [0x2F, 0xF0, 0xB6, 0x8E, 0xAE, 0xFF, 0xAD, 0x5B];
 
-        let rc5 = <RC6_32_20_16 as KeyInit>::new_from_slice(&key).unwrap();
+        let rc6 = <RC6_16_16_8 as KeyInit>::new_from_slice(&key).unwrap();
         let mut block = GenericArray::clone_from_slice(&pt);
-        rc5.encrypt_block(&mut block);
+        rc6.encrypt_block(&mut block);
 
         assert_eq!(ct, block[..]);
     }
@@ -48,9 +48,9 @@ mod tests {
             0x2A, 0x3C,
         ];
 
-        let rc5 = <RC6_64_24_24 as KeyInit>::new_from_slice(&key).unwrap();
+        let rc6 = <RC6_32_20_16 as KeyInit>::new_from_slice(&key).unwrap();
         let mut block = GenericArray::clone_from_slice(&pt);
-        rc5.encrypt_block(&mut block);
+        rc6.encrypt_block(&mut block);
 
         assert_eq!(ct, block[..]);
     }
@@ -73,9 +73,9 @@ mod tests {
             0x67, 0x88, 0x66, 0x17,
         ];
 
-        let rc5 = <RC6_8_12_4 as KeyInit>::new_from_slice(&key).unwrap();
+        let rc6 = <RC6_64_24_24 as KeyInit>::new_from_slice(&key).unwrap();
         let mut block = GenericArray::clone_from_slice(&pt);
-        rc5.encrypt_block(&mut block);
+        rc6.encrypt_block(&mut block);
 
         assert_eq!(ct, block[..]);
     }
