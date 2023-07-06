@@ -236,13 +236,13 @@ mod tests {
 
     #[macro_export]
     macro_rules! words_block_conv {
-        ($rc_tyoe:ident, $key_size:expr) => {
+        ($rc_type:ident, $key_size:expr) => {
             let mut pt = [0u8; $key_size];
             thread_rng().fill(&mut pt[..]);
             let block = GenericArray::clone_from_slice(&pt);
             let mut after_block = block.clone();
-            let (a, b) = $rc_tyoe::words_from_block(&block);
-            $rc_tyoe::block_from_words(a, b, &mut after_block);
+            let (a, b) = $rc_type::words_from_block(&block);
+            $rc_type::block_from_words(a, b, &mut after_block);
             assert_eq!(block, after_block);
         };
     }
