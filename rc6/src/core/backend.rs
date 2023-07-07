@@ -140,16 +140,37 @@ where
     pub fn encrypt(&self, mut block: InOut<'_, '_, Block<W>>) {
         let (mut a, mut b) = Self::words_from_block(block.get_in());
         let key = &self.key_table;
+        let log_w = W::from((W::Bytes::USIZE as f64 * 8 as f64).log2() as u8);
 
-        a = a.wrapping_add(key[0]);
-        b = b.wrapping_add(key[1]);
+        // B = B + S[0]
+        b = b.wrapping_sub(key[0]);
+        // D = D + S[1]
+        d = d.wrapping_sub(key[1]);
 
         for i in 1..=R::USIZE {
-            a = a.bitxor(b).rotate_left(b).wrapping_add(key[2 * i]);
-            b = b.bitxor(a).rotate_left(a).wrapping_add(key[2 * i + 1]);
+            // 2B + 1
+            let b2 = b.wrapping_mul(W::from(2)).wrapping_add(W::from(1));
+            // B * 2B << log w
+            let t = b.wrapping_mul(b2).rotate_left(log_w);
+            // 2D + 1
+            let d2 = d.wrapping_mul(W::from(2)).wrapping_add(W::from(1));
+            // D * 2D << log w
+            let u = d.wrapping_mul(d2).rotate_left(log_w);
+            // (A xor t << u) + S[2i]
+            a = a.bitxor(t).rotate_left(u).wrapping_add(key[2 * i]);
+            // (C xor u << t) + S[2i + 1]
+            c = c.bitxor(u).rotate_left(t).wrapping_add(key[2 * i + 1]);
+            let (tmp_a, tmp_b, tmp_c, tmp_d) = (b, c, d, a);
+            a = tmp_a;
+            b = tmp_b;
+            c = tmp_c;
+            d = tmp_d;
         }
 
-        Self::block_from_words(a, b, block.get_out())
+        a = a.wrapping_sub(key[2 * R::USIZE + 2]);
+        c = c.wrapping_sub(key[2 * R::USIZE + 3]);
+
+        Self::block_from_words(a, b, c, d, block.get_out())
     }
 
     pub fn decrypt(&self, mut block: InOut<'_, '_, Block<W>>) {
