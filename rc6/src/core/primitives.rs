@@ -47,7 +47,7 @@ impl Word for u8 {
     const EIGHT: Self = 8;
 
     const P: Self = 0xb7;
-    const Q: Self = 0x9e;
+    const Q: Self = 0x9f;
 
     #[inline(always)]
     fn wrapping_add(self, rhs: Self) -> Self {

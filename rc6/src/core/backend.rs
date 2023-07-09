@@ -154,11 +154,11 @@ where
                 .rotate_left(log_w);
             a = a.bitxor(t).rotate_left(u).wrapping_add(key[2 * i]);
             c = c.bitxor(u).rotate_left(t).wrapping_add(key[2 * i + 1]);
-            let (tmp_a, tmp_b, tmp_c, tmp_d) = (b, c, d, a);
-            a = tmp_a;
-            b = tmp_b;
-            c = tmp_c;
-            d = tmp_d;
+            let tmp = a;
+            a = b;
+            b = c;
+            c = d;
+            d = tmp;
         }
 
         a = a.wrapping_add(key[2 * R::USIZE + 2]);
@@ -176,11 +176,11 @@ where
         a = a.wrapping_sub(key[2 * R::USIZE + 2]);
 
         for i in (1..=R::USIZE).rev() {
-            let (tmp_a, tmp_b, tmp_c, tmp_d) = (d, a, b, c);
-            a = tmp_a;
-            b = tmp_b;
-            c = tmp_c;
-            d = tmp_d;
+            let tmp = d;
+            d = c;
+            c = b;
+            b = a;
+            a = tmp;
             let u = d
                 .wrapping_mul(d.wrapping_mul(W::from(2)).wrapping_add(W::from(1)))
                 .rotate_left(log_w);
