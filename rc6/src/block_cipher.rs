@@ -3,7 +3,7 @@ use core::ops::{Add, Div, Mul, Sub};
 use cipher::{
     generic_array::ArrayLength,
     inout::InOut,
-    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U12, U16, U20, U24, U256, U4, U8},
+    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U12, U16, U2, U20, U24, U256, U4, U8},
     AlgorithmName, Block, BlockBackend, BlockCipher, BlockDecrypt, BlockEncrypt, BlockSizeUser,
     KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
@@ -21,8 +21,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
     // Key range
     B: ArrayLength<u8>,
@@ -50,8 +50,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
     B: ArrayLength<u8>,
 {
@@ -69,8 +69,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
 }
@@ -86,8 +86,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     type BlockSize = BlockSize<W>;
@@ -104,8 +104,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
     // Key range
     B: ArrayLength<u8>,
@@ -133,8 +133,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     enc_dec: &'a RC6<W, R, B>,
@@ -150,8 +150,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     type BlockSize = BlockSize<W>;
@@ -168,8 +168,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     type ParBlocksSize = U1;
@@ -186,8 +186,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
     // Key range
     B: ArrayLength<u8>,
@@ -217,8 +217,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
     // Key range
     B: ArrayLength<u8>,
@@ -246,8 +246,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     enc_dec: &'a RC6<W, R, B>,
@@ -263,8 +263,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     type BlockSize = BlockSize<W>;
@@ -281,8 +281,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     type ParBlocksSize = U1;
@@ -299,8 +299,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
     // Key range
     B: ArrayLength<u8>,
@@ -330,8 +330,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     fn write_alg_name(f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -347,5 +347,5 @@ where
 
 pub type RC6_8_12_4 = RC6<u8, U12, U4>;
 pub type RC6_16_16_8 = RC6<u16, U16, U8>;
-pub type RC6_32_20_16 = RC6<u32, U20, U8>;
+pub type RC6_32_20_16 = RC6<u32, U20, U16>;
 pub type RC6_64_24_24 = RC6<u64, U24, U24>;
