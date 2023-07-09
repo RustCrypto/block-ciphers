@@ -7,7 +7,7 @@ use core::{
 use cipher::{
     generic_array::{sequence::GenericSequence, ArrayLength, GenericArray},
     inout::InOut,
-    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U256, U4},
+    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U2, U256, U4},
 };
 
 use super::{
@@ -20,8 +20,8 @@ where
     R: Unsigned,
     R: IsLess<U256>,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     key_table: ExpandedKeyTable<W, R>,
@@ -39,8 +39,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
     // Key range
     B: ArrayLength<u8>,
@@ -133,8 +133,8 @@ where
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U4>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     pub fn encrypt(&self, mut block: InOut<'_, '_, Block<W>>) {
