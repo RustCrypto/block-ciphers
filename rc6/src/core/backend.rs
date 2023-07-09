@@ -140,7 +140,7 @@ where
     pub fn encrypt(&self, mut block: InOut<'_, '_, Block<W>>) {
         let (mut a, mut b, mut c, mut d) = Self::words_from_block(block.get_in());
         let key = &self.key_table;
-        let log_w = W::from((W::Bytes::USIZE as f64 * 8 as f64).log2() as u8);
+        let log_w = W::from((usize::BITS - 1 - (W::Bytes::USIZE * 8).leading_zeros()) as u8);
 
         b = b.wrapping_add(key[0]);
         d = d.wrapping_add(key[1]);
@@ -170,7 +170,7 @@ where
     pub fn decrypt(&self, mut block: InOut<'_, '_, Block<W>>) {
         let (mut a, mut b, mut c, mut d) = Self::words_from_block(block.get_in());
         let key = &self.key_table;
-        let log_w = W::from((W::Bytes::USIZE as f64 * 8 as f64).log2() as u8);
+        let log_w = W::from((usize::BITS - 1 - (W::Bytes::USIZE * 8).leading_zeros()) as u8);
 
         c = c.wrapping_sub(key[2 * R::USIZE + 3]);
         a = a.wrapping_sub(key[2 * R::USIZE + 2]);
