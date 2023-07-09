@@ -18,7 +18,7 @@ pub type KeyAsWords<W, B> = GenericArray<W, KeyAsWordsSize<W, B>>;
 pub type KeyAsWordsSize<W, B> = Quot<Diff<Sum<B, <W as Word>::Bytes>, U1>, <W as Word>::Bytes>;
 
 pub trait Word:
-    Default + Copy + From<u8> + Add<Output = Self> + DefaultIsZeroes + Default + private::Sealed
+    Default + Copy + From<u8> + Add<Output = Self> + DefaultIsZeroes + private::Sealed
 {
     type Bytes: ArrayLength<u8>;
 

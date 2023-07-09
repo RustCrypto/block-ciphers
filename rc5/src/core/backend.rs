@@ -7,8 +7,7 @@ use core::{
 use cipher::{
     generic_array::{sequence::GenericSequence, ArrayLength, GenericArray},
     inout::InOut,
-    typenum::{Diff, IsLess, Le, NonZero, Sum, U1, U2},
-    typenum::{Unsigned, U256},
+    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U2, U256},
 };
 
 use super::{
