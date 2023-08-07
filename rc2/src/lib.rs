@@ -48,7 +48,7 @@ impl Rc2 {
     }
 
     fn expand_key(key: &[u8], t1: usize) -> [u16; 64] {
-        let key_len = key.len() as usize;
+        let key_len = key.len();
 
         let t8: usize = (t1 + 7) >> 3;
 
