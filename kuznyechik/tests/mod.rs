@@ -37,8 +37,8 @@ fn kuznyechik() {
         });
     }
 
-    let mut blocks2 = blocks.clone();
-    let blocks_cpy = blocks.clone();
+    let mut blocks2 = blocks;
+    let blocks_cpy = blocks;
 
     cipher.encrypt_blocks(&mut blocks);
     assert!(blocks[..] != blocks_cpy[..]);

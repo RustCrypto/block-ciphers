@@ -14,7 +14,7 @@ fn rfc2144_b1() {
     let ct40 = GenericArray::from(hex!("7AC816D16E9B302E"));
     let pt = GenericArray::from(hex!("0123456789ABCDEF"));
 
-    let mut buf = pt.clone();
+    let mut buf = pt;
 
     let c = Cast5::new_from_slice(&key128).unwrap();
     c.encrypt_block(&mut buf);
@@ -50,25 +50,25 @@ fn full_maintance_test() {
     let (al, ar) = a.split_at_mut(8);
     let (bl, br) = b.split_at_mut(8);
 
-    let mut al = GenericArray::from_mut_slice(al);
-    let mut ar = GenericArray::from_mut_slice(ar);
+    let al = GenericArray::from_mut_slice(al);
+    let ar = GenericArray::from_mut_slice(ar);
 
-    let mut bl = GenericArray::from_mut_slice(bl);
-    let mut br = GenericArray::from_mut_slice(br);
+    let bl = GenericArray::from_mut_slice(bl);
+    let br = GenericArray::from_mut_slice(br);
 
     for _ in 0..count {
         let mut k = GenericArray::from([0u8; 16]);
         k[..8].copy_from_slice(bl);
         k[8..].copy_from_slice(br);
         let c = Cast5::new(&k);
-        c.encrypt_block(&mut al);
-        c.encrypt_block(&mut ar);
+        c.encrypt_block(al);
+        c.encrypt_block(ar);
 
         k[..8].copy_from_slice(al);
         k[8..].copy_from_slice(ar);
         let c = Cast5::new(&k);
-        c.encrypt_block(&mut bl);
-        c.encrypt_block(&mut br);
+        c.encrypt_block(bl);
+        c.encrypt_block(br);
     }
 
     assert_eq!(&al[..], &verify_a[..8]);
