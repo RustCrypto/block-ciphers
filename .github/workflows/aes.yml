@@ -217,7 +217,7 @@ jobs:
       matrix:
         include:
           - target: aarch64-unknown-linux-gnu
-            rust: 1.65.0 # MSRV
+            rust: 1.72.0 # MSRV for `aes_armv8`
     runs-on: ubuntu-latest
     # Cross mounts only current package, i.e. by default it ignores workspace's Cargo.toml
     defaults:

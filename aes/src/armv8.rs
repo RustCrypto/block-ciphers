@@ -14,7 +14,6 @@ pub(crate) mod hazmat;
 
 mod encdec;
 mod expand;
-mod intrinsics;
 #[cfg(test)]
 mod test_expand;
 
