@@ -2,7 +2,7 @@ use core::ops::{Add, BitXor};
 
 use cipher::{
     generic_array::{ArrayLength, GenericArray},
-    typenum::{Diff, Prod, Quot, Sum, U1, U2, U4, U8},
+    typenum::{Diff, Prod, Quot, Sum, U1, U16, U2, U4, U8},
     zeroize::DefaultIsZeroes,
 };
 
@@ -43,54 +43,55 @@ pub trait Word:
 
 mod private {
     pub trait Sealed {}
-
-    impl Sealed for u32 {}
+    impl Sealed for u8 {}
     impl Sealed for u16 {}
+    impl Sealed for u32 {}
     impl Sealed for u64 {}
+    impl Sealed for u128 {}
 }
 
-impl Word for u32 {
-    type Bytes = U4;
+impl Word for u8 {
+    type Bytes = U1;
 
     const ZERO: Self = 0;
     const THREE: Self = 3;
     const EIGHT: Self = 8;
 
-    const P: Self = 0xb7e15163;
-    const Q: Self = 0x9e3779b9;
+    const P: Self = 0xb7;
+    const Q: Self = 0x9f;
 
     #[inline(always)]
     fn wrapping_add(self, rhs: Self) -> Self {
-        u32::wrapping_add(self, rhs)
+        u8::wrapping_add(self, rhs)
     }
     #[inline(always)]
     fn wrapping_sub(self, rhs: Self) -> Self {
-        u32::wrapping_sub(self, rhs)
+        u8::wrapping_sub(self, rhs)
     }
 
     #[inline(always)]
     fn rotate_left(self, n: Self) -> Self {
-        u32::rotate_left(self, n)
+        u8::rotate_left(self, n as u32)
     }
 
     #[inline(always)]
     fn rotate_right(self, n: Self) -> Self {
-        u32::rotate_right(self, n)
+        u8::rotate_right(self, n as u32)
     }
 
     #[inline(always)]
     fn from_le_bytes(bytes: &GenericArray<u8, Self::Bytes>) -> Self {
-        u32::from_le_bytes(bytes.as_slice().try_into().unwrap())
+        u8::from_le_bytes(bytes.as_slice().try_into().unwrap())
     }
 
     #[inline(always)]
     fn to_le_bytes(self) -> GenericArray<u8, Self::Bytes> {
-        u32::to_le_bytes(self).into()
+        u8::to_le_bytes(self).into()
     }
 
     #[inline(always)]
     fn bitxor(self, other: Self) -> Self {
-        <u32 as BitXor>::bitxor(self, other)
+        <u8 as BitXor>::bitxor(self, other)
     }
 }
 
@@ -139,6 +140,51 @@ impl Word for u16 {
     }
 }
 
+impl Word for u32 {
+    type Bytes = U4;
+
+    const ZERO: Self = 0;
+    const THREE: Self = 3;
+    const EIGHT: Self = 8;
+
+    const P: Self = 0xb7e15163;
+    const Q: Self = 0x9e3779b9;
+
+    #[inline(always)]
+    fn wrapping_add(self, rhs: Self) -> Self {
+        u32::wrapping_add(self, rhs)
+    }
+    #[inline(always)]
+    fn wrapping_sub(self, rhs: Self) -> Self {
+        u32::wrapping_sub(self, rhs)
+    }
+
+    #[inline(always)]
+    fn rotate_left(self, n: Self) -> Self {
+        u32::rotate_left(self, n)
+    }
+
+    #[inline(always)]
+    fn rotate_right(self, n: Self) -> Self {
+        u32::rotate_right(self, n)
+    }
+
+    #[inline(always)]
+    fn from_le_bytes(bytes: &GenericArray<u8, Self::Bytes>) -> Self {
+        u32::from_le_bytes(bytes.as_slice().try_into().unwrap())
+    }
+
+    #[inline(always)]
+    fn to_le_bytes(self) -> GenericArray<u8, Self::Bytes> {
+        u32::to_le_bytes(self).into()
+    }
+
+    #[inline(always)]
+    fn bitxor(self, other: Self) -> Self {
+        <u32 as BitXor>::bitxor(self, other)
+    }
+}
+
 impl Word for u64 {
     type Bytes = U8;
 
@@ -183,5 +229,52 @@ impl Word for u64 {
     #[inline(always)]
     fn bitxor(self, other: Self) -> Self {
         <u64 as BitXor>::bitxor(self, other)
+    }
+}
+
+impl Word for u128 {
+    type Bytes = U16;
+
+    const ZERO: Self = 0;
+    const THREE: Self = 3;
+    const EIGHT: Self = 8;
+
+    const P: Self = 0xb7e151628aed2a6abf7158809cf4f3c7;
+    const Q: Self = 0x9e3779b97f4a7c15f39cc0605cedc835;
+
+    #[inline(always)]
+    fn wrapping_add(self, rhs: Self) -> Self {
+        u128::wrapping_add(self, rhs)
+    }
+    #[inline(always)]
+    fn wrapping_sub(self, rhs: Self) -> Self {
+        u128::wrapping_sub(self, rhs)
+    }
+
+    #[inline(always)]
+    fn rotate_left(self, n: Self) -> Self {
+        let size = Self::BITS;
+        u128::rotate_left(self, (n % size as u128) as u32)
+    }
+
+    #[inline(always)]
+    fn rotate_right(self, n: Self) -> Self {
+        let size = Self::BITS;
+        u128::rotate_right(self, (n % size as u128) as u32)
+    }
+
+    #[inline(always)]
+    fn from_le_bytes(bytes: &GenericArray<u8, Self::Bytes>) -> Self {
+        u128::from_le_bytes(bytes.as_slice().try_into().unwrap())
+    }
+
+    #[inline(always)]
+    fn to_le_bytes(self) -> GenericArray<u8, Self::Bytes> {
+        u128::to_le_bytes(self).into()
+    }
+
+    #[inline(always)]
+    fn bitxor(self, other: Self) -> Self {
+        <u128 as BitXor>::bitxor(self, other)
     }
 }
