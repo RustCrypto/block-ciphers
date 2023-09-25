@@ -51,12 +51,12 @@ macro_rules! define_aes_impl {
         }
 
         impl $name {
-            #[inline(always)]
+            #[inline]
             pub(crate) fn get_enc_backend(&self) -> $name_back_enc<'_> {
                 self.encrypt.get_enc_backend()
             }
 
-            #[inline(always)]
+            #[inline]
             pub(crate) fn get_dec_backend(&self) -> $name_back_dec<'_> {
                 self.decrypt.get_dec_backend()
             }
@@ -133,7 +133,7 @@ macro_rules! define_aes_impl {
         }
 
         impl $name_enc {
-            #[inline(always)]
+            #[inline]
             pub(crate) fn get_enc_backend(&self) -> $name_back_enc<'_> {
                 $name_back_enc(self)
             }
@@ -146,7 +146,7 @@ macro_rules! define_aes_impl {
         }
 
         impl KeyInit for $name_enc {
-            #[inline(always)]
+            #[inline]
             fn new(key: &Key<Self>) -> Self {
                 unsafe {
                     let mut round_keys = mem::zeroed();
@@ -197,7 +197,7 @@ macro_rules! define_aes_impl {
         }
 
         impl $name_dec {
-            #[inline(always)]
+            #[inline]
             pub(crate) fn get_dec_backend(&self) -> $name_back_dec<'_> {
                 $name_back_dec(self)
             }
@@ -216,14 +216,14 @@ macro_rules! define_aes_impl {
         }
 
         impl From<$name_enc> for $name_dec {
-            #[inline(always)]
+            #[inline]
             fn from(enc: $name_enc) -> $name_dec {
                 Self::from(&enc)
             }
         }
 
         impl From<&$name_enc> for $name_dec {
-            #[inline(always)]
+            #[inline]
             fn from(enc: &$name_enc) -> $name_dec {
                 let mut round_keys = enc.round_keys;
                 unsafe { inv_expanded_keys(&mut round_keys) };
@@ -275,14 +275,14 @@ macro_rules! define_aes_impl {
         }
 
         impl<'a> BlockBackend for $name_back_enc<'a> {
-            #[inline(always)]
+            #[inline]
             fn proc_block(&mut self, block: InOut<'_, '_, Block>) {
                 unsafe {
                     encrypt1(&self.0.round_keys, block);
                 }
             }
 
-            #[inline(always)]
+            #[inline]
             fn proc_par_blocks(&mut self, blocks: InOut<'_, '_, Block8>) {
                 unsafe { encrypt8(&self.0.round_keys, blocks) }
             }
@@ -299,14 +299,14 @@ macro_rules! define_aes_impl {
         }
 
         impl<'a> BlockBackend for $name_back_dec<'a> {
-            #[inline(always)]
+            #[inline]
             fn proc_block(&mut self, block: InOut<'_, '_, Block>) {
                 unsafe {
                     decrypt1(&self.0.round_keys, block);
                 }
             }
 
-            #[inline(always)]
+            #[inline]
             fn proc_par_blocks(&mut self, blocks: InOut<'_, '_, Block8>) {
                 unsafe { decrypt8(&self.0.round_keys, blocks) }
             }
