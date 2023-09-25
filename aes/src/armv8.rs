@@ -147,6 +147,7 @@ macro_rules! define_aes_impl {
         }
 
         impl KeyInit for $name_enc {
+            #[inline]
             fn new(key: &Key<Self>) -> Self {
                 Self {
                     round_keys: unsafe { expand_key(key.as_ref()) },
@@ -208,6 +209,7 @@ macro_rules! define_aes_impl {
         }
 
         impl KeyInit for $name_dec {
+            #[inline]
             fn new(key: &Key<Self>) -> Self {
                 $name_enc::new(key).into()
             }

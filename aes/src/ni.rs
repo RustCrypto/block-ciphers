@@ -157,6 +157,7 @@ macro_rules! define_aes_impl {
         }
 
         impl KeyInit for $name_enc {
+            #[inline]
             fn new(key: &Key<Self>) -> Self {
                 // SAFETY: we enforce that this code is called only when
                 // target features required by `expand` were properly checked.
@@ -220,6 +221,7 @@ macro_rules! define_aes_impl {
         }
 
         impl KeyInit for $name_dec {
+            #[inline]
             fn new(key: &Key<Self>) -> Self {
                 $name_enc::new(key).into()
             }
