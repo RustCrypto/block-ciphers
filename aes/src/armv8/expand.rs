@@ -1,6 +1,6 @@
 //! AES key expansion support.
 
-use core::{arch::aarch64::*, mem, slice};
+use core::{arch::aarch64::*, slice};
 
 // Stable "polyfills" for unstable core::arch::aarch64 intrinsics
 // TODO(tarcieri): remove when these intrinsics have been stabilized
@@ -17,10 +17,11 @@ const ROUND_CONSTS: [u32; 10] = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80,
 
 /// AES key expansion.
 #[target_feature(enable = "aes")]
-pub unsafe fn expand_key<const L: usize, const N: usize>(key: &[u8; L]) -> [uint8x16_t; N] {
+pub unsafe fn expand_key<const L: usize, const N: usize>(
+    key: &[u8; L],
+    expanded_keys: &mut [uint8x16_t; N],
+) {
     assert!((L == 16 && N == 11) || (L == 24 && N == 13) || (L == 32 && N == 15));
-
-    let mut expanded_keys: [uint8x16_t; N] = mem::zeroed();
 
     let columns =
         slice::from_raw_parts_mut(expanded_keys.as_mut_ptr() as *mut u32, N * BLOCK_WORDS);
@@ -45,8 +46,6 @@ pub unsafe fn expand_key<const L: usize, const N: usize>(key: &[u8; L]) -> [uint
 
         columns[i] = columns[i - nk] ^ word;
     }
-
-    expanded_keys
 }
 
 /// Compute inverse expanded keys (for decryption).

@@ -1,5 +1,5 @@
 use super::{expand_key, inv_expanded_keys};
-use core::arch::aarch64::*;
+use core::{arch::aarch64::*, mem};
 use hex_literal::hex;
 
 /// FIPS 197, Appendix A.1: AES-128 Cipher Key
@@ -106,8 +106,11 @@ fn store_expanded_keys<const N: usize>(input: [uint8x16_t; N]) -> [[u8; 16]; N] 
 
 #[test]
 fn aes128_key_expansion() {
-    let ek = unsafe { expand_key(&AES128_KEY) };
-    assert_eq!(store_expanded_keys(ek), AES128_EXP_KEYS);
+    unsafe {
+        let mut ek = mem::zeroed();
+        expand_key(&AES128_KEY, &mut ek);
+        assert_eq!(store_expanded_keys(ek), AES128_EXP_KEYS);
+    }
 }
 
 #[test]
@@ -119,12 +122,18 @@ fn aes128_key_expansion_inv() {
 
 #[test]
 fn aes192_key_expansion() {
-    let ek = unsafe { expand_key(&AES192_KEY) };
-    assert_eq!(store_expanded_keys(ek), AES192_EXP_KEYS);
+    unsafe {
+        let mut ek = mem::zeroed();
+        expand_key(&AES192_KEY, &mut ek);
+        assert_eq!(store_expanded_keys(ek), AES192_EXP_KEYS);
+    }
 }
 
 #[test]
 fn aes256_key_expansion() {
-    let ek = unsafe { expand_key(&AES256_KEY) };
-    assert_eq!(store_expanded_keys(ek), AES256_EXP_KEYS);
+    unsafe {
+        let mut ek = mem::zeroed();
+        expand_key(&AES256_KEY, &mut ek);
+        assert_eq!(store_expanded_keys(ek), AES256_EXP_KEYS);
+    }
 }

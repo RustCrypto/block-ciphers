@@ -29,8 +29,7 @@ use cipher::{
     AlgorithmName, BlockBackend, BlockCipher, BlockClosure, BlockDecrypt, BlockEncrypt,
     BlockSizeUser, Key, KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
-use core::arch::aarch64::*;
-use core::fmt;
+use core::{arch::aarch64::*, fmt, mem};
 
 macro_rules! define_aes_impl {
     (
@@ -147,9 +146,12 @@ macro_rules! define_aes_impl {
         }
 
         impl KeyInit for $name_enc {
+            #[inline]
             fn new(key: &Key<Self>) -> Self {
-                Self {
-                    round_keys: unsafe { expand_key(key.as_ref()) },
+                unsafe {
+                    let mut round_keys = mem::zeroed();
+                    expand_key(key.as_ref(), &mut round_keys);
+                    Self { round_keys }
                 }
             }
         }
