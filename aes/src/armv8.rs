@@ -146,7 +146,7 @@ macro_rules! define_aes_impl {
         }
 
         impl KeyInit for $name_enc {
-            #[inline]
+            #[inline(always)]
             fn new(key: &Key<Self>) -> Self {
                 unsafe {
                     let mut round_keys = mem::zeroed();
@@ -216,13 +216,14 @@ macro_rules! define_aes_impl {
         }
 
         impl From<$name_enc> for $name_dec {
-            #[inline]
+            #[inline(always)]
             fn from(enc: $name_enc) -> $name_dec {
                 Self::from(&enc)
             }
         }
 
         impl From<&$name_enc> for $name_dec {
+            #[inline(always)]
             fn from(enc: &$name_enc) -> $name_dec {
                 let mut round_keys = enc.round_keys;
                 unsafe { inv_expanded_keys(&mut round_keys) };
