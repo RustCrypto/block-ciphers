@@ -83,8 +83,8 @@ fn sm4_example_1_blocks() {
     let mut blocks = plaintext;
     cipher.encrypt_blocks(&mut blocks);
 
-    assert_eq!(&ciphertext, blocks.as_slice());
+    assert_eq!(&ciphertext, &blocks);
 
     cipher.decrypt_blocks(&mut blocks);
-    assert_eq!(&plaintext, blocks.as_slice());
+    assert_eq!(&plaintext, &blocks);
 }

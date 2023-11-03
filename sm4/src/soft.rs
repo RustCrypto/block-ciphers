@@ -4,7 +4,7 @@ use cipher::{
     consts::U16, inout::InOut, AlgorithmName, Block, BlockCipher, BlockSizeUser, Key, KeyInit,
     KeySizeUser,
 };
-use core::fmt;
+use core::{convert::TryInto, fmt};
 
 use crate::consts::{CK, FK, SBOX};
 
