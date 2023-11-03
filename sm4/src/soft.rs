@@ -16,7 +16,7 @@ use cipher::{
     KeyInit, KeySizeUser, ParBlocksSizeUser,
     consts::{U1, U16},
 };
-use core::fmt;
+use core::{convert::TryInto, fmt};
 
 #[cfg(feature = "zeroize")]
 use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
