@@ -1,6 +1,6 @@
 //! SM4 NEON
 //!
-//! From Linux kernel arch/arm64/crypto/sm4-neon-core.S
+//! Implementation was borrowed from <https://www.cnblogs.com/kentle/p/15585447.html> by kentle.
 
 #![allow(unsafe_code)]
 
