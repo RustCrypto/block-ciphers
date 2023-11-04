@@ -10,7 +10,7 @@
 //!
 //! [SM4]: https://en.wikipedia.org/wiki/SM4_(cipher)
 
-// #![no_std]
+#![no_std]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
