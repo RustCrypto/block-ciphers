@@ -66,6 +66,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "cast6"
+version = "0.1.0"
+dependencies = [
+ "cipher",
+ "hex-literal",
+]
+
+[[package]]
 name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

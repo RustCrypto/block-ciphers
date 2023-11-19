@@ -42,6 +42,7 @@ It's generally recommended not to use other cipher implementations in this repos
 | [Blowfish] | [`blowfish`] | [![crates.io](https://img.shields.io/crates/v/blowfish.svg)](https://crates.io/crates/blowfish) | [![Documentation](https://docs.rs/blowfish/badge.svg)](https://docs.rs/blowfish) | ![MSRV 1.56][msrv-1.56] |
 | [Camellia] | [`camellia`] | [![crates.io](https://img.shields.io/crates/v/camellia.svg)](https://crates.io/crates/camellia) | [![Documentation](https://docs.rs/camellia/badge.svg)](https://docs.rs/camellia) | ![MSRV 1.56][msrv-1.56] |
 | [CAST5] (CAST-128) | [`cast5`] | [![crates.io](https://img.shields.io/crates/v/cast5.svg)](https://crates.io/crates/cast5) | [![Documentation](https://docs.rs/cast5/badge.svg)](https://docs.rs/cast5) | ![MSRV 1.56][msrv-1.56] |
+| [CAST6] (CAST-256) | [`cast6`] | [![crates.io](https://img.shields.io/crates/v/cast6.svg)](https://crates.io/crates/cast6) | [![Documentation](https://docs.rs/cast6/badge.svg)](https://docs.rs/cast6) | ![MSRV 1.56][msrv-1.56] |
 | [DES] + [3DES] (DEA, 3DEA) | [`des`] | [![crates.io](https://img.shields.io/crates/v/des.svg)](https://crates.io/crates/des) | [![Documentation](https://docs.rs/des/badge.svg)](https://docs.rs/des) | ![MSRV 1.56][msrv-1.56] |
 | [IDEA] | [`idea`] | [![crates.io](https://img.shields.io/crates/v/idea.svg)](https://crates.io/crates/idea) | [![Documentation](https://docs.rs/idea/badge.svg)](https://docs.rs/idea) | ![MSRV 1.56][msrv-1.56] |
 | [Kuznyechik] (GOST R 34.12-2015)  | [`kuznyechik`] | [![crates.io](https://img.shields.io/crates/v/kuznyechik.svg)](https://crates.io/crates/kuznyechik) | [![Documentation](https://docs.rs/kuznyechik/badge.svg)](https://docs.rs/kuznyechik) | ![MSRV 1.56][msrv-1.56] |
@@ -92,6 +93,7 @@ dual licensed as above, without any additional terms or conditions.
 [`blowfish`]: ./blowfish
 [`camellia`]: ./camellia
 [`cast5`]: ./cast5
+[`cast6`]: ./cast6
 [`des`]: ./des
 [`idea`]: ./idea
 [`kuznyechik`]: ./kuznyechik
@@ -115,6 +117,7 @@ dual licensed as above, without any additional terms or conditions.
 [Blowfish]: https://en.wikipedia.org/wiki/Blowfish_(cipher)
 [Camellia]: https://en.wikipedia.org/wiki/Camellia_(cipher)
 [CAST5]: https://en.wikipedia.org/wiki/CAST-128
+[CAST6]: https://en.wikipedia.org/wiki/CAST-256
 [DES]: https://en.wikipedia.org/wiki/Data_Encryption_Standard
 [3DES]: https://en.wikipedia.org/wiki/Triple_DES
 [IDEA]: https://simple.wikipedia.org/wiki/International_Data_Encryption_Algorithm

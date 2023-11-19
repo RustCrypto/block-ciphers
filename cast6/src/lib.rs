@@ -1,0 +1,318 @@
+//! Pure Rust implementation of the [CAST6] block cipher ([RFC 2612]).
+//!
+//! # ⚠️ Security Warning: Hazmat!
+//!
+//! This crate implements only the low-level block cipher function, and is intended
+//! for use for implementing higher-level constructions *only*. It is NOT
+//! intended for direct use in applications.
+//!
+//! USE AT YOUR OWN RISK!
+//!
+//! # Examples
+//! ```
+//! use cast6::cipher::generic_array::GenericArray;
+//! use cast6::cipher::{Key, Block, BlockEncrypt, BlockDecrypt, KeyInit};
+//! use cast6::Cast6;
+//!
+//! let key = GenericArray::from([0u8; 32]);
+//! let mut block = GenericArray::from([0u8; 16]);
+//! // Initialize cipher
+//! let cipher = Cast6::new(&key);
+//!
+//! let block_copy = block.clone();
+//! // Encrypt block in-place
+//! cipher.encrypt_block(&mut block);
+//! // And decrypt it back
+//! cipher.decrypt_block(&mut block);
+//! assert_eq!(block, block_copy);
+//! ```
+//!
+//! [CAST6]: https://en.wikipedia.org/wiki/CAST-256
+//! [RFC 2612]: https://tools.ietf.org/html/rfc2612
+
+#![no_std]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
+)]
+#![deny(unsafe_code)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![warn(missing_docs, rust_2018_idioms)]
+
+pub use cipher;
+
+mod consts;
+
+use cipher::{
+    consts::{U16, U32},
+    AlgorithmName, BlockCipher, InvalidLength, Key, KeyInit, KeySizeUser,
+};
+use core::fmt;
+
+#[cfg(feature = "zeroize")]
+use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
+
+use consts::{S1, S2, S3, S4, TM, TR};
+
+/// The CAST6 block cipher.
+#[derive(Clone)]
+pub struct Cast6 {
+    masking: [[u32; 4]; 12],
+    rotate: [[u8; 4]; 12],
+}
+
+impl Cast6 {
+    fn init_state() -> Cast6 {
+        Cast6 {
+            masking: [[0u32; 4]; 12],
+            rotate: [[0u8; 4]; 12],
+        }
+    }
+
+    /// Implements the key schedule according to RFC 2612 2.4.
+    /// https://tools.ietf.org/html/rfc2612#section-2.4
+    fn key_schedule(&mut self, key: &[u8]) {
+        let mut kappa = [
+            u32::from_be_bytes(key[0..4].try_into().unwrap()),
+            u32::from_be_bytes(key[4..8].try_into().unwrap()),
+            u32::from_be_bytes(key[8..12].try_into().unwrap()),
+            u32::from_be_bytes(key[12..16].try_into().unwrap()),
+            u32::from_be_bytes(key[16..20].try_into().unwrap()),
+            u32::from_be_bytes(key[20..24].try_into().unwrap()),
+            u32::from_be_bytes(key[24..28].try_into().unwrap()),
+            u32::from_be_bytes(key[28..32].try_into().unwrap()),
+        ];
+
+        for i in 0..12 {
+            let m = &TM[(i * 16)..(i * 16 + 8)];
+            let r = &TR[((i % 2) * 16)..((i % 2) * 16 + 8)];
+            forward_octave(&mut kappa, m, r);
+
+            let m = &TM[(i * 16 + 8)..(i * 16 + 16)];
+            let r = &TR[((i % 2) * 16 + 8)..((i % 2) * 16 + 16)];
+            forward_octave(&mut kappa, m, r);
+
+            let [a, b, c, d, e, f, g, h] = kappa;
+            self.masking[i] = [h, f, d, b];
+
+            self.rotate[i][0] = (a & 0x1f) as u8;
+            self.rotate[i][1] = (c & 0x1f) as u8;
+            self.rotate[i][2] = (e & 0x1f) as u8;
+            self.rotate[i][3] = (g & 0x1f) as u8;
+        }
+    }
+}
+
+macro_rules! f1 {
+    ($D:expr, $m:expr, $r:expr) => {{
+        let i = ($m.wrapping_add($D)).rotate_left(u32::from($r));
+        (S1[(i >> 24) as usize] ^ S2[((i >> 16) & 0xff) as usize])
+            .wrapping_sub(S3[((i >> 8) & 0xff) as usize])
+            .wrapping_add(S4[(i & 0xff) as usize])
+    }};
+}
+
+macro_rules! f2 {
+    ($D:expr, $m:expr, $r:expr) => {{
+        let i = ($m ^ $D).rotate_left(u32::from($r));
+        S1[(i >> 24) as usize]
+            .wrapping_sub(S2[((i >> 16) & 0xff) as usize])
+            .wrapping_add(S3[((i >> 8) & 0xff) as usize])
+            ^ S4[(i & 0xff) as usize]
+    }};
+}
+
+macro_rules! f3 {
+    ($D:expr, $m:expr, $r:expr) => {{
+        let i = ($m.wrapping_sub($D)).rotate_left(u32::from($r));
+        (S1[(i >> 24) as usize].wrapping_add(S2[((i >> 16) & 0xff) as usize])
+            ^ S3[((i >> 8) & 0xff) as usize])
+            .wrapping_sub(S4[(i & 0xff) as usize])
+    }};
+}
+
+#[inline]
+fn forward_quad(beta: &mut [u32; 4], m: &[u32], r: &[u8]) {
+    // Let "BETA <- Qi(BETA)" be short-hand notation for the following:
+    //     C = C ^ f1(D, Kr0_(i), Km0_(i))
+    //     B = B ^ f2(C, Kr1_(i), Km1_(i))
+    //     A = A ^ f3(B, Kr2_(i), Km2_(i))
+    //     D = D ^ f1(A, Kr3_(i), Km3_(i))
+
+    let [a, b, c, d] = beta;
+    *c ^= f1!(*d, m[0], r[0]);
+    *b ^= f2!(*c, m[1], r[1]);
+    *a ^= f3!(*b, m[2], r[2]);
+    *d ^= f1!(*a, m[3], r[3]);
+}
+
+#[inline]
+fn reverse_quad(beta: &mut [u32; 4], m: &[u32], r: &[u8]) {
+    // Let "BETA <- QBARi(BETA)" be short-hand notation for the
+    // following:
+    //     D = D ^ f1(A, Kr3_(i), Km3_(i))
+    //     A = A ^ f3(B, Kr2_(i), Km2_(i))
+    //     B = B ^ f2(C, Kr1_(i), Km1_(i))
+    //     C = C ^ f1(D, Kr0_(i), Km0_(i))
+
+    let [a, b, c, d] = beta;
+    *d ^= f1!(*a, m[3], r[3]);
+    *a ^= f3!(*b, m[2], r[2]);
+    *b ^= f2!(*c, m[1], r[1]);
+    *c ^= f1!(*d, m[0], r[0]);
+}
+
+#[inline]
+fn forward_octave(kappa: &mut [u32; 8], m: &[u32], r: &[u8]) {
+    // Let "KAPPA <- Wi(KAPPA)" be short-hand notation for the
+    // following:
+    //     G = G ^ f1(H, Tr0_(i), Tm0_(i))
+    //     F = F ^ f2(G, Tr1_(i), Tm1_(i))
+    //     E = E ^ f3(F, Tr2_(i), Tm2_(i))
+    //     D = D ^ f1(E, Tr3_(i), Tm3_(i))
+    //     C = C ^ f2(D, Tr4_(i), Tm4_(i))
+    //     B = B ^ f3(C, Tr5_(i), Tm5_(i))
+    //     A = A ^ f1(B, Tr6_(i), Tm6_(i))
+    //     H = H ^ f2(A, Tr7_(i), Tm7_(i))
+
+    let [a, b, c, d, e, f, g, h] = kappa;
+    *g ^= f1!(*h, m[0], r[0]);
+    *f ^= f2!(*g, m[1], r[1]);
+    *e ^= f3!(*f, m[2], r[2]);
+    *d ^= f1!(*e, m[3], r[3]);
+    *c ^= f2!(*d, m[4], r[4]);
+    *b ^= f3!(*c, m[5], r[5]);
+    *a ^= f1!(*b, m[6], r[6]);
+    *h ^= f2!(*a, m[7], r[7]);
+}
+
+impl BlockCipher for Cast6 {}
+
+impl KeySizeUser for Cast6 {
+    type KeySize = U32;
+}
+
+impl KeyInit for Cast6 {
+    fn new(key: &Key<Self>) -> Self {
+        Self::new_from_slice(key).unwrap()
+    }
+
+    fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
+        // Available key sizes are 128, 160, 192, 224, and 256 bits.
+        if key.len() < 16 || key.len() > 32 || key.len() % 4 != 0 {
+            return Err(InvalidLength);
+        }
+        let mut cast6 = Cast6::init_state();
+
+        if key.len() < 32 {
+            // Pad keys that are less than 256 bits long.
+            let mut padded_key = [0u8; 32];
+            padded_key[..key.len()].copy_from_slice(key);
+            cast6.key_schedule(&padded_key[..]);
+        } else {
+            cast6.key_schedule(key);
+        }
+        Ok(cast6)
+    }
+}
+
+impl fmt::Debug for Cast6 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Cast6 { ... }")
+    }
+}
+
+impl AlgorithmName for Cast6 {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Cast6")
+    }
+}
+
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl Drop for Cast6 {
+    fn drop(&mut self) {
+        self.masking.zeroize();
+        self.rotate.zeroize();
+    }
+}
+
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl ZeroizeOnDrop for Cast6 {}
+
+cipher::impl_simple_block_encdec!(
+    Cast6, U16, cipher, block,
+    encrypt: {
+        let masking = &cipher.masking;
+        let rotate = &cipher.rotate;
+
+        // Let BETA = (ABCD) be a 128-bit block where A, B, C and D are each
+        // 32 bits in length.
+        // BETA = 128bits of plaintext.
+        let b = block.get_in();
+        let mut beta = [
+            u32::from_be_bytes(b[0..4].try_into().unwrap()),
+            u32::from_be_bytes(b[4..8].try_into().unwrap()),
+            u32::from_be_bytes(b[8..12].try_into().unwrap()),
+            u32::from_be_bytes(b[12..16].try_into().unwrap()),
+        ];
+
+        // for (i=0; i<6; i++)
+        //     BETA <- Qi(BETA)
+        forward_quad(&mut beta, &masking[0], &rotate[0]);
+        forward_quad(&mut beta, &masking[1], &rotate[1]);
+        forward_quad(&mut beta, &masking[2], &rotate[2]);
+        forward_quad(&mut beta, &masking[3], &rotate[3]);
+        forward_quad(&mut beta, &masking[4], &rotate[4]);
+        forward_quad(&mut beta, &masking[5], &rotate[5]);
+
+        // for (i=6; i<12; i++)
+        //     BETA <- QBARi(BETA)
+        reverse_quad(&mut beta, &masking[6], &rotate[6]);
+        reverse_quad(&mut beta, &masking[7], &rotate[7]);
+        reverse_quad(&mut beta, &masking[8], &rotate[8]);
+        reverse_quad(&mut beta, &masking[9], &rotate[9]);
+        reverse_quad(&mut beta, &masking[10], &rotate[10]);
+        reverse_quad(&mut beta, &masking[11], &rotate[11]);
+
+        // 128bits of ciphertext = BETA
+        let block = block.get_out();
+        block[0..4].copy_from_slice(&beta[0].to_be_bytes());
+        block[4..8].copy_from_slice(&beta[1].to_be_bytes());
+        block[8..12].copy_from_slice(&beta[2].to_be_bytes());
+        block[12..16].copy_from_slice(&beta[3].to_be_bytes());
+    }
+    decrypt: {
+        let masking = &cipher.masking;
+        let rotate = &cipher.rotate;
+
+        let b = block.get_in();
+        let mut beta = [
+            u32::from_be_bytes(b[0..4].try_into().unwrap()),
+            u32::from_be_bytes(b[4..8].try_into().unwrap()),
+            u32::from_be_bytes(b[8..12].try_into().unwrap()),
+            u32::from_be_bytes(b[12..16].try_into().unwrap()),
+        ];
+
+        forward_quad(&mut beta, &masking[11], &rotate[11]);
+        forward_quad(&mut beta, &masking[10], &rotate[10]);
+        forward_quad(&mut beta, &masking[9], &rotate[9]);
+        forward_quad(&mut beta, &masking[8], &rotate[8]);
+        forward_quad(&mut beta, &masking[7], &rotate[7]);
+        forward_quad(&mut beta, &masking[6], &rotate[6]);
+
+        reverse_quad(&mut beta, &masking[5], &rotate[5]);
+        reverse_quad(&mut beta, &masking[4], &rotate[4]);
+        reverse_quad(&mut beta, &masking[3], &rotate[3]);
+        reverse_quad(&mut beta, &masking[2], &rotate[2]);
+        reverse_quad(&mut beta, &masking[1], &rotate[1]);
+        reverse_quad(&mut beta, &masking[0], &rotate[0]);
+
+        let block = block.get_out();
+        block[0..4].copy_from_slice(&beta[0].to_be_bytes());
+        block[4..8].copy_from_slice(&beta[1].to_be_bytes());
+        block[8..12].copy_from_slice(&beta[2].to_be_bytes());
+        block[12..16].copy_from_slice(&beta[3].to_be_bytes());
+    }
+);
