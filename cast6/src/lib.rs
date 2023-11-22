@@ -62,34 +62,20 @@ pub struct Cast6 {
 }
 
 impl Cast6 {
-    fn init_state() -> Cast6 {
-        Cast6 {
-            masking: [[0u32; 4]; 12],
-            rotate: [[0u8; 4]; 12],
-        }
-    }
-
     /// Implements the key schedule according to RFC 2612 2.4.
     /// https://tools.ietf.org/html/rfc2612#section-2.4
-    fn key_schedule(&mut self, key: &[u8]) {
-        let mut kappa = [
-            u32::from_be_bytes(key[0..4].try_into().unwrap()),
-            u32::from_be_bytes(key[4..8].try_into().unwrap()),
-            u32::from_be_bytes(key[8..12].try_into().unwrap()),
-            u32::from_be_bytes(key[12..16].try_into().unwrap()),
-            u32::from_be_bytes(key[16..20].try_into().unwrap()),
-            u32::from_be_bytes(key[20..24].try_into().unwrap()),
-            u32::from_be_bytes(key[24..28].try_into().unwrap()),
-            u32::from_be_bytes(key[28..32].try_into().unwrap()),
-        ];
-
+    fn key_schedule(&mut self, key: &[u8; 32]) {
+        let mut kappa = to_u32s(key);
         for i in 0..12 {
-            let m = &TM[(i * 16)..(i * 16 + 8)];
-            let r = &TR[((i % 2) * 16)..((i % 2) * 16 + 8)];
+            let m_idx = 16 * i;
+            let r_idx = 16 * (i % 2);
+
+            let m = &TM[m_idx..][..8];
+            let r = &TR[r_idx..][..8];
             forward_octave(&mut kappa, m, r);
 
-            let m = &TM[(i * 16 + 8)..(i * 16 + 16)];
-            let r = &TR[((i % 2) * 16 + 8)..((i % 2) * 16 + 16)];
+            let m = &TM[m_idx + 8..][..8];
+            let r = &TR[r_idx + 8..][..8];
             forward_octave(&mut kappa, m, r);
 
             let [a, b, c, d, e, f, g, h] = kappa;
@@ -132,7 +118,7 @@ macro_rules! f3 {
 }
 
 #[inline]
-fn forward_quad(beta: &mut [u32; 4], m: &[u32], r: &[u8]) {
+fn forward_quad(beta: &mut [u32; 4], m: &[u32; 4], r: &[u8; 4]) {
     // Let "BETA <- Qi(BETA)" be short-hand notation for the following:
     //     C = C ^ f1(D, Kr0_(i), Km0_(i))
     //     B = B ^ f2(C, Kr1_(i), Km1_(i))
@@ -147,7 +133,7 @@ fn forward_quad(beta: &mut [u32; 4], m: &[u32], r: &[u8]) {
 }
 
 #[inline]
-fn reverse_quad(beta: &mut [u32; 4], m: &[u32], r: &[u8]) {
+fn reverse_quad(beta: &mut [u32; 4], m: &[u32; 4], r: &[u8; 4]) {
     // Let "BETA <- QBARi(BETA)" be short-hand notation for the
     // following:
     //     D = D ^ f1(A, Kr3_(i), Km3_(i))
@@ -199,19 +185,18 @@ impl KeyInit for Cast6 {
 
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
         // Available key sizes are 128, 160, 192, 224, and 256 bits.
-        if key.len() < 16 || key.len() > 32 || key.len() % 4 != 0 {
+        if ![16, 20, 24, 28, 32].contains(&key.len()) {
             return Err(InvalidLength);
         }
-        let mut cast6 = Cast6::init_state();
+        let mut cast6 = Self {
+            masking: [[0u32; 4]; 12],
+            rotate: [[0u8; 4]; 12],
+        };
 
-        if key.len() < 32 {
-            // Pad keys that are less than 256 bits long.
-            let mut padded_key = [0u8; 32];
-            padded_key[..key.len()].copy_from_slice(key);
-            cast6.key_schedule(&padded_key[..]);
-        } else {
-            cast6.key_schedule(key);
-        }
+        // Pad keys that are less than 256 bits long.
+        let mut padded_key = [0u8; 32];
+        padded_key[..key.len()].copy_from_slice(key);
+        cast6.key_schedule(&padded_key);
         Ok(cast6)
     }
 }
@@ -250,13 +235,7 @@ cipher::impl_simple_block_encdec!(
         // Let BETA = (ABCD) be a 128-bit block where A, B, C and D are each
         // 32 bits in length.
         // BETA = 128bits of plaintext.
-        let b = block.get_in();
-        let mut beta = [
-            u32::from_be_bytes(b[0..4].try_into().unwrap()),
-            u32::from_be_bytes(b[4..8].try_into().unwrap()),
-            u32::from_be_bytes(b[8..12].try_into().unwrap()),
-            u32::from_be_bytes(b[12..16].try_into().unwrap()),
-        ];
+        let mut beta = to_u32s(block.get_in());
 
         // for (i=0; i<6; i++)
         //     BETA <- Qi(BETA)
@@ -277,23 +256,13 @@ cipher::impl_simple_block_encdec!(
         reverse_quad(&mut beta, &masking[11], &rotate[11]);
 
         // 128bits of ciphertext = BETA
-        let block = block.get_out();
-        block[0..4].copy_from_slice(&beta[0].to_be_bytes());
-        block[4..8].copy_from_slice(&beta[1].to_be_bytes());
-        block[8..12].copy_from_slice(&beta[2].to_be_bytes());
-        block[12..16].copy_from_slice(&beta[3].to_be_bytes());
+        *block.get_out() = to_u8s::<16>(&beta).into();
     }
     decrypt: {
         let masking = &cipher.masking;
         let rotate = &cipher.rotate;
 
-        let b = block.get_in();
-        let mut beta = [
-            u32::from_be_bytes(b[0..4].try_into().unwrap()),
-            u32::from_be_bytes(b[4..8].try_into().unwrap()),
-            u32::from_be_bytes(b[8..12].try_into().unwrap()),
-            u32::from_be_bytes(b[12..16].try_into().unwrap()),
-        ];
+        let mut beta = to_u32s(block.get_in());
 
         forward_quad(&mut beta, &masking[11], &rotate[11]);
         forward_quad(&mut beta, &masking[10], &rotate[10]);
@@ -309,10 +278,24 @@ cipher::impl_simple_block_encdec!(
         reverse_quad(&mut beta, &masking[1], &rotate[1]);
         reverse_quad(&mut beta, &masking[0], &rotate[0]);
 
-        let block = block.get_out();
-        block[0..4].copy_from_slice(&beta[0].to_be_bytes());
-        block[4..8].copy_from_slice(&beta[1].to_be_bytes());
-        block[8..12].copy_from_slice(&beta[2].to_be_bytes());
-        block[12..16].copy_from_slice(&beta[3].to_be_bytes());
+        *block.get_out() = to_u8s::<16>(&beta).into();
     }
 );
+
+fn to_u32s<const N: usize>(src: &[u8]) -> [u32; N] {
+    assert_eq!(src.len(), 4 * N);
+    let mut res = [0u32; N];
+    for (chunk, dst) in src.chunks_exact(4).zip(res.iter_mut()) {
+        *dst = u32::from_be_bytes(chunk.try_into().unwrap());
+    }
+    res
+}
+
+fn to_u8s<const N: usize>(src: &[u32]) -> [u8; N] {
+    assert_eq!(4 * src.len(), N);
+    let mut res = [0u8; N];
+    for (dst_chunk, src) in res.chunks_exact_mut(4).zip(src.iter()) {
+        dst_chunk.copy_from_slice(&src.to_be_bytes());
+    }
+    res
+}
