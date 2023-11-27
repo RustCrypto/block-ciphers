@@ -175,8 +175,8 @@ where
 
     fn words_from_block(block: &Block<W>) -> (W, W) {
         // Block size is 2 * word::BYTES so the unwrap is safe
-        let a = W::from_le_bytes(block[..W::Bytes::USIZE].try_into().unwrap());
-        let b = W::from_le_bytes(block[W::Bytes::USIZE..].try_into().unwrap());
+        let a = W::from_le_bytes(block[..W::Bytes::USIZE].into());
+        let b = W::from_le_bytes(block[W::Bytes::USIZE..].into());
 
         (a, b)
     }
