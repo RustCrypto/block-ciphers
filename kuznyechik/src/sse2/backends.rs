@@ -4,24 +4,22 @@ use crate::{
     Block, Key,
 };
 use cipher::{
-    consts::{U16, U4},
-    inout::InOut,
-    typenum::Unsigned,
-    BlockBackend, BlockSizeUser, ParBlocks, ParBlocksSizeUser,
+    consts, inout::InOut, typenum::Unsigned, BlockBackend, BlockSizeUser, ParBlocks,
+    ParBlocksSizeUser,
 };
-use core::arch::x86_64::*;
+use core::{arch::x86_64::*, mem};
 
 pub(super) type RoundKeys = [__m128i; 10];
 
-type ParBlocksSize = U4;
+type ParBlocksSize = consts::U4;
 
 #[rustfmt::skip]
 macro_rules! unroll_par {
     ($var:ident, $body:block) => {
         { let $var: usize = 0; $body; }
         { let $var: usize = 1; $body; }
-        { let $var: usize = 2; $body; }
-        { let $var: usize = 3; $body; }
+        // { let $var: usize = 2; $body; }
+        // { let $var: usize = 3; $body; }
         // { let $var: usize = 4; $body; }
         // { let $var: usize = 5; $body; }
         // { let $var: usize = 6; $body; }
@@ -29,101 +27,22 @@ macro_rules! unroll_par {
     };
 }
 
-#[rustfmt::skip]
-macro_rules! unroll_par2 {
-    ($var:ident, $body:block) => {
-        { let $var: usize = 0; $body; }
-        { let $var: usize = 1; $body; }
-        // { let $var: usize = 2; $body; }
-        // { let $var: usize = 3; $body; }
-    };
+#[inline(always)]
+fn sub_bytes128(block: __m128i, sbox: &[u8; 256]) -> __m128i {
+    let mut buf: [u8; 16] = unsafe { mem::transmute(block) };
+    for i in 0..16 {
+        buf[i] = sbox[buf[i] as usize];
+    }
+    unsafe { mem::transmute_copy(&buf) }
 }
 
 #[inline(always)]
-unsafe fn sub_bytes(block: __m128i, sbox: &[u8; 256]) -> __m128i {
-    let t0 = _mm_extract_epi16(block, 0) as u16;
-    let t1 = _mm_extract_epi16(block, 1) as u16;
-    let t2 = _mm_extract_epi16(block, 2) as u16;
-    let t3 = _mm_extract_epi16(block, 3) as u16;
-    let t4 = _mm_extract_epi16(block, 4) as u16;
-    let t5 = _mm_extract_epi16(block, 5) as u16;
-    let t6 = _mm_extract_epi16(block, 6) as u16;
-    let t7 = _mm_extract_epi16(block, 7) as u16;
-
-    _mm_set_epi8(
-        sbox[(t7 >> 8) as usize] as i8,
-        sbox[(t7 & 0xFF) as usize] as i8,
-        sbox[(t6 >> 8) as usize] as i8,
-        sbox[(t6 & 0xFF) as usize] as i8,
-        sbox[(t5 >> 8) as usize] as i8,
-        sbox[(t5 & 0xFF) as usize] as i8,
-        sbox[(t4 >> 8) as usize] as i8,
-        sbox[(t4 & 0xFF) as usize] as i8,
-        sbox[(t3 >> 8) as usize] as i8,
-        sbox[(t3 & 0xFF) as usize] as i8,
-        sbox[(t2 >> 8) as usize] as i8,
-        sbox[(t2 & 0xFF) as usize] as i8,
-        sbox[(t1 >> 8) as usize] as i8,
-        sbox[(t1 & 0xFF) as usize] as i8,
-        sbox[(t0 >> 8) as usize] as i8,
-        sbox[(t0 & 0xFF) as usize] as i8,
-    )
-}
-
-#[inline(always)]
-unsafe fn sub_bytes2(block: __m256i, sbox: &[u8; 256]) -> __m256i {
-    let t0 = _mm256_extract_epi16(block, 0) as u16;
-    let t1 = _mm256_extract_epi16(block, 1) as u16;
-    let t2 = _mm256_extract_epi16(block, 2) as u16;
-    let t3 = _mm256_extract_epi16(block, 3) as u16;
-    let t4 = _mm256_extract_epi16(block, 4) as u16;
-    let t5 = _mm256_extract_epi16(block, 5) as u16;
-    let t6 = _mm256_extract_epi16(block, 6) as u16;
-    let t7 = _mm256_extract_epi16(block, 7) as u16;
-
-    let t8 = _mm256_extract_epi16(block, 8) as u16;
-    let t9 = _mm256_extract_epi16(block, 9) as u16;
-    let t10 = _mm256_extract_epi16(block, 10) as u16;
-    let t11 = _mm256_extract_epi16(block, 11) as u16;
-    let t12 = _mm256_extract_epi16(block, 12) as u16;
-    let t13 = _mm256_extract_epi16(block, 13) as u16;
-    let t14 = _mm256_extract_epi16(block, 14) as u16;
-    let t15 = _mm256_extract_epi16(block, 15) as u16;
-
-    _mm256_set_epi8(
-        sbox[(t15 >> 8) as usize] as i8,
-        sbox[(t15 & 0xFF) as usize] as i8,
-        sbox[(t14 >> 8) as usize] as i8,
-        sbox[(t14 & 0xFF) as usize] as i8,
-        sbox[(t13 >> 8) as usize] as i8,
-        sbox[(t13 & 0xFF) as usize] as i8,
-        sbox[(t12 >> 8) as usize] as i8,
-        sbox[(t12 & 0xFF) as usize] as i8,
-        sbox[(t11 >> 8) as usize] as i8,
-        sbox[(t11 & 0xFF) as usize] as i8,
-        sbox[(t10 >> 8) as usize] as i8,
-        sbox[(t10 & 0xFF) as usize] as i8,
-        sbox[(t9 >> 8) as usize] as i8,
-        sbox[(t9 & 0xFF) as usize] as i8,
-        sbox[(t8 >> 8) as usize] as i8,
-        sbox[(t8 & 0xFF) as usize] as i8,
-        sbox[(t7 >> 8) as usize] as i8,
-        sbox[(t7 & 0xFF) as usize] as i8,
-        sbox[(t6 >> 8) as usize] as i8,
-        sbox[(t6 & 0xFF) as usize] as i8,
-        sbox[(t5 >> 8) as usize] as i8,
-        sbox[(t5 & 0xFF) as usize] as i8,
-        sbox[(t4 >> 8) as usize] as i8,
-        sbox[(t4 & 0xFF) as usize] as i8,
-        sbox[(t3 >> 8) as usize] as i8,
-        sbox[(t3 & 0xFF) as usize] as i8,
-        sbox[(t2 >> 8) as usize] as i8,
-        sbox[(t2 & 0xFF) as usize] as i8,
-        sbox[(t1 >> 8) as usize] as i8,
-        sbox[(t1 & 0xFF) as usize] as i8,
-        sbox[(t0 >> 8) as usize] as i8,
-        sbox[(t0 & 0xFF) as usize] as i8,
-    )
+fn sub_bytes256(block: __m256i, sbox: &[u8; 256]) -> __m256i {
+    let mut buf: [u8; 32] = unsafe { mem::transmute(block) };
+    for i in 0..32 {
+        buf[i] = sbox[buf[i] as usize];
+    }
+    unsafe { mem::transmute_copy(&buf) }
 }
 
 #[inline(always)]
@@ -181,10 +100,6 @@ unsafe fn transform2(block: __m256i, table: &Table) -> __m256i {
 
             let p1 = &($table.0[idx1]) as *const u8 as *const __m128i;
             let p2 = &($table.0[idx2]) as *const u8 as *const __m128i;
-            // correct alignment of `p1` and `p2` is guaranteed since offset values
-            // are shifted by 4 bits left and the table is aligned to 16 bytes
-            debug_assert_eq!(p1 as usize % 16, 0);
-            debug_assert_eq!(p2 as usize % 16, 0);
 
             let r1 = _mm_load_si128(p1);
             let r2 = _mm_load_si128(p2);
@@ -278,7 +193,7 @@ pub(super) fn inv_enc_keys(enc_keys: &RoundKeys) -> RoundKeys {
 
         dec_keys[0] = enc_keys[9];
         for i in 1..9 {
-            let k = sub_bytes(enc_keys[i], &P);
+            let k = sub_bytes128(enc_keys[i], &P);
             dec_keys[9 - i] = transform(k, &DEC_TABLE);
         }
         dec_keys[9] = enc_keys[0];
@@ -287,10 +202,40 @@ pub(super) fn inv_enc_keys(enc_keys: &RoundKeys) -> RoundKeys {
     }
 }
 
+#[target_feature(enable = "avx2")]
+unsafe fn encrypt_par_blocks(in_ptr: *const u8, out_ptr: *mut u8, keys: &RoundKeys) {
+    let in_ptr = in_ptr as *mut __m256i;
+    let out_ptr = out_ptr as *mut __m256i;
+
+    // One YMM register keeps two blocks
+    let mut blocks = [_mm256_setzero_si256(); ParBlocksSize::USIZE / 2];
+    unroll_par! {
+        i, {
+            blocks[i] = _mm256_loadu_si256(in_ptr.add(i));
+        }
+    };
+
+    for i in 0..9 {
+        let rk = _mm256_broadcastsi128_si256(keys[i]);
+        unroll_par!(j, {
+            let t = _mm256_xor_si256(blocks[j], rk);
+            blocks[j] = transform2(t, &ENC_TABLE);
+        });
+    }
+
+    let rk = _mm256_broadcastsi128_si256(keys[9]);
+    unroll_par! {
+        i, {
+            let t = _mm256_xor_si256(blocks[i], rk);
+            _mm256_storeu_si256(out_ptr.add(i), t);
+        }
+    };
+}
+
 pub(crate) struct EncBackend<'a>(pub(crate) &'a RoundKeys);
 
 impl<'a> BlockSizeUser for EncBackend<'a> {
-    type BlockSize = U16;
+    type BlockSize = consts::U16;
 }
 
 impl<'a> ParBlocksSizeUser for EncBackend<'a> {
@@ -316,34 +261,9 @@ impl<'a> BlockBackend for EncBackend<'a> {
 
     #[inline]
     fn proc_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
-        let k = self.0;
         unsafe {
             let (in_ptr, out_ptr) = blocks.into_raw();
-            let in_ptr = in_ptr as *mut __m256i;
-            let out_ptr = out_ptr as *mut __m256i;
-
-            let mut blocks = [_mm256_setzero_si256(); ParBlocksSize::USIZE / 2];
-            unroll_par2! {
-                i, {
-                    blocks[i] = _mm256_loadu_si256(in_ptr.add(i));
-                }
-            };
-
-            for i in 0..9 {
-                let rk = _mm256_broadcastsi128_si256(k[i]);
-                unroll_par2!(j, {
-                    let t = _mm256_xor_si256(blocks[j], rk);
-                    blocks[j] = transform2(t, &ENC_TABLE);
-                });
-            }
-
-            let rk = _mm256_broadcastsi128_si256(k[9]);
-            unroll_par2! {
-                i, {
-                    let t = _mm256_xor_si256(blocks[i], rk);
-                    _mm256_storeu_si256(out_ptr.add(i), t);
-                }
-            };
+            encrypt_par_blocks(in_ptr as *const u8, out_ptr as *mut u8, self.0);
         }
     }
 }
@@ -351,7 +271,7 @@ impl<'a> BlockBackend for EncBackend<'a> {
 pub(crate) struct DecBackend<'a>(pub(crate) &'a RoundKeys);
 
 impl<'a> BlockSizeUser for DecBackend<'a> {
-    type BlockSize = U16;
+    type BlockSize = consts::U16;
 }
 
 impl<'a> ParBlocksSizeUser for DecBackend<'a> {
@@ -368,14 +288,14 @@ impl<'a> BlockBackend for DecBackend<'a> {
 
             b = _mm_xor_si128(b, k[0]);
 
-            b = sub_bytes(b, &P);
+            b = sub_bytes128(b, &P);
             b = transform(b, &DEC_TABLE);
 
             for i in 1..9 {
                 b = transform(b, &DEC_TABLE);
                 b = _mm_xor_si128(b, k[i]);
             }
-            b = sub_bytes(b, &P_INV);
+            b = sub_bytes128(b, &P_INV);
             b = _mm_xor_si128(b, k[9]);
 
             _mm_storeu_si128(out_ptr as *mut __m128i, b)
@@ -391,24 +311,24 @@ impl<'a> BlockBackend for DecBackend<'a> {
             let out_ptr = out_ptr as *mut __m256i;
 
             let mut blocks = [_mm256_setzero_si256(); ParBlocksSize::USIZE];
-            unroll_par2! {
+            unroll_par! {
                 i, {
                     blocks[i] = _mm256_loadu_si256(in_ptr.add(i));
                 }
             };
 
             let rk = _mm256_broadcastsi128_si256(k[0]);
-            unroll_par2! {
+            unroll_par! {
                 i, {
                     let t = _mm256_xor_si256(blocks[i], rk);
-                    let t = sub_bytes2(t, &P);
+                    let t = sub_bytes256(t, &P);
                     blocks[i] = transform2(t, &DEC_TABLE);
                 }
             }
 
             for i in 1..9 {
                 let rk = _mm256_broadcastsi128_si256(k[i]);
-                unroll_par2! {
+                unroll_par! {
                     j, {
                         let t = transform2(blocks[j], &DEC_TABLE);
                         blocks[j] = _mm256_xor_si256(t, rk);
@@ -417,9 +337,9 @@ impl<'a> BlockBackend for DecBackend<'a> {
             }
 
             let rk = _mm256_broadcastsi128_si256(k[9]);
-            unroll_par2! {
+            unroll_par! {
                 i, {
-                    let t = sub_bytes2(blocks[i], &P_INV);
+                    let t = sub_bytes256(blocks[i], &P_INV);
                     let t2 = _mm256_xor_si256(t, rk);
                     _mm256_storeu_si256(out_ptr.add(i), t2)
                 }
