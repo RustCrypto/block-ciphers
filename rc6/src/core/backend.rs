@@ -7,45 +7,40 @@ use core::{
 use cipher::{
     generic_array::{sequence::GenericSequence, ArrayLength, GenericArray},
     inout::InOut,
-    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U2, U256},
+    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U2, U256, U4},
 };
 
 use super::{
     Block, BlockSize, ExpandedKeyTable, ExpandedKeyTableSize, Key, KeyAsWords, KeyAsWordsSize, Word,
 };
 
-pub struct RC5<W, R, B>
+pub struct RC6<W, R, B>
 where
     W: Word,
-    // Block size
-    W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
-    // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
-    Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     key_table: ExpandedKeyTable<W, R>,
     _key_size: PhantomData<B>,
 }
 
-impl<W, R, B> RC5<W, R, B>
+impl<W, R, B> RC6<W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
     // Key range
     B: ArrayLength<u8>,
@@ -57,7 +52,7 @@ where
     Diff<Sum<B, W::Bytes>, U1>: Div<W::Bytes>,
     KeyAsWordsSize<W, B>: ArrayLength<W>,
 {
-    pub fn new(key: &Key<B>) -> RC5<W, R, B> {
+    pub fn new(key: &Key<B>) -> RC6<W, R, B> {
         Self {
             key_table: Self::substitute_key(key),
             _key_size: PhantomData,
@@ -127,130 +122,139 @@ where
     }
 }
 
-impl<W, R, B> RC5<W, R, B>
+impl<W, R, B> RC6<W, R, B>
 where
     W: Word,
     // Block size
-    W::Bytes: Mul<U2>,
+    W::Bytes: Mul<U4>,
     BlockSize<W>: ArrayLength<u8>,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
     Le<R, U256>: NonZero,
     // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
+    R: Add<U2>,
+    Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArrayLength<W>,
 {
     pub fn encrypt(&self, mut block: InOut<'_, '_, Block<W>>) {
-        let (mut a, mut b) = Self::words_from_block(block.get_in());
+        let (mut a, mut b, mut c, mut d) = Self::words_from_block(block.get_in());
         let key = &self.key_table;
+        let log_w = W::from((usize::BITS - 1 - (W::Bytes::USIZE * 8).leading_zeros()) as u8);
 
-        a = a.wrapping_add(key[0]);
-        b = b.wrapping_add(key[1]);
+        b = b.wrapping_add(key[0]);
+        d = d.wrapping_add(key[1]);
 
         for i in 1..=R::USIZE {
-            a = a.bitxor(b).rotate_left(b).wrapping_add(key[2 * i]);
-            b = b.bitxor(a).rotate_left(a).wrapping_add(key[2 * i + 1]);
+            let t = b
+                .wrapping_mul(b.wrapping_mul(W::from(2)).wrapping_add(W::from(1)))
+                .rotate_left(log_w);
+            let u = d
+                .wrapping_mul(d.wrapping_mul(W::from(2)).wrapping_add(W::from(1)))
+                .rotate_left(log_w);
+            a = a.bitxor(t).rotate_left(u).wrapping_add(key[2 * i]);
+            c = c.bitxor(u).rotate_left(t).wrapping_add(key[2 * i + 1]);
+            let tmp = a;
+            a = b;
+            b = c;
+            c = d;
+            d = tmp;
         }
 
-        Self::block_from_words(a, b, block.get_out())
+        a = a.wrapping_add(key[2 * R::USIZE + 2]);
+        c = c.wrapping_add(key[2 * R::USIZE + 3]);
+
+        Self::block_from_words(a, b, c, d, block.get_out())
     }
 
     pub fn decrypt(&self, mut block: InOut<'_, '_, Block<W>>) {
-        let (mut a, mut b) = Self::words_from_block(block.get_in());
+        let (mut a, mut b, mut c, mut d) = Self::words_from_block(block.get_in());
         let key = &self.key_table;
+        let log_w = W::from((usize::BITS - 1 - (W::Bytes::USIZE * 8).leading_zeros()) as u8);
+
+        c = c.wrapping_sub(key[2 * R::USIZE + 3]);
+        a = a.wrapping_sub(key[2 * R::USIZE + 2]);
 
         for i in (1..=R::USIZE).rev() {
-            b = b.wrapping_sub(key[2 * i + 1]).rotate_right(a).bitxor(a);
-            a = a.wrapping_sub(key[2 * i]).rotate_right(b).bitxor(b);
+            let tmp = d;
+            d = c;
+            c = b;
+            b = a;
+            a = tmp;
+            let u = d
+                .wrapping_mul(d.wrapping_mul(W::from(2)).wrapping_add(W::from(1)))
+                .rotate_left(log_w);
+            let t = b
+                .wrapping_mul(b.wrapping_mul(W::from(2)).wrapping_add(W::from(1)))
+                .rotate_left(log_w);
+            c = c.wrapping_sub(key[2 * i + 1]).rotate_right(t).bitxor(u);
+            a = a.wrapping_sub(key[2 * i]).rotate_right(u).bitxor(t);
         }
 
-        b = b.wrapping_sub(key[1]);
-        a = a.wrapping_sub(key[0]);
+        d = d.wrapping_sub(key[1]);
+        b = b.wrapping_sub(key[0]);
 
-        Self::block_from_words(a, b, block.get_out())
+        Self::block_from_words(a, b, c, d, block.get_out())
     }
 
-    fn words_from_block(block: &Block<W>) -> (W, W) {
-        // Block size is 2 * word::BYTES so the unwrap is safe
-        let a = W::from_le_bytes(block[..W::Bytes::USIZE].into());
-        let b = W::from_le_bytes(block[W::Bytes::USIZE..].into());
+    fn words_from_block(block: &Block<W>) -> (W, W, W, W) {
+        // Block size is 4 * word::BYTES so the unwrap is safe
+        let a = W::from_le_bytes(block[..W::Bytes::USIZE].try_into().unwrap());
+        let b = W::from_le_bytes(
+            block[W::Bytes::USIZE..W::Bytes::USIZE * 2]
+                .try_into()
+                .unwrap(),
+        );
+        let c = W::from_le_bytes(
+            block[W::Bytes::USIZE * 2..W::Bytes::USIZE * 3]
+                .try_into()
+                .unwrap(),
+        );
+        let d = W::from_le_bytes(
+            block[W::Bytes::USIZE * 3..W::Bytes::USIZE * 4]
+                .try_into()
+                .unwrap(),
+        );
 
-        (a, b)
+        (a, b, c, d)
     }
 
-    fn block_from_words(a: W, b: W, out_block: &mut Block<W>) {
-        let (left, right) = out_block.split_at_mut(W::Bytes::USIZE);
+    fn block_from_words(a: W, b: W, c: W, d: W, out_block: &mut Block<W>) {
+        let (left, right) = out_block.split_at_mut(W::Bytes::USIZE * 2);
+        let (l_l, l_h) = left.split_at_mut(W::Bytes::USIZE);
+        let (r_l, r_h) = right.split_at_mut(W::Bytes::USIZE);
 
-        left.copy_from_slice(&a.to_le_bytes());
-        right.copy_from_slice(&b.to_le_bytes());
-    }
-}
-
-#[cfg(feature = "zeroize")]
-impl<W, R, B> cipher::zeroize::ZeroizeOnDrop for RC5<W, R, B>
-where
-    W: Word,
-    // Block size
-    W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
-    // Rounds range
-    R: Unsigned,
-    R: IsLess<U256>,
-    Le<R, U256>: NonZero,
-    // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
-{
-}
-
-#[cfg(feature = "zeroize")]
-impl<W, R, B> Drop for RC5<W, R, B>
-where
-    W: Word,
-    // Block size
-    W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
-    // Rounds range
-    R: Unsigned,
-    R: IsLess<U256>,
-    Le<R, U256>: NonZero,
-    // ExpandedKeyTableSize
-    R: Add<U1>,
-    Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
-{
-    fn drop(&mut self) {
-        cipher::zeroize::Zeroize::zeroize(&mut *self.key_table)
+        l_l.copy_from_slice(&a.to_le_bytes());
+        l_h.copy_from_slice(&b.to_le_bytes());
+        r_l.copy_from_slice(&c.to_le_bytes());
+        r_h.copy_from_slice(&d.to_le_bytes());
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::block_cipher::{RC5_16_16_8, RC5_32_12_16, RC5_32_16_16, RC5_64_24_24};
+    use crate::block_cipher::{RC6_16_16_8, RC6_32_20_16, RC6_64_24_24, RC6_8_12_4};
     use crate::core::backend::GenericArray;
     use rand::{thread_rng, Rng};
 
     #[macro_export]
     macro_rules! words_block_conv {
-        ($rc_type:ident, $key_size:expr) => {
+        ($rc_tyoe:ident, $key_size:expr) => {
             let mut pt = [0u8; $key_size];
             thread_rng().fill(&mut pt[..]);
             let block = GenericArray::clone_from_slice(&pt);
             let mut after_block = block.clone();
-            let (a, b) = $rc_type::words_from_block(&block);
-            $rc_type::block_from_words(a, b, &mut after_block);
+            let (a, b, c, d) = $rc_tyoe::words_from_block(&block);
+            $rc_tyoe::block_from_words(a, b, c, d, &mut after_block);
             assert_eq!(block, after_block);
         };
     }
 
     #[test]
     fn words_block_test() {
-        words_block_conv!(RC5_16_16_8, 4);
-        words_block_conv!(RC5_32_12_16, 8);
-        words_block_conv!(RC5_32_16_16, 8);
-        words_block_conv!(RC5_64_24_24, 16);
+        words_block_conv!(RC6_16_16_8, 8);
+        words_block_conv!(RC6_32_20_16, 16);
+        words_block_conv!(RC6_64_24_24, 32);
+        words_block_conv!(RC6_8_12_4, 4);
     }
 }

@@ -1,25 +1,22 @@
-use core::ops::{Add, BitXor};
-
 use cipher::{
     generic_array::{ArrayLength, GenericArray},
-    typenum::{Diff, Prod, Quot, Sum, U1, U16, U2, U4, U8},
+    typenum::{Diff, Prod, Quot, Sum, U1, U2, U4, U8},
     zeroize::DefaultIsZeroes,
 };
+use core::ops::{Add, BitXor};
 
-pub type BlockSize<W> = Prod<<W as Word>::Bytes, U2>;
+pub type BlockSize<W> = Prod<<W as Word>::Bytes, U4>;
 pub type Block<W> = GenericArray<u8, BlockSize<W>>;
 
 pub type Key<B> = GenericArray<u8, B>;
 
 pub type ExpandedKeyTable<W, R> = GenericArray<W, ExpandedKeyTableSize<R>>;
-pub type ExpandedKeyTableSize<R> = Prod<Sum<R, U1>, U2>;
+pub type ExpandedKeyTableSize<R> = Prod<Sum<R, U2>, U2>;
 
 pub type KeyAsWords<W, B> = GenericArray<W, KeyAsWordsSize<W, B>>;
 pub type KeyAsWordsSize<W, B> = Quot<Diff<Sum<B, <W as Word>::Bytes>, U1>, <W as Word>::Bytes>;
 
-pub trait Word:
-    Default + Copy + From<u8> + Add<Output = Self> + DefaultIsZeroes + private::Sealed
-{
+pub trait Word: Default + Copy + From<u8> + Add<Output = Self> + DefaultIsZeroes {
     type Bytes: ArrayLength<u8>;
 
     const ZERO: Self;
@@ -31,6 +28,7 @@ pub trait Word:
 
     fn wrapping_add(self, rhs: Self) -> Self;
     fn wrapping_sub(self, rhs: Self) -> Self;
+    fn wrapping_mul(self, rhs: Self) -> Self;
 
     fn rotate_left(self, n: Self) -> Self;
     fn rotate_right(self, n: Self) -> Self;
@@ -39,15 +37,6 @@ pub trait Word:
     fn to_le_bytes(self) -> GenericArray<u8, Self::Bytes>;
 
     fn bitxor(self, other: Self) -> Self;
-}
-
-mod private {
-    pub trait Sealed {}
-    impl Sealed for u8 {}
-    impl Sealed for u16 {}
-    impl Sealed for u32 {}
-    impl Sealed for u64 {}
-    impl Sealed for u128 {}
 }
 
 impl Word for u8 {
@@ -64,9 +53,15 @@ impl Word for u8 {
     fn wrapping_add(self, rhs: Self) -> Self {
         u8::wrapping_add(self, rhs)
     }
+
     #[inline(always)]
     fn wrapping_sub(self, rhs: Self) -> Self {
         u8::wrapping_sub(self, rhs)
+    }
+
+    #[inline(always)]
+    fn wrapping_mul(self, rhs: Self) -> Self {
+        u8::wrapping_mul(self, rhs)
     }
 
     #[inline(always)]
@@ -109,9 +104,15 @@ impl Word for u16 {
     fn wrapping_add(self, rhs: Self) -> Self {
         u16::wrapping_add(self, rhs)
     }
+
     #[inline(always)]
     fn wrapping_sub(self, rhs: Self) -> Self {
         u16::wrapping_sub(self, rhs)
+    }
+
+    #[inline(always)]
+    fn wrapping_mul(self, rhs: Self) -> Self {
+        u16::wrapping_mul(self, rhs)
     }
 
     #[inline(always)]
@@ -154,9 +155,15 @@ impl Word for u32 {
     fn wrapping_add(self, rhs: Self) -> Self {
         u32::wrapping_add(self, rhs)
     }
+
     #[inline(always)]
     fn wrapping_sub(self, rhs: Self) -> Self {
         u32::wrapping_sub(self, rhs)
+    }
+
+    #[inline(always)]
+    fn wrapping_mul(self, rhs: Self) -> Self {
+        u32::wrapping_mul(self, rhs)
     }
 
     #[inline(always)]
@@ -199,9 +206,15 @@ impl Word for u64 {
     fn wrapping_add(self, rhs: Self) -> Self {
         u64::wrapping_add(self, rhs)
     }
+
     #[inline(always)]
     fn wrapping_sub(self, rhs: Self) -> Self {
         u64::wrapping_sub(self, rhs)
+    }
+
+    #[inline(always)]
+    fn wrapping_mul(self, rhs: Self) -> Self {
+        u64::wrapping_mul(self, rhs)
     }
 
     #[inline(always)]
@@ -229,52 +242,5 @@ impl Word for u64 {
     #[inline(always)]
     fn bitxor(self, other: Self) -> Self {
         <u64 as BitXor>::bitxor(self, other)
-    }
-}
-
-impl Word for u128 {
-    type Bytes = U16;
-
-    const ZERO: Self = 0;
-    const THREE: Self = 3;
-    const EIGHT: Self = 8;
-
-    const P: Self = 0xb7e151628aed2a6abf7158809cf4f3c7;
-    const Q: Self = 0x9e3779b97f4a7c15f39cc0605cedc835;
-
-    #[inline(always)]
-    fn wrapping_add(self, rhs: Self) -> Self {
-        u128::wrapping_add(self, rhs)
-    }
-    #[inline(always)]
-    fn wrapping_sub(self, rhs: Self) -> Self {
-        u128::wrapping_sub(self, rhs)
-    }
-
-    #[inline(always)]
-    fn rotate_left(self, n: Self) -> Self {
-        let size = Self::BITS;
-        u128::rotate_left(self, (n % size as u128) as u32)
-    }
-
-    #[inline(always)]
-    fn rotate_right(self, n: Self) -> Self {
-        let size = Self::BITS;
-        u128::rotate_right(self, (n % size as u128) as u32)
-    }
-
-    #[inline(always)]
-    fn from_le_bytes(bytes: &GenericArray<u8, Self::Bytes>) -> Self {
-        u128::from_le_bytes(bytes.as_slice().try_into().unwrap())
-    }
-
-    #[inline(always)]
-    fn to_le_bytes(self) -> GenericArray<u8, Self::Bytes> {
-        u128::to_le_bytes(self).into()
-    }
-
-    #[inline(always)]
-    fn bitxor(self, other: Self) -> Self {
-        <u128 as BitXor>::bitxor(self, other)
     }
 }
