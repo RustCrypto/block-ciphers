@@ -16,7 +16,7 @@
 #![allow(clippy::unreadable_literal)]
 
 use crate::Block;
-use cipher::{consts::U2, array::Array};
+use cipher::{array::Array, consts::U2};
 
 /// AES block batch size for this implementation
 pub(crate) type FixsliceBlocks = U2;

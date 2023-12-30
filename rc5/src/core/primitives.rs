@@ -1,7 +1,7 @@
 use core::ops::{Add, BitXor};
 
 use cipher::{
-    array::{ArraySize, Array},
+    array::{Array, ArraySize},
     typenum::{Diff, Prod, Quot, Sum, U1, U16, U2, U4, U8},
     zeroize::DefaultIsZeroes,
 };

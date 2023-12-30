@@ -149,8 +149,8 @@ cfg_if! {
 
 pub use cipher;
 use cipher::{
-    consts::{U16, U8},
     array::Array,
+    consts::{U16, U8},
 };
 
 /// 128-bit AES block

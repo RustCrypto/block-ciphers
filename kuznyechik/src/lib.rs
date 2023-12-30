@@ -31,8 +31,8 @@
 
 pub use cipher;
 use cipher::{
-    consts::{U16, U32},
     array::Array,
+    consts::{U16, U32},
 };
 
 mod consts;
