@@ -39,36 +39,36 @@ fn rfc2144_b1() {
 /// https://tools.ietf.org/html/rfc2144#appendix-B.1
 #[test]
 fn full_maintance_test() {
-    let mut a = hex!("0123456712345678234567893456789A");
-    let mut b = hex!("0123456712345678234567893456789A");
+    let a = hex!("0123456712345678234567893456789A");
+    let b = hex!("0123456712345678234567893456789A");
 
     let verify_a = hex!("EEA9D0A249FD3BA6B3436FB89D6DCA92");
     let verify_b = hex!("B2C95EB00C31AD7180AC05B8E83D696E");
 
     let count = 1_000_000;
 
-    let (al, ar) = a.split_at_mut(8);
-    let (bl, br) = b.split_at_mut(8);
+    let (al, ar) = a.split_at(8);
+    let (bl, br) = b.split_at(8);
 
-    let al = Array::from_mut_slice(al);
-    let ar = Array::from_mut_slice(ar);
+    let mut al = Array::try_from(al).unwrap();
+    let mut ar = Array::try_from(ar).unwrap();
 
-    let bl = Array::from_mut_slice(bl);
-    let br = Array::from_mut_slice(br);
+    let mut bl = Array::try_from(bl).unwrap();
+    let mut br = Array::try_from(br).unwrap();
 
     for _ in 0..count {
         let mut k = Array::from([0u8; 16]);
-        k[..8].copy_from_slice(bl);
-        k[8..].copy_from_slice(br);
+        k[..8].copy_from_slice(&bl);
+        k[8..].copy_from_slice(&br);
         let c = Cast5::new(&k);
-        c.encrypt_block(al);
-        c.encrypt_block(ar);
+        c.encrypt_block(&mut al);
+        c.encrypt_block(&mut ar);
 
-        k[..8].copy_from_slice(al);
-        k[8..].copy_from_slice(ar);
+        k[..8].copy_from_slice(&al);
+        k[8..].copy_from_slice(&ar);
         let c = Cast5::new(&k);
-        c.encrypt_block(bl);
-        c.encrypt_block(br);
+        c.encrypt_block(&mut bl);
+        c.encrypt_block(&mut br);
     }
 
     assert_eq!(&al[..], &verify_a[..8]);
