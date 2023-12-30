@@ -26,7 +26,7 @@ USE AT YOUR OWN RISK!
 
 ## Minimum Supported Rust Version
 
-Rust **1.56** or higher.
+Rust **1.65** or higher.
 
 Minimum supported Rust version can be changed in the future, but it will be
 done with a minor version bump.
