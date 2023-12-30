@@ -1,4 +1,4 @@
-use cipher::generic_array::GenericArray;
+use cipher::array::Array;
 use cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
 
 struct Test {
@@ -26,11 +26,11 @@ fn rc2() {
     for test in &tests {
         let cipher = rc2::Rc2::new_from_slice(test.key).unwrap();
 
-        let mut buf = GenericArray::clone_from_slice(test.input);
+        let mut buf = Array::clone_from_slice(test.input);
         cipher.encrypt_block(&mut buf);
         assert_eq!(test.output, &buf[..]);
 
-        let mut buf = GenericArray::clone_from_slice(test.output);
+        let mut buf = Array::clone_from_slice(test.output);
         cipher.decrypt_block(&mut buf);
         assert_eq!(test.input, &buf[..]);
     }
@@ -42,11 +42,11 @@ fn rc2_effective_key_64() {
     for test in &tests {
         let cipher = rc2::Rc2::new_with_eff_key_len(test.key, 64);
 
-        let mut buf = GenericArray::clone_from_slice(test.input);
+        let mut buf = Array::clone_from_slice(test.input);
         cipher.encrypt_block(&mut buf);
         assert_eq!(test.output, &buf[..]);
 
-        let mut buf = GenericArray::clone_from_slice(test.output);
+        let mut buf = Array::clone_from_slice(test.output);
         cipher.decrypt_block(&mut buf);
         assert_eq!(test.input, &buf[..]);
     }
@@ -58,11 +58,11 @@ fn rc2_effective_key_129() {
     for test in &tests {
         let cipher = rc2::Rc2::new_with_eff_key_len(test.key, 129);
 
-        let mut buf = GenericArray::clone_from_slice(test.input);
+        let mut buf = Array::clone_from_slice(test.input);
         cipher.encrypt_block(&mut buf);
         assert_eq!(test.output, &buf[..]);
 
-        let mut buf = GenericArray::clone_from_slice(test.output);
+        let mut buf = Array::clone_from_slice(test.output);
         cipher.decrypt_block(&mut buf);
         assert_eq!(test.input, &buf[..]);
     }

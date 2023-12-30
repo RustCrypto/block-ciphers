@@ -1,11 +1,11 @@
 [package]
 name = "magma"
-version = "0.9.0"
+version = "0.10.0-pre"
 description = "Magma (GOST R 34.12-2015) block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
-rust-version = "1.56"
+rust-version = "1.65"
 readme = "README.md"
 documentation = "https://docs.rs/magma"
 repository = "https://github.com/RustCrypto/block-ciphers"
@@ -13,11 +13,11 @@ keywords = ["crypto", "magma", "gost", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.4.2"
+cipher = "=0.5.0-pre"
 
 [dev-dependencies]
-cipher = { version = "0.4.2", features = ["dev"] }
-hex-literal = "0.3.3"
+cipher = { version = "=0.5.0-pre", features = ["dev"] }
+hex-literal = "0.4"
 
 [features]
 zeroize = ["cipher/zeroize"]

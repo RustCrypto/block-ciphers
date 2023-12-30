@@ -1,11 +1,11 @@
 [package]
 name = "serpent"
-version = "0.5.1"
+version = "0.6.0-pre"
 description = "Serpent block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
-rust-version = "1.56"
+rust-version = "1.65"
 readme = "README.md"
 documentation = "https://docs.rs/serpent"
 repository = "https://github.com/RustCrypto/block-ciphers"
@@ -14,10 +14,10 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 byteorder = { version = "1.1", default-features = false }
-cipher = "0.4.2"
+cipher = "=0.5.0-pre"
 
 [dev-dependencies]
-cipher = { version = "0.4.2", features = ["dev"] }
+cipher = { version = "=0.5.0-pre", features = ["dev"] }
 
 [features]
 zeroize = ["cipher/zeroize"]

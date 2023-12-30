@@ -2,7 +2,7 @@
 #[cfg(test)]
 mod tests {
     use cipher::consts::*;
-    use cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, KeyInit};
+    use cipher::{array::Array, BlockDecrypt, BlockEncrypt, KeyInit};
     use rc5::RC5;
 
     #[test]
@@ -14,7 +14,7 @@ mod tests {
 
         let rc5 = <RC5<u8, U12, U4> as KeyInit>::new_from_slice(&key).unwrap();
 
-        let mut block = GenericArray::clone_from_slice(&pt);
+        let mut block = Array::clone_from_slice(&pt);
         rc5.encrypt_block(&mut block);
 
         assert_eq!(ct, block[..]);
@@ -32,7 +32,7 @@ mod tests {
 
         let rc5 = <RC5<u16, U16, U8> as KeyInit>::new_from_slice(&key).unwrap();
 
-        let mut block = GenericArray::clone_from_slice(&pt);
+        let mut block = Array::clone_from_slice(&pt);
         rc5.encrypt_block(&mut block);
 
         assert_eq!(ct, block[..]);
@@ -53,7 +53,7 @@ mod tests {
 
         let rc5 = <RC5<u32, U12, U16> as KeyInit>::new_from_slice(&key).unwrap();
 
-        let mut block = GenericArray::clone_from_slice(&pt);
+        let mut block = Array::clone_from_slice(&pt);
         rc5.encrypt_block(&mut block);
 
         assert_eq!(ct, block[..]);
@@ -74,7 +74,7 @@ mod tests {
 
         let rc5 = <RC5<u32, U16, U16> as KeyInit>::new_from_slice(&key).unwrap();
 
-        let mut block = GenericArray::clone_from_slice(&pt);
+        let mut block = Array::clone_from_slice(&pt);
         rc5.encrypt_block(&mut block);
 
         assert_eq!(ct, block[..]);
@@ -101,7 +101,7 @@ mod tests {
 
         let rc5 = <RC5<u64, U24, U24> as KeyInit>::new_from_slice(&key).unwrap();
 
-        let mut block = GenericArray::clone_from_slice(&pt);
+        let mut block = Array::clone_from_slice(&pt);
         rc5.encrypt_block(&mut block);
 
         assert_eq!(ct, block[..]);
@@ -131,7 +131,7 @@ mod tests {
 
         let rc5 = <RC5<u128, U28, U32> as KeyInit>::new_from_slice(&key).unwrap();
 
-        let mut block = GenericArray::clone_from_slice(&pt);
+        let mut block = Array::clone_from_slice(&pt);
         rc5.encrypt_block(&mut block);
 
         assert_eq!(ct, block[..]);

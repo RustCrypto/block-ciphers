@@ -1,11 +1,11 @@
 [package]
 name = "threefish"
-version = "0.5.2"
+version = "0.6.0-pre"
 description = "Threefish block cipher"
 authors = ["The Rust-Crypto Project Developers"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
-rust-version = "1.56"
+rust-version = "1.65"
 readme = "README.md"
 documentation = "https://docs.rs/threefish"
 repository = "https://github.com/RustCrypto/block-ciphers"
@@ -13,12 +13,12 @@ keywords = ["crypto", "threefish", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = { version = "0.4.2", optional = true }
+cipher = { version = "=0.5.0-pre", optional = true }
 zeroize = { version = "1.6", optional = true, default-features = false }
 
 [dev-dependencies]
-cipher = { version = "0.4.2", features = ["dev"]}
-hex-literal = "0.3.3"
+cipher = { version = "=0.5.0-pre", features = ["dev"]}
+hex-literal = "0.4"
 
 [features]
 default = ["cipher"]

@@ -1,5 +1,5 @@
 use aria::{Aria128, Aria192, Aria256};
-use cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, KeyInit};
+use cipher::{array::Array, BlockDecrypt, BlockEncrypt, KeyInit};
 use hex_literal::hex;
 
 /// Test vector from RFC 5794, Appendix A.1
@@ -11,11 +11,11 @@ fn test_rfc5794_a1() {
 
     let c = Aria128::new_from_slice(&key).unwrap();
 
-    let mut buf = GenericArray::from(pt);
+    let mut buf = Array::from(pt);
     c.encrypt_block(&mut buf);
-    assert_eq!(buf.as_ref(), ct);
+    assert_eq!(buf.as_ref(), &ct);
     c.decrypt_block(&mut buf);
-    assert_eq!(buf.as_ref(), pt);
+    assert_eq!(buf.as_ref(), &pt);
 }
 
 /// Test vector from RFC 5794, Appendix A.2
@@ -27,11 +27,11 @@ fn test_rfc5794_a2() {
 
     let c = Aria192::new_from_slice(&key).unwrap();
 
-    let mut buf = GenericArray::from(pt);
+    let mut buf = Array::from(pt);
     c.encrypt_block(&mut buf);
-    assert_eq!(buf.as_ref(), ct);
+    assert_eq!(buf.as_ref(), &ct);
     c.decrypt_block(&mut buf);
-    assert_eq!(buf.as_ref(), pt);
+    assert_eq!(buf.as_ref(), &pt);
 }
 
 /// Test vector from RFC 5794, Appendix A.3
@@ -43,9 +43,9 @@ fn test_rfc5794_a3() {
 
     let c = Aria256::new_from_slice(&key).unwrap();
 
-    let mut buf = GenericArray::from(pt);
+    let mut buf = Array::from(pt);
     c.encrypt_block(&mut buf);
-    assert_eq!(buf.as_ref(), ct);
+    assert_eq!(buf.as_ref(), &ct);
     c.decrypt_block(&mut buf);
-    assert_eq!(buf.as_ref(), pt);
+    assert_eq!(buf.as_ref(), &pt);
 }

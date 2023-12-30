@@ -1,5 +1,5 @@
 use cast5::Cast5;
-use cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, KeyInit};
+use cipher::{array::Array, BlockDecrypt, BlockEncrypt, KeyInit};
 use hex_literal::hex;
 
 /// Test vectors from RFC 2144 Appendix B.1
@@ -9,10 +9,10 @@ fn rfc2144_b1() {
     let key128 = hex!("0123456712345678234567893456789A");
     let key80 = hex!("01234567123456782345");
     let key40 = hex!("0123456712");
-    let ct128 = GenericArray::from(hex!("238B4FE5847E44B2"));
-    let ct80 = GenericArray::from(hex!("EB6A711A2C02271B"));
-    let ct40 = GenericArray::from(hex!("7AC816D16E9B302E"));
-    let pt = GenericArray::from(hex!("0123456789ABCDEF"));
+    let ct128 = Array::from(hex!("238B4FE5847E44B2"));
+    let ct80 = Array::from(hex!("EB6A711A2C02271B"));
+    let ct40 = Array::from(hex!("7AC816D16E9B302E"));
+    let pt = Array::from(hex!("0123456789ABCDEF"));
 
     let mut buf = pt;
 
@@ -50,14 +50,14 @@ fn full_maintance_test() {
     let (al, ar) = a.split_at_mut(8);
     let (bl, br) = b.split_at_mut(8);
 
-    let al = GenericArray::from_mut_slice(al);
-    let ar = GenericArray::from_mut_slice(ar);
+    let al = Array::from_mut_slice(al);
+    let ar = Array::from_mut_slice(ar);
 
-    let bl = GenericArray::from_mut_slice(bl);
-    let br = GenericArray::from_mut_slice(br);
+    let bl = Array::from_mut_slice(bl);
+    let br = Array::from_mut_slice(br);
 
     for _ in 0..count {
-        let mut k = GenericArray::from([0u8; 16]);
+        let mut k = Array::from([0u8; 16]);
         k[..8].copy_from_slice(bl);
         k[8..].copy_from_slice(br);
         let c = Cast5::new(&k);

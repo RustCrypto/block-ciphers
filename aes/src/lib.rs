@@ -55,11 +55,11 @@
 //! use aes::Aes128;
 //! use aes::cipher::{
 //!     BlockCipher, BlockEncrypt, BlockDecrypt, KeyInit,
-//!     generic_array::GenericArray,
+//!     array::Array,
 //! };
 //!
-//! let key = GenericArray::from([0u8; 16]);
-//! let mut block = GenericArray::from([42u8; 16]);
+//! let key = Array::from([0u8; 16]);
+//! let mut block = Array::from([42u8; 16]);
 //!
 //! // Initialize cipher
 //! let cipher = Aes128::new(&key);
@@ -150,13 +150,13 @@ cfg_if! {
 pub use cipher;
 use cipher::{
     consts::{U16, U8},
-    generic_array::GenericArray,
+    array::Array,
 };
 
 /// 128-bit AES block
-pub type Block = GenericArray<u8, U16>;
+pub type Block = Array<u8, U16>;
 /// Eight 128-bit AES blocks
-pub type Block8 = GenericArray<Block, U8>;
+pub type Block8 = Array<Block, U8>;
 
 #[cfg(test)]
 mod tests {
