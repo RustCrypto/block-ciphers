@@ -13,9 +13,9 @@ fn test_rfc5794_a1() {
 
     let mut buf = Array::from(pt);
     c.encrypt_block(&mut buf);
-    assert_eq!(buf.as_ref(), &ct);
+    assert_eq!(&buf, &ct);
     c.decrypt_block(&mut buf);
-    assert_eq!(buf.as_ref(), &pt);
+    assert_eq!(&buf, &pt);
 }
 
 /// Test vector from RFC 5794, Appendix A.2
@@ -29,9 +29,9 @@ fn test_rfc5794_a2() {
 
     let mut buf = Array::from(pt);
     c.encrypt_block(&mut buf);
-    assert_eq!(buf.as_ref(), &ct);
+    assert_eq!(&buf, &ct);
     c.decrypt_block(&mut buf);
-    assert_eq!(buf.as_ref(), &pt);
+    assert_eq!(&buf, &pt);
 }
 
 /// Test vector from RFC 5794, Appendix A.3
@@ -45,7 +45,7 @@ fn test_rfc5794_a3() {
 
     let mut buf = Array::from(pt);
     c.encrypt_block(&mut buf);
-    assert_eq!(buf.as_ref(), &ct);
+    assert_eq!(&buf, &ct);
     c.decrypt_block(&mut buf);
-    assert_eq!(buf.as_ref(), &pt);
+    assert_eq!(&buf, &pt);
 }

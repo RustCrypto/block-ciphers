@@ -82,7 +82,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "cipher"
 version = "0.5.0-pre"
-source = "git+https://github.com/RustCrypto/traits.git#ea9f8a3ded8137ce3d8729b165bc4d413cc52486"
+source = "git+https://github.com/RustCrypto/traits.git#6810dc1dcfe9949f2f2e8e6f3e077737b97c06f1"
 dependencies = [
  "blobby",
  "crypto-common",
@@ -101,9 +101,9 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.2.0-pre.1"
+version = "0.2.0-pre.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47bf010313404f942f7da6931d00bd455bb4c36c36c9d4dd9497b5ac316f6fe1"
+checksum = "102f7900795d54e3b8566857762a2977c267ab5952e4117283017ee1d5c9ae88"
 dependencies = [
  "hybrid-array",
 ]
@@ -129,9 +129,9 @@ checksum = "6fe2267d4ed49bc07b63801559be28c718ea06c4738b7a03c94df7386d2cde46"
 
 [[package]]
 name = "hybrid-array"
-version = "0.2.0-pre.6"
+version = "0.2.0-pre.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f148d5add3c53ebf18452f556b0437d3d5c4540f34eb7b80c5ad4b54632c4e2"
+checksum = "c23513baf3d4dec43f51f0d5793d9f3058d909040a0130f86c53c4a340fcad05"
 dependencies = [
  "typenum",
 ]
@@ -145,9 +145,9 @@ dependencies = [
 
 [[package]]
 name = "inout"
-version = "0.2.0-pre.1"
+version = "0.2.0-pre.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eed415a0622334b6e89f6361616b133f5ca2a8a31c5007ca594d9180e5930ec8"
+checksum = "25049cbfd794227f26a7d3c7f2cfc2a9737a229993799bfca1138242964886ee"
 dependencies = [
  "hybrid-array",
 ]

@@ -63,7 +63,7 @@ macro_rules! define_aes_impl {
             #[inline]
             fn new(key: &Key<Self>) -> Self {
                 Self {
-                    keys: $fixslice_key_schedule(key.as_ref()),
+                    keys: $fixslice_key_schedule(key.into()),
                 }
             }
         }
