@@ -10,7 +10,7 @@ use cipher::{
 use core::fmt;
 use core::mem::ManuallyDrop;
 
-#[cfg(all(target_arch = "aarch64", aes_armv8))]
+#[cfg(target_arch = "aarch64")]
 use crate::armv8 as intrinsics;
 
 #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
