@@ -1,4 +1,4 @@
-use cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, KeyInit};
+use cipher::{array::Array, BlockDecrypt, BlockEncrypt, KeyInit};
 use hex_literal::hex;
 use twofish::Twofish;
 
@@ -11,7 +11,7 @@ macro_rules! new_test {
         #[test]
         fn $name() {
             let mut key = [0u8; $key_len];
-            let mut plain = GenericArray::default();
+            let mut plain = Array::default();
             let mut cipher;
 
             for i in 1..50 {

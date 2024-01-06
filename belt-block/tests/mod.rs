@@ -34,9 +34,9 @@ fn belt_block() {
             let cipher = BeltBlock::new(&key.into());
             let mut block = pt.into();
             cipher.encrypt_block(&mut block);
-            assert_eq!(block, ct.into());
+            assert_eq!(block, ct);
             cipher.decrypt_block(&mut block);
-            assert_eq!(block, pt.into());
+            assert_eq!(block, pt);
         }
     }
 }

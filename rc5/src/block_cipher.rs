@@ -1,8 +1,9 @@
 use core::ops::{Add, Div, Mul, Sub};
 
 use cipher::{
+    array::ArraySize,
     consts::*,
-    generic_array::ArrayLength,
+    crypto_common::BlockSizes,
     inout::InOut,
     typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U2, U256},
     AlgorithmName, Block, BlockBackend, BlockCipher, BlockDecrypt, BlockEncrypt, BlockSizeUser,
@@ -16,7 +17,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -24,16 +25,16 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
     // Key range
-    B: ArrayLength<u8>,
+    B: ArraySize,
     B: IsLess<U256>,
     Le<B, U256>: NonZero,
     // KeyAsWordsSize
     B: Add<W::Bytes>,
     Sum<B, W::Bytes>: Sub<U1>,
     Diff<Sum<B, W::Bytes>, U1>: Div<W::Bytes>,
-    KeyAsWordsSize<W, B>: ArrayLength<W>,
+    KeyAsWordsSize<W, B>: ArraySize,
 {
     fn new(key: &cipher::Key<Self>) -> Self {
         Self::new(key)
@@ -45,7 +46,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -53,8 +54,8 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
-    B: ArrayLength<u8>,
+    ExpandedKeyTableSize<R>: ArraySize,
+    B: ArraySize,
 {
     type KeySize = B;
 }
@@ -64,7 +65,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -72,7 +73,7 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
 {
 }
 
@@ -81,7 +82,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -89,7 +90,7 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
 {
     type BlockSize = BlockSize<W>;
 }
@@ -99,7 +100,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -107,16 +108,16 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
     // Key range
-    B: ArrayLength<u8>,
+    B: ArraySize,
     B: IsLess<U256>,
     Le<B, U256>: NonZero,
     // KeyAsWordsSize
     B: Add<W::Bytes>,
     Sum<B, W::Bytes>: Sub<U1>,
     Diff<Sum<B, W::Bytes>, U1>: Div<W::Bytes>,
-    KeyAsWordsSize<W, B>: ArrayLength<W>,
+    KeyAsWordsSize<W, B>: ArraySize,
 {
     fn encrypt_with_backend(&self, f: impl cipher::BlockClosure<BlockSize = Self::BlockSize>) {
         f.call(&mut RC5EncryptBackend { enc_dec: self })
@@ -128,7 +129,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -136,7 +137,7 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
 {
     enc_dec: &'a RC5<W, R, B>,
 }
@@ -145,7 +146,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -153,7 +154,7 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
 {
     type BlockSize = BlockSize<W>;
 }
@@ -163,7 +164,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -171,7 +172,7 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
 {
     type ParBlocksSize = U1;
 }
@@ -181,7 +182,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -189,16 +190,16 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
     // Key range
-    B: ArrayLength<u8>,
+    B: ArraySize,
     B: IsLess<U256>,
     Le<B, U256>: NonZero,
     // KeyAsWordsSize
     B: Add<W::Bytes>,
     Sum<B, W::Bytes>: Sub<U1>,
     Diff<Sum<B, W::Bytes>, U1>: Div<W::Bytes>,
-    KeyAsWordsSize<W, B>: ArrayLength<W>,
+    KeyAsWordsSize<W, B>: ArraySize,
 {
     #[inline(always)]
     fn proc_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
@@ -212,7 +213,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -220,16 +221,16 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
     // Key range
-    B: ArrayLength<u8>,
+    B: ArraySize,
     B: IsLess<U256>,
     Le<B, U256>: NonZero,
     // KeyAsWordsSize
     B: Add<W::Bytes>,
     Sum<B, W::Bytes>: Sub<U1>,
     Diff<Sum<B, W::Bytes>, U1>: Div<W::Bytes>,
-    KeyAsWordsSize<W, B>: ArrayLength<W>,
+    KeyAsWordsSize<W, B>: ArraySize,
 {
     fn decrypt_with_backend(&self, f: impl cipher::BlockClosure<BlockSize = Self::BlockSize>) {
         f.call(&mut RC5DecryptBackend { enc_dec: self })
@@ -241,7 +242,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -249,7 +250,7 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
 {
     enc_dec: &'a RC5<W, R, B>,
 }
@@ -258,7 +259,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -266,7 +267,7 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
 {
     type BlockSize = BlockSize<W>;
 }
@@ -276,7 +277,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -284,7 +285,7 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
 {
     type ParBlocksSize = U1;
 }
@@ -294,7 +295,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -302,16 +303,16 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
     // Key range
-    B: ArrayLength<u8>,
+    B: ArraySize,
     B: IsLess<U256>,
     Le<B, U256>: NonZero,
     // KeyAsWordsSize
     B: Add<W::Bytes>,
     Sum<B, W::Bytes>: Sub<U1>,
     Diff<Sum<B, W::Bytes>, U1>: Div<W::Bytes>,
-    KeyAsWordsSize<W, B>: ArrayLength<W>,
+    KeyAsWordsSize<W, B>: ArraySize,
 {
     #[inline(always)]
     fn proc_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
@@ -325,7 +326,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -333,7 +334,7 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
 {
     fn write_alg_name(f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(

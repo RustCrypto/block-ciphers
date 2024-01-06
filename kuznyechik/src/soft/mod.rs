@@ -47,9 +47,7 @@ impl From<KuznyechikEnc> for Kuznyechik {
 impl From<&KuznyechikEnc> for Kuznyechik {
     #[inline]
     fn from(enc: &KuznyechikEnc) -> Kuznyechik {
-        Self {
-            keys: enc.keys.clone(),
-        }
+        Self { keys: enc.keys }
     }
 }
 
@@ -177,9 +175,7 @@ impl From<KuznyechikEnc> for KuznyechikDec {
 impl From<&KuznyechikEnc> for KuznyechikDec {
     #[inline]
     fn from(enc: &KuznyechikEnc) -> KuznyechikDec {
-        Self {
-            keys: enc.keys.clone(),
-        }
+        Self { keys: enc.keys }
     }
 }
 

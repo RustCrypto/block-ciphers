@@ -10,12 +10,12 @@
 //!
 //! # Examples
 //! ```
-//! use cast6::cipher::generic_array::GenericArray;
+//! use cast6::cipher::array::Array;
 //! use cast6::cipher::{Key, Block, BlockEncrypt, BlockDecrypt, KeyInit};
 //! use cast6::Cast6;
 //!
-//! let key = GenericArray::from([0u8; 32]);
-//! let mut block = GenericArray::from([0u8; 16]);
+//! let key = Array::from([0u8; 32]);
+//! let mut block = Array::from([0u8; 16]);
 //! // Initialize cipher
 //! let cipher = Cast6::new(&key);
 //!

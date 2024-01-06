@@ -31,8 +31,8 @@
 
 pub use cipher;
 use cipher::{
+    array::Array,
     consts::{U16, U32},
-    generic_array::GenericArray,
 };
 
 mod consts;
@@ -59,6 +59,6 @@ type BlockSize = U16;
 type KeySize = U32;
 
 /// 128-bit Kuznyechik block
-pub type Block = GenericArray<u8, U16>;
+pub type Block = Array<u8, U16>;
 /// 256-bit Kuznyechik key
-pub type Key = GenericArray<u8, U32>;
+pub type Key = Array<u8, U32>;

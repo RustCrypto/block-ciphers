@@ -1,11 +1,11 @@
 [package]
 name = "rc2"
-version = "0.8.1"
+version = "0.9.0-pre"
 description = "RC2 block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
-rust-version = "1.56"
+rust-version = "1.65"
 readme = "README.md"
 documentation = "https://docs.rs/rc2"
 repository = "https://github.com/RustCrypto/block-ciphers"
@@ -13,10 +13,10 @@ keywords = ["crypto", "rc2", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.4.2"
+cipher = "=0.5.0-pre.1"
 
 [dev-dependencies]
-cipher = { version = "0.4.2", features = ["dev"] }
+cipher = { version = "=0.5.0-pre.1", features = ["dev"] }
 
 [features]
 zeroize = ["cipher/zeroize"]

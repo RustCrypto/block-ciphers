@@ -13,7 +13,7 @@
 //! ```
 //! use magma::Magma;
 //! use magma::cipher::{
-//!     generic_array::GenericArray,
+//!     array::Array,
 //!     BlockEncrypt, BlockDecrypt, KeyInit,
 //! };
 //! use hex_literal::hex;
@@ -28,7 +28,7 @@
 //!
 //! let cipher = Magma::new(&key.into());
 //!
-//! let mut block = GenericArray::clone_from_slice(&plaintext);
+//! let mut block = Array::clone_from_slice(&plaintext);
 //! cipher.encrypt_block(&mut block);
 //! assert_eq!(&ciphertext, block.as_slice());
 //!

@@ -2,7 +2,7 @@
 
 use cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
 use hex_literal::hex;
-use speck::{
+use speck_cipher::{
     Speck128_128, Speck128_192, Speck128_256, Speck32_64, Speck48_72, Speck48_96, Speck64_128,
     Speck64_96, Speck96_144, Speck96_96,
 };

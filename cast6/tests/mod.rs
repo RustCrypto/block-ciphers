@@ -9,9 +9,9 @@ fn rfc2144_a() {
     let key128 = hex!("2342bb9efa38542c0af75647f29f615d");
     let key192 = hex!("2342bb9efa38542cbed0ac83940ac298bac77a7717942863");
     let key256 = hex!("2342bb9efa38542cbed0ac83940ac2988d7c47ce264908461cc1b5137ae6b604");
-    let ct128 = hex!("c842a08972b43d20836c91d1b7530f6b").into();
-    let ct192 = hex!("1b386c0210dcadcbdd0e41aa08a7a7e8").into();
-    let ct256 = hex!("4f6a2038286897b9c9870136553317fa").into();
+    let ct128 = hex!("c842a08972b43d20836c91d1b7530f6b");
+    let ct192 = hex!("1b386c0210dcadcbdd0e41aa08a7a7e8");
+    let ct256 = hex!("4f6a2038286897b9c9870136553317fa");
     let pt = Block::<Cast6>::default();
 
     let mut buf = pt;

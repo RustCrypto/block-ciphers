@@ -16,12 +16,12 @@
 #![allow(clippy::unreadable_literal)]
 
 use crate::Block;
-use cipher::{consts::U4, generic_array::GenericArray};
+use cipher::{array::Array, consts::U4};
 
 /// AES block batch size for this implementation
 pub(crate) type FixsliceBlocks = U4;
 
-pub(crate) type BatchBlocks = GenericArray<Block, FixsliceBlocks>;
+pub(crate) type BatchBlocks = Array<Block, FixsliceBlocks>;
 
 /// AES-128 round keys
 pub(crate) type FixsliceKeys128 = [u64; 88];
