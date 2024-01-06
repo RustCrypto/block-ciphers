@@ -7,9 +7,6 @@
 use crate::{Block, Block8};
 use core::arch::aarch64::*;
 
-// Stable "polyfills" for unstable core::arch::aarch64 intrinsics
-use super::intrinsics::{vaesdq_u8, vaeseq_u8, vaesimcq_u8, vaesmcq_u8};
-
 /// AES cipher (encrypt) round function.
 #[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
