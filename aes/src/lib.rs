@@ -1,3 +1,12 @@
+#![cfg_attr(
+    all(
+        target_arch = "riscv64",
+        target_feature = "zknd",
+        target_feature = "zkne"
+    ),
+    feature(riscv_ext_intrinsics, stdsimd)
+)]
+
 //! Pure Rust implementation of the [Advanced Encryption Standard][AES]
 //! (AES, a.k.a. Rijndael).
 //!
@@ -132,6 +141,9 @@ cfg_if! {
         mod armv8;
         mod autodetect;
         pub use autodetect::*;
+    } else if #[cfg(all(target_arch = "riscv64", target_feature = "zknd", target_feature = "zkne"))] {
+        mod riscv64;
+        pub use riscv64::*;
     } else if #[cfg(all(
         any(target_arch = "x86", target_arch = "x86_64"),
         not(aes_force_soft)

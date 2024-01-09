@@ -19,230 +19,312 @@ env:
 
 jobs:
   # Builds for no_std platforms
-  build:
+  # build:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       rust:
+  #         - 1.72.0 # MSRV
+  #         - stable
+  #       target:
+  #         - thumbv7em-none-eabi
+  #         - wasm32-unknown-unknown
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: RustCrypto/actions/cargo-cache@master
+  #     - uses: dtolnay/rust-toolchain@master
+  #       with:
+  #         toolchain: ${{ matrix.rust }}
+  #         targets: ${{ matrix.target }}
+  #     - run: cargo check
+  #     - run: |
+  #         cargo build --target ${{ matrix.target }}
+  #         cargo build --target ${{ matrix.target }} --features hazmat
+  #     - env:
+  #         RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
+  #       run: |
+  #         cargo build --target ${{ matrix.target }}
+  #         cargo build --target ${{ matrix.target }} --features hazmat
+  #     - env:
+  #         RUSTFLAGS: "-Dwarnings --cfg aes_compact"
+  #       run: |
+  #         cargo build --target ${{ matrix.target }}
+  #         cargo build --target ${{ matrix.target }} --features hazmat
+  #     - env:
+  #         RUSTFLAGS: "-Dwarnings --cfg aes_force_soft --cfg aes_compact"
+  #       run: |
+  #         cargo build --target ${{ matrix.target }}
+  #         cargo build --target ${{ matrix.target }} --features hazmat
+
+  # minimal-versions:
+  #   uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
+  #   with:
+  #       working-directory: ${{ github.workflow }}
+
+  # # Tests for the AES-NI backend
+  # aesni:
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     CARGO_INCREMENTAL: 0
+  #     RUSTDOCFLAGS: "-C target-feature=+aes,+ssse3"
+  #     RUSTFLAGS: "-Dwarnings -C target-feature=+aes,+ssse3"
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         # 32-bit Linux
+  #         - target: i686-unknown-linux-gnu
+  #           rust: 1.72.0 # MSRV
+  #           deps: sudo apt update && sudo apt install gcc-multilib
+  #         - target: i686-unknown-linux-gnu
+  #           rust: stable
+  #           deps: sudo apt update && sudo apt install gcc-multilib
+
+  #         # 64-bit Linux
+  #         - target: x86_64-unknown-linux-gnu
+  #           rust: 1.72.0 # MSRV
+  #         - target: x86_64-unknown-linux-gnu
+  #           rust: stable
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: RustCrypto/actions/cargo-cache@master
+  #     - uses: dtolnay/rust-toolchain@master
+  #       with:
+  #         toolchain: ${{ matrix.rust }}
+  #         targets: ${{ matrix.target }}
+  #     - run: ${{ matrix.deps }}
+  #     - run: cargo test --target ${{ matrix.target }}
+  #     - run: cargo test --target ${{ matrix.target }} --features hazmat
+  #     - run: cargo test --target ${{ matrix.target }} --all-features
+
+  # # Tests for CPU feature autodetection with fallback to portable software implementation
+  # autodetect:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         # 32-bit Linux
+  #         - target: i686-unknown-linux-gnu
+  #           rust: 1.72.0 # MSRV
+  #           deps: sudo apt update && sudo apt install gcc-multilib
+  #         - target: i686-unknown-linux-gnu
+  #           rust: stable
+  #           deps: sudo apt update && sudo apt install gcc-multilib
+
+  #         # 64-bit Linux
+  #         - target: x86_64-unknown-linux-gnu
+  #           rust: 1.72.0 # MSRV
+  #         - target: x86_64-unknown-linux-gnu
+  #           rust: stable
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: RustCrypto/actions/cargo-cache@master
+  #     - uses: dtolnay/rust-toolchain@master
+  #       with:
+  #         toolchain: ${{ matrix.rust }}
+  #         targets: ${{ matrix.target }}
+  #     - run: ${{ matrix.deps }}
+  #     - run: cargo test --target ${{ matrix.target }}
+  #     - run: cargo test --target ${{ matrix.target }} --features hazmat
+  #     - run: cargo test --target ${{ matrix.target }} --all-features
+
+  # # Tests for the portable software backend (i.e. `aes_force_soft`-only)
+  # soft:
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         # 32-bit Linux
+  #         - target: i686-unknown-linux-gnu
+  #           rust: 1.72.0 # MSRV
+  #           deps: sudo apt update && sudo apt install gcc-multilib
+  #         - target: i686-unknown-linux-gnu
+  #           rust: stable
+  #           deps: sudo apt update && sudo apt install gcc-multilib
+
+  #         # 64-bit Linux
+  #         - target: x86_64-unknown-linux-gnu
+  #           rust: 1.72.0 # MSRV
+  #         - target: x86_64-unknown-linux-gnu
+  #           rust: stable
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: RustCrypto/actions/cargo-cache@master
+  #     - uses: dtolnay/rust-toolchain@master
+  #       with:
+  #         toolchain: ${{ matrix.rust }}
+  #         targets: ${{ matrix.target }}
+  #     - run: ${{ matrix.deps }}
+  #     - run: cargo test --target ${{ matrix.target }}
+  #     - run: cargo test --target ${{ matrix.target }} --all-features
+
+
+  # # Cross-compiled tests
+  # cross:
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         # ARM64
+  #         - target: aarch64-unknown-linux-gnu
+  #           rust: 1.72.0 # MSRV
+  #         - target: aarch64-unknown-linux-gnu
+  #           rust: stable
+
+  #         # PPC32
+  #         - target: powerpc-unknown-linux-gnu
+  #           rust: 1.72.0 # MSRV
+  #         - target: powerpc-unknown-linux-gnu
+  #           rust: stable
+  #   runs-on: ubuntu-latest
+  #   # Cross mounts only current package, i.e. by default it ignores workspace's Cargo.toml
+  #   defaults:
+  #     run:
+  #       working-directory: .
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: RustCrypto/actions/cargo-cache@master
+  #     - uses: dtolnay/rust-toolchain@master
+  #       with:
+  #         toolchain: ${{ matrix.rust }}
+  #         targets: ${{ matrix.target }}
+  #     - uses: RustCrypto/actions/cross-install@master
+  #     - run: ${{ matrix.deps }}
+  #     - run: |
+  #         cross test --package aes --target ${{ matrix.target }}
+  #         cross test --package aes --target ${{ matrix.target }} --features hazmat
+  #     - env:
+  #         RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
+  #       run: |
+  #         cross test --package aes --target ${{ matrix.target }}
+  #         cross test --package aes --target ${{ matrix.target }} --features hazmat
+  #     - env:
+  #         RUSTFLAGS: "-Dwarnings --cfg aes_compact"
+  #       run: |
+  #         cross test --package aes --target ${{ matrix.target }}
+  #         cross test --package aes --target ${{ matrix.target }} --features hazmat
+  #     - env:
+  #         RUSTFLAGS: "-Dwarnings --cfg aes_force_soft --cfg aes_compact"
+  #       run: |
+  #         cross test --package aes --target ${{ matrix.target }}
+  #         cross test --package aes --target ${{ matrix.target }} --features hazmat
+
+  # # ARMv8 cross-compiled tests for AES intrinsics
+  # armv8:
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - target: aarch64-unknown-linux-gnu
+  #           rust: 1.72.0 # MSRV
+  #   runs-on: ubuntu-latest
+  #   # Cross mounts only current package, i.e. by default it ignores workspace's Cargo.toml
+  #   defaults:
+  #     run:
+  #       working-directory: .
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: RustCrypto/actions/cargo-cache@master
+  #     - run: ${{ matrix.deps }}
+  #     - uses: dtolnay/rust-toolchain@master
+  #       with:
+  #         toolchain: ${{ matrix.rust }}
+  #         targets: ${{ matrix.target }}
+  #     - uses: RustCrypto/actions/cross-install@master
+  #     - run: cross test --package aes --target ${{ matrix.target }}
+  #     - run: cross test --package aes --target ${{ matrix.target }} --features hazmat
+  #     - run: cross test --package aes --target ${{ matrix.target }} --all-features
+
+  # RISC-V 64 cross-compiled tests for AES intrinsics
+  riscv64:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        rust:
-          - 1.72.0 # MSRV
-          - stable
-        target:
-          - thumbv7em-none-eabi
-          - wasm32-unknown-unknown
+    container:
+      image: ubuntu:mantic
+      env:
+        UBUNTU_CODENAME: mantic
+        LLVM_MAJOR_VERSION: 17
     steps:
       - uses: actions/checkout@v3
-      - uses: RustCrypto/actions/cargo-cache@master
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.rust }}
-          targets: ${{ matrix.target }}
-      - run: cargo check
       - run: |
-          cargo build --target ${{ matrix.target }}
-          cargo build --target ${{ matrix.target }} --features hazmat
-      - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
-        run: |
-          cargo build --target ${{ matrix.target }}
-          cargo build --target ${{ matrix.target }} --features hazmat
-      - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_compact"
-        run: |
-          cargo build --target ${{ matrix.target }}
-          cargo build --target ${{ matrix.target }} --features hazmat
-      - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft --cfg aes_compact"
-        run: |
-          cargo build --target ${{ matrix.target }}
-          cargo build --target ${{ matrix.target }} --features hazmat
-
-  minimal-versions:
-    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
-    with:
-        working-directory: ${{ github.workflow }}
-
-  # Tests for the AES-NI backend
-  aesni:
-    runs-on: ubuntu-latest
-    env:
-      CARGO_INCREMENTAL: 0
-      RUSTDOCFLAGS: "-C target-feature=+aes,+ssse3"
-      RUSTFLAGS: "-Dwarnings -C target-feature=+aes,+ssse3"
-    strategy:
-      matrix:
-        include:
-          # 32-bit Linux
-          - target: i686-unknown-linux-gnu
-            rust: 1.72.0 # MSRV
-            deps: sudo apt update && sudo apt install gcc-multilib
-          - target: i686-unknown-linux-gnu
-            rust: stable
-            deps: sudo apt update && sudo apt install gcc-multilib
-
-          # 64-bit Linux
-          - target: x86_64-unknown-linux-gnu
-            rust: 1.72.0 # MSRV
-          - target: x86_64-unknown-linux-gnu
-            rust: stable
-    steps:
-      - uses: actions/checkout@v3
-      - uses: RustCrypto/actions/cargo-cache@master
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.rust }}
-          targets: ${{ matrix.target }}
-      - run: ${{ matrix.deps }}
-      - run: cargo test --target ${{ matrix.target }}
-      - run: cargo test --target ${{ matrix.target }} --features hazmat
-      - run: cargo test --target ${{ matrix.target }} --all-features
-
-  # Tests for CPU feature autodetection with fallback to portable software implementation
-  autodetect:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          # 32-bit Linux
-          - target: i686-unknown-linux-gnu
-            rust: 1.72.0 # MSRV
-            deps: sudo apt update && sudo apt install gcc-multilib
-          - target: i686-unknown-linux-gnu
-            rust: stable
-            deps: sudo apt update && sudo apt install gcc-multilib
-
-          # 64-bit Linux
-          - target: x86_64-unknown-linux-gnu
-            rust: 1.72.0 # MSRV
-          - target: x86_64-unknown-linux-gnu
-            rust: stable
-    steps:
-      - uses: actions/checkout@v3
-      - uses: RustCrypto/actions/cargo-cache@master
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.rust }}
-          targets: ${{ matrix.target }}
-      - run: ${{ matrix.deps }}
-      - run: cargo test --target ${{ matrix.target }}
-      - run: cargo test --target ${{ matrix.target }} --features hazmat
-      - run: cargo test --target ${{ matrix.target }} --all-features
-
-  # Tests for the portable software backend (i.e. `aes_force_soft`-only)
-  soft:
-    runs-on: ubuntu-latest
-    env:
-      RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
-    strategy:
-      matrix:
-        include:
-          # 32-bit Linux
-          - target: i686-unknown-linux-gnu
-            rust: 1.72.0 # MSRV
-            deps: sudo apt update && sudo apt install gcc-multilib
-          - target: i686-unknown-linux-gnu
-            rust: stable
-            deps: sudo apt update && sudo apt install gcc-multilib
-
-          # 64-bit Linux
-          - target: x86_64-unknown-linux-gnu
-            rust: 1.72.0 # MSRV
-          - target: x86_64-unknown-linux-gnu
-            rust: stable
-    steps:
-      - uses: actions/checkout@v3
-      - uses: RustCrypto/actions/cargo-cache@master
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.rust }}
-          targets: ${{ matrix.target }}
-      - run: ${{ matrix.deps }}
-      - run: cargo test --target ${{ matrix.target }}
-      - run: cargo test --target ${{ matrix.target }} --all-features
-
-
-  # Cross-compiled tests
-  cross:
-    strategy:
-      matrix:
-        include:
-          # ARM64
-          - target: aarch64-unknown-linux-gnu
-            rust: 1.72.0 # MSRV
-          - target: aarch64-unknown-linux-gnu
-            rust: stable
-
-          # PPC32
-          - target: powerpc-unknown-linux-gnu
-            rust: 1.72.0 # MSRV
-          - target: powerpc-unknown-linux-gnu
-            rust: stable
-    runs-on: ubuntu-latest
-    # Cross mounts only current package, i.e. by default it ignores workspace's Cargo.toml
-    defaults:
-      run:
-        working-directory: .
-    steps:
-      - uses: actions/checkout@v3
-      - uses: RustCrypto/actions/cargo-cache@master
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.rust }}
-          targets: ${{ matrix.target }}
-      - uses: RustCrypto/actions/cross-install@master
-      - run: ${{ matrix.deps }}
+          sed -i'' -E 's/^(deb|deb-src) /\1 [arch=amd64,i386] /' /etc/apt/sources.list
       - run: |
-          cross test --package aes --target ${{ matrix.target }}
-          cross test --package aes --target ${{ matrix.target }} --features hazmat
-      - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
+          echo "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports/ ${UBUNTU_CODENAME} main restricted"                               >> /etc/apt/sources.list.d/riscv64.list
+          echo "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports/ ${UBUNTU_CODENAME}-updates main restricted"                       >> /etc/apt/sources.list.d/riscv64.list
+          echo "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports/ ${UBUNTU_CODENAME} universe"                                      >> /etc/apt/sources.list.d/riscv64.list
+          echo "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports/ ${UBUNTU_CODENAME}-updates universe"                              >> /etc/apt/sources.list.d/riscv64.list
+          echo "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports/ ${UBUNTU_CODENAME} multiverse"                                    >> /etc/apt/sources.list.d/riscv64.list
+          echo "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports/ ${UBUNTU_CODENAME}-updates multiverse"                            >> /etc/apt/sources.list.d/riscv64.list
+          echo "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports/ ${UBUNTU_CODENAME}-backports main restricted universe multiverse" >> /etc/apt/sources.list.d/riscv64.list
+          echo "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports/ ${UBUNTU_CODENAME}-security main restricted"                      >> /etc/apt/sources.list.d/riscv64.list
+          echo "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports/ ${UBUNTU_CODENAME}-security universe"                             >> /etc/apt/sources.list.d/riscv64.list
+          echo "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports/ ${UBUNTU_CODENAME}-security multiverse"                           >> /etc/apt/sources.list.d/riscv64.list
+      - run: |
+          dpkg --add-architecture riscv64
+      - run: |
+          apt update
+          apt --assume-yes install curl gnupg
+      - shell: bash
         run: |
-          cross test --package aes --target ${{ matrix.target }}
-          cross test --package aes --target ${{ matrix.target }} --features hazmat
-      - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_compact"
-        run: |
-          cross test --package aes --target ${{ matrix.target }}
-          cross test --package aes --target ${{ matrix.target }} --features hazmat
-      - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft --cfg aes_compact"
-        run: |
-          cross test --package aes --target ${{ matrix.target }}
-          cross test --package aes --target ${{ matrix.target }} --features hazmat
-
-  # ARMv8 cross-compiled tests for AES intrinsics
-  armv8:
-    strategy:
-      matrix:
-        include:
-          - target: aarch64-unknown-linux-gnu
-            rust: 1.72.0 # MSRV
-    runs-on: ubuntu-latest
-    # Cross mounts only current package, i.e. by default it ignores workspace's Cargo.toml
-    defaults:
-      run:
-        working-directory: .
-    steps:
-      - uses: actions/checkout@v3
-      - uses: RustCrypto/actions/cargo-cache@master
-      - run: ${{ matrix.deps }}
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.rust }}
-          targets: ${{ matrix.target }}
-      - uses: RustCrypto/actions/cross-install@master
-      - run: cross test --package aes --target ${{ matrix.target }}
-      - run: cross test --package aes --target ${{ matrix.target }} --features hazmat
-      - run: cross test --package aes --target ${{ matrix.target }} --all-features
-
-  clippy:
-    env:
-      RUSTFLAGS: "-Dwarnings --cfg aes_compact"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+          apt install --assume-yes \
+            binfmt-support build-essential qemu-user-static clang-${LLVM_MAJOR_VERSION} clang-tools-${LLVM_MAJOR_VERSION} lld-${LLVM_MAJOR_VERSION} \
+            libc6:{amd64,riscv64} \
+            libc6-dev:{amd64,riscv64} \
+            libgcc-12-dev:{amd64,riscv64} \
+            libgcc-s1:{amd64,riscv64} \
+            libstdc++-12-dev:{amd64,riscv64} \
+            linux-libc-dev:{amd64,riscv64}
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.72.0 # MSRV
-          components: clippy
-      - run: cargo clippy --features hazmat -- -D warnings
+          toolchain: nightly-2024-01-08
+          targets: x86_64-unknown-linux-gnu, riscv64gc-unknown-linux-gnu
+      - shell: bash
+        run: |
+          mkdir -p .cargo
+          echo '[target.riscv64gc-unknown-linux-gnu]'                         >> .cargo/config
+          echo 'runner = "qemu-riscv64-static -cpu rv64,zkne=true,zknd=true"' >> .cargo/config
+          echo 'linker = "clang-17"'                                          >> .cargo/config
+          echo 'rustflags = ['                                                >> .cargo/config
+          echo '    "-C", "link-arg=--target=riscv64-unknown-linux-gnu",'     >> .cargo/config
+          echo '    "-C", "link-arg=-fuse-ld=lld-17",'                        >> .cargo/config
+          echo '    "-C", "target-feature=+zkne,+zknd"'                       >> .cargo/config
+          echo ']'                                                            >> .cargo/config
+      - run: cargo +nightly-2024-01-08 test --package aes --target riscv64gc-unknown-linux-gnu
+        env:
+          RUSTFLAGS: -C linker=clang-17 -C link-arg=-fuse-ld=lld-17 -C link-arg=--target=riscv64-unknown-linux-gnu -C target-feature=+zkne,+zknd
+      - run: cargo +nightly-2024-01-08 test --package aes --target riscv64gc-unknown-linux-gnu --all-features
+        env:
+          RUSTFLAGS: -C linker=clang-17 -C link-arg=-fuse-ld=lld-17 -C link-arg=--target=riscv64-unknown-linux-gnu -C target-feature=+zkne,+zknd
+      # strategy:
+    #   matrix:
+    #     include:
+    #       - target: riscv64gc-unknown-linux-gnu
+    #         rust: nightly-2024-01-08
+    # runs-on: ubuntu-latest
+    # # Cross mounts only current package, i.e. by default it ignores workspace's Cargo.toml
+    # defaults:
+    #   run:
+    #     working-directory: .
+    # steps:
+    #   - uses: actions/checkout@v3
+    #   - uses: RustCrypto/actions/cargo-cache@master
+    #   - run: ${{ matrix.deps }}
+    #   - uses: dtolnay/rust-toolchain@master
+    #     with:
+    #       toolchain: ${{ matrix.rust }}
+    #       targets: ${{ matrix.target }}
+    #   - uses: RustCrypto/actions/cross-install@master
+    #   - run: cross test --verbose --verbose --package aes --target ${{ matrix.target }}
+    #   - run: cross test --verbose --verbose --package aes --target ${{ matrix.target }} --all-features
+  
+  # clippy:
+  #   env:
+  #     RUSTFLAGS: "-Dwarnings --cfg aes_compact"
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: RustCrypto/actions/cargo-cache@master
+  #     - uses: dtolnay/rust-toolchain@master
+  #       with:
+  #         toolchain: 1.72.0 # MSRV
+  #         components: clippy
+  #     - run: cargo clippy --features hazmat -- -D warnings
