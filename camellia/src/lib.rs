@@ -10,12 +10,12 @@
 //!
 //! # Examples
 //! ```
-//! use camellia::cipher::generic_array::GenericArray;
-//! use camellia::cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
+//! use camellia::cipher::array::Array;
+//! use camellia::cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 //! use camellia::Camellia128;
 //!
-//! let key = GenericArray::from([0_u8; 16]);
-//! let mut block = GenericArray::from([0_u8; 16]);
+//! let key = Array::from([0_u8; 16]);
+//! let mut block = Array::from([0_u8; 16]);
 //!
 //! // Initialize cipher
 //! let cipher = Camellia128::new(&key);

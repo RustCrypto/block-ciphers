@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 members = [
     "aes",
     "aria",
@@ -6,6 +7,7 @@ members = [
     "blowfish",
     "camellia",
     "cast5",
+    "cast6",
     "des",
     "idea",
     "kuznyechik",
@@ -21,3 +23,6 @@ members = [
 
 [profile.dev]
 opt-level = 2
+
+[patch.crates-io.cipher]
+git = "https://github.com/RustCrypto/traits.git"

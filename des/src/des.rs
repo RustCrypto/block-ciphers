@@ -149,7 +149,7 @@ fn round(input: u64, key: u64) -> u64 {
 }
 
 fn f(input: u64, key: u64) -> u64 {
-    let mut val = e(input as u64);
+    let mut val = e(input);
     val ^= key;
     val = apply_sboxes(val);
     p(val)

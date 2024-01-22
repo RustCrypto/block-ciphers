@@ -25,7 +25,7 @@ use crate::{Block, Block8};
 use cipher::{
     consts::{U16, U24, U32, U8},
     inout::InOut,
-    AlgorithmName, BlockBackend, BlockCipher, BlockClosure, BlockDecrypt, BlockEncrypt,
+    AlgorithmName, BlockBackend, BlockCipher, BlockCipherDecrypt, BlockCipherEncrypt, BlockClosure,
     BlockSizeUser, Key, KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
 use core::arch::aarch64::*;
@@ -98,13 +98,13 @@ macro_rules! define_aes_impl {
             type BlockSize = U16;
         }
 
-        impl BlockEncrypt for $name {
+        impl BlockCipherEncrypt for $name {
             fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
                 self.encrypt.encrypt_with_backend(f)
             }
         }
 
-        impl BlockDecrypt for $name {
+        impl BlockCipherDecrypt for $name {
             fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
                 self.decrypt.decrypt_with_backend(f)
             }
@@ -146,9 +146,10 @@ macro_rules! define_aes_impl {
         }
 
         impl KeyInit for $name_enc {
+            #[inline]
             fn new(key: &Key<Self>) -> Self {
                 Self {
-                    round_keys: expand_key(key.as_ref()),
+                    round_keys: unsafe { expand_key(key.as_ref()) },
                 }
             }
         }
@@ -157,7 +158,7 @@ macro_rules! define_aes_impl {
             type BlockSize = U16;
         }
 
-        impl BlockEncrypt for $name_enc {
+        impl BlockCipherEncrypt for $name_enc {
             fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
                 f.call(&mut self.get_enc_backend())
             }
@@ -207,6 +208,7 @@ macro_rules! define_aes_impl {
         }
 
         impl KeyInit for $name_dec {
+            #[inline]
             fn new(key: &Key<Self>) -> Self {
                 $name_enc::new(key).into()
             }
@@ -222,7 +224,7 @@ macro_rules! define_aes_impl {
         impl From<&$name_enc> for $name_dec {
             fn from(enc: &$name_enc) -> $name_dec {
                 let mut round_keys = enc.round_keys;
-                inv_expanded_keys(&mut round_keys);
+                unsafe { inv_expanded_keys(&mut round_keys) };
                 Self { round_keys }
             }
         }
@@ -231,7 +233,7 @@ macro_rules! define_aes_impl {
             type BlockSize = U16;
         }
 
-        impl BlockDecrypt for $name_dec {
+        impl BlockCipherDecrypt for $name_dec {
             fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
                 f.call(&mut self.get_dec_backend());
             }

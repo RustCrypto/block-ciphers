@@ -22,7 +22,7 @@ pub(super) unsafe fn encrypt1<const N: usize>(
         // AES single round encryption
         state = vaeseq_u8(state, *k);
 
-        // AES mix columns
+        // Mix columns
         state = vaesmcq_u8(state);
     }
 
@@ -65,7 +65,7 @@ pub(super) unsafe fn encrypt8<const N: usize>(
             // AES single round encryption
             state[i] = vaeseq_u8(state[i], *k);
 
-            // AES mix columns
+            // Mix columns
             state[i] = vaesmcq_u8(state[i]);
         }
     }
@@ -98,7 +98,7 @@ pub(super) unsafe fn decrypt1<const N: usize>(
         // AES single round decryption
         state = vaesdq_u8(state, *k);
 
-        // AES inverse mix columns
+        // Inverse mix columns
         state = vaesimcq_u8(state);
     }
 
@@ -141,7 +141,7 @@ pub(super) unsafe fn decrypt8<const N: usize>(
             // AES single round decryption
             state[i] = vaesdq_u8(state[i], *k);
 
-            // AES inverse mix columns
+            // Inverse mix columns
             state[i] = vaesimcq_u8(state[i]);
         }
     }

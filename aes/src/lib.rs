@@ -26,16 +26,14 @@
 //! backend at the cost of decreased performance (using a modified form of
 //! the fixslicing technique called "semi-fixslicing").
 //!
-//! ## ARMv8 intrinsics (nightly-only)
+//! ## ARMv8 intrinsics (Rust 1.61+)
 //! On `aarch64` targets including `aarch64-apple-darwin` (Apple M1) and Linux
 //! targets such as `aarch64-unknown-linux-gnu` and `aarch64-unknown-linux-musl`,
-//! support for using AES intrinsics provided by the ARMv8 Cryptography Extensions
-//! is available when using the nightly compiler, and can be enabled using the
-//! `aes_armv8` configuration flag.
+//! support for using AES intrinsics provided by the ARMv8 Cryptography Extensions.
 //!
-//! On Linux and macOS, when the `aes_armv8` flag is enabled support for AES
-//! intrinsics is autodetected at runtime. On other platforms the `aes`
-//! target feature must be enabled via RUSTFLAGS.
+//! On Linux and macOS, support for ARMv8 AES intrinsics is autodetected at
+//! runtime. On other platforms the `aes` target feature must be enabled via
+//! RUSTFLAGS.
 //!
 //! ## `x86`/`x86_64` intrinsics (AES-NI)
 //! By default this crate uses runtime detection on `i686`/`x86_64` targets
@@ -54,12 +52,12 @@
 //! ```
 //! use aes::Aes128;
 //! use aes::cipher::{
-//!     BlockCipher, BlockEncrypt, BlockDecrypt, KeyInit,
-//!     generic_array::GenericArray,
+//!     BlockCipher, BlockCipherEncrypt, BlockCipherDecrypt, KeyInit,
+//!     array::Array,
 //! };
 //!
-//! let key = GenericArray::from([0u8; 16]);
-//! let mut block = GenericArray::from([42u8; 16]);
+//! let key = Array::from([0u8; 16]);
+//! let mut block = Array::from([42u8; 16]);
 //!
 //! // Initialize cipher
 //! let cipher = Aes128::new(&key);
@@ -101,7 +99,6 @@
 //!
 //! You can modify crate using the following configuration flags:
 //!
-//! - `aes_armv8`: enable ARMv8 AES intrinsics (nightly-only).
 //! - `aes_force_soft`: force software implementation.
 //! - `aes_compact`: reduce code size at the cost of slower performance
 //! (affects only software backend).
@@ -121,7 +118,6 @@
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
-#![cfg_attr(all(aes_armv8, target_arch = "aarch64"), feature(stdsimd))]
 
 #[cfg(feature = "hazmat")]
 #[cfg_attr(docsrs, doc(cfg(feature = "hazmat")))]
@@ -132,7 +128,7 @@ mod soft;
 use cfg_if::cfg_if;
 
 cfg_if! {
-    if #[cfg(all(target_arch = "aarch64", aes_armv8, not(aes_force_soft)))] {
+    if #[cfg(all(target_arch = "aarch64", not(aes_force_soft)))] {
         mod armv8;
         mod autodetect;
         pub use autodetect::*;
@@ -150,14 +146,14 @@ cfg_if! {
 
 pub use cipher;
 use cipher::{
+    array::Array,
     consts::{U16, U8},
-    generic_array::GenericArray,
 };
 
 /// 128-bit AES block
-pub type Block = GenericArray<u8, U16>;
+pub type Block = Array<u8, U16>;
 /// Eight 128-bit AES blocks
-pub type Block8 = GenericArray<Block, U8>;
+pub type Block8 = Array<Block, U8>;
 
 #[cfg(test)]
 mod tests {
@@ -213,7 +209,7 @@ mod tests {
             }
         }
 
-        #[cfg(all(target_arch = "aarch64", aes_armv8, not(aes_force_soft)))]
+        #[cfg(all(target_arch = "aarch64", not(aes_force_soft)))]
         {
             use super::armv8;
 

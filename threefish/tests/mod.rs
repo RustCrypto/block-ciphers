@@ -1,6 +1,7 @@
 //! Test vectors from:
 //! https://github.com/weidai11/cryptopp/blob/master/TestVectors/threefish.txt
-use cipher::{Block, BlockDecrypt, BlockEncrypt, KeyInit};
+#![cfg(featue = "cipher")]
+use cipher::{Block, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 use hex_literal::hex;
 use threefish::{Threefish1024, Threefish256, Threefish512};
 

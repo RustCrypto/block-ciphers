@@ -3,7 +3,7 @@
 use belt_block::{belt_block_raw, belt_wblock_dec, belt_wblock_enc, to_u32};
 #[cfg(feature = "cipher")]
 use belt_block::{
-    cipher::{BlockDecrypt, BlockEncrypt, KeyInit},
+    cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit},
     BeltBlock,
 };
 use hex_literal::hex;
@@ -34,9 +34,9 @@ fn belt_block() {
             let cipher = BeltBlock::new(&key.into());
             let mut block = pt.into();
             cipher.encrypt_block(&mut block);
-            assert_eq!(block, ct.into());
+            assert_eq!(block, ct);
             cipher.decrypt_block(&mut block);
-            assert_eq!(block, pt.into());
+            assert_eq!(block, pt);
         }
     }
 }

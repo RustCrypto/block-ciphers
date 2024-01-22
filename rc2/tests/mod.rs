@@ -1,5 +1,5 @@
-use cipher::generic_array::GenericArray;
-use cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
+use cipher::array::Array;
+use cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 
 struct Test {
     key: &'static [u8],
@@ -24,13 +24,13 @@ macro_rules! new_tests {
 fn rc2() {
     let tests = new_tests!("1", "2", "3", "7");
     for test in &tests {
-        let cipher = rc2::Rc2::new_from_slice(&test.key).unwrap();
+        let cipher = rc2::Rc2::new_from_slice(test.key).unwrap();
 
-        let mut buf = GenericArray::clone_from_slice(test.input);
+        let mut buf = Array::clone_from_slice(test.input);
         cipher.encrypt_block(&mut buf);
         assert_eq!(test.output, &buf[..]);
 
-        let mut buf = GenericArray::clone_from_slice(test.output);
+        let mut buf = Array::clone_from_slice(test.output);
         cipher.decrypt_block(&mut buf);
         assert_eq!(test.input, &buf[..]);
     }
@@ -42,11 +42,11 @@ fn rc2_effective_key_64() {
     for test in &tests {
         let cipher = rc2::Rc2::new_with_eff_key_len(test.key, 64);
 
-        let mut buf = GenericArray::clone_from_slice(test.input);
+        let mut buf = Array::clone_from_slice(test.input);
         cipher.encrypt_block(&mut buf);
         assert_eq!(test.output, &buf[..]);
 
-        let mut buf = GenericArray::clone_from_slice(test.output);
+        let mut buf = Array::clone_from_slice(test.output);
         cipher.decrypt_block(&mut buf);
         assert_eq!(test.input, &buf[..]);
     }
@@ -58,11 +58,11 @@ fn rc2_effective_key_129() {
     for test in &tests {
         let cipher = rc2::Rc2::new_with_eff_key_len(test.key, 129);
 
-        let mut buf = GenericArray::clone_from_slice(test.input);
+        let mut buf = Array::clone_from_slice(test.input);
         cipher.encrypt_block(&mut buf);
         assert_eq!(test.output, &buf[..]);
 
-        let mut buf = GenericArray::clone_from_slice(test.output);
+        let mut buf = Array::clone_from_slice(test.output);
         cipher.decrypt_block(&mut buf);
         assert_eq!(test.input, &buf[..]);
     }
