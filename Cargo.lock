@@ -82,8 +82,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "cipher"
 version = "0.5.0-pre.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "40619e61d2e7c018604193e71763730a96b0e606e19aba895956635986c7fe98"
+source = "git+https://github.com/RustCrypto/traits.git#4459f6012afda093816e6a592828a57a8fc366ed"
 dependencies = [
  "blobby",
  "crypto-common",

@@ -11,7 +11,7 @@
 //! # Examples
 //! ```
 //! use cast5::cipher::array::Array;
-//! use cast5::cipher::{Key, Block, BlockEncrypt, BlockDecrypt, KeyInit};
+//! use cast5::cipher::{Key, Block, BlockCipherEncrypt, BlockCipherDecrypt, KeyInit};
 //! use cast5::Cast5;
 //!
 //! let key = Array::from([0u8; 16]);

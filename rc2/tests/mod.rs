@@ -1,5 +1,5 @@
 use cipher::array::Array;
-use cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
+use cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 
 struct Test {
     key: &'static [u8],

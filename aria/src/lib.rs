@@ -11,7 +11,7 @@
 //! # Examples
 //! ```
 //! use aria::cipher::array::Array;
-//! use aria::cipher::{Key, Block, BlockEncrypt, BlockDecrypt, KeyInit};
+//! use aria::cipher::{Key, Block, BlockCipherEncrypt, BlockCipherDecrypt, KeyInit};
 //! use aria::Aria128;
 //!
 //! let key = Array::from([0u8; 16]);

@@ -52,7 +52,7 @@
 //! ```
 //! use aes::Aes128;
 //! use aes::cipher::{
-//!     BlockCipher, BlockEncrypt, BlockDecrypt, KeyInit,
+//!     BlockCipher, BlockCipherEncrypt, BlockCipherDecrypt, KeyInit,
 //!     array::Array,
 //! };
 //!

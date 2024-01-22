@@ -14,7 +14,7 @@
 //! use magma::Magma;
 //! use magma::cipher::{
 //!     array::Array,
-//!     BlockEncrypt, BlockDecrypt, KeyInit,
+//!     BlockCipherEncrypt, BlockCipherDecrypt, KeyInit,
 //! };
 //! use hex_literal::hex;
 //!

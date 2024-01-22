@@ -1,6 +1,6 @@
 //! Test vectors are from The Simon and Speck Families of Lightweight Block Ciphers (Appendix C)
 
-use cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
+use cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 use hex_literal::hex;
 use speck_cipher::{
     Speck128_128, Speck128_192, Speck128_256, Speck32_64, Speck48_72, Speck48_96, Speck64_128,
