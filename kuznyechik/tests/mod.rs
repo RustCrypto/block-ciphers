@@ -1,4 +1,4 @@
-use cipher::{Block, BlockDecrypt, BlockEncrypt, KeyInit};
+use cipher::{Block, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 use hex_literal::hex;
 use kuznyechik::{Kuznyechik, KuznyechikDec, KuznyechikEnc};
 

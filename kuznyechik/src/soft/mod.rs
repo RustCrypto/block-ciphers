@@ -1,6 +1,6 @@
 use crate::{BlockSize, Key, KeySize};
 use cipher::{
-    AlgorithmName, BlockCipher, BlockClosure, BlockDecrypt, BlockEncrypt, BlockSizeUser, KeyInit,
+    AlgorithmName, BlockCipher, BlockClosure, BlockCipherDecrypt, BlockCipherEncrypt, BlockSizeUser, KeyInit,
     KeySizeUser,
 };
 use core::fmt;
@@ -51,13 +51,13 @@ impl From<&KuznyechikEnc> for Kuznyechik {
     }
 }
 
-impl BlockEncrypt for Kuznyechik {
+impl BlockCipherEncrypt for Kuznyechik {
     fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = BlockSize>) {
         f.call(&mut EncBackend(&self.keys));
     }
 }
 
-impl BlockDecrypt for Kuznyechik {
+impl BlockCipherDecrypt for Kuznyechik {
     fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = BlockSize>) {
         f.call(&mut DecBackend(&self.keys));
     }
@@ -111,7 +111,7 @@ impl KeyInit for KuznyechikEnc {
     }
 }
 
-impl BlockEncrypt for KuznyechikEnc {
+impl BlockCipherEncrypt for KuznyechikEnc {
     fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = BlockSize>) {
         f.call(&mut EncBackend(&self.keys));
     }
@@ -179,7 +179,7 @@ impl From<&KuznyechikEnc> for KuznyechikDec {
     }
 }
 
-impl BlockDecrypt for KuznyechikDec {
+impl BlockCipherDecrypt for KuznyechikDec {
     fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = BlockSize>) {
         f.call(&mut DecBackend(&self.keys));
     }

@@ -11,7 +11,7 @@
 //! # Examples
 //! ```
 //! use cast6::cipher::array::Array;
-//! use cast6::cipher::{Key, Block, BlockEncrypt, BlockDecrypt, KeyInit};
+//! use cast6::cipher::{Key, Block, BlockCipherEncrypt, BlockCipherDecrypt, KeyInit};
 //! use cast6::Cast6;
 //!
 //! let key = Array::from([0u8; 32]);

@@ -2,7 +2,7 @@
 #[cfg(test)]
 mod tests {
     use cipher::consts::*;
-    use cipher::{array::Array, BlockDecrypt, BlockEncrypt, KeyInit};
+    use cipher::{array::Array, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
     use rc5::RC5;
 
     #[test]

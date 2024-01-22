@@ -1,4 +1,4 @@
-use cipher::{array::Array, BlockDecrypt, BlockEncrypt, KeyInit};
+use cipher::{array::Array, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 use hex_literal::hex;
 use twofish::Twofish;
 

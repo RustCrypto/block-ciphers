@@ -3,7 +3,7 @@
 use belt_block::{belt_block_raw, belt_wblock_dec, belt_wblock_enc, to_u32};
 #[cfg(feature = "cipher")]
 use belt_block::{
-    cipher::{BlockDecrypt, BlockEncrypt, KeyInit},
+    cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit},
     BeltBlock,
 };
 use hex_literal::hex;
