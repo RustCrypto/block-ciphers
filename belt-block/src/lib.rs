@@ -180,7 +180,7 @@ pub fn to_u32<const N: usize>(src: &[u8]) -> [u32; N] {
 }
 
 #[inline(always)]
-fn from_u32<const N: usize>(src: &[u32]) -> [u8; N] {
+pub fn from_u32<const N: usize>(src: &[u32]) -> [u8; N] {
     assert_eq!(N, 4 * src.len());
     let mut res = [0u8; N];
     res.chunks_exact_mut(4)
