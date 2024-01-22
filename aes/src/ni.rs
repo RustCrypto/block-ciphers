@@ -37,7 +37,7 @@ use crate::{Block, Block8};
 use cipher::{
     consts::{U16, U24, U32, U8},
     inout::InOut,
-    AlgorithmName, BlockBackend, BlockCipher, BlockClosure, BlockCipherDecrypt, BlockCipherEncrypt,
+    AlgorithmName, BlockBackend, BlockCipher, BlockCipherDecrypt, BlockCipherEncrypt, BlockClosure,
     BlockSizeUser, Key, KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
 use core::fmt;

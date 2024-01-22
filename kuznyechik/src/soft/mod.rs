@@ -1,7 +1,7 @@
 use crate::{BlockSize, Key, KeySize};
 use cipher::{
-    AlgorithmName, BlockCipher, BlockClosure, BlockCipherDecrypt, BlockCipherEncrypt, BlockSizeUser, KeyInit,
-    KeySizeUser,
+    AlgorithmName, BlockCipher, BlockCipherDecrypt, BlockCipherEncrypt, BlockClosure,
+    BlockSizeUser, KeyInit, KeySizeUser,
 };
 use core::fmt;
 

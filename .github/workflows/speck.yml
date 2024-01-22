@@ -36,6 +36,7 @@ jobs:
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
 
   minimal-versions:
+    if: false # TODO: temp disabled due to unpublished prerelease dependencies
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3

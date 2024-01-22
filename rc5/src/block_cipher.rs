@@ -6,8 +6,8 @@ use cipher::{
     crypto_common::BlockSizes,
     inout::InOut,
     typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U2, U256},
-    AlgorithmName, Block, BlockBackend, BlockCipher, BlockCipherDecrypt, BlockCipherEncrypt, BlockSizeUser,
-    KeyInit, KeySizeUser, ParBlocksSizeUser,
+    AlgorithmName, Block, BlockBackend, BlockCipher, BlockCipherDecrypt, BlockCipherEncrypt,
+    BlockSizeUser, KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
 
 use crate::core::{BlockSize, ExpandedKeyTableSize, KeyAsWordsSize, Word, RC5};

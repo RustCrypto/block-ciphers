@@ -4,8 +4,8 @@
 use crate::soft;
 use cipher::{
     consts::{U16, U24, U32},
-    AlgorithmName, BlockCipher, BlockClosure, BlockCipherDecrypt, BlockCipherEncrypt, BlockSizeUser, Key,
-    KeyInit, KeySizeUser,
+    AlgorithmName, BlockCipher, BlockCipherDecrypt, BlockCipherEncrypt, BlockClosure,
+    BlockSizeUser, Key, KeyInit, KeySizeUser,
 };
 use core::fmt;
 use core::mem::ManuallyDrop;
