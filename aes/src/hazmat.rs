@@ -11,6 +11,8 @@
 //! We do NOT recommend using it to implement any algorithm which has not
 //! received extensive peer review by cryptographers.
 
+// TODO(silvanshade): armv9 sve2 hazmat
+
 use crate::{soft::fixslice::hazmat as soft, Block, Block8};
 
 #[cfg(all(target_arch = "aarch64", not(aes_force_soft)))]
