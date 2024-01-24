@@ -1,6 +1,6 @@
 //! Example vectors from STB 34.101.31 (2020):
 //! http://apmi.bsu.by/assets/files/std/belt-spec371.pdf
-use belt_block::{belt_block_raw, belt_wblock_dec, belt_wblock_enc, to_u32};
+use belt_block::{belt_block_raw, belt_wblock_dec, belt_wblock_enc};
 #[cfg(feature = "cipher")]
 use belt_block::{
     cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit},
@@ -123,4 +123,13 @@ fn belt_wblock() {
         }
         assert_eq!(t, x[..i]);
     }
+}
+
+fn to_u32<const N: usize>(src: &[u8]) -> [u32; N] {
+    assert_eq!(src.len(), 4 * N);
+    let mut res = [0u32; N];
+    res.iter_mut()
+        .zip(src.chunks_exact(4))
+        .for_each(|(dst, src)| *dst = u32::from_le_bytes(src.try_into().unwrap()));
+    res
 }
