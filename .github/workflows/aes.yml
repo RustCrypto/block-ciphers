@@ -16,6 +16,7 @@ defaults:
 env:
   CARGO_INCREMENTAL: 0
   RUSTFLAGS: "-Dwarnings"
+  QEMU_SRC_VERSION: 8.2.0
 
 jobs:
   # Builds for no_std platforms
@@ -233,6 +234,143 @@ jobs:
       - run: cross test --package aes --target ${{ matrix.target }}
       - run: cross test --package aes --target ${{ matrix.target }} --features hazmat
       - run: cross test --package aes --target ${{ matrix.target }} --all-features
+
+  # Build and cache latest QEMUs; needed for RVV and SVE features
+  qemu-build-and-cache:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: /home/runner
+    steps:
+      - id: cache-qemu
+        uses: actions/cache@v3
+        with:
+          path: /opt/qemu-${{ env.QEMU_SRC_VERSION }}
+          key: ${{ runner.os }}-qemu-${{ env.QEMU_SRC_VERSION }}
+      - if: ${{ steps.cache-qemu.outputs.cache-hit != 'true' }}
+        run: |
+          sudo apt update
+          DEBIAN_FRONTEND=noninteractive sudo apt --assume-yes install \
+            build-essential \
+            curl \
+            gnupg \
+            libglib2.0-dev \
+            ninja-build \
+            pkg-config \
+            python3-venv \
+            xz-utils
+      - if: ${{ steps.cache-qemu.outputs.cache-hit != 'true' }}
+        run: |
+          mkdir -p vendor
+          cd vendor
+          curl -JLO https://download.qemu.org/qemu-${QEMU_SRC_VERSION}.tar.xz.sig
+          curl -JLO https://download.qemu.org/qemu-${QEMU_SRC_VERSION}.tar.xz
+          gpg --keyserver hkps://keys.openpgp.org --recv-keys CEACC9E15534EBABB82D3FA03353C9CEF108B584
+          gpg --verify qemu-${QEMU_SRC_VERSION}.tar.xz.sig qemu-${QEMU_SRC_VERSION}.tar.xz
+          tar xvf qemu-${QEMU_SRC_VERSION}.tar.xz
+      - if: ${{ steps.cache-qemu.outputs.cache-hit != 'true' }}
+        run: |
+          cd vendor/qemu-${QEMU_SRC_VERSION}
+          ./configure \
+            --prefix=/opt/qemu-${QEMU_SRC_VERSION} \
+            --without-default-features \
+            --without-default-devices \
+            --disable-system \
+            --target-list=aarch64-linux-user,riscv32-linux-user,riscv64-linux-user \
+            --static
+          make -j
+          make install
+
+  # ARMv9 cross-compiled tests for SVE2-AES
+  armv9:
+    needs: qemu-build-and-cache
+    strategy:
+      matrix:
+        include:
+          - target: aarch64-unknown-linux-gnu
+            rust: 1.72.0 # MSRV
+    runs-on: ubuntu-latest
+    env:
+      LLVM_MAJOR_VERSION: 17
+    steps:
+      - uses: actions/checkout@v3
+      - id: discover-ubuntu-codename
+        shell: bash
+        run: echo "codename=$(lsb_release -cs)" >> $GITHUB_OUTPUT
+      - id: cache-qemu
+        uses: actions/cache@v3
+        with:
+          path: /opt/qemu-${{ env.QEMU_SRC_VERSION }}
+          key: ${{ runner.os }}-qemu-${{ env.QEMU_SRC_VERSION }}
+      - run: echo "/opt/qemu-${QEMU_SRC_VERSION}/bin" >> $GITHUB_PATH
+      - run: |
+          sudo apt update
+          DEBIAN_FRONTEND=noninteractive sudo apt install --assume-yes \
+            curl \
+            gnupg
+      - run: sudo dpkg --add-architecture arm64
+      - run: sudo sed -i'' -E 's/^(deb|deb-src) /\1 [arch=amd64] /' /etc/apt/sources.list
+      - run: |
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ ${{ steps.discover-ubuntu-codename.outputs.codename }} main restricted"                               | sudo tee --append /etc/apt/sources.list.d/arm64.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ ${{ steps.discover-ubuntu-codename.outputs.codename }}-updates main restricted"                       | sudo tee --append /etc/apt/sources.list.d/arm64.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ ${{ steps.discover-ubuntu-codename.outputs.codename }} universe"                                      | sudo tee --append /etc/apt/sources.list.d/arm64.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ ${{ steps.discover-ubuntu-codename.outputs.codename }}-updates universe"                              | sudo tee --append /etc/apt/sources.list.d/arm64.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ ${{ steps.discover-ubuntu-codename.outputs.codename }} multiverse"                                    | sudo tee --append /etc/apt/sources.list.d/arm64.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ ${{ steps.discover-ubuntu-codename.outputs.codename }}-updates multiverse"                            | sudo tee --append /etc/apt/sources.list.d/arm64.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ ${{ steps.discover-ubuntu-codename.outputs.codename }}-backports main restricted universe multiverse" | sudo tee --append /etc/apt/sources.list.d/arm64.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ ${{ steps.discover-ubuntu-codename.outputs.codename }}-security main restricted"                      | sudo tee --append /etc/apt/sources.list.d/arm64.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ ${{ steps.discover-ubuntu-codename.outputs.codename }}-security universe"                             | sudo tee --append /etc/apt/sources.list.d/arm64.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ ${{ steps.discover-ubuntu-codename.outputs.codename }}-security multiverse"                           | sudo tee --append /etc/apt/sources.list.d/arm64.list
+      - run: |
+          curl -JL https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          echo "deb     [arch=amd64] http://apt.llvm.org/${{ steps.discover-ubuntu-codename.outputs.codename }}/ llvm-toolchain-${{ steps.discover-ubuntu-codename.outputs.codename }}-${LLVM_MAJOR_VERSION} main" | sudo tee --append /etc/apt/sources.list.d/llvm.list
+          echo "deb-src [arch=amd64] http://apt.llvm.org/${{ steps.discover-ubuntu-codename.outputs.codename }}/ llvm-toolchain-${{ steps.discover-ubuntu-codename.outputs.codename }}-${LLVM_MAJOR_VERSION} main" | sudo tee --append /etc/apt/sources.list.d/llvm.list
+      - shell: bash
+        run: |
+          sudo apt update
+          DEBIAN_FRONTEND=noninteractive sudo apt install --assume-yes \
+            binfmt-support build-essential clang-${LLVM_MAJOR_VERSION} clang-tools-${LLVM_MAJOR_VERSION} lld-${LLVM_MAJOR_VERSION} \
+            libc6:{amd64,arm64} \
+            libc6-dev:{amd64,arm64} \
+            libgcc-12-dev:{amd64,arm64} \
+            libgcc-s1:{amd64,arm64} \
+            libstdc++-12-dev:{amd64,arm64} \
+            linux-libc-dev:{amd64,arm64} \
+            libglib2.0-0
+      - uses: RustCrypto/actions/cargo-cache@master
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          targets: ${{ matrix.target }}
+      - name: write .cargo/config.toml
+        shell: bash
+        run: |
+          cd ../aes/..
+          mkdir -p .cargo
+          echo '[target.aarch64-unknown-linux-gnu]'                         >> .cargo/config.toml
+          echo 'runner = "qemu-aarch64"'                                    >> .cargo/config.toml
+          echo 'linker = "clang-17"'                                        >> .cargo/config.toml
+          echo 'rustflags = ['                                              >> .cargo/config.toml
+          echo '    "-C", "link-arg=-fuse-ld=lld-17",'                      >> .cargo/config.toml
+          echo '    "-C", "link-arg=-march=arm9-a+sve+sve2+sve2+sve2-aes",' >> .cargo/config.toml
+          echo '    "-C", "link-arg=--target=aarch64-unknown-linux-gnu",'   >> .cargo/config.toml
+          echo '    "-C", "target-feature=+sve,+sve2,+sve2-aes"'            >> .cargo/config.toml
+          echo ']'                                                          >> .cargo/config.toml
+      - name: cargo test --package aes
+        run: |
+          unset RUSTFLAGS
+          QEMU_CPU="max"            cargo test --package aes --target ${{ matrix.target }}
+          QEMU_CPU="max,sve256=off" cargo test --package aes --target ${{ matrix.target }}
+      - name: cargo test --package aes --features hazmat
+        run: |
+          unset RUSTFLAGS
+          QEMU_CPU="max"            cargo test --package aes --target ${{ matrix.target }} --features hazmat
+          QEMU_CPU="max,sve256=off" cargo test --package aes --target ${{ matrix.target }} --features hazmat
+      - name: cargo test --package aes --all-features
+        run: |
+          unset RUSTFLAGS
+          QEMU_CPU="max"            cargo test --package aes --target ${{ matrix.target }} --all-features
+          QEMU_CPU="max,sve256=off" cargo test --package aes --target ${{ matrix.target }} --all-features
 
   clippy:
     env:
