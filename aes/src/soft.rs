@@ -43,18 +43,6 @@ macro_rules! define_aes_impl {
             keys: $fixslice_keys,
         }
 
-        impl $name {
-            #[inline(always)]
-            pub(crate) fn get_enc_backend(&self) -> $name_back_enc<'_> {
-                $name_back_enc(self)
-            }
-
-            #[inline(always)]
-            pub(crate) fn get_dec_backend(&self) -> $name_back_dec<'_> {
-                $name_back_dec(self)
-            }
-        }
-
         impl KeySizeUser for $name {
             type KeySize = $key_size;
         }
@@ -76,13 +64,13 @@ macro_rules! define_aes_impl {
 
         impl BlockCipherEncrypt for $name {
             fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
-                f.call(&mut self.get_enc_backend())
+                f.call(&mut $name_back_enc(self))
             }
         }
 
         impl BlockCipherDecrypt for $name {
             fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
-                f.call(&mut self.get_dec_backend())
+                f.call(&mut $name_back_dec(self))
             }
         }
 
@@ -130,13 +118,6 @@ macro_rules! define_aes_impl {
             inner: $name,
         }
 
-        impl $name_enc {
-            #[inline(always)]
-            pub(crate) fn get_enc_backend(&self) -> $name_back_enc<'_> {
-                self.inner.get_enc_backend()
-            }
-        }
-
         impl BlockCipher for $name_enc {}
 
         impl KeySizeUser for $name_enc {
@@ -157,7 +138,7 @@ macro_rules! define_aes_impl {
 
         impl BlockCipherEncrypt for $name_enc {
             fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
-                f.call(&mut self.get_enc_backend())
+                f.call(&mut $name_back_enc(&self.inner))
             }
         }
 
@@ -181,13 +162,6 @@ macro_rules! define_aes_impl {
         #[derive(Clone)]
         pub struct $name_dec {
             inner: $name,
-        }
-
-        impl $name_dec {
-            #[inline(always)]
-            pub(crate) fn get_dec_backend(&self) -> $name_back_dec<'_> {
-                self.inner.get_dec_backend()
-            }
         }
 
         impl BlockCipher for $name_dec {}
@@ -226,7 +200,7 @@ macro_rules! define_aes_impl {
 
         impl BlockCipherDecrypt for $name_dec {
             fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
-                f.call(&mut self.get_dec_backend());
+                f.call(&mut $name_back_dec(&self.inner));
             }
         }
 
