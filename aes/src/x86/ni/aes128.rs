@@ -1,16 +1,14 @@
-use super::{arch::*, utils::*};
+use super::utils::*;
+use crate::x86::{arch::*, RoundKeys};
 use crate::{Block, Block8};
 use cipher::inout::InOut;
 use core::mem;
 
-/// AES-128 round keys
-pub(super) type RoundKeys = [__m128i; 11];
-
 #[inline]
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn encrypt1(keys: &RoundKeys, block: InOut<'_, '_, Block>) {
+pub(crate) unsafe fn encrypt1(keys: &RoundKeys<11>, block: InOut<'_, '_, Block>) {
     let (in_ptr, out_ptr) = block.into_raw();
-    let mut b = _mm_loadu_si128(in_ptr as *const __m128i);
+    let mut b = _mm_loadu_si128(in_ptr.cast());
     b = _mm_xor_si128(b, keys[0]);
     b = _mm_aesenc_si128(b, keys[1]);
     b = _mm_aesenc_si128(b, keys[2]);
@@ -22,12 +20,12 @@ pub(super) unsafe fn encrypt1(keys: &RoundKeys, block: InOut<'_, '_, Block>) {
     b = _mm_aesenc_si128(b, keys[8]);
     b = _mm_aesenc_si128(b, keys[9]);
     b = _mm_aesenclast_si128(b, keys[10]);
-    _mm_storeu_si128(out_ptr as *mut __m128i, b);
+    _mm_storeu_si128(out_ptr.cast(), b);
 }
 
 #[inline]
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn encrypt8(keys: &RoundKeys, blocks: InOut<'_, '_, Block8>) {
+pub(crate) unsafe fn encrypt8(keys: &RoundKeys<11>, blocks: InOut<'_, '_, Block8>) {
     let (in_ptr, out_ptr) = blocks.into_raw();
     let mut b = load8(in_ptr);
     xor8(&mut b, keys[0]);
@@ -46,9 +44,9 @@ pub(super) unsafe fn encrypt8(keys: &RoundKeys, blocks: InOut<'_, '_, Block8>) {
 
 #[inline]
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn decrypt1(keys: &RoundKeys, block: InOut<'_, '_, Block>) {
+pub(crate) unsafe fn decrypt1(keys: &RoundKeys<11>, block: InOut<'_, '_, Block>) {
     let (in_ptr, out_ptr) = block.into_raw();
-    let mut b = _mm_loadu_si128(in_ptr as *const __m128i);
+    let mut b = _mm_loadu_si128(in_ptr.cast());
     b = _mm_xor_si128(b, keys[10]);
     b = _mm_aesdec_si128(b, keys[9]);
     b = _mm_aesdec_si128(b, keys[8]);
@@ -60,12 +58,12 @@ pub(super) unsafe fn decrypt1(keys: &RoundKeys, block: InOut<'_, '_, Block>) {
     b = _mm_aesdec_si128(b, keys[2]);
     b = _mm_aesdec_si128(b, keys[1]);
     b = _mm_aesdeclast_si128(b, keys[0]);
-    _mm_storeu_si128(out_ptr as *mut __m128i, b);
+    _mm_storeu_si128(out_ptr.cast(), b);
 }
 
 #[inline]
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn decrypt8(keys: &RoundKeys, blocks: InOut<'_, '_, Block8>) {
+pub(crate) unsafe fn decrypt8(keys: &RoundKeys<11>, blocks: InOut<'_, '_, Block8>) {
     let (in_ptr, out_ptr) = blocks.into_raw();
     let mut b = load8(in_ptr);
     xor8(&mut b, keys[10]);
@@ -104,12 +102,12 @@ macro_rules! expand_round {
 
 #[inline]
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn expand_key(key: &[u8; 16]) -> RoundKeys {
+pub(crate) unsafe fn expand_key(key: &[u8; 16]) -> RoundKeys<11> {
     // SAFETY: `RoundKeys` is a `[__m128i; 11]` which can be initialized
     // with all zeroes.
-    let mut keys: RoundKeys = mem::zeroed();
+    let mut keys: RoundKeys<11> = mem::zeroed();
 
-    let k = _mm_loadu_si128(key.as_ptr() as *const __m128i);
+    let k = _mm_loadu_si128(key.as_ptr().cast());
     keys[0] = k;
 
     expand_round!(keys, 1, 0x01);
@@ -128,7 +126,7 @@ pub(super) unsafe fn expand_key(key: &[u8; 16]) -> RoundKeys {
 
 #[inline]
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn inv_expanded_keys(keys: &RoundKeys) -> RoundKeys {
+pub(crate) unsafe fn inv_expanded_keys(keys: &RoundKeys<11>) -> RoundKeys<11> {
     [
         keys[0],
         _mm_aesimc_si128(keys[1]),

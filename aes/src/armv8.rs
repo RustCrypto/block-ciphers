@@ -31,6 +31,13 @@ use cipher::{
 use core::arch::aarch64::*;
 use core::fmt;
 
+pub(crate) mod features {
+    cpufeatures::new!(_aes, "aes");
+    pub(crate) mod aes {
+        pub use super::_aes::*;
+    }
+}
+
 macro_rules! define_aes_impl {
     (
         $name:ident,

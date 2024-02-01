@@ -20,16 +20,16 @@ pub(crate) fn check(a: &[__m128i], b: &[[u64; 2]]) {
 #[inline(always)]
 pub(crate) fn load8(blocks: *const Block8) -> U128x8 {
     unsafe {
-        let p = blocks as *const Block;
+        let p = blocks.cast::<Block>();
         [
-            _mm_loadu_si128(p.add(0) as *const __m128i),
-            _mm_loadu_si128(p.add(1) as *const __m128i),
-            _mm_loadu_si128(p.add(2) as *const __m128i),
-            _mm_loadu_si128(p.add(3) as *const __m128i),
-            _mm_loadu_si128(p.add(4) as *const __m128i),
-            _mm_loadu_si128(p.add(5) as *const __m128i),
-            _mm_loadu_si128(p.add(6) as *const __m128i),
-            _mm_loadu_si128(p.add(7) as *const __m128i),
+            _mm_loadu_si128(p.add(0).cast()),
+            _mm_loadu_si128(p.add(1).cast()),
+            _mm_loadu_si128(p.add(2).cast()),
+            _mm_loadu_si128(p.add(3).cast()),
+            _mm_loadu_si128(p.add(4).cast()),
+            _mm_loadu_si128(p.add(5).cast()),
+            _mm_loadu_si128(p.add(6).cast()),
+            _mm_loadu_si128(p.add(7).cast()),
         ]
     }
 }
@@ -37,15 +37,15 @@ pub(crate) fn load8(blocks: *const Block8) -> U128x8 {
 #[inline(always)]
 pub(crate) fn store8(blocks: *mut Block8, b: U128x8) {
     unsafe {
-        let p = blocks as *mut Block;
-        _mm_storeu_si128(p.add(0) as *mut __m128i, b[0]);
-        _mm_storeu_si128(p.add(1) as *mut __m128i, b[1]);
-        _mm_storeu_si128(p.add(2) as *mut __m128i, b[2]);
-        _mm_storeu_si128(p.add(3) as *mut __m128i, b[3]);
-        _mm_storeu_si128(p.add(4) as *mut __m128i, b[4]);
-        _mm_storeu_si128(p.add(5) as *mut __m128i, b[5]);
-        _mm_storeu_si128(p.add(6) as *mut __m128i, b[6]);
-        _mm_storeu_si128(p.add(7) as *mut __m128i, b[7]);
+        let p = blocks.cast::<Block>();
+        _mm_storeu_si128(p.add(0).cast(), b[0]);
+        _mm_storeu_si128(p.add(1).cast(), b[1]);
+        _mm_storeu_si128(p.add(2).cast(), b[2]);
+        _mm_storeu_si128(p.add(3).cast(), b[3]);
+        _mm_storeu_si128(p.add(4).cast(), b[4]);
+        _mm_storeu_si128(p.add(5).cast(), b[5]);
+        _mm_storeu_si128(p.add(6).cast(), b[6]);
+        _mm_storeu_si128(p.add(7).cast(), b[7]);
     }
 }
 
