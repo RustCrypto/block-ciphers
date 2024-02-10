@@ -9,6 +9,10 @@ use cipher::{
     typenum::Unsigned,
     BlockBackend, BlockSizeUser, ParBlocks, ParBlocksSizeUser,
 };
+
+#[cfg(target_arch = "x86")]
+use core::arch::x86::*;
+#[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::*;
 
 pub(super) type RoundKeys = [__m128i; 10];
