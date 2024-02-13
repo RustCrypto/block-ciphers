@@ -20,9 +20,9 @@ pub unsafe fn expand_key<const L: usize, const N: usize>(key: &[u8; L]) -> [uint
 
     // Sanity check, as this is required in order for the following line to be sound.
     // We'd rather panic than exhibit undefined behavior.
-    assert!(mem::align_of::<uint8x16_t>() >= mem::align_of::<u32>());
-    let columns =
-        slice::from_raw_parts_mut(expanded_keys.as_mut_ptr() as *mut u32, N * BLOCK_WORDS);
+    const _: () = assert!(mem::align_of::<uint8x16_t>() >= mem::align_of::<u32>());
+    let keys_ptr: *mut u32 = expanded_keys.as_mut_ptr().cast();
+    let columns = slice::from_raw_parts_mut(keys_ptr, N * BLOCK_WORDS);
 
     for (i, chunk) in key.chunks_exact(WORD_SIZE).enumerate() {
         columns[i] = u32::from_ne_bytes(chunk.try_into().unwrap());
