@@ -12,10 +12,10 @@ keywords = ["crypto", "rc5", "block-cipher"]
 categories = ["cryptography"]
 
 [dependencies]
-cipher = { version = "=0.5.0-pre.2", features = ["zeroize"] }
+cipher = { version = "=0.5.0-pre.4", features = ["zeroize"] }
 
 [dev-dependencies]
-cipher = { version = "=0.5.0-pre.2", features = ["dev"] }
+cipher = { version = "=0.5.0-pre.4", features = ["dev"] }
 
 [features]
 zeroize = []
