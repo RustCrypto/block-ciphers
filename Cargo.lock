@@ -155,7 +155,7 @@ dependencies = [
 
 [[package]]
 name = "kuznyechik"
-version = "0.9.0-pre"
+version = "0.9.0-pre.0"
 dependencies = [
  "cipher",
  "hex-literal 0.4.1",
