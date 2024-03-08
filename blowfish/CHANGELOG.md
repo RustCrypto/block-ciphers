@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Changed
+- Remove `html_root_url` ([#344])
+- Bump `cipher` to v0.5.0-pre.1; MSRV 1.65 ([#394])
+- Bump `cipher` dependency to v0.5.0-pre.2 ([#398])
+- bump `cipher` dependency to `0.5.0-pre.4` ([#413])
+
+### Added
+- add BlowfishLE tests ([#377])
+
+[#344]: https://github.com/RustCrypto/block-ciphers/pull/344
+[#377]: https://github.com/RustCrypto/block-ciphers/pull/377
+[#394]: https://github.com/RustCrypto/block-ciphers/pull/394
+[#398]: https://github.com/RustCrypto/block-ciphers/pull/398
+[#413]: https://github.com/RustCrypto/block-ciphers/pull/413
+
 ## 0.9.1 (2022-02-17)
 ### Fixed
 - Minimal versions build ([#303])

@@ -37,7 +37,7 @@ checksum = "847495c209977a90e8aad588b959d0ca9f5dc228096d29a6bd3defd53f35eaec"
 
 [[package]]
 name = "blowfish"
-version = "0.10.0-pre"
+version = "0.10.0-pre.0"
 dependencies = [
  "byteorder",
  "cipher",
