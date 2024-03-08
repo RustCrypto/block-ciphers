@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Changed
+- Update Clippy and fix lints ([#378])
+- Bump `cipher` to v0.5.0-pre.1; MSRV 1.65 ([#394])
+- Bump `cipher` dependency to v0.5.0-pre.2 ([#398])
+- Use `BlockCipherEncrypt`/`BlockCipherDecrypt` trait names ([#400])
+- bump `cipher` dependency to `0.5.0-pre.4` ([#413])
+
+### Fixed
+- Fix kuznyechik 32bit build ([#406])
+
+
+[#378]: https://github.com/RustCrypto/block-ciphers/pull/378
+[#394]: https://github.com/RustCrypto/block-ciphers/pull/394
+[#398]: https://github.com/RustCrypto/block-ciphers/pull/398
+[#400]: https://github.com/RustCrypto/block-ciphers/pull/400
+[#406]: https://github.com/RustCrypto/block-ciphers/pull/406
+[#413]: https://github.com/RustCrypto/block-ciphers/pull/413
+
+
 ## 0.8.2 (2023-08-06)
 ### Fixed
 - `Drop` implementations in the software backend with enabled `zeroize` feature ([#311])
