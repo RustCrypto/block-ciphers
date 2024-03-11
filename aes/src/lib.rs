@@ -128,10 +128,15 @@ mod soft;
 use cfg_if::cfg_if;
 
 cfg_if! {
-    if #[cfg(all(target_arch = "aarch64", not(aes_force_soft)))] {
+    if #[cfg(all(target_arch = "aarch64", not(target_feature = "sve2-aes"), not(aes_force_soft)))] {
         mod armv8;
         mod autodetect;
         pub use autodetect::*;
+    } else if #[cfg(all(target_arch = "aarch64", target_feature = "sve2-aes", not(aes_force_soft)))] {
+        #[cfg(feature = "hazmat")] // TODO(silvanshade): remove once armv9 sve2 hazmat is implemented
+        mod armv8;
+        mod armv9;
+        pub use armv9::*;
     } else if #[cfg(all(
         any(target_arch = "x86", target_arch = "x86_64"),
         not(aes_force_soft)
