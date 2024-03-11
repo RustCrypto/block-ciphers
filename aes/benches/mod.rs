@@ -13,11 +13,27 @@ block_decryptor_bench!(
     aes128_decrypt_block,
     aes128_decrypt_blocks,
 );
+#[cfg(any(
+    not(target_arch = "riscv64"),
+    all(
+        target_arch = "riscv64",
+        target_feature = "zknd",
+        target_feature = "zkne"
+    )
+))]
 block_encryptor_bench!(
     Key: aes::Aes192,
     aes192_encrypt_block,
     aes192_encrypt_blocks,
 );
+#[cfg(any(
+    not(target_arch = "riscv64"),
+    all(
+        target_arch = "riscv64",
+        target_feature = "zknd",
+        target_feature = "zkne"
+    )
+))]
 block_decryptor_bench!(
     Key: aes::Aes192,
     aes192_decrypt_block,
@@ -43,6 +59,14 @@ fn aes128_new(bh: &mut test::Bencher) {
     });
 }
 
+#[cfg(any(
+    not(target_arch = "riscv64"),
+    all(
+        target_arch = "riscv64",
+        target_feature = "zknd",
+        target_feature = "zkne"
+    )
+))]
 #[bench]
 fn aes192_new(bh: &mut test::Bencher) {
     bh.iter(|| {

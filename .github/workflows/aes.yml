@@ -16,6 +16,8 @@ defaults:
 env:
   CARGO_INCREMENTAL: 0
   RUSTFLAGS: "-Dwarnings"
+  QEMU_FULL_VERSION: 8.2.0
+  LLVM_MAJOR_VERSION: 17
 
 jobs:
   # Builds for no_std platforms
@@ -233,6 +235,112 @@ jobs:
       - run: cross test --package aes --target ${{ matrix.target }}
       - run: cross test --package aes --target ${{ matrix.target }} --features hazmat
       - run: cross test --package aes --target ${{ matrix.target }} --all-features
+
+  # Build and cache latest QEMUs; needed for RISC-V features
+  qemu-build-and-cache:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: /home/runner
+    steps:
+      - uses: silvanshade/rustcrypto-actions/qemu-cache-build@master
+        with:
+          qemu-full-version: ${{ env.QEMU_FULL_VERSION }}
+          qemu-target-archs: riscv64
+
+  # RISC-V rv64 cross-compiled tests for AES intrinsics
+  riscv64:
+    needs: qemu-build-and-cache
+    strategy:
+      matrix:
+        include:
+          - target: riscv64gc-unknown-linux-gnu
+            rust: nightly-2024-01-27 # TODO(silvanshade): stable MSRV once available
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # NOTE: Install a recent QEMU for RISC-V support
+      - uses: silvanshade/rustcrypto-actions/qemu-cache-install@master
+        with:
+          qemu-full-version: ${{ env.QEMU_FULL_VERSION }}
+          qemu-target-archs: riscv64
+      # NOTE: Install a recent LLVM/GNU toolchain configured for RISC-V multiarch cross-compilation
+      - uses: silvanshade/rustcrypto-actions/llvm-gnu-multiarch-install@master
+        with:
+          llvm-major-version: ${{ env.LLVM_MAJOR_VERSION }}
+          ubuntu-archs: riscv64
+      - uses: RustCrypto/actions/cargo-cache@master
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          targets: ${{ matrix.target }}
+      # NOTE: Write a rust-toolchain.toml to override the default toolchain
+      - name: write rust-toolchain.toml
+        shell: bash
+        run: |
+          cd ../aes/..
+          echo '[toolchain]'                     > rust-toolchain.toml
+          echo 'channel = "${{ matrix.rust }}"' >> rust-toolchain.toml
+          echo ''                               >> rust-toolchain.toml
+      # NOTE: Write a `.cargo/config.toml` to configure the RISC-V target for scalar tests
+      - name: write .cargo/config.toml (for scalar tests)
+        shell: bash
+        run: |
+          cd ../aes/..
+          mkdir -p .cargo
+          echo '[target.${{ matrix.target }}]'                                     > .cargo/config.toml
+          echo 'runner = "qemu-riscv64 -cpu rv64,zkne=true,zknd=true"'            >> .cargo/config.toml
+          echo 'linker = "clang-${{ env.LLVM_MAJOR_VERSION }}"'                   >> .cargo/config.toml
+          echo 'rustflags = ['                                                    >> .cargo/config.toml
+          echo '    "-C", "link-arg=-fuse-ld=lld-${{ env.LLVM_MAJOR_VERSION }}",' >> .cargo/config.toml
+          echo '    "-C", "link-arg=-march=rv64gc_zkne_zknd",'                    >> .cargo/config.toml
+          echo '    "-C", "link-arg=--target=${{ matrix.target }}",'              >> .cargo/config.toml
+          echo '    "-C", "target-feature=+zkne,+zknd"'                           >> .cargo/config.toml
+          echo ']'                                                                >> .cargo/config.toml
+      - name: riscv64 scalar tests
+        run: unset RUSTFLAGS && cargo test --package aes
+      - name: riscv64 scalar tests (all features)
+        run: unset RUSTFLAGS && cargo test --package aes --all-features
+      # NOTE: Write a `.cargo/config.toml` to configure the RISC-V target for vector tests
+      - name: write .cargo/config.toml (for vector tests)
+        shell: bash
+        run: |
+          cd ../aes/..
+          mkdir -p .cargo
+          echo '[target.${{ matrix.target }}]'                                         > .cargo/config.toml
+          echo 'runner = "qemu-riscv64 -cpu rv64,v=true,vext_spec=v1.0,zvkned=true"'  >> .cargo/config.toml
+          echo 'linker = "clang-${{ env.LLVM_MAJOR_VERSION }}"'                       >> .cargo/config.toml
+          echo 'rustflags = ['                                                        >> .cargo/config.toml
+          echo '    "-C", "link-arg=-fuse-ld=lld-${{ env.LLVM_MAJOR_VERSION }}",'     >> .cargo/config.toml
+          echo '    "-C", "link-arg=-march=rv64gc_v1p0_zvkned1p0",'                   >> .cargo/config.toml
+          echo '    "-C", "link-arg=--target=riscv64-unknown-linux-gnu",'             >> .cargo/config.toml
+          echo '    "-C", "target-feature=+v",'                                       >> .cargo/config.toml
+          echo '    "--cfg", "target_feature_zvkned"'                                 >> .cargo/config.toml
+          echo ']'                                                                    >> .cargo/config.toml
+      - name: riscv64 vector tests
+        run: unset RUSTFLAGS && cargo test --package aes --target ${{ matrix.target }}
+      - name: riscv64 vector tests (all features)
+        run: unset RUSTFLAGS && cargo test --package aes --target ${{ matrix.target }} --all-features
+      # NOTE: Write a `.cargo/config.toml` to configure the RISC-V target for scalar AND vector tests
+      - name: write .cargo/config.toml (for vector tests)
+        shell: bash
+        run: |
+          cd ../aes/..
+          mkdir -p .cargo
+          echo '[target.${{ matrix.target }}]'                                                             > .cargo/config.toml
+          echo 'runner = "qemu-riscv64 -cpu rv64,zkne=true,zknd=true,v=true,vext_spec=v1.0,zvkned=true"'  >> .cargo/config.toml
+          echo 'linker = "clang-${{ env.LLVM_MAJOR_VERSION }}"'                                           >> .cargo/config.toml
+          echo 'rustflags = ['                                                                            >> .cargo/config.toml
+          echo '    "-C", "link-arg=-fuse-ld=lld-${{ env.LLVM_MAJOR_VERSION }}",'                         >> .cargo/config.toml
+          echo '    "-C", "link-arg=-march=rv64gc_zkne_zknd_v1p0_zvkned1p0",'                             >> .cargo/config.toml
+          echo '    "-C", "link-arg=--target=riscv64-unknown-linux-gnu",'                                 >> .cargo/config.toml
+          echo '    "-C", "target-feature=+zkne,+zknd,+v",'                                               >> .cargo/config.toml
+          echo '    "--cfg", "target_feature_zvkned"'                                                     >> .cargo/config.toml
+          echo ']'                                                                                        >> .cargo/config.toml
+      - name: riscv64 vector tests
+        run: unset RUSTFLAGS && cargo test --package aes --target ${{ matrix.target }}
+      - name: riscv64 vector tests (all features)
+        run: unset RUSTFLAGS && cargo test --package aes --target ${{ matrix.target }} --all-features
 
   clippy:
     env:

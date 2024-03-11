@@ -35,6 +35,27 @@
 //! runtime. On other platforms the `aes` target feature must be enabled via
 //! RUSTFLAGS.
 //!
+//!
+//! ## RISC-V rv64 (scalar) {Zkne, ZKnd} extensions
+//!
+//! Support is available for the RISC-V rv64 scalar crypto extensions for AES. This
+//! is not currently autodetected at runtime. In order to enable, you need to
+//! enable the appropriate target features at compile time. For example:
+//! `RUSTFLAGS=-C target-feature=+zkne,+zknd`.
+//!
+//! ## RISC-V rvv (vector) {Zvkned} extensions
+//!
+//! Support is available for the RISC-V vector crypto extensions for AES. This is
+//! not currently autodetected at runtime. In order to enable, you need to enable
+//! the appropriate target features at compile time. For example:
+//! `RUSTFLAGS=-C target-feature=+v --cfg target_feature_zvkned`.
+//!
+//! NOTE: Hardware accelerated vector key-schedule routines for AES-192 are not
+//! available for the RISC-V vector crypto extensions. It is still possible to
+//! fall back to using the scalar key-schedule routines for AES-192 in this case
+//! if the appropriate target features are enabled. For example:
+//! `RUSTFLAGS=-C target-feature=+zkne,+zknd,+v --cfg target_feature_zvkned`.
+//!
 //! ## `x86`/`x86_64` intrinsics (AES-NI)
 //! By default this crate uses runtime detection on `i686`/`x86_64` targets
 //! in order to determine if AES-NI is available, and if it is not, it will
@@ -118,6 +139,14 @@
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
+#![cfg_attr(
+    all(
+        any(target_arch = "riscv32", target_arch = "riscv64"),
+        target_feature = "zknd",
+        target_feature = "zkne"
+    ),
+    feature(riscv_ext_intrinsics, stdsimd)
+)]
 
 #[cfg(feature = "hazmat")]
 #[cfg_attr(docsrs, doc(cfg(feature = "hazmat")))]
@@ -132,6 +161,13 @@ cfg_if! {
         mod armv8;
         mod autodetect;
         pub use autodetect::*;
+    // TODO(silvanshade): switch to target_feature for `zvkned` when available
+    } else if #[cfg(all(any(target_arch = "riscv32", target_arch = "riscv64"), target_feature = "v", target_feature_zvkned))] {
+        mod riscv;
+        pub use riscv::rvv::*;
+    } else if #[cfg(all(target_arch = "riscv64", target_feature = "zknd", target_feature = "zkne"))] {
+        mod riscv;
+        pub use riscv::rv64::*;
     } else if #[cfg(all(
         any(target_arch = "x86", target_arch = "x86_64"),
         not(aes_force_soft)
