@@ -17,7 +17,7 @@ use crate::{soft::fixslice::hazmat as soft, Block, Block8};
 use crate::armv8::hazmat as intrinsics;
 
 #[cfg(all(any(target_arch = "x86_64", target_arch = "x86"), not(aes_force_soft)))]
-use crate::ni::hazmat as intrinsics;
+use crate::x86::ni::hazmat as intrinsics;
 
 #[cfg(all(
     any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"),
