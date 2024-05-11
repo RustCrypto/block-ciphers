@@ -1,4 +1,4 @@
-//! Pure Rust implementation of the [XTEA] block cipher.
+//! Pure Rust implementation of the [Extended Tiny Encryption Algorithm][XTEA].
 //!
 //! # ⚠️ Security Warning: Hazmat!
 //!
@@ -101,7 +101,7 @@ cipher::impl_simple_block_encdec!(
         let mut v0 = u32::from_le_bytes(v[0..4].try_into().unwrap());
         let mut v1 = u32::from_le_bytes(v[4..8].try_into().unwrap());
 
-        // Use 2 loops as unrolling will not be performed by default
+        // Use 2 loops as otherwise unrolling will not be performed by default
         for k in cipher.k[0..16].iter() {
             v0 = v0.wrapping_add((((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1)) ^ k[0]);
             v1 = v1.wrapping_add((((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0)) ^ k[1]);
@@ -120,7 +120,7 @@ cipher::impl_simple_block_encdec!(
         let mut v0 = u32::from_le_bytes(v[0..4].try_into().unwrap());
         let mut v1 = u32::from_le_bytes(v[4..8].try_into().unwrap());
 
-        // Use 2 loops as unrolling will not be performed by default
+        // Same as encrypt, just in reverse
         for k in cipher.k[16..32].iter().rev() {
             v1 = v1.wrapping_sub((((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0)) ^ k[1]);
             v0 = v0.wrapping_sub((((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1)) ^ k[0]);
