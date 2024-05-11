@@ -54,6 +54,7 @@ It's generally recommended not to use other cipher implementations in this repos
 | [Speck] | `speck` | [![crates.io](https://img.shields.io/crates/v/speck.svg)](https://crates.io/crates/speck) | [![Documentation](https://docs.rs/speck/badge.svg)](https://docs.rs/speck) | ![MSRV 1.65][msrv-1.65] |
 | [Threefish] | [`threefish`] | [![crates.io](https://img.shields.io/crates/v/threefish.svg)](https://crates.io/crates/threefish) | [![Documentation](https://docs.rs/threefish/badge.svg)](https://docs.rs/threefish) | ![MSRV 1.65][msrv-1.65] |
 | [Twofish] | [`twofish`] | [![crates.io](https://img.shields.io/crates/v/twofish.svg)](https://crates.io/crates/twofish) | [![Documentation](https://docs.rs/twofish/badge.svg)](https://docs.rs/twofish) | ![MSRV 1.65][msrv-1.65] |
+| [XTEA] | [`xtea`] | [![crates.io](https://img.shields.io/crates/v/xtea.svg)](https://crates.io/crates/xtea) | [![Documentation](https://docs.rs/xtea/badge.svg)](https://docs.rs/xtea) | ![MSRV 1.65][msrv-1.65] |
 
 ### Minimum Supported Rust Version (MSRV) Policy
 
@@ -104,6 +105,7 @@ dual licensed as above, without any additional terms or conditions.
 [`sm4`]: ./sm4
 [`threefish`]: ./threefish
 [`twofish`]: ./twofish
+[`xtea`]: ./xtea
 
 [//]: # (links)
 
@@ -130,3 +132,4 @@ dual licensed as above, without any additional terms or conditions.
 [Speck]: https://en.wikipedia.org/wiki/Speck_(cipher)
 [Threefish]: https://en.wikipedia.org/wiki/Threefish
 [Twofish]: https://en.wikipedia.org/wiki/Twofish
+[XTEA]: https://en.wikipedia.org/wiki/XTEA
