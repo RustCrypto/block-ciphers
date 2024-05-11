@@ -86,7 +86,7 @@ impl AlgorithmName for Xtea {
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl Drop for Xtea {
     fn drop(&mut self) {
-        self.key.zeroize();
+        self.k.zeroize();
     }
 }
 
