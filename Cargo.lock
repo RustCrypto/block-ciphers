@@ -194,7 +194,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "speck"
+name = "speck-cipher"
 version = "0.0.1"
 dependencies = [
  "cipher",
