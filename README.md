@@ -51,7 +51,7 @@ It's generally recommended not to use other cipher implementations in this repos
 | [RC5] | [`rc5`] | [![crates.io](https://img.shields.io/crates/v/rc5.svg)](https://crates.io/crates/rc5) | [![Documentation](https://docs.rs/rc5/badge.svg)](https://docs.rs/rc5) | ![MSRV 1.65][msrv-1.65] |
 | [Serpent] | [`serpent`] | [![crates.io](https://img.shields.io/crates/v/serpent.svg)](https://crates.io/crates/serpent) | [![Documentation](https://docs.rs/serpent/badge.svg)](https://docs.rs/serpent) | ![MSRV 1.65][msrv-1.65] |
 | [SM4] | [`sm4`] | [![crates.io](https://img.shields.io/crates/v/sm4.svg)](https://crates.io/crates/sm4) | [![Documentation](https://docs.rs/sm4/badge.svg)](https://docs.rs/sm4) | ![MSRV 1.65][msrv-1.65] |
-| [Speck] | `speck` | [![crates.io](https://img.shields.io/crates/v/speck.svg)](https://crates.io/crates/speck) | [![Documentation](https://docs.rs/speck/badge.svg)](https://docs.rs/speck) | ![MSRV 1.65][msrv-1.65] |
+| [Speck] | [`speck-cipher`] | [![crates.io](https://img.shields.io/crates/v/speck-cipher.svg)](https://crates.io/crates/speck-cipher) | [![Documentation](https://docs.rs/speck-cipher/badge.svg)](https://docs.rs/speck-cipher) | ![MSRV 1.65][msrv-1.65] |
 | [Threefish] | [`threefish`] | [![crates.io](https://img.shields.io/crates/v/threefish.svg)](https://crates.io/crates/threefish) | [![Documentation](https://docs.rs/threefish/badge.svg)](https://docs.rs/threefish) | ![MSRV 1.65][msrv-1.65] |
 | [Twofish] | [`twofish`] | [![crates.io](https://img.shields.io/crates/v/twofish.svg)](https://crates.io/crates/twofish) | [![Documentation](https://docs.rs/twofish/badge.svg)](https://docs.rs/twofish) | ![MSRV 1.65][msrv-1.65] |
 
@@ -102,6 +102,7 @@ dual licensed as above, without any additional terms or conditions.
 [`rc5`]: ./rc5
 [`serpent`]: ./serpent
 [`sm4`]: ./sm4
+[`speck-cipher`]: ./speck
 [`threefish`]: ./threefish
 [`twofish`]: ./twofish
 
