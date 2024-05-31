@@ -126,6 +126,7 @@
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
+#![allow(unexpected_cfgs)] // Silence warning about use of non-cargo features for cfg
 
 #[cfg(feature = "hazmat")]
 #[cfg_attr(docsrs, doc(cfg(feature = "hazmat")))]
