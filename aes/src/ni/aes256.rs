@@ -3,7 +3,7 @@ use crate::{Block, Block8};
 use cipher::inout::InOut;
 use core::mem;
 
-/// AES-192 round keys
+/// AES-256 round keys
 pub(super) type RoundKeys = [__m128i; 15];
 
 #[inline]
