@@ -1,5 +1,6 @@
 /// generated using the code in: https://www.ietf.org/archive/id/draft-krovetz-rc6-rc5-vectors-00.txt
 #[cfg(test)]
+#[allow(deprecated)] // uses `clone_from_slice`
 mod tests {
     use cipher::consts::*;
     use cipher::{array::Array, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};

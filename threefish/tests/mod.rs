@@ -15,6 +15,7 @@ struct Vector {
 macro_rules! impl_test {
     {$name:ident, $cipher:ty, $tests:expr,} => {
         #[test]
+        #[allow(deprecated)] // uses `clone_from_slice`
         fn $name() {
             let vectors = $tests;
             for &Vector { key, tweak, pt, ct } in vectors.iter() {
