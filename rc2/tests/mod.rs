@@ -21,6 +21,7 @@ macro_rules! new_tests {
 }
 
 #[test]
+#[allow(deprecated)] // uses `clone_from_slice`
 fn rc2() {
     let tests = new_tests!("1", "2", "3", "7");
     for test in &tests {
@@ -37,6 +38,7 @@ fn rc2() {
 }
 
 #[test]
+#[allow(deprecated)] // uses `clone_from_slice`
 fn rc2_effective_key_64() {
     let tests = new_tests!("4", "5", "6");
     for test in &tests {
@@ -53,6 +55,7 @@ fn rc2_effective_key_64() {
 }
 
 #[test]
+#[allow(deprecated)] // uses `clone_from_slice`
 fn rc2_effective_key_129() {
     let tests = new_tests!("8");
     for test in &tests {
