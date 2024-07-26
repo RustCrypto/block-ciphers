@@ -22,6 +22,10 @@ hex-literal = "0.4"
 [features]
 zeroize = ["cipher/zeroize"]
 
+[lints.rust.unexpected_cfgs]
+level = "warn"
+check-cfg = ["cfg(kuznyechik_force_soft)"]
+
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
