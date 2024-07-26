@@ -1,6 +1,6 @@
 [package]
 name = "aes"
-version = "0.9.0-pre.0"
+version = "0.9.0-pre.1"
 description = "Pure Rust implementation of the Advanced Encryption Standard (a.k.a. Rijndael)"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
