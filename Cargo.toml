@@ -9,6 +9,7 @@ members = [
     "cast5",
     "cast6",
     "des",
+    "gift",
     "idea",
     "kuznyechik",
     "magma",
@@ -19,7 +20,7 @@ members = [
     "speck",
     "twofish",
     "threefish",
-    "gift",
+    "xtea",
 ]
 
 [profile.dev]
