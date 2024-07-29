@@ -19,6 +19,7 @@ members = [
     "speck",
     "twofish",
     "threefish",
+    "gift",
 ]
 
 [profile.dev]
