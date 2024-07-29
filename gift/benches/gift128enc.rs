@@ -1,6 +1,6 @@
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use criterion_cycles_per_byte::CyclesPerByte;
-use gift_cipher::cipher::{BlockEncrypt, KeyInit};
+use gift_cipher::cipher::{BlockCipherEncrypt, KeyInit};
 use gift_cipher::Gift128;
 
 const KB: usize = 1024;
