@@ -1,6 +1,6 @@
 [package]
-name = "gift_cipher"
-version = "0.0.1"
+name = "gift-cipher"
+version = "0.0.0"
 description = "Gift block cipher"
 authors = ["RustCrypto Developers", "Schmid7k"]
 license = "MIT OR Apache-2.0"
@@ -12,14 +12,14 @@ repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "gift", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-cipher = "0.4.3"
+cipher = "=0.5.0-pre.6"
 
 [dev-dependencies]
-cipher = { version = "0.4.3", features = ["dev"] }
+cipher = { version = "=0.5.0-pre.6", features = ["dev"] }
 criterion = "0.3.5"
+
+[target.'cfg(any(target_arch = "x86", target_arch = "x86_64"))'.dev-dependencies]
 criterion-cycles-per-byte = "0.1.2"
 
 [features]
