@@ -115,10 +115,11 @@ macro_rules! expand_round {
     }};
 }
 
-macro_rules! shuffle {
-    ($a:expr, $b:expr, $imm:expr) => {
-        mem::transmute::<_, __m128i>(_mm_shuffle_pd(mem::transmute($a), mem::transmute($b), $imm))
-    };
+#[inline(always)]
+unsafe fn shuffle(a: __m128i, b: __m128i, i: usize) -> __m128i {
+    let a: [u64; 2] = mem::transmute(a);
+    let b: [u64; 2] = mem::transmute(b);
+    mem::transmute([a[i], b[0]])
 }
 
 #[inline]
@@ -144,15 +145,15 @@ pub(super) unsafe fn expand_key(key: &[u8; 24]) -> RoundKeys {
     keys[0] = k0;
 
     let (k1_2, k2r) = expand_round!(k0, k1l, 0x01);
-    keys[1] = shuffle!(k1l, k1_2, 0);
-    keys[2] = shuffle!(k1_2, k2r, 1);
+    keys[1] = shuffle(k1l, k1_2, 0);
+    keys[2] = shuffle(k1_2, k2r, 1);
 
     let (k3, k4l) = expand_round!(k1_2, k2r, 0x02);
     keys[3] = k3;
 
     let (k4_5, k5r) = expand_round!(k3, k4l, 0x04);
-    let k4 = shuffle!(k4l, k4_5, 0);
-    let k5 = shuffle!(k4_5, k5r, 1);
+    let k4 = shuffle(k4l, k4_5, 0);
+    let k5 = shuffle(k4_5, k5r, 1);
     keys[4] = k4;
     keys[5] = k5;
 
@@ -160,15 +161,15 @@ pub(super) unsafe fn expand_key(key: &[u8; 24]) -> RoundKeys {
     keys[6] = k6;
 
     let (k7_8, k8r) = expand_round!(k6, k7l, 0x10);
-    keys[7] = shuffle!(k7l, k7_8, 0);
-    keys[8] = shuffle!(k7_8, k8r, 1);
+    keys[7] = shuffle(k7l, k7_8, 0);
+    keys[8] = shuffle(k7_8, k8r, 1);
 
     let (k9, k10l) = expand_round!(k7_8, k8r, 0x20);
     keys[9] = k9;
 
     let (k10_11, k11r) = expand_round!(k9, k10l, 0x40);
-    keys[10] = shuffle!(k10l, k10_11, 0);
-    keys[11] = shuffle!(k10_11, k11r, 1);
+    keys[10] = shuffle(k10l, k10_11, 0);
+    keys[11] = shuffle(k10_11, k11r, 1);
 
     let (k12, _) = expand_round!(k10_11, k11r, 0x80);
     keys[12] = k12;

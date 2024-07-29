@@ -173,7 +173,7 @@ impl Des {
         for key in &self.keys {
             data = round(data, *key);
         }
-        fp((data << 32) | (data >> 32))
+        fp(data.rotate_right(32))
     }
 
     pub(crate) fn decrypt(&self, mut data: u64) -> u64 {
@@ -181,7 +181,7 @@ impl Des {
         for key in self.keys.iter().rev() {
             data = round(data, *key);
         }
-        fp((data << 32) | (data >> 32))
+        fp(data.rotate_right(32))
     }
 }
 

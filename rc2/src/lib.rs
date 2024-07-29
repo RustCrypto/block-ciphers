@@ -83,28 +83,28 @@ impl Rc2 {
             .wrapping_add(r[3] & r[2])
             .wrapping_add(!r[3] & r[1]);
         *j += 1;
-        r[0] = (r[0] << 1) | (r[0] >> 15);
+        r[0] = r[0].rotate_left(1);
 
         r[1] = r[1]
             .wrapping_add(self.keys[*j])
             .wrapping_add(r[0] & r[3])
             .wrapping_add(!r[0] & r[2]);
         *j += 1;
-        r[1] = (r[1] << 2) | (r[1] >> 14);
+        r[1] = r[1].rotate_left(2);
 
         r[2] = r[2]
             .wrapping_add(self.keys[*j])
             .wrapping_add(r[1] & r[0])
             .wrapping_add(!r[1] & r[3]);
         *j += 1;
-        r[2] = (r[2] << 3) | (r[2] >> 13);
+        r[2] = r[2].rotate_left(3);
 
         r[3] = r[3]
             .wrapping_add(self.keys[*j])
             .wrapping_add(r[2] & r[1])
             .wrapping_add(!r[2] & r[0]);
         *j += 1;
-        r[3] = (r[3] << 5) | (r[3] >> 11);
+        r[3] = r[3].rotate_left(5);
     }
 
     fn mash(&self, r: &mut [u16; 4]) {
@@ -115,28 +115,28 @@ impl Rc2 {
     }
 
     fn reverse_mix(&self, r: &mut [u16; 4], j: &mut usize) {
-        r[3] = (r[3] << 11) | (r[3] >> 5);
+        r[3] = r[3].rotate_right(5);
         r[3] = r[3]
             .wrapping_sub(self.keys[*j])
             .wrapping_sub(r[2] & r[1])
             .wrapping_sub(!r[2] & r[0]);
         *j -= 1;
 
-        r[2] = (r[2] << 13) | (r[2] >> 3);
+        r[2] = r[2].rotate_right(3);
         r[2] = r[2]
             .wrapping_sub(self.keys[*j])
             .wrapping_sub(r[1] & r[0])
             .wrapping_sub(!r[1] & r[3]);
         *j -= 1;
 
-        r[1] = (r[1] << 14) | (r[1] >> 2);
+        r[1] = r[1].rotate_right(2);
         r[1] = r[1]
             .wrapping_sub(self.keys[*j])
             .wrapping_sub(r[0] & r[3])
             .wrapping_sub(!r[0] & r[2]);
         *j -= 1;
 
-        r[0] = (r[0] << 15) | (r[0] >> 1);
+        r[0] = r[0].rotate_right(1);
         r[0] = r[0]
             .wrapping_sub(self.keys[*j])
             .wrapping_sub(r[3] & r[2])
