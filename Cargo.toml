@@ -9,6 +9,7 @@ members = [
     "cast5",
     "cast6",
     "des",
+    "gift",
     "idea",
     "kuznyechik",
     "magma",
