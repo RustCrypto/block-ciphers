@@ -10,12 +10,12 @@
 //!
 //! # Examples
 //! ```
-//! use aria::cipher::generic_array::GenericArray;
-//! use aria::cipher::{Key, Block, BlockEncrypt, BlockDecrypt, KeyInit};
+//! use aria::cipher::array::Array;
+//! use aria::cipher::{Key, Block, BlockCipherEncrypt, BlockCipherDecrypt, KeyInit};
 //! use aria::Aria128;
 //!
-//! let key = GenericArray::from([0u8; 16]);
-//! let mut block = GenericArray::from([0u8; 16]);
+//! let key = Array::from([0u8; 16]);
+//! let mut block = Array::from([0u8; 16]);
 //! // Initialize cipher
 //! let cipher = Aria128::new(&key);
 //!

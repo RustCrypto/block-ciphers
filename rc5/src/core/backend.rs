@@ -5,7 +5,8 @@ use core::{
 };
 
 use cipher::{
-    generic_array::{sequence::GenericSequence, ArrayLength, GenericArray},
+    array::{Array, ArraySize},
+    crypto_common::BlockSizes,
     inout::InOut,
     typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U2, U256},
 };
@@ -19,7 +20,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -27,7 +28,7 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
 {
     key_table: ExpandedKeyTable<W, R>,
     _key_size: PhantomData<B>,
@@ -38,7 +39,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -46,16 +47,16 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
     // Key range
-    B: ArrayLength<u8>,
+    B: ArraySize,
     B: IsLess<U256>,
     Le<B, U256>: NonZero,
     // KeyAsWordsSize
     B: Add<W::Bytes>,
     Sum<B, W::Bytes>: Sub<U1>,
     Diff<Sum<B, W::Bytes>, U1>: Div<W::Bytes>,
-    KeyAsWordsSize<W, B>: ArrayLength<W>,
+    KeyAsWordsSize<W, B>: ArraySize,
 {
     pub fn new(key: &Key<B>) -> RC5<W, R, B> {
         Self {
@@ -73,7 +74,7 @@ where
 
     fn key_into_words(key: &Key<B>) -> KeyAsWords<W, B> {
         // can be uninitialized
-        let mut key_as_words: GenericArray<W, KeyAsWordsSize<W, B>> = GenericArray::default();
+        let mut key_as_words: Array<W, KeyAsWordsSize<W, B>> = Array::default();
 
         for i in (0..B::USIZE).rev() {
             key_as_words[i / W::Bytes::USIZE] =
@@ -86,8 +87,7 @@ where
 
     fn initialize_expanded_key_table() -> ExpandedKeyTable<W, R> {
         // must be zero initialized
-        let mut expanded_key_table: GenericArray<W, ExpandedKeyTableSize<R>> =
-            GenericArray::generate(|_| W::ZERO);
+        let mut expanded_key_table: Array<W, ExpandedKeyTableSize<R>> = Array::from_fn(|_| W::ZERO);
 
         expanded_key_table[0] = W::P;
         for i in 1..expanded_key_table.len() {
@@ -132,7 +132,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -140,7 +140,7 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
 {
     pub fn encrypt(&self, mut block: InOut<'_, '_, Block<W>>) {
         let (mut a, mut b) = Self::words_from_block(block.get_in());
@@ -194,7 +194,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -202,7 +202,7 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
 {
 }
 
@@ -212,7 +212,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -220,7 +220,7 @@ where
     // ExpandedKeyTableSize
     R: Add<U1>,
     Sum<R, U1>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
 {
     fn drop(&mut self) {
         cipher::zeroize::Zeroize::zeroize(&mut *self.key_table)

@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 members = [
     "aes",
     "aria",
@@ -6,7 +7,9 @@ members = [
     "blowfish",
     "camellia",
     "cast5",
+    "cast6",
     "des",
+    "gift",
     "idea",
     "kuznyechik",
     "magma",
@@ -18,6 +21,7 @@ members = [
     "speck",
     "twofish",
     "threefish",
+    "xtea",
 ]
 
 [profile.dev]

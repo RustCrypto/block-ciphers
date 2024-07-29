@@ -13,8 +13,8 @@
 //! ```
 //! use magma::Magma;
 //! use magma::cipher::{
-//!     generic_array::GenericArray,
-//!     BlockEncrypt, BlockDecrypt, KeyInit,
+//!     array::Array,
+//!     BlockCipherEncrypt, BlockCipherDecrypt, KeyInit,
 //! };
 //! use hex_literal::hex;
 //!
@@ -28,7 +28,7 @@
 //!
 //! let cipher = Magma::new(&key.into());
 //!
-//! let mut block = GenericArray::clone_from_slice(&plaintext);
+//! let mut block = Array::clone_from_slice(&plaintext);
 //! cipher.encrypt_block(&mut block);
 //! assert_eq!(&ciphertext, block.as_slice());
 //!
@@ -62,8 +62,9 @@ mod sboxes;
 
 pub use sboxes::Sbox;
 
+use sboxes::SboxExt;
+
 /// Block cipher defined in GOST 28147-89 generic over S-box
-#[derive(Clone)]
 pub struct Gost89<S: Sbox> {
     key: [u32; 8],
     _p: PhantomData<S>,
@@ -88,19 +89,36 @@ impl<S: Sbox> KeyInit for Gost89<S> {
     }
 }
 
+impl<S: Sbox> Clone for Gost89<S> {
+    fn clone(&self) -> Self {
+        Self {
+            key: self.key,
+            _p: PhantomData,
+        }
+    }
+}
+
 impl<S: Sbox> fmt::Debug for Gost89<S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("Gost89<")?;
-        f.write_str(S::NAME)?;
-        f.write_str("> { ... }")
+        if S::NAME == "Tc26" {
+            f.write_str("Magma { ... }")
+        } else {
+            f.write_str("Gost89<")?;
+            f.write_str(S::NAME)?;
+            f.write_str("> { ... }")
+        }
     }
 }
 
 impl<S: Sbox> AlgorithmName for Gost89<S> {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("Gost89<")?;
-        f.write_str(S::NAME)?;
-        f.write_str("> { ... }")
+        if S::NAME == "Tc26" {
+            f.write_str("Magma { ... }")
+        } else {
+            f.write_str("Gost89<")?;
+            f.write_str(S::NAME)?;
+            f.write_str("> { ... }")
+        }
     }
 }
 

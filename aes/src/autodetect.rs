@@ -4,13 +4,13 @@
 use crate::soft;
 use cipher::{
     consts::{U16, U24, U32},
-    AlgorithmName, BlockCipher, BlockClosure, BlockDecrypt, BlockEncrypt, BlockSizeUser, Key,
-    KeyInit, KeySizeUser,
+    AlgorithmName, BlockCipher, BlockCipherDecrypt, BlockCipherEncrypt, BlockClosure,
+    BlockSizeUser, Key, KeyInit, KeySizeUser,
 };
 use core::fmt;
 use core::mem::ManuallyDrop;
 
-#[cfg(all(target_arch = "aarch64", aes_armv8))]
+#[cfg(target_arch = "aarch64")]
 use crate::armv8 as intrinsics;
 
 #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
@@ -130,7 +130,7 @@ macro_rules! define_aes_impl {
 
         impl BlockCipher for $name {}
 
-        impl BlockEncrypt for $name {
+        impl BlockCipherEncrypt for $name {
             fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
                 unsafe {
                     if self.token.get() {
@@ -149,7 +149,7 @@ macro_rules! define_aes_impl {
             }
         }
 
-        impl BlockDecrypt for $name {
+        impl BlockCipherDecrypt for $name {
             fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
                 unsafe {
                     if self.token.get() {
@@ -249,7 +249,7 @@ macro_rules! define_aes_impl {
 
         impl BlockCipher for $name_enc {}
 
-        impl BlockEncrypt for $name_enc {
+        impl BlockCipherEncrypt for $name_enc {
             fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
                 unsafe {
                     if self.token.get() {
@@ -378,7 +378,7 @@ macro_rules! define_aes_impl {
 
         impl BlockCipher for $name_dec {}
 
-        impl BlockDecrypt for $name_dec {
+        impl BlockCipherDecrypt for $name_dec {
             fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
                 unsafe {
                     if self.token.get() {

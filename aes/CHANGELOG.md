@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Added
+- add #[inline] attributes for KeyInit::new impls ([#386])
+
+### Changed
+- Bump `cipher` to v0.5.0-pre.1; MSRV 1.65 ([#394])
+- replace inline ASM with ARMv8 intrinsics ([#380])
+- enable ARMv8 backend by default; MSRV 1.72 ([#395])
+- Bump `cipher` dependency to v0.5.0-pre.2 ([#398])
+- Use `BlockCipherEncrypt`/`BlockCipherDecrypt` trait names ([#400])
+- Assert precondition required for soundness ([#407])
+- use const preconditions assert ([#408])
+- bump `cipher` dependency to `0.5.0-pre.4` ([#413])
+
+[#386]: https://github.com/RustCrypto/block-ciphers/pull/386
+[#394]: https://github.com/RustCrypto/block-ciphers/pull/394
+[#380]: https://github.com/RustCrypto/block-ciphers/pull/380
+[#395]: https://github.com/RustCrypto/block-ciphers/pull/395
+[#398]: https://github.com/RustCrypto/block-ciphers/pull/398
+[#400]: https://github.com/RustCrypto/block-ciphers/pull/400
+[#407]: https://github.com/RustCrypto/block-ciphers/pull/407
+[#408]: https://github.com/RustCrypto/block-ciphers/pull/408
+[#413]: https://github.com/RustCrypto/block-ciphers/pull/413
+
+## 0.8.4 (2024-02-13)
+### Changed
+- Assert soundness preconditions for ARMv8 key expansion ([#407], [#408])
+
+[#407]: https://github.com/RustCrypto/block-ciphers/pull/407
+[#408]: https://github.com/RustCrypto/block-ciphers/pull/408
+
 ## 0.8.3 (2023-06-17)
 ### Added
 - Support `aes_armv8` on Rust 1.61+ using `asm!` ([#365])

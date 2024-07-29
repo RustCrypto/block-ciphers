@@ -2,10 +2,6 @@
 
 use core::{arch::aarch64::*, mem, slice};
 
-// Stable "polyfills" for unstable core::arch::aarch64 intrinsics
-// TODO(tarcieri): remove when these intrinsics have been stabilized
-use super::intrinsics::{vaeseq_u8, vaesimcq_u8};
-
 /// There are 4 AES words in a block.
 const BLOCK_WORDS: usize = 4;
 
@@ -22,8 +18,10 @@ pub unsafe fn expand_key<const L: usize, const N: usize>(key: &[u8; L]) -> [uint
 
     let mut expanded_keys: [uint8x16_t; N] = mem::zeroed();
 
-    let columns =
-        slice::from_raw_parts_mut(expanded_keys.as_mut_ptr() as *mut u32, N * BLOCK_WORDS);
+    // Sanity check, as this is required in order for the subsequent conversion to be sound.
+    const _: () = assert!(mem::align_of::<uint8x16_t>() >= mem::align_of::<u32>());
+    let keys_ptr: *mut u32 = expanded_keys.as_mut_ptr().cast();
+    let columns = slice::from_raw_parts_mut(keys_ptr, N * BLOCK_WORDS);
 
     for (i, chunk) in key.chunks_exact(WORD_SIZE).enumerate() {
         columns[i] = u32::from_ne_bytes(chunk.try_into().unwrap());

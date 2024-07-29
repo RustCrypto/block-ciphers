@@ -1,11 +1,11 @@
 [package]
 name = "camellia"
-version = "0.1.0"
+version = "0.2.0-pre"
 description = "Camellia block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
-rust-version = "1.56"
+rust-version = "1.65"
 readme = "README.md"
 documentation = "https://docs.rs/camellia"
 repository = "https://github.com/RustCrypto/block-ciphers"
@@ -14,10 +14,10 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 byteorder = { version = "1.1", default-features = false }
-cipher = "0.4.2"
+cipher = "=0.5.0-pre.6"
 
 [dev-dependencies]
-cipher = { version = "0.4.2", features = ["dev"] }
+cipher = { version = "=0.5.0-pre.6", features = ["dev"] }
 
 [features]
 zeroize = ["cipher/zeroize"]

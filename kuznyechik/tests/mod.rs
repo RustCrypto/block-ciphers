@@ -1,4 +1,4 @@
-use cipher::{Block, BlockDecrypt, BlockEncrypt, KeyInit};
+use cipher::{Block, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 use hex_literal::hex;
 use kuznyechik::{Kuznyechik, KuznyechikDec, KuznyechikEnc};
 
@@ -37,8 +37,8 @@ fn kuznyechik() {
         });
     }
 
-    let mut blocks2 = blocks.clone();
-    let blocks_cpy = blocks.clone();
+    let mut blocks2 = blocks;
+    let blocks_cpy = blocks;
 
     cipher.encrypt_blocks(&mut blocks);
     assert!(blocks[..] != blocks_cpy[..]);

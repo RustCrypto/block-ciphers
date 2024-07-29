@@ -170,7 +170,7 @@ pub struct InvalidLengthError;
 /// # Panics
 /// If length of `src` is not equal to `4 * N`.
 #[inline(always)]
-pub fn to_u32<const N: usize>(src: &[u8]) -> [u32; N] {
+fn to_u32<const N: usize>(src: &[u8]) -> [u32; N] {
     assert_eq!(src.len(), 4 * N);
     let mut res = [0u32; N];
     res.iter_mut()

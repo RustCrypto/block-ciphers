@@ -1,11 +1,11 @@
 [package]
 name = "rc5"
-version = "0.0.1"
+version = "0.1.0-pre"
 description = "RC5 block cipher"
 authors = ["RustCrypto Developers"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
-rust-version = "1.56"
+rust-version = "1.65"
 readme = "README.md"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "rc5", "block-cipher"]

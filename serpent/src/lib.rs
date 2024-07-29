@@ -211,19 +211,16 @@ impl Serpent {
         let mut k = [0u32; 132];
         for i in 0..r {
             let sbox_index = (ROUNDS + 3 - i) % ROUNDS;
-            let a = words[(4 * i) as usize];
-            let b = words[(4 * i + 1) as usize];
-            let c = words[(4 * i + 2) as usize];
-            let d = words[(4 * i + 3) as usize];
+            let [a, b, c, d]: [u32; 4] = words[4 * i..][..4].try_into().unwrap();
             // calculate keys in bitslicing mode
             for j in 0..32 {
                 let input = get_bit(a as usize, j)
                     | get_bit(b as usize, j) << 1
                     | get_bit(c as usize, j) << 2
                     | get_bit(d as usize, j) << 3;
-                let output = apply_s(sbox_index, input as u8);
+                let output = apply_s(sbox_index, input);
                 for l in 0..4 {
-                    k[(4 * i + l) as usize] |= u32::from(get_bit(output as usize, l)) << j;
+                    k[4 * i + l] |= u32::from(get_bit(output as usize, l)) << j;
                 }
             }
         }
