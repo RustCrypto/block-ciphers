@@ -117,11 +117,9 @@ macro_rules! expand_round {
 
 #[inline(always)]
 unsafe fn shuffle(a: __m128i, b: __m128i, i: usize) -> __m128i {
-    unsafe {
-        let a: [u64; 2] = mem::transmute(a);
-        let b: [u64; 2] = mem::transmute(b);
-        mem::transmute([a[i], b[0]])
-    }
+    let a: [u64; 2] = mem::transmute(a);
+    let b: [u64; 2] = mem::transmute(b);
+    mem::transmute([a[i], b[0]])
 }
 
 #[inline]
