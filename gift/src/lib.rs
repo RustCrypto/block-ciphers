@@ -10,12 +10,12 @@
 //!
 //! # Examples
 //! ```
-//! use gift_cipher::cipher::generic_array::GenericArray;
-//! use gift_cipher::cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
+//! use gift_cipher::cipher::array::Array;
+//! use gift_cipher::cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 //! use gift_cipher::Gift128;
 //!
-//! let key = GenericArray::from([0u8; 16]);
-//! let mut block = GenericArray::from([0u8; 16]);
+//! let key = Array::from([0u8; 16]);
+//! let mut block = Array::from([0u8; 16]);
 //!
 //! // Initialize cipher
 //! let cipher = Gift128::new(&key);

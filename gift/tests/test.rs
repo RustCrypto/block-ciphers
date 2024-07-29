@@ -1,4 +1,4 @@
-use cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, KeyInit};
+use cipher::{array::Array, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 use gift_cipher::Gift128;
 
 const KEYS: [[u8; 16]; 3] = [
@@ -50,18 +50,18 @@ const CTEXT: [[u8; 16]; 3] = [
 fn test_vectors() {
     for i in 0..3 {
         let cipher = Gift128::new(&KEYS[i].into());
-        let mut pt = GenericArray::from(PTEXT[i]);
+        let mut pt = Array::from(PTEXT[i]);
 
         cipher.encrypt_block(&mut pt);
 
-        println!("Ciphertext: {:#02x}", pt);
+        //println!("Ciphertext: {:#02x}", pt.as_slice());
 
-        assert_eq!(pt, GenericArray::from(CTEXT[i]));
+        assert_eq!(pt, Array::from(CTEXT[i]));
 
         cipher.decrypt_block(&mut pt);
 
-        println!("Plaintext: {:#02x}", pt);
+        //println!("Plaintext: {:#02x}", pt.as_slice());
 
-        assert_eq!(pt, GenericArray::from(PTEXT[i]));
+        assert_eq!(pt, Array::from(PTEXT[i]));
     }
 }
