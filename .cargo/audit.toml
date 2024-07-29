@@ -1,0 +1,7 @@
+# https://github.com/RustSec/cargo-audit/blob/master/audit.toml.example
+
+[advisories]
+ignore = [
+    "RUSTSEC-2021-0127", # serde_cbor
+    "RUSTSEC-2021-0145", # atty
+] # advisory IDs to ignore e.g. ["RUSTSEC-2019-0001", ...]
