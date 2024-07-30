@@ -26,7 +26,7 @@ USE AT YOUR OWN RISK!
 
 ## Minimum Supported Rust Version
 
-Rust **1.56** or higher.
+Rust **1.65** or higher.
 
 Minimum supported Rust version can be changed in the future, but it will be
 done with a minor version bump.
@@ -53,18 +53,18 @@ dual licensed as above, without any additional terms or conditions.
 
 [//]: # (badges)
 
-[crate-image]: https://img.shields.io/crates/v/gift_cipher.svg
-[crate-link]: https://crates.io/crates/gift_cipher
-[docs-image]: https://docs.rs/gift_cipher/badge.svg
-[docs-link]: https://docs.rs/gift_cipher/
+[crate-image]: https://img.shields.io/crates/v/gift-cipher.svg
+[crate-link]: https://crates.io/crates/gift-cipher
+[docs-image]: https://docs.rs/gift-cipher/badge.svg
+[docs-link]: https://docs.rs/gift-cipher/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.65+-blue.svg
 [hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
 [hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260039-block-ciphers
-[build-image]: https://github.com/RustCrypto/block-ciphers/workflows/gift_cipher/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/block-ciphers/actions?query=workflow%3Agift_cipher
+[build-image]: https://github.com/RustCrypto/block-ciphers/workflows/gift-cipher/badge.svg?branch=master&event=push
+[build-link]: https://github.com/RustCrypto/block-ciphers/actions?query=workflow%3Agift-cipher
 
 [//]: # (general links)
 
