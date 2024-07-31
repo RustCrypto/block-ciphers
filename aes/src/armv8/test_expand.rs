@@ -1,4 +1,4 @@
-use super::{expand_key, inv_expanded_keys};
+use super::expand::{expand_key, inv_expanded_keys};
 use core::arch::aarch64::*;
 use hex_literal::hex;
 
@@ -112,9 +112,9 @@ fn aes128_key_expansion() {
 
 #[test]
 fn aes128_key_expansion_inv() {
-    let mut ek = load_expanded_keys(AES128_EXP_KEYS);
-    unsafe { inv_expanded_keys(&mut ek) };
-    assert_eq!(store_expanded_keys(ek), AES128_EXP_INVKEYS);
+    let ek = load_expanded_keys(AES128_EXP_KEYS);
+    let inv_ek = unsafe { inv_expanded_keys(&ek) };
+    assert_eq!(store_expanded_keys(inv_ek), AES128_EXP_INVKEYS);
 }
 
 #[test]
