@@ -118,7 +118,7 @@ dependencies = [
 
 [[package]]
 name = "gift-cipher"
-version = "0.0.0"
+version = "0.0.1-pre.0"
 dependencies = [
  "cipher",
 ]
