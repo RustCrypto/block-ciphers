@@ -1,4 +1,5 @@
-// TODO: remove this allow after migration of the soft backend
+// This macro is not used by the soft backend, to simplify the crate code we allow this macro
+// to be unused to prevent warnings e.g. when `force-soft` is enabled/
 #[allow(unused_macros)]
 macro_rules! impl_backends {
     (

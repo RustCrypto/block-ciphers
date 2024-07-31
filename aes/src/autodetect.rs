@@ -20,12 +20,12 @@ cpufeatures::new!(aes_intrinsics, "aes");
 
 macro_rules! define_aes_impl {
     (
-        $name:ident,
-        $name_enc:ident,
-        $name_dec:ident,
-        $module:tt,
-        $key_size:ty,
-        $doc:expr $(,)?
+        name = $name:ident,
+        name_enc = $name_enc:ident,
+        name_dec = $name_dec:ident,
+        module = $module:tt,
+        key_size = $key_size:ty,
+        doc = $doc:expr,
     ) => {
         mod $module {
             use super::{intrinsics, soft};
@@ -425,6 +425,27 @@ macro_rules! define_aes_impl {
     };
 }
 
-define_aes_impl!(Aes128, Aes128Enc, Aes128Dec, aes128, U16, "AES-128");
-define_aes_impl!(Aes192, Aes192Enc, Aes192Dec, aes192, U24, "AES-192");
-define_aes_impl!(Aes256, Aes256Enc, Aes256Dec, aes256, U32, "AES-256");
+define_aes_impl!(
+    name = Aes128,
+    name_enc = Aes128Enc,
+    name_dec = Aes128Dec,
+    module = aes128,
+    key_size = U16,
+    doc = "AES-128",
+);
+define_aes_impl!(
+    name = Aes192,
+    name_enc = Aes192Enc,
+    name_dec = Aes192Dec,
+    module = aes192,
+    key_size = U24,
+    doc = "AES-192",
+);
+define_aes_impl!(
+    name = Aes256,
+    name_enc = Aes256Enc,
+    name_dec = Aes256Dec,
+    module = aes256,
+    key_size = U32,
+    doc = "AES-256",
+);
