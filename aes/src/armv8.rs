@@ -158,6 +158,16 @@ macro_rules! define_aes_impl {
             }
         }
 
+        impl Drop for $name {
+            #[inline]
+            fn drop(&mut self) {
+                #[cfg(feature = "zeroize")]
+                unsafe {
+                    zeroize::zeroize_flat_type(self);
+                }
+            }
+        }
+
         #[cfg(feature = "zeroize")]
         impl zeroize::ZeroizeOnDrop for $name {}
 
@@ -216,7 +226,7 @@ macro_rules! define_aes_impl {
             fn drop(&mut self) {
                 #[cfg(feature = "zeroize")]
                 unsafe {
-                    zeroize::zeroize_flat_type(&mut self.backend);
+                    zeroize::zeroize_flat_type(self);
                 }
             }
         }
@@ -294,7 +304,7 @@ macro_rules! define_aes_impl {
             fn drop(&mut self) {
                 #[cfg(feature = "zeroize")]
                 unsafe {
-                    zeroize::zeroize_flat_type(&mut self.backend);
+                    zeroize::zeroize_flat_type(self);
                 }
             }
         }
