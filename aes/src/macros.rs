@@ -1,3 +1,5 @@
+// TODO: remove this allow after migration of the soft backend
+#[allow(unused_macros)]
 macro_rules! impl_backends {
     (
         enc_name = $enc_name:ident,
