@@ -7,7 +7,7 @@ name = "aes"
 version = "0.9.0-pre.1"
 dependencies = [
  "cfg-if",
- "cipher",
+ "cipher 0.5.0-pre.6",
  "cpufeatures",
  "hex-literal",
  "zeroize",
@@ -17,7 +17,7 @@ dependencies = [
 name = "aria"
 version = "0.2.0-pre"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
  "hex-literal",
 ]
 
@@ -25,7 +25,7 @@ dependencies = [
 name = "belt-block"
 version = "0.2.0-pre.1"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
  "hex-literal",
 ]
 
@@ -40,7 +40,7 @@ name = "blowfish"
 version = "0.10.0-pre.1"
 dependencies = [
  "byteorder",
- "cipher",
+ "cipher 0.5.0-pre.6",
 ]
 
 [[package]]
@@ -54,14 +54,14 @@ name = "camellia"
 version = "0.2.0-pre"
 dependencies = [
  "byteorder",
- "cipher",
+ "cipher 0.5.0-pre.6",
 ]
 
 [[package]]
 name = "cast5"
 version = "0.12.0-pre"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
  "hex-literal",
 ]
 
@@ -69,7 +69,7 @@ dependencies = [
 name = "cast6"
 version = "0.2.0-pre"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
  "hex-literal",
 ]
 
@@ -81,13 +81,25 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "cipher"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "773f3b9af64447d2ce9850330c473515014aa235e6a783b02db81ff39e4a3dad"
+dependencies = [
+ "blobby",
+ "crypto-common 0.1.6",
+ "inout 0.1.3",
+ "zeroize",
+]
+
+[[package]]
+name = "cipher"
 version = "0.5.0-pre.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c71c893d5a1e8257048dbb29954d2e1f85f091a150304f1defe4ca2806da5d3f"
 dependencies = [
  "blobby",
- "crypto-common",
- "inout",
+ "crypto-common 0.2.0-rc.0",
+ "inout 0.2.0-rc.0",
  "zeroize",
 ]
 
@@ -98,6 +110,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "53fe5e26ff1b7aef8bca9c6080520cfb8d9333c7568e1829cef191a9723e5504"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "crypto-common"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1bfb12502f3fc46cca1bb51ac28df9d618d813cdc3d2f25b9fe775a34af26bb3"
+dependencies = [
+ "generic-array",
+ "typenum",
 ]
 
 [[package]]
@@ -113,14 +135,24 @@ dependencies = [
 name = "des"
 version = "0.9.0-pre.1"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
+]
+
+[[package]]
+name = "generic-array"
+version = "0.14.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a"
+dependencies = [
+ "typenum",
+ "version_check",
 ]
 
 [[package]]
 name = "gift-cipher"
 version = "0.0.0"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
 ]
 
 [[package]]
@@ -142,7 +174,16 @@ dependencies = [
 name = "idea"
 version = "0.6.0-pre"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
+]
+
+[[package]]
+name = "inout"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a0c10553d664a4d0bcff9f4215d0aac67a639cc68ef660840afe309b807bc9f5"
+dependencies = [
+ "generic-array",
 ]
 
 [[package]]
@@ -158,7 +199,7 @@ dependencies = [
 name = "kuznyechik"
 version = "0.9.0-pre.1"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
  "hex-literal",
 ]
 
@@ -172,7 +213,7 @@ checksum = "97b3888a4aecf77e811145cadf6eef5901f4782c53886191b2f693f24761847c"
 name = "magma"
 version = "0.10.0-pre.1"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
  "hex-literal",
 ]
 
@@ -180,21 +221,21 @@ dependencies = [
 name = "rc2"
 version = "0.9.0-pre"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
 ]
 
 [[package]]
 name = "rc5"
 version = "0.1.0-pre"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
 ]
 
 [[package]]
 name = "rc6"
 version = "0.1.0"
 dependencies = [
- "cipher",
+ "cipher 0.4.4",
 ]
 
 [[package]]
@@ -202,14 +243,14 @@ name = "serpent"
 version = "0.6.0-pre"
 dependencies = [
  "byteorder",
- "cipher",
+ "cipher 0.5.0-pre.6",
 ]
 
 [[package]]
 name = "sm4"
 version = "0.6.0-pre"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
  "hex-literal",
 ]
 
@@ -217,7 +258,7 @@ dependencies = [
 name = "speck-cipher"
 version = "0.0.0"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
  "hex-literal",
 ]
 
@@ -225,7 +266,7 @@ dependencies = [
 name = "threefish"
 version = "0.6.0-pre"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
  "hex-literal",
  "zeroize",
 ]
@@ -234,7 +275,7 @@ dependencies = [
 name = "twofish"
 version = "0.8.0-pre"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
  "hex-literal",
 ]
 
@@ -245,10 +286,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 
 [[package]]
+name = "version_check"
+version = "0.9.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
+
+[[package]]
 name = "xtea"
 version = "0.0.0"
 dependencies = [
- "cipher",
+ "cipher 0.5.0-pre.6",
 ]
 
 [[package]]
