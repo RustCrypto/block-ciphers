@@ -1,6 +1,6 @@
 [package]
 name = "xtea"
-version = "0.0.0"
+version = "0.0.1-pre.0"
 description = "XTEA block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
