@@ -41,9 +41,9 @@ impl_backends!(
 impl_backends!(
     enc_name = Aes192BackEnc,
     dec_name = Aes192BackDec,
-    key_size = consts::U19,
+    key_size = consts::U24,
     keys_ty = expand::Aes192RoundKeys,
-    par_size = consts::U15,
+    par_size = consts::U19,
     expand_keys = expand::expand_key,
     inv_keys = expand::inv_expanded_keys,
     encrypt = encdec::encrypt,
