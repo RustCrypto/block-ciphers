@@ -105,12 +105,20 @@ fn store_expanded_keys<const N: usize>(input: [uint8x16_t; N]) -> [[u8; 16]; N] 
 }
 
 #[test]
+#[cfg_attr(
+    not(target_feature = "aes"),
+    ignore = "requires enabled `aes` target feature"
+)]
 fn aes128_key_expansion() {
     let ek = unsafe { expand_key(&AES128_KEY) };
     assert_eq!(store_expanded_keys(ek), AES128_EXP_KEYS);
 }
 
 #[test]
+#[cfg_attr(
+    not(target_feature = "aes"),
+    ignore = "requires enabled `aes` target feature"
+)]
 fn aes128_key_expansion_inv() {
     let ek = load_expanded_keys(AES128_EXP_KEYS);
     let inv_ek = unsafe { inv_expanded_keys(&ek) };
@@ -118,12 +126,20 @@ fn aes128_key_expansion_inv() {
 }
 
 #[test]
+#[cfg_attr(
+    not(target_feature = "aes"),
+    ignore = "requires enabled `aes` target feature"
+)]
 fn aes192_key_expansion() {
     let ek = unsafe { expand_key(&AES192_KEY) };
     assert_eq!(store_expanded_keys(ek), AES192_EXP_KEYS);
 }
 
 #[test]
+#[cfg_attr(
+    not(target_feature = "aes"),
+    ignore = "requires enabled `aes` target feature"
+)]
 fn aes256_key_expansion() {
     let ek = unsafe { expand_key(&AES256_KEY) };
     assert_eq!(store_expanded_keys(ek), AES256_EXP_KEYS);
