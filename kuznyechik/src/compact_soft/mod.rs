@@ -1,54 +1,45 @@
-//! SSE2-based implementation based on <https://github.com/aprelev/lg15>
-
 use crate::{BlockSize, Key};
 use cipher::{BlockCipherDecrypt, BlockCipherEncrypt, BlockClosure};
 
 mod backends;
-#[path = "../fused_tables/consts.rs"]
 mod consts;
 
-use backends::{expand_enc_keys, inv_enc_keys, DecBackend, EncBackend, RoundKeys};
+use backends::{expand, DecBackend, EncBackend, RoundKeys};
 
 #[derive(Clone)]
-pub(crate) struct EncDecKeys {
-    enc: RoundKeys,
-    dec: RoundKeys,
-}
+pub(crate) struct EncDecKeys(RoundKeys);
 #[derive(Clone)]
 pub(crate) struct EncKeys(RoundKeys);
 #[derive(Clone)]
 pub(crate) struct DecKeys(RoundKeys);
 
-impl EncKeys {
-    pub fn new(key: &Key) -> Self {
-        Self(expand_enc_keys(key))
-    }
-}
-
 impl From<EncKeys> for EncDecKeys {
     fn from(enc: EncKeys) -> Self {
-        Self {
-            dec: inv_enc_keys(&enc.0),
-            enc: enc.0,
-        }
+        Self(enc.0)
     }
 }
 
 impl From<EncKeys> for DecKeys {
     fn from(enc: EncKeys) -> Self {
-        Self(inv_enc_keys(&enc.0))
+        Self(enc.0)
+    }
+}
+
+impl EncKeys {
+    pub fn new(key: &Key) -> Self {
+        Self(expand(key))
     }
 }
 
 impl BlockCipherEncrypt for crate::Kuznyechik {
     fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = BlockSize>) {
-        f.call(&mut EncBackend(&self.keys.enc));
+        f.call(&mut EncBackend(&self.keys.0));
     }
 }
 
 impl BlockCipherDecrypt for crate::Kuznyechik {
     fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = BlockSize>) {
-        f.call(&mut DecBackend(&self.keys.dec));
+        f.call(&mut DecBackend(&self.keys.0));
     }
 }
 

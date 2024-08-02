@@ -13,6 +13,7 @@
 //! You can modify crate using the following configuration flag:
 //!
 //! - `kuznyechik_force_soft`: force software implementation.
+//! - `kuznyechik_compact_soft`: use compact software implementation.
 //!
 //! It can be enabled using `RUSTFLAGS` environmental variable
 //! (e.g. `RUSTFLAGS="--cfg kuznyechik_force_soft"`) or by modifying
@@ -25,7 +26,7 @@
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::needless_range_loop, clippy::transmute_ptr_to_ptr)]
 
@@ -33,27 +34,31 @@ pub use cipher;
 use cipher::{
     array::Array,
     consts::{U16, U32},
+    zeroize::ZeroizeOnDrop,
+    AlgorithmName, BlockCipher, BlockSizeUser, KeyInit, KeySizeUser,
 };
+use core::fmt;
 
 mod consts;
 
-#[cfg(all(
-    any(target_arch = "x86_64", target_arch = "x86"),
-    target_feature = "sse2",
-    not(kuznyechik_force_soft),
-))]
-#[path = "sse2/mod.rs"]
-mod imp;
+cfg_if::cfg_if!(
+    if #[cfg(all(
+        any(target_arch = "x86_64", target_arch = "x86"),
+        target_feature = "sse2",
+        not(kuznyechik_force_soft),
+    ))] {
+        mod sse2;
+        use sse2 as imp;
+    } else if #[cfg(kuznyechik_compact_soft)] {
+        mod compact_soft;
+        use compact_soft as imp;
+    } else {
+        mod big_soft;
+        use big_soft as imp;
+    }
+);
 
-#[cfg(not(all(
-    any(target_arch = "x86_64", target_arch = "x86"),
-    target_feature = "sse2",
-    not(kuznyechik_force_soft),
-)))]
-#[path = "soft/mod.rs"]
-mod imp;
-
-pub use imp::{Kuznyechik, KuznyechikDec, KuznyechikEnc};
+use imp::{DecKeys, EncDecKeys, EncKeys};
 
 type BlockSize = U16;
 type KeySize = U32;
@@ -62,3 +67,178 @@ type KeySize = U32;
 pub type Block = Array<u8, U16>;
 /// 256-bit Kuznyechik key
 pub type Key = Array<u8, U32>;
+
+/// Kuznyechik (GOST R 34.12-2015) block cipher
+#[derive(Clone)]
+pub struct Kuznyechik {
+    keys: EncDecKeys,
+}
+
+impl BlockCipher for Kuznyechik {}
+
+impl KeySizeUser for Kuznyechik {
+    type KeySize = KeySize;
+}
+
+impl BlockSizeUser for Kuznyechik {
+    type BlockSize = BlockSize;
+}
+
+impl KeyInit for Kuznyechik {
+    fn new(key: &Key) -> Self {
+        let enc_keys = EncKeys::new(key);
+        let keys = enc_keys.into();
+        Self { keys }
+    }
+}
+
+impl From<KuznyechikEnc> for Kuznyechik {
+    #[inline]
+    fn from(enc: KuznyechikEnc) -> Kuznyechik {
+        let keys = enc.keys.clone().into();
+        Self { keys }
+    }
+}
+
+impl From<&KuznyechikEnc> for Kuznyechik {
+    #[inline]
+    fn from(enc: &KuznyechikEnc) -> Kuznyechik {
+        let keys = enc.keys.clone().into();
+        Self { keys }
+    }
+}
+
+impl fmt::Debug for Kuznyechik {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str("Kuznyechik { ... }")
+    }
+}
+
+impl AlgorithmName for Kuznyechik {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Kuznyechik")
+    }
+}
+
+impl Drop for Kuznyechik {
+    fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
+        unsafe {
+            cipher::zeroize::zeroize_flat_type(self)
+        }
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl ZeroizeOnDrop for Kuznyechik {}
+
+/// Kuznyechik (GOST R 34.12-2015) block cipher (encrypt-only)
+#[derive(Clone)]
+pub struct KuznyechikEnc {
+    keys: EncKeys,
+}
+
+impl BlockCipher for KuznyechikEnc {}
+
+impl KeySizeUser for KuznyechikEnc {
+    type KeySize = KeySize;
+}
+
+impl BlockSizeUser for KuznyechikEnc {
+    type BlockSize = BlockSize;
+}
+
+impl KeyInit for KuznyechikEnc {
+    fn new(key: &Key) -> Self {
+        let keys = EncKeys::new(key);
+        Self { keys }
+    }
+}
+
+impl fmt::Debug for KuznyechikEnc {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str("KuznyechikEnc { ... }")
+    }
+}
+
+impl AlgorithmName for KuznyechikEnc {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Kuznyechik")
+    }
+}
+
+impl Drop for KuznyechikEnc {
+    fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
+        unsafe {
+            cipher::zeroize::zeroize_flat_type(self)
+        }
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl ZeroizeOnDrop for KuznyechikEnc {}
+
+/// Kuznyechik (GOST R 34.12-2015) block cipher (decrypt-only)
+#[derive(Clone)]
+pub struct KuznyechikDec {
+    keys: DecKeys,
+}
+
+impl BlockCipher for KuznyechikDec {}
+
+impl KeySizeUser for KuznyechikDec {
+    type KeySize = KeySize;
+}
+
+impl BlockSizeUser for KuznyechikDec {
+    type BlockSize = BlockSize;
+}
+
+impl KeyInit for KuznyechikDec {
+    fn new(key: &Key) -> Self {
+        let enc_keys = EncKeys::new(key);
+        let keys = enc_keys.into();
+        Self { keys }
+    }
+}
+
+impl From<KuznyechikEnc> for KuznyechikDec {
+    #[inline]
+    fn from(enc: KuznyechikEnc) -> KuznyechikDec {
+        let keys = enc.keys.clone().into();
+        Self { keys }
+    }
+}
+
+impl From<&KuznyechikEnc> for KuznyechikDec {
+    #[inline]
+    fn from(enc: &KuznyechikEnc) -> KuznyechikDec {
+        let keys = enc.keys.clone().into();
+        Self { keys }
+    }
+}
+
+impl fmt::Debug for KuznyechikDec {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        f.write_str("KuznyechikDec { ... }")
+    }
+}
+
+impl AlgorithmName for KuznyechikDec {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Kuznyechik")
+    }
+}
+
+impl Drop for KuznyechikDec {
+    fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
+        unsafe {
+            cipher::zeroize::zeroize_flat_type(self)
+        }
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl ZeroizeOnDrop for KuznyechikDec {}

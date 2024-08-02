@@ -1,5 +1,3 @@
-//! SSE2-based implementation based on <https://github.com/aprelev/lg15>
-
 use crate::{BlockSize, Key};
 use cipher::{BlockCipherDecrypt, BlockCipherEncrypt, BlockClosure};
 
