@@ -1,5 +1,3 @@
-//! SSE2-based implementation based on <https://github.com/aprelev/lg15>
-
 use crate::{BlockSize, Key, KeySize};
 use cipher::{
     AlgorithmName, BlockCipher, BlockCipherDecrypt, BlockCipherEncrypt, BlockClosure,
@@ -85,17 +83,17 @@ impl AlgorithmName for Kuznyechik {
     }
 }
 
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl Drop for Kuznyechik {
     fn drop(&mut self) {
-        self.enc_keys.zeroize();
-        self.dec_keys.zeroize();
+        #[cfg(feature = "zeroize")]
+        {
+            self.enc_keys.zeroize();
+            self.dec_keys.zeroize();
+        }
     }
 }
 
 #[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl ZeroizeOnDrop for Kuznyechik {}
 
 /// Kuznyechik (GOST R 34.12-2015) block cipher (encrypt-only)
@@ -116,9 +114,8 @@ impl BlockSizeUser for KuznyechikEnc {
 
 impl KeyInit for KuznyechikEnc {
     fn new(key: &Key) -> Self {
-        Self {
-            keys: expand_enc_keys(key),
-        }
+        let keys = expand_enc_keys(key);
+        Self { keys }
     }
 }
 
@@ -139,17 +136,14 @@ impl AlgorithmName for KuznyechikEnc {
         f.write_str("Kuznyechik")
     }
 }
-
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl Drop for KuznyechikEnc {
     fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
         self.keys.zeroize();
     }
 }
 
 #[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl ZeroizeOnDrop for KuznyechikEnc {}
 
 /// Kuznyechik (GOST R 34.12-2015) block cipher (decrypt-only)
@@ -171,27 +165,24 @@ impl BlockSizeUser for KuznyechikDec {
 impl KeyInit for KuznyechikDec {
     fn new(key: &Key) -> Self {
         let enc_keys = expand_enc_keys(key);
-        Self {
-            keys: inv_enc_keys(&enc_keys),
-        }
+        let keys = inv_enc_keys(&enc_keys);
+        Self { keys }
     }
 }
 
 impl From<KuznyechikEnc> for KuznyechikDec {
     #[inline]
     fn from(enc: KuznyechikEnc) -> KuznyechikDec {
-        Self {
-            keys: inv_enc_keys(&enc.keys),
-        }
+        let keys = inv_enc_keys(&enc.keys);
+        Self { keys }
     }
 }
 
 impl From<&KuznyechikEnc> for KuznyechikDec {
     #[inline]
     fn from(enc: &KuznyechikEnc) -> KuznyechikDec {
-        Self {
-            keys: inv_enc_keys(&enc.keys),
-        }
+        let keys = inv_enc_keys(&enc.keys);
+        Self { keys }
     }
 }
 
@@ -213,14 +204,13 @@ impl AlgorithmName for KuznyechikDec {
     }
 }
 
-#[cfg(feature = "zeroize")]
 #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl Drop for KuznyechikDec {
     fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
         self.keys.zeroize();
     }
 }
 
 #[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl ZeroizeOnDrop for KuznyechikDec {}

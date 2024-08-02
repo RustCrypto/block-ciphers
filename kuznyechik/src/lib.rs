@@ -13,6 +13,7 @@
 //! You can modify crate using the following configuration flag:
 //!
 //! - `kuznyechik_force_soft`: force software implementation.
+//! - `kuznyechik_compact_soft`: use compact software implementation.
 //!
 //! It can be enabled using `RUSTFLAGS` environmental variable
 //! (e.g. `RUSTFLAGS="--cfg kuznyechik_force_soft"`) or by modifying
@@ -25,7 +26,7 @@
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::needless_range_loop, clippy::transmute_ptr_to_ptr)]
 
@@ -37,21 +38,22 @@ use cipher::{
 
 mod consts;
 
-#[cfg(all(
-    any(target_arch = "x86_64", target_arch = "x86"),
-    target_feature = "sse2",
-    not(kuznyechik_force_soft),
-))]
-#[path = "sse2/mod.rs"]
-mod imp;
-
-#[cfg(not(all(
-    any(target_arch = "x86_64", target_arch = "x86"),
-    target_feature = "sse2",
-    not(kuznyechik_force_soft),
-)))]
-#[path = "soft/mod.rs"]
-mod imp;
+cfg_if::cfg_if!(
+    if #[cfg(all(
+        any(target_arch = "x86_64", target_arch = "x86"),
+        target_feature = "sse2",
+        not(kuznyechik_force_soft),
+    ))] {
+        mod sse2;
+        use sse2 as imp;
+    } else if #[cfg(kuznyechik_compact_soft)] {
+        mod compact_soft;
+        use compact_soft as imp;
+    } else {
+        mod big_soft;
+        use big_soft as imp;
+    }
+);
 
 pub use imp::{Kuznyechik, KuznyechikDec, KuznyechikEnc};
 

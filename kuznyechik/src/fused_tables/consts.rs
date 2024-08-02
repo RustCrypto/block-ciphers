@@ -1,3 +1,4 @@
+// TODO: use u128 tables after MSRV is bumped to 1.77 or higher
 #[repr(align(16))]
 pub struct Align16<T>(pub T);
 
