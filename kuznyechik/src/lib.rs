@@ -41,30 +41,24 @@ use core::fmt;
 
 mod consts;
 
-// cfg_if::cfg_if!(
-//     if #[cfg(all(
-//         any(target_arch = "x86_64", target_arch = "x86"),
-//         target_feature = "sse2",
-//         not(kuznyechik_force_soft),
-//     ))] {
-//         mod sse2;
-//         use sse2 as imp;
-//     } else if #[cfg(kuznyechik_compact_soft)] {
-//         mod compact_soft;
-//         use compact_soft as imp;
-//     } else {
-//         mod big_soft;
-//         use big_soft as imp;
-//     }
-// );
+cfg_if::cfg_if!(
+    if #[cfg(all(
+        any(target_arch = "x86_64", target_arch = "x86"),
+        target_feature = "sse2",
+        not(kuznyechik_force_soft),
+    ))] {
+        mod sse2;
+        use sse2 as imp;
+    } else if #[cfg(kuznyechik_compact_soft)] {
+        mod compact_soft;
+        use compact_soft as imp;
+    } else {
+        mod big_soft;
+        use big_soft as imp;
+    }
+);
 
-mod compact_soft;
-use compact_soft as imp;
-
-// mod big_soft;
-// use big_soft as imp;
-
-// pub use imp::{Kuznyechik, KuznyechikDec, KuznyechikEnc};
+use imp::{DecKeys, EncDecKeys, EncKeys};
 
 type BlockSize = U16;
 type KeySize = U32;
@@ -77,7 +71,7 @@ pub type Key = Array<u8, U32>;
 /// Kuznyechik (GOST R 34.12-2015) block cipher
 #[derive(Clone)]
 pub struct Kuznyechik {
-    keys: imp::EncDecKeys,
+    keys: EncDecKeys,
 }
 
 impl BlockCipher for Kuznyechik {}
@@ -92,7 +86,7 @@ impl BlockSizeUser for Kuznyechik {
 
 impl KeyInit for Kuznyechik {
     fn new(key: &Key) -> Self {
-        let enc_keys = imp::EncKeys::new(key);
+        let enc_keys = EncKeys::new(key);
         let keys = enc_keys.into();
         Self { keys }
     }
@@ -141,7 +135,7 @@ impl ZeroizeOnDrop for Kuznyechik {}
 /// Kuznyechik (GOST R 34.12-2015) block cipher (encrypt-only)
 #[derive(Clone)]
 pub struct KuznyechikEnc {
-    keys: imp::EncKeys,
+    keys: EncKeys,
 }
 
 impl BlockCipher for KuznyechikEnc {}
@@ -156,7 +150,7 @@ impl BlockSizeUser for KuznyechikEnc {
 
 impl KeyInit for KuznyechikEnc {
     fn new(key: &Key) -> Self {
-        let keys = imp::EncKeys::new(key);
+        let keys = EncKeys::new(key);
         Self { keys }
     }
 }
@@ -188,7 +182,7 @@ impl ZeroizeOnDrop for KuznyechikEnc {}
 /// Kuznyechik (GOST R 34.12-2015) block cipher (decrypt-only)
 #[derive(Clone)]
 pub struct KuznyechikDec {
-    keys: imp::DecKeys,
+    keys: DecKeys,
 }
 
 impl BlockCipher for KuznyechikDec {}
@@ -203,7 +197,7 @@ impl BlockSizeUser for KuznyechikDec {
 
 impl KeyInit for KuznyechikDec {
     fn new(key: &Key) -> Self {
-        let enc_keys = imp::EncKeys::new(key);
+        let enc_keys = EncKeys::new(key);
         let keys = enc_keys.into();
         Self { keys }
     }

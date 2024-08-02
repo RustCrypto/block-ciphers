@@ -3,6 +3,7 @@
 pub(crate) struct Align16<T>(pub T);
 
 impl<T> Align16<T> {
+    #[allow(dead_code)]
     pub fn as_ptr(&self) -> *const u128 {
         self as *const Self as *const u128
     }
