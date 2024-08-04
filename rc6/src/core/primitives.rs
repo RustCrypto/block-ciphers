@@ -1,23 +1,23 @@
 use cipher::{
-    generic_array::{ArrayLength, GenericArray},
+    array::{Array, ArraySize},
     typenum::{Diff, Prod, Quot, Sum, U1, U2, U4, U8},
     zeroize::DefaultIsZeroes,
 };
 use core::ops::{Add, BitXor};
 
 pub type BlockSize<W> = Prod<<W as Word>::Bytes, U4>;
-pub type Block<W> = GenericArray<u8, BlockSize<W>>;
+pub type Block<W> = Array<u8, BlockSize<W>>;
 
-pub type Key<B> = GenericArray<u8, B>;
+pub type Key<B> = Array<u8, B>;
 
-pub type ExpandedKeyTable<W, R> = GenericArray<W, ExpandedKeyTableSize<R>>;
+pub type ExpandedKeyTable<W, R> = Array<W, ExpandedKeyTableSize<R>>;
 pub type ExpandedKeyTableSize<R> = Prod<Sum<R, U2>, U2>;
 
-pub type KeyAsWords<W, B> = GenericArray<W, KeyAsWordsSize<W, B>>;
+pub type KeyAsWords<W, B> = Array<W, KeyAsWordsSize<W, B>>;
 pub type KeyAsWordsSize<W, B> = Quot<Diff<Sum<B, <W as Word>::Bytes>, U1>, <W as Word>::Bytes>;
 
 pub trait Word: Default + Copy + From<u8> + Add<Output = Self> + DefaultIsZeroes {
-    type Bytes: ArrayLength<u8>;
+    type Bytes: ArraySize;
 
     const ZERO: Self;
     const THREE: Self;
@@ -33,8 +33,8 @@ pub trait Word: Default + Copy + From<u8> + Add<Output = Self> + DefaultIsZeroes
     fn rotate_left(self, n: Self) -> Self;
     fn rotate_right(self, n: Self) -> Self;
 
-    fn from_le_bytes(bytes: &GenericArray<u8, Self::Bytes>) -> Self;
-    fn to_le_bytes(self) -> GenericArray<u8, Self::Bytes>;
+    fn from_le_bytes(bytes: &Array<u8, Self::Bytes>) -> Self;
+    fn to_le_bytes(self) -> Array<u8, Self::Bytes>;
 
     fn bitxor(self, other: Self) -> Self;
 }
@@ -75,12 +75,12 @@ impl Word for u8 {
     }
 
     #[inline(always)]
-    fn from_le_bytes(bytes: &GenericArray<u8, Self::Bytes>) -> Self {
+    fn from_le_bytes(bytes: &Array<u8, Self::Bytes>) -> Self {
         u8::from_le_bytes(bytes.as_slice().try_into().unwrap())
     }
 
     #[inline(always)]
-    fn to_le_bytes(self) -> GenericArray<u8, Self::Bytes> {
+    fn to_le_bytes(self) -> Array<u8, Self::Bytes> {
         u8::to_le_bytes(self).into()
     }
 
@@ -126,12 +126,12 @@ impl Word for u16 {
     }
 
     #[inline(always)]
-    fn from_le_bytes(bytes: &GenericArray<u8, Self::Bytes>) -> Self {
+    fn from_le_bytes(bytes: &Array<u8, Self::Bytes>) -> Self {
         u16::from_le_bytes(bytes.as_slice().try_into().unwrap())
     }
 
     #[inline(always)]
-    fn to_le_bytes(self) -> GenericArray<u8, Self::Bytes> {
+    fn to_le_bytes(self) -> Array<u8, Self::Bytes> {
         u16::to_le_bytes(self).into()
     }
 
@@ -177,12 +177,12 @@ impl Word for u32 {
     }
 
     #[inline(always)]
-    fn from_le_bytes(bytes: &GenericArray<u8, Self::Bytes>) -> Self {
+    fn from_le_bytes(bytes: &Array<u8, Self::Bytes>) -> Self {
         u32::from_le_bytes(bytes.as_slice().try_into().unwrap())
     }
 
     #[inline(always)]
-    fn to_le_bytes(self) -> GenericArray<u8, Self::Bytes> {
+    fn to_le_bytes(self) -> Array<u8, Self::Bytes> {
         u32::to_le_bytes(self).into()
     }
 
@@ -230,12 +230,12 @@ impl Word for u64 {
     }
 
     #[inline(always)]
-    fn from_le_bytes(bytes: &GenericArray<u8, Self::Bytes>) -> Self {
+    fn from_le_bytes(bytes: &Array<u8, Self::Bytes>) -> Self {
         u64::from_le_bytes(bytes.as_slice().try_into().unwrap())
     }
 
     #[inline(always)]
-    fn to_le_bytes(self) -> GenericArray<u8, Self::Bytes> {
+    fn to_le_bytes(self) -> Array<u8, Self::Bytes> {
         u64::to_le_bytes(self).into()
     }
 

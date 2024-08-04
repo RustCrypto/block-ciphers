@@ -1,8 +1,10 @@
 /// generated using the code in: https://www.ietf.org/archive/id/draft-krovetz-rc6-rc5-vectors-00.txt
 #[cfg(test)]
+#[allow(deprecated)] // uses `clone_from_slice`
 mod tests {
-    use cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, KeyInit};
-    use rc6::{RC6_16_16_8, RC6_32_20_16, RC6_64_24_24, RC6_8_12_4};
+    use cipher::consts::*;
+    use cipher::{array::Array, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
+    use rc6::RC6;
 
     #[test]
     fn enc_dec_8_12_4() {
@@ -11,8 +13,9 @@ mod tests {
         let pt = [0x00, 0x01, 0x02, 0x03];
         let ct = [0xAE, 0xFC, 0x46, 0x12];
 
-        let rc6 = <RC6_8_12_4 as KeyInit>::new_from_slice(&key).unwrap();
-        let mut block = GenericArray::clone_from_slice(&pt);
+        let rc6 = <RC6<u8, U12, U4> as KeyInit>::new_from_slice(&key).unwrap();
+
+        let mut block = Array::clone_from_slice(&pt);
         rc6.encrypt_block(&mut block);
 
         assert_eq!(ct, block[..]);
@@ -28,8 +31,8 @@ mod tests {
         let pt = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07];
         let ct = [0x2F, 0xF0, 0xB6, 0x8E, 0xAE, 0xFF, 0xAD, 0x5B];
 
-        let rc6 = <RC6_16_16_8 as KeyInit>::new_from_slice(&key).unwrap();
-        let mut block = GenericArray::clone_from_slice(&pt);
+        let rc6 = <RC6<u16, U16, U8> as KeyInit>::new_from_slice(&key).unwrap();
+        let mut block = Array::clone_from_slice(&pt);
         rc6.encrypt_block(&mut block);
 
         assert_eq!(ct, block[..]);
@@ -54,8 +57,8 @@ mod tests {
             0x2A, 0x3C,
         ];
 
-        let rc6 = <RC6_32_20_16 as KeyInit>::new_from_slice(&key).unwrap();
-        let mut block = GenericArray::clone_from_slice(&pt);
+        let rc6 = <RC6<u32, U20, U16> as KeyInit>::new_from_slice(&key).unwrap();
+        let mut block = Array::clone_from_slice(&pt);
         rc6.encrypt_block(&mut block);
 
         assert_eq!(ct, block[..]);
@@ -82,8 +85,8 @@ mod tests {
             0x67, 0x88, 0x66, 0x17,
         ];
 
-        let rc6 = <RC6_64_24_24 as KeyInit>::new_from_slice(&key).unwrap();
-        let mut block = GenericArray::clone_from_slice(&pt);
+        let rc6 = <RC6<u64, U24, U24> as KeyInit>::new_from_slice(&key).unwrap();
+        let mut block = Array::clone_from_slice(&pt);
         rc6.encrypt_block(&mut block);
 
         assert_eq!(ct, block[..]);

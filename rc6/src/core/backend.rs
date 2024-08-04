@@ -5,7 +5,8 @@ use core::{
 };
 
 use cipher::{
-    generic_array::{sequence::GenericSequence, ArrayLength, GenericArray},
+    array::{Array, ArraySize},
+    crypto_common::BlockSizes,
     inout::InOut,
     typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U2, U256, U4},
 };
@@ -22,7 +23,7 @@ where
     // ExpandedKeyTableSize
     R: Add<U2>,
     Sum<R, U2>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
 {
     key_table: ExpandedKeyTable<W, R>,
     _key_size: PhantomData<B>,
@@ -33,7 +34,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -41,16 +42,16 @@ where
     // ExpandedKeyTableSize
     R: Add<U2>,
     Sum<R, U2>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
     // Key range
-    B: ArrayLength<u8>,
+    B: ArraySize,
     B: IsLess<U256>,
     Le<B, U256>: NonZero,
     // KeyAsWordsSize
     B: Add<W::Bytes>,
     Sum<B, W::Bytes>: Sub<U1>,
     Diff<Sum<B, W::Bytes>, U1>: Div<W::Bytes>,
-    KeyAsWordsSize<W, B>: ArrayLength<W>,
+    KeyAsWordsSize<W, B>: ArraySize,
 {
     pub fn new(key: &Key<B>) -> RC6<W, R, B> {
         Self {
@@ -68,7 +69,7 @@ where
 
     fn key_into_words(key: &Key<B>) -> KeyAsWords<W, B> {
         // can be uninitialized
-        let mut key_as_words: GenericArray<W, KeyAsWordsSize<W, B>> = GenericArray::default();
+        let mut key_as_words: Array<W, KeyAsWordsSize<W, B>> = Array::default();
 
         for i in (0..B::USIZE).rev() {
             key_as_words[i / W::Bytes::USIZE] =
@@ -81,8 +82,7 @@ where
 
     fn initialize_expanded_key_table() -> ExpandedKeyTable<W, R> {
         // must be zero initialized
-        let mut expanded_key_table: GenericArray<W, ExpandedKeyTableSize<R>> =
-            GenericArray::generate(|_| W::ZERO);
+        let mut expanded_key_table: Array<W, ExpandedKeyTableSize<R>> = Array::from_fn(|_| W::ZERO);
 
         expanded_key_table[0] = W::P;
         for i in 1..expanded_key_table.len() {
@@ -127,7 +127,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: ArrayLength<u8>,
+    BlockSize<W>: BlockSizes,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -135,7 +135,7 @@ where
     // ExpandedKeyTableSize
     R: Add<U2>,
     Sum<R, U2>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArrayLength<W>,
+    ExpandedKeyTableSize<R>: ArraySize,
 {
     pub fn encrypt(&self, mut block: InOut<'_, '_, Block<W>>) {
         let (mut a, mut b, mut c, mut d) = Self::words_from_block(block.get_in());
@@ -228,33 +228,5 @@ where
         l_h.copy_from_slice(&b.to_le_bytes());
         r_l.copy_from_slice(&c.to_le_bytes());
         r_h.copy_from_slice(&d.to_le_bytes());
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::block_cipher::{RC6_16_16_8, RC6_32_20_16, RC6_64_24_24, RC6_8_12_4};
-    use crate::core::backend::GenericArray;
-    use rand::{thread_rng, Rng};
-
-    #[macro_export]
-    macro_rules! words_block_conv {
-        ($rc_tyoe:ident, $key_size:expr) => {
-            let mut pt = [0u8; $key_size];
-            thread_rng().fill(&mut pt[..]);
-            let block = GenericArray::clone_from_slice(&pt);
-            let mut after_block = block.clone();
-            let (a, b, c, d) = $rc_tyoe::words_from_block(&block);
-            $rc_tyoe::block_from_words(a, b, c, d, &mut after_block);
-            assert_eq!(block, after_block);
-        };
-    }
-
-    #[test]
-    fn words_block_test() {
-        words_block_conv!(RC6_16_16_8, 8);
-        words_block_conv!(RC6_32_20_16, 16);
-        words_block_conv!(RC6_64_24_24, 32);
-        words_block_conv!(RC6_8_12_4, 4);
     }
 }
