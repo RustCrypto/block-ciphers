@@ -34,10 +34,12 @@ pub use cipher;
 use cipher::{
     array::Array,
     consts::{U16, U32},
-    zeroize::ZeroizeOnDrop,
     AlgorithmName, BlockCipher, BlockSizeUser, KeyInit, KeySizeUser,
 };
 use core::fmt;
+
+#[cfg(feature = "zeroize")]
+use cipher::zeroize::ZeroizeOnDrop;
 
 mod consts;
 

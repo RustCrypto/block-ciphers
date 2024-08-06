@@ -36,12 +36,12 @@ jobs:
           toolchain: ${{ matrix.rust }}
           targets: ${{ matrix.target }}
       - run: cargo build --target ${{ matrix.target }}
-      - env:
+      - run: cargo build --target ${{ matrix.target }}
+        env:
           RUSTFLAGS: "-Dwarnings --cfg kuznyechik_force_soft"
-        run: cargo build --target ${{ matrix.target }}
-        - env:
+      - run: cargo build --target ${{ matrix.target }}
+        env:
           RUSTFLAGS: "-Dwarnings --cfg kuznyechik_force_soft --cfg kuznyechik_compact_soft"
-        run: cargo build --target ${{ matrix.target }}
 
   minimal-versions:
     uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
