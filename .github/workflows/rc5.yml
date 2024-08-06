@@ -2,6 +2,7 @@ name: rc5
 on:
   pull_request:
     paths:
+      - ".github/workflows/rc5.yml"
       - "rc5/**"
       - "Cargo.*"
   push:
@@ -27,7 +28,7 @@ jobs:
           - thumbv7em-none-eabi
           - wasm32-unknown-unknown
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -48,7 +49,7 @@ jobs:
           - 1.65.0 # MSRV
           - stable
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
