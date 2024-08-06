@@ -28,7 +28,7 @@ jobs:
           - thumbv7em-none-eabi
           - wasm32-unknown-unknown
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
@@ -39,7 +39,7 @@ jobs:
     if: false # TODO: temp disabled due to unpublished prerelease dependencies
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@master
       with:
         toolchain: nightly
@@ -56,7 +56,7 @@ jobs:
           - 1.65.0 # MSRV
           - stable
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@master
       with:
         toolchain: ${{ matrix.rust }}
