@@ -3,6 +3,7 @@ name: idea
 on:
   pull_request:
     paths:
+      - ".github/workflows/idea.yml"
       - "idea/**"
       - "Cargo.*"
   push:

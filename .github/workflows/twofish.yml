@@ -3,6 +3,7 @@ name: twofish
 on:
   pull_request:
     paths:
+      - ".github/workflows/twofish.yml"
       - "twofish/**"
       - "Cargo.*"
   push:

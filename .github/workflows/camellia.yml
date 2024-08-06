@@ -3,6 +3,7 @@ name: camellia
 on:
   pull_request:
     paths:
+      - ".github/workflows/camellia.yml"
       - "camellia/**"
       - "Cargo.*"
   push:

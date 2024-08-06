@@ -3,6 +3,7 @@ name: cast5
 on:
   pull_request:
     paths:
+      - ".github/workflows/cast5.yml"
       - "cast5/**"
       - "Cargo.*"
   push:

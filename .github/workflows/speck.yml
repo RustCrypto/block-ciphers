@@ -3,6 +3,7 @@ name: speck
 on:
   pull_request:
     paths:
+      - ".github/workflows/speck.yml"
       - "speck/**"
       - "Cargo.*"
   push:

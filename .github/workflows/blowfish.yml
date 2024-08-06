@@ -3,6 +3,7 @@ name: blowfish
 on:
   pull_request:
     paths:
+      - ".github/workflows/blowfish.yml"
       - "blowfish/**"
       - "Cargo.*"
   push:

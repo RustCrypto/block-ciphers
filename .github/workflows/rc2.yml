@@ -3,6 +3,7 @@ name: rc2
 on:
   pull_request:
     paths:
+      - ".github/workflows/rc2.yml"
       - "rc2/**"
       - "Cargo.*"
   push:

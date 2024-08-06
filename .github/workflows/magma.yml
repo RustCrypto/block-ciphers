@@ -3,6 +3,7 @@ name: magma
 on:
   pull_request:
     paths:
+      - ".github/workflows/magma.yml"
       - "magma/**"
       - "Cargo.*"
   push:

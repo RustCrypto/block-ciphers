@@ -3,6 +3,7 @@ name: serpent
 on:
   pull_request:
     paths:
+      - ".github/workflows/serpent.yml"
       - "serpent/**"
       - "Cargo.*"
   push:

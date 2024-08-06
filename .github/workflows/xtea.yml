@@ -3,6 +3,7 @@ name: xtea
 on:
   pull_request:
     paths:
+      - ".github/workflows/xtea.yml"
       - "xtea/**"
       - "Cargo.*"
   push:

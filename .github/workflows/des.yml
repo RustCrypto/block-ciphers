@@ -3,6 +3,7 @@ name: des
 on:
   pull_request:
     paths:
+      - ".github/workflows/des.yml"
       - "des/**"
       - "Cargo.*"
   push:

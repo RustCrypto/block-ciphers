@@ -3,6 +3,7 @@ name: threefish
 on:
   pull_request:
     paths:
+      - ".github/workflows/threefish.yml"
       - "threefish/**"
       - "Cargo.*"
   push:

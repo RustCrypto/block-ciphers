@@ -3,6 +3,7 @@ name: aria
 on:
   pull_request:
     paths:
+      - ".github/workflows/aria.yml"
       - "aria/**"
       - "Cargo.*"
   push:

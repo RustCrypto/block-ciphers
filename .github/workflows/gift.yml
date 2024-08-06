@@ -3,6 +3,7 @@ name: gift
 on:
   pull_request:
     paths:
+      - ".github/workflows/gift.yml"
       - "gift/**"
       - "Cargo.*"
   push:

@@ -2,6 +2,7 @@ name: rc5
 on:
   pull_request:
     paths:
+      - ".github/workflows/rc5.yml"
       - "rc5/**"
       - "Cargo.*"
   push:
