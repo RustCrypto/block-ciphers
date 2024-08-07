@@ -10,8 +10,11 @@
 //!
 //! # Examples
 //! ```
-//! use cast5::cipher::array::Array;
-//! use cast5::cipher::{Key, Block, BlockCipherEncrypt, BlockCipherDecrypt, KeyInit};
+//! use cast5::cipher::{
+//!     array::Array,
+//!     block::{BlockCipherDecrypt, BlockCipherEncrypt},
+//!     KeyInit,
+//! };
 //! use cast5::Cast5;
 //!
 //! let key = Array::from([0u8; 16]);
@@ -36,7 +39,7 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
 #![deny(unsafe_code)]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 
 pub use cipher;
@@ -45,8 +48,13 @@ mod consts;
 mod schedule;
 
 use cipher::{
-    consts::{U16, U8},
-    AlgorithmName, BlockCipher, InvalidLength, Key, KeyInit, KeySizeUser,
+    block::{
+        BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
+        BlockCipherEncClosure, BlockCipherEncrypt,
+    },
+    consts::{U1, U16, U8},
+    AlgorithmName, Block, BlockSizeUser, InOut, InvalidLength, Key, KeyInit, KeySizeUser,
+    ParBlocksSizeUser,
 };
 use core::fmt;
 
@@ -129,8 +137,6 @@ macro_rules! f3 {
     }};
 }
 
-impl BlockCipher for Cast5 {}
-
 impl KeySizeUser for Cast5 {
     type KeySize = U16;
 }
@@ -159,37 +165,26 @@ impl KeyInit for Cast5 {
     }
 }
 
-impl fmt::Debug for Cast5 {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("Cast5 { ... }")
+impl BlockSizeUser for Cast5 {
+    type BlockSize = U8;
+}
+
+impl ParBlocksSizeUser for Cast5 {
+    type ParBlocksSize = U1;
+}
+
+impl BlockCipherEncrypt for Cast5 {
+    #[inline]
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
     }
 }
 
-impl AlgorithmName for Cast5 {
-    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("Cast5")
-    }
-}
-
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
-impl Drop for Cast5 {
-    fn drop(&mut self) {
-        self.masking.zeroize();
-        self.rotate.zeroize();
-        self.small_key.zeroize();
-    }
-}
-
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
-impl ZeroizeOnDrop for Cast5 {}
-
-cipher::impl_simple_block_encdec!(
-    Cast5, U8, cipher, block,
-    encrypt: {
-        let masking = cipher.masking;
-        let rotate = cipher.rotate;
+impl BlockCipherEncBackend for Cast5 {
+    #[inline]
+    fn encrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+        let masking = self.masking;
+        let rotate = self.rotate;
 
         // (L0,R0) <-- (m1...m64). (Split the plaintext into left and
         // right 32-bit halves L0 = m1...m32 and R0 = m33...m64.)
@@ -218,7 +213,7 @@ cipher::impl_simple_block_encdec!(
         let (l, r) = (r, l ^ f2!(r, masking[10], rotate[10]));
         let (l, r) = (r, l ^ f3!(r, masking[11], rotate[11]));
 
-        let (l, r) = if cipher.small_key {
+        let (l, r) = if self.small_key {
             (l, r)
         } else {
             // Rounds 13..16 are only executed for keys > 80 bits.
@@ -234,15 +229,26 @@ cipher::impl_simple_block_encdec!(
         block[0..4].copy_from_slice(&r.to_be_bytes());
         block[4..8].copy_from_slice(&l.to_be_bytes());
     }
-    decrypt: {
-        let masking = cipher.masking;
-        let rotate = cipher.rotate;
+}
+
+impl BlockCipherDecrypt for Cast5 {
+    #[inline]
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
+    }
+}
+
+impl BlockCipherDecBackend for Cast5 {
+    #[inline]
+    fn decrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+        let masking = self.masking;
+        let rotate = self.rotate;
 
         let b = block.get_in();
         let l = u32::from_be_bytes(b[0..4].try_into().unwrap());
         let r = u32::from_be_bytes(b[4..8].try_into().unwrap());
 
-        let (l, r) = if cipher.small_key {
+        let (l, r) = if self.small_key {
             (l, r)
         } else {
             let (l, r) = (r, l ^ f1!(r, masking[15], rotate[15]));
@@ -268,4 +274,30 @@ cipher::impl_simple_block_encdec!(
         block[0..4].copy_from_slice(&r.to_be_bytes());
         block[4..8].copy_from_slice(&l.to_be_bytes());
     }
-);
+}
+
+impl fmt::Debug for Cast5 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Cast5 { ... }")
+    }
+}
+
+impl AlgorithmName for Cast5 {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Cast5")
+    }
+}
+
+impl Drop for Cast5 {
+    fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
+        {
+            self.masking.zeroize();
+            self.rotate.zeroize();
+            self.small_key.zeroize();
+        }
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl ZeroizeOnDrop for Cast5 {}

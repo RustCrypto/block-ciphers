@@ -1,5 +1,9 @@
 use cast5::Cast5;
-use cipher::{array::Array, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
+use cipher::{
+    array::Array,
+    block::{BlockCipherDecrypt, BlockCipherEncrypt},
+    KeyInit,
+};
 use hex_literal::hex;
 
 /// Test vectors from RFC 2144 Appendix B.1
