@@ -1,4 +1,4 @@
-use super::{expand_key, inv_expanded_keys};
+use super::expand::{expand_key, inv_expanded_keys};
 use core::arch::aarch64::*;
 use hex_literal::hex;
 
@@ -105,25 +105,41 @@ fn store_expanded_keys<const N: usize>(input: [uint8x16_t; N]) -> [[u8; 16]; N] 
 }
 
 #[test]
+#[cfg_attr(
+    not(target_feature = "aes"),
+    ignore = "requires enabled `aes` target feature"
+)]
 fn aes128_key_expansion() {
     let ek = unsafe { expand_key(&AES128_KEY) };
     assert_eq!(store_expanded_keys(ek), AES128_EXP_KEYS);
 }
 
 #[test]
+#[cfg_attr(
+    not(target_feature = "aes"),
+    ignore = "requires enabled `aes` target feature"
+)]
 fn aes128_key_expansion_inv() {
-    let mut ek = load_expanded_keys(AES128_EXP_KEYS);
-    unsafe { inv_expanded_keys(&mut ek) };
-    assert_eq!(store_expanded_keys(ek), AES128_EXP_INVKEYS);
+    let ek = load_expanded_keys(AES128_EXP_KEYS);
+    let inv_ek = unsafe { inv_expanded_keys(&ek) };
+    assert_eq!(store_expanded_keys(inv_ek), AES128_EXP_INVKEYS);
 }
 
 #[test]
+#[cfg_attr(
+    not(target_feature = "aes"),
+    ignore = "requires enabled `aes` target feature"
+)]
 fn aes192_key_expansion() {
     let ek = unsafe { expand_key(&AES192_KEY) };
     assert_eq!(store_expanded_keys(ek), AES192_EXP_KEYS);
 }
 
 #[test]
+#[cfg_attr(
+    not(target_feature = "aes"),
+    ignore = "requires enabled `aes` target feature"
+)]
 fn aes256_key_expansion() {
     let ek = unsafe { expand_key(&AES256_KEY) };
     assert_eq!(store_expanded_keys(ek), AES256_EXP_KEYS);

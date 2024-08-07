@@ -123,6 +123,8 @@
 #[cfg_attr(docsrs, doc(cfg(feature = "hazmat")))]
 pub mod hazmat;
 
+#[macro_use]
+mod macros;
 mod soft;
 
 use cfg_if::cfg_if;

@@ -4,11 +4,27 @@
 //! implementations in this crate, but instead provides raw AES-NI accelerated
 //! access to the AES round function gated under the `hazmat` crate feature.
 
-use super::{
-    arch::*,
-    utils::{load8, store8},
-};
+use super::arch::*;
 use crate::{Block, Block8};
+use cipher::array::{Array, ArraySize};
+
+#[target_feature(enable = "sse2")]
+pub(crate) unsafe fn load<N: ArraySize>(blocks: *const Array<Block, N>) -> Array<__m128i, N> {
+    let p = blocks.cast::<__m128i>();
+    let mut res: Array<__m128i, N> = core::mem::zeroed();
+    for i in 0..N::USIZE {
+        res[i] = _mm_loadu_si128(p.add(i));
+    }
+    res
+}
+
+#[target_feature(enable = "sse2")]
+pub(crate) unsafe fn store<N: ArraySize>(blocks: *mut Array<Block, N>, b: Array<__m128i, N>) {
+    let p = blocks.cast::<__m128i>();
+    for i in 0..N::USIZE {
+        _mm_storeu_si128(p.add(i), b[i]);
+    }
+}
 
 /// AES cipher (encrypt) round function.
 #[target_feature(enable = "aes")]
@@ -23,14 +39,14 @@ pub(crate) unsafe fn cipher_round(block: &mut Block, round_key: &Block) {
 /// AES cipher (encrypt) round function: parallel version.
 #[target_feature(enable = "aes")]
 pub(crate) unsafe fn cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
-    let xmm_keys = load8(round_keys);
-    let mut xmm_blocks = load8(blocks);
+    let xmm_keys = load(round_keys);
+    let mut xmm_blocks = load(blocks);
 
     for i in 0..8 {
         xmm_blocks[i] = _mm_aesenc_si128(xmm_blocks[i], xmm_keys[i]);
     }
 
-    store8(blocks, xmm_blocks);
+    store(blocks, xmm_blocks);
 }
 
 /// AES cipher (encrypt) round function.
@@ -46,14 +62,14 @@ pub(crate) unsafe fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block
 /// AES cipher (encrypt) round function: parallel version.
 #[target_feature(enable = "aes")]
 pub(crate) unsafe fn equiv_inv_cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
-    let xmm_keys = load8(round_keys);
-    let mut xmm_blocks = load8(blocks);
+    let xmm_keys = load(round_keys);
+    let mut xmm_blocks = load(blocks);
 
     for i in 0..8 {
         xmm_blocks[i] = _mm_aesdec_si128(xmm_blocks[i], xmm_keys[i]);
     }
 
-    store8(blocks, xmm_blocks);
+    store(blocks, xmm_blocks);
 }
 
 /// AES mix columns function.
