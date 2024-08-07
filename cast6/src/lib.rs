@@ -10,8 +10,11 @@
 //!
 //! # Examples
 //! ```
-//! use cast6::cipher::array::Array;
-//! use cast6::cipher::{Key, Block, BlockCipherEncrypt, BlockCipherDecrypt, KeyInit};
+//! use cast6::cipher::{
+//!     array::Array,
+//!     block::{BlockCipherDecrypt, BlockCipherEncrypt},
+//!     KeyInit,
+//! };
 //! use cast6::Cast6;
 //!
 //! let key = Array::from([0u8; 32]);
@@ -36,7 +39,7 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
 #![deny(unsafe_code)]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 
 pub use cipher;
@@ -44,8 +47,13 @@ pub use cipher;
 mod consts;
 
 use cipher::{
-    consts::{U16, U32},
-    AlgorithmName, BlockCipher, InvalidLength, Key, KeyInit, KeySizeUser,
+    block::{
+        BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
+        BlockCipherEncClosure, BlockCipherEncrypt,
+    },
+    consts::{U1, U16, U32},
+    AlgorithmName, Block, BlockSizeUser, InOut, InvalidLength, Key, KeyInit, KeySizeUser,
+    ParBlocksSizeUser,
 };
 use core::fmt;
 
@@ -172,8 +180,6 @@ fn forward_octave(kappa: &mut [u32; 8], m: &[u32], r: &[u8]) {
     *h ^= f2!(*a, m[7], r[7]);
 }
 
-impl BlockCipher for Cast6 {}
-
 impl KeySizeUser for Cast6 {
     type KeySize = U32;
 }
@@ -201,36 +207,26 @@ impl KeyInit for Cast6 {
     }
 }
 
-impl fmt::Debug for Cast6 {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("Cast6 { ... }")
+impl BlockSizeUser for Cast6 {
+    type BlockSize = U16;
+}
+
+impl ParBlocksSizeUser for Cast6 {
+    type ParBlocksSize = U1;
+}
+
+impl BlockCipherEncrypt for Cast6 {
+    #[inline]
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
     }
 }
 
-impl AlgorithmName for Cast6 {
-    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("Cast6")
-    }
-}
-
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
-impl Drop for Cast6 {
-    fn drop(&mut self) {
-        self.masking.zeroize();
-        self.rotate.zeroize();
-    }
-}
-
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
-impl ZeroizeOnDrop for Cast6 {}
-
-cipher::impl_simple_block_encdec!(
-    Cast6, U16, cipher, block,
-    encrypt: {
-        let masking = &cipher.masking;
-        let rotate = &cipher.rotate;
+impl BlockCipherEncBackend for Cast6 {
+    #[inline]
+    fn encrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+        let masking = &self.masking;
+        let rotate = &self.rotate;
 
         // Let BETA = (ABCD) be a 128-bit block where A, B, C and D are each
         // 32 bits in length.
@@ -258,9 +254,20 @@ cipher::impl_simple_block_encdec!(
         // 128bits of ciphertext = BETA
         *block.get_out() = to_u8s::<16>(&beta).into();
     }
-    decrypt: {
-        let masking = &cipher.masking;
-        let rotate = &cipher.rotate;
+}
+
+impl BlockCipherDecrypt for Cast6 {
+    #[inline]
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
+    }
+}
+
+impl BlockCipherDecBackend for Cast6 {
+    #[inline]
+    fn decrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+        let masking = &self.masking;
+        let rotate = &self.rotate;
 
         let mut beta = to_u32s(block.get_in());
 
@@ -280,7 +287,32 @@ cipher::impl_simple_block_encdec!(
 
         *block.get_out() = to_u8s::<16>(&beta).into();
     }
-);
+}
+
+impl fmt::Debug for Cast6 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Cast6 { ... }")
+    }
+}
+
+impl AlgorithmName for Cast6 {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Cast6")
+    }
+}
+
+impl Drop for Cast6 {
+    fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
+        {
+            self.masking.zeroize();
+            self.rotate.zeroize();
+        }
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl ZeroizeOnDrop for Cast6 {}
 
 fn to_u32s<const N: usize>(src: &[u8]) -> [u32; N] {
     assert_eq!(src.len(), 4 * N);

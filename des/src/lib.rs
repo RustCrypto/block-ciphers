@@ -18,15 +18,15 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
 #![deny(unsafe_code)]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
-#![allow(clippy::clone_on_copy)] // TODO: remove on migration to const generics
 
 pub use cipher;
 
 mod consts;
 mod des;
 mod tdes;
+mod utils;
 
 pub use crate::des::Des;
 pub use crate::tdes::{TdesEde2, TdesEde3, TdesEee2, TdesEee3};
