@@ -4,7 +4,6 @@ use cipher::{
     array::{Array, ArraySize},
     crypto_common::BlockSizes,
     typenum::{Diff, Prod, Quot, Sum, U1, U16, U2, U4, U8},
-    zeroize::DefaultIsZeroes,
 };
 
 pub type BlockSize<W> = Prod<<W as Word>::Bytes, U2>;
@@ -20,13 +19,7 @@ pub type KeyAsWordsSize<W, B> = Quot<Diff<Sum<B, <W as Word>::Bytes>, U1>, <W as
 
 pub trait Word
 where
-    Self: Default
-        + Copy
-        + From<u8>
-        + Add<Output = Self>
-        + DefaultIsZeroes
-        + Default
-        + private::Sealed,
+    Self: Default + Copy + From<u8> + Add<Output = Self> + Default + private::Sealed,
     BlockSize<Self>: BlockSizes,
 {
     type Bytes: ArraySize + Mul<U2>;
@@ -51,7 +44,11 @@ where
 }
 
 mod private {
+    #[cfg(feature = "zeroize")]
+    pub trait Sealed: cipher::zeroize::DefaultIsZeroes {}
+    #[cfg(not(feature = "zeroize"))]
     pub trait Sealed {}
+
     impl Sealed for u8 {}
     impl Sealed for u16 {}
     impl Sealed for u32 {}
