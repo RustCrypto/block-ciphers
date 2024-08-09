@@ -34,12 +34,12 @@ pub use cipher;
 use cipher::{
     array::Array,
     consts::{U16, U32},
-    AlgorithmName, BlockCipher, BlockSizeUser, KeyInit, KeySizeUser,
+    AlgorithmName, BlockSizeUser, KeyInit, KeySizeUser,
 };
 use core::fmt;
 
 #[cfg(feature = "zeroize")]
-use cipher::zeroize::ZeroizeOnDrop;
+use cipher::zeroize::{zeroize_flat_type, ZeroizeOnDrop};
 
 mod consts;
 
@@ -82,8 +82,6 @@ pub type Key = Array<u8, U32>;
 pub struct Kuznyechik {
     keys: EncDecKeys,
 }
-
-impl BlockCipher for Kuznyechik {}
 
 impl KeySizeUser for Kuznyechik {
     type KeySize = KeySize;
@@ -147,8 +145,6 @@ pub struct KuznyechikEnc {
     keys: EncKeys,
 }
 
-impl BlockCipher for KuznyechikEnc {}
-
 impl KeySizeUser for KuznyechikEnc {
     type KeySize = KeySize;
 }
@@ -193,8 +189,6 @@ impl ZeroizeOnDrop for KuznyechikEnc {}
 pub struct KuznyechikDec {
     keys: DecKeys,
 }
-
-impl BlockCipher for KuznyechikDec {}
 
 impl KeySizeUser for KuznyechikDec {
     type KeySize = KeySize;
@@ -244,7 +238,7 @@ impl Drop for KuznyechikDec {
     fn drop(&mut self) {
         #[cfg(feature = "zeroize")]
         unsafe {
-            cipher::zeroize::zeroize_flat_type(self)
+            zeroize_flat_type(self)
         }
     }
 }

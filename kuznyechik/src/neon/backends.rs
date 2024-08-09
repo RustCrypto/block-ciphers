@@ -4,17 +4,15 @@ use crate::{
     Block, Key,
 };
 use cipher::{
-    consts::{U16, U8},
-    inout::InOut,
-    typenum::Unsigned,
-    BlockBackend, BlockSizeUser, ParBlocks, ParBlocksSizeUser,
+    typenum::Unsigned, BlockCipherDecBackend, BlockCipherEncBackend, BlockSizeUser, InOut,
+    ParBlocks, ParBlocksSizeUser,
 };
 
 use core::arch::aarch64::*;
 
 pub(super) type RoundKeys = [uint8x16_t; 10];
 
-type ParBlocksSize = U8;
+type ParBlocksSize = consts::U8;
 
 #[rustfmt::skip]
 macro_rules! unroll_par {
@@ -189,16 +187,16 @@ pub fn inv_enc_keys(enc_keys: &RoundKeys) -> RoundKeys {
 pub(crate) struct EncBackend<'a>(pub(crate) &'a RoundKeys);
 
 impl<'a> BlockSizeUser for EncBackend<'a> {
-    type BlockSize = U16;
+    type BlockSize = consts::U16;
 }
 
 impl<'a> ParBlocksSizeUser for EncBackend<'a> {
     type ParBlocksSize = ParBlocksSize;
 }
 
-impl<'a> BlockBackend for EncBackend<'a> {
+impl<'a> BlockCipherEncBackend for EncBackend<'a> {
     #[inline]
-    fn proc_block(&mut self, block: InOut<'_, '_, Block>) {
+    fn encrypt_block(&mut self, block: InOut<'_, '_, Block>) {
         let k = self.0;
         unsafe {
             let (in_ptr, out_ptr) = block.into_raw();
@@ -214,7 +212,7 @@ impl<'a> BlockBackend for EncBackend<'a> {
     }
 
     #[inline]
-    fn proc_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
+    fn encrypt_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
         let k = self.0;
         unsafe {
             let (in_ptr, out_ptr) = blocks.into_raw();
@@ -248,16 +246,16 @@ impl<'a> BlockBackend for EncBackend<'a> {
 pub(crate) struct DecBackend<'a>(pub(crate) &'a RoundKeys);
 
 impl<'a> BlockSizeUser for DecBackend<'a> {
-    type BlockSize = U16;
+    type BlockSize = consts::U16;
 }
 
 impl<'a> ParBlocksSizeUser for DecBackend<'a> {
     type ParBlocksSize = ParBlocksSize;
 }
 
-impl<'a> BlockBackend for DecBackend<'a> {
+impl<'a> BlockCipherDecBackend for DecBackend<'a> {
     #[inline]
-    fn proc_block(&mut self, block: InOut<'_, '_, Block>) {
+    fn decrypt_block(&mut self, block: InOut<'_, '_, Block>) {
         let k = self.0;
         unsafe {
             let (in_ptr, out_ptr) = block.into_raw();
@@ -279,7 +277,7 @@ impl<'a> BlockBackend for DecBackend<'a> {
         }
     }
     #[inline]
-    fn proc_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
+    fn decrypt_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
         let k = self.0;
         unsafe {
             let (in_ptr, out_ptr) = blocks.into_raw();

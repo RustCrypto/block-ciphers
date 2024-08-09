@@ -1,5 +1,7 @@
 use crate::{BlockSize, Key};
-use cipher::{BlockCipherDecrypt, BlockCipherEncrypt, BlockClosure};
+use cipher::{
+    BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncClosure, BlockCipherEncrypt,
+};
 
 mod backends;
 #[path = "../fused_tables/consts.rs"]
@@ -39,25 +41,25 @@ impl From<EncKeys> for DecKeys {
 }
 
 impl BlockCipherEncrypt for crate::Kuznyechik {
-    fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = BlockSize>) {
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = BlockSize>) {
         f.call(&mut EncBackend(&self.keys.enc));
     }
 }
 
 impl BlockCipherDecrypt for crate::Kuznyechik {
-    fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = BlockSize>) {
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = BlockSize>) {
         f.call(&mut DecBackend(&self.keys.dec));
     }
 }
 
 impl BlockCipherEncrypt for crate::KuznyechikEnc {
-    fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = BlockSize>) {
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = BlockSize>) {
         f.call(&mut EncBackend(&self.keys.0));
     }
 }
 
 impl BlockCipherDecrypt for crate::KuznyechikDec {
-    fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = BlockSize>) {
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = BlockSize>) {
         f.call(&mut DecBackend(&self.keys.0));
     }
 }

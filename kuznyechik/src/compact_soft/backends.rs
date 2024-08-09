@@ -2,9 +2,7 @@ use super::consts::GF;
 use crate::consts::{P, P_INV};
 use crate::{Block, Key};
 use cipher::{
-    consts::{U1, U16},
-    inout::InOut,
-    BlockBackend, BlockSizeUser, ParBlocks, ParBlocksSizeUser,
+    consts, BlockCipherDecBackend, BlockCipherEncBackend, BlockSizeUser, InOut, ParBlocksSizeUser,
 };
 
 pub(super) type RoundKeys = [Block; 10];
@@ -115,16 +113,16 @@ pub(super) fn expand(key: &Key) -> RoundKeys {
 pub(crate) struct EncBackend<'a>(pub(crate) &'a RoundKeys);
 
 impl<'a> BlockSizeUser for EncBackend<'a> {
-    type BlockSize = U16;
+    type BlockSize = consts::U16;
 }
 
 impl<'a> ParBlocksSizeUser for EncBackend<'a> {
-    type ParBlocksSize = U1;
+    type ParBlocksSize = consts::U1;
 }
 
-impl<'a> BlockBackend for EncBackend<'a> {
+impl<'a> BlockCipherEncBackend for EncBackend<'a> {
     #[inline]
-    fn proc_block(&mut self, mut block: InOut<'_, '_, Block>) {
+    fn encrypt_block(&self, mut block: InOut<'_, '_, Block>) {
         let mut b = *block.get_in();
         for i in 0..9 {
             lsx(&mut b, &self.0[i]);
@@ -132,36 +130,26 @@ impl<'a> BlockBackend for EncBackend<'a> {
         x(&mut b, &self.0[9]);
         *block.get_out() = b;
     }
-
-    #[inline(always)]
-    fn proc_par_blocks(&mut self, mut blocks: InOut<'_, '_, ParBlocks<Self>>) {
-        self.proc_block(blocks.get(0));
-    }
 }
 
 pub(crate) struct DecBackend<'a>(pub(crate) &'a RoundKeys);
 
 impl<'a> BlockSizeUser for DecBackend<'a> {
-    type BlockSize = U16;
+    type BlockSize = consts::U16;
 }
 
 impl<'a> ParBlocksSizeUser for DecBackend<'a> {
-    type ParBlocksSize = U1;
+    type ParBlocksSize = consts::U1;
 }
 
-impl<'a> BlockBackend for DecBackend<'a> {
+impl<'a> BlockCipherDecBackend for DecBackend<'a> {
     #[inline]
-    fn proc_block(&mut self, mut block: InOut<'_, '_, Block>) {
+    fn decrypt_block(&self, mut block: InOut<'_, '_, Block>) {
         let mut b = *block.get_in();
         for i in 0..9 {
             lsx_inv(&mut b, &self.0[9 - i]);
         }
         x(&mut b, &self.0[0]);
         *block.get_out() = b;
-    }
-
-    #[inline(always)]
-    fn proc_par_blocks(&mut self, mut blocks: InOut<'_, '_, ParBlocks<Self>>) {
-        self.proc_block(blocks.get(0));
     }
 }

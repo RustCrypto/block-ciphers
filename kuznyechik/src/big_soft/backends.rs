@@ -4,7 +4,8 @@ use crate::{
     Block, Key,
 };
 use cipher::{
-    array::Array, consts, inout::InOut, BlockBackend, BlockSizeUser, ParBlocks, ParBlocksSizeUser,
+    consts, Array, BlockCipherDecBackend, BlockCipherEncBackend, BlockSizeUser, InOut, ParBlocks,
+    ParBlocksSizeUser,
 };
 
 pub(super) type RoundKeys = [u128; 10];
@@ -100,9 +101,9 @@ impl<'a> ParBlocksSizeUser for EncBackend<'a> {
     type ParBlocksSize = ParBlocksSize;
 }
 
-impl<'a> BlockBackend for EncBackend<'a> {
+impl<'a> BlockCipherEncBackend for EncBackend<'a> {
     #[inline]
-    fn proc_block(&mut self, mut block: InOut<'_, '_, Block>) {
+    fn encrypt_block(&self, mut block: InOut<'_, '_, Block>) {
         let k = self.0;
 
         let mut b: u128 = u128::from_le_bytes(block.get_in().0);
@@ -117,7 +118,7 @@ impl<'a> BlockBackend for EncBackend<'a> {
     }
 
     #[inline]
-    fn proc_par_blocks(&mut self, mut blocks: InOut<'_, '_, ParBlocks<Self>>) {
+    fn encrypt_par_blocks(&self, mut blocks: InOut<'_, '_, ParBlocks<Self>>) {
         let k = self.0;
 
         let mut bs = blocks.get_in().0.map(|b| u128::from_le_bytes(b.0));
@@ -147,9 +148,9 @@ impl<'a> ParBlocksSizeUser for DecBackend<'a> {
     type ParBlocksSize = consts::U1;
 }
 
-impl<'a> BlockBackend for DecBackend<'a> {
+impl<'a> BlockCipherDecBackend for DecBackend<'a> {
     #[inline]
-    fn proc_block(&mut self, mut block: InOut<'_, '_, Block>) {
+    fn decrypt_block(&self, mut block: InOut<'_, '_, Block>) {
         let k = self.0;
 
         let mut b: u128 = u128::from_le_bytes(block.get_in().0);
