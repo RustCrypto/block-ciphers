@@ -196,7 +196,7 @@ impl<'a> ParBlocksSizeUser for EncBackend<'a> {
 
 impl<'a> BlockCipherEncBackend for EncBackend<'a> {
     #[inline]
-    fn encrypt_block(&mut self, block: InOut<'_, '_, Block>) {
+    fn encrypt_block(&self, block: InOut<'_, '_, Block>) {
         let k = self.0;
         unsafe {
             let (in_ptr, out_ptr) = block.into_raw();
@@ -212,7 +212,7 @@ impl<'a> BlockCipherEncBackend for EncBackend<'a> {
     }
 
     #[inline]
-    fn encrypt_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
+    fn encrypt_par_blocks(&self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
         let k = self.0;
         unsafe {
             let (in_ptr, out_ptr) = blocks.into_raw();
@@ -255,7 +255,7 @@ impl<'a> ParBlocksSizeUser for DecBackend<'a> {
 
 impl<'a> BlockCipherDecBackend for DecBackend<'a> {
     #[inline]
-    fn decrypt_block(&mut self, block: InOut<'_, '_, Block>) {
+    fn decrypt_block(&self, block: InOut<'_, '_, Block>) {
         let k = self.0;
         unsafe {
             let (in_ptr, out_ptr) = block.into_raw();
@@ -277,7 +277,7 @@ impl<'a> BlockCipherDecBackend for DecBackend<'a> {
         }
     }
     #[inline]
-    fn decrypt_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
+    fn decrypt_par_blocks(&self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
         let k = self.0;
         unsafe {
             let (in_ptr, out_ptr) = blocks.into_raw();
