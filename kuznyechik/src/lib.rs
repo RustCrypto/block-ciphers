@@ -51,6 +51,13 @@ cfg_if::cfg_if!(
     ))] {
         mod sse2;
         use sse2 as imp;
+    } else if #[cfg(all(
+        target_arch = "aarch64",
+        target_feature = "neon",
+        not(kuznyechik_force_soft),
+    ))] {
+        mod neon;
+        use neon as imp;
     } else if #[cfg(kuznyechik_compact_soft)] {
         mod compact_soft;
         use compact_soft as imp;
