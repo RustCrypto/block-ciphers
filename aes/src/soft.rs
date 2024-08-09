@@ -75,13 +75,13 @@ macro_rules! define_aes_impl {
 
         impl BlockCipherEncrypt for $name {
             fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
-                f.call(&mut self.get_enc_backend())
+                f.call(&self.get_enc_backend())
             }
         }
 
         impl BlockCipherDecrypt for $name {
             fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = U16>) {
-                f.call(&mut self.get_dec_backend())
+                f.call(&self.get_dec_backend())
             }
         }
 
@@ -154,7 +154,7 @@ macro_rules! define_aes_impl {
 
         impl BlockCipherEncrypt for $name_enc {
             fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
-                f.call(&mut self.get_enc_backend())
+                f.call(&self.get_enc_backend())
             }
         }
 
@@ -221,7 +221,7 @@ macro_rules! define_aes_impl {
 
         impl BlockCipherDecrypt for $name_dec {
             fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = U16>) {
-                f.call(&mut self.get_dec_backend());
+                f.call(&self.get_dec_backend());
             }
         }
 
