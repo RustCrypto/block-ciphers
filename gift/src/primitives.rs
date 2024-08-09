@@ -90,7 +90,7 @@ pub(crate) fn inv_sbox(s0: &mut u32, s1: &mut u32, s2: &mut u32, s3: &mut u32) {
 }
 
 #[inline]
-pub(crate) fn packing(state: &mut [u32], input: &[u8]) {
+pub(crate) fn packing(state: &mut [u32], input: &[u8; 16]) {
     let mut s0 = ((input[6] as u32) << 24)
         | ((input[7] as u32) << 16)
         | ((input[14] as u32) << 8)
@@ -128,7 +128,7 @@ pub(crate) fn packing(state: &mut [u32], input: &[u8]) {
 }
 
 #[inline]
-pub(crate) fn unpacking(state: &[u32], output: &mut [u8]) {
+pub(crate) fn unpacking(state: &[u32], output: &mut [u8; 16]) {
     let (mut s0, mut s1, mut s2, mut s3) = (state[0], state[1], state[2], state[3]);
 
     swapmove(&mut s2, &mut s3, 0x0f000f00, 4);

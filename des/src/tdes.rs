@@ -2,12 +2,10 @@
 
 use crate::{utils::gen_keys, Des};
 use cipher::{
-    block::{
-        BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
-        BlockCipherEncClosure, BlockCipherEncrypt,
-    },
     consts::{U1, U16, U24, U8},
-    AlgorithmName, Block, BlockSizeUser, InOut, Key, KeyInit, KeySizeUser, ParBlocksSizeUser,
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
+    KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
 use core::fmt;
 

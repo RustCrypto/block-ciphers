@@ -51,10 +51,7 @@
 //! # Examples
 //! ```
 //! use aes::Aes128;
-//! use aes::cipher::{
-//!     BlockCipher, BlockCipherEncrypt, BlockCipherDecrypt, KeyInit,
-//!     array::Array,
-//! };
+//! use aes::cipher::{Array, BlockCipherEncrypt, BlockCipherDecrypt, KeyInit};
 //!
 //! let key = Array::from([0u8; 16]);
 //! let mut block = Array::from([42u8; 16]);

@@ -1,11 +1,10 @@
 use crate::{belt_block_raw, from_u32, g13, g21, g5, key_idx, to_u32};
-use cipher::block::{
-    BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
-    BlockCipherEncClosure, BlockCipherEncrypt,
+use cipher::{
+    consts::{U1, U16, U32},
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
+    KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
-use cipher::consts::{U1, U16, U32};
-use cipher::{inout::InOut, AlgorithmName, Block, Key, KeyInit, KeySizeUser};
-use cipher::{BlockSizeUser, ParBlocksSizeUser};
 use core::{fmt, mem::swap, num::Wrapping};
 
 #[cfg(feature = "zeroize")]
@@ -13,7 +12,6 @@ use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// BelT block cipher.
 #[derive(Clone)]
-#[cfg_attr(docsrs, doc(cfg(feature = "cipher")))]
 pub struct BeltBlock {
     key: [u32; 8],
 }
@@ -116,9 +114,9 @@ impl AlgorithmName for BeltBlock {
     }
 }
 
-#[cfg(feature = "zeroize")]
 impl Drop for BeltBlock {
     fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
         self.key.zeroize();
     }
 }

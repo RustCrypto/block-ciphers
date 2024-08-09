@@ -12,11 +12,7 @@
 //! # Examples
 //! ```
 //! use magma::Magma;
-//! use magma::cipher::{
-//!     array::Array,
-//!     block::{BlockCipherEncrypt, BlockCipherDecrypt},
-//!     KeyInit,
-//! };
+//! use magma::cipher::{Array, BlockCipherEncrypt, BlockCipherDecrypt, KeyInit};
 //! use hex_literal::hex;
 //!
 //! // Example vector from GOST 34.12-2018
@@ -51,12 +47,10 @@
 pub use cipher;
 
 use cipher::{
-    block::{
-        BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
-        BlockCipherEncClosure, BlockCipherEncrypt,
-    },
-    consts, AlgorithmName, Block, BlockSizeUser, InOut, Key, KeyInit, KeySizeUser,
-    ParBlocksSizeUser,
+    consts::{U1, U32, U8},
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
+    KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
 use core::{fmt, marker::PhantomData};
 
@@ -76,7 +70,7 @@ pub struct Gost89<S: Sbox> {
 }
 
 impl<S: Sbox> KeySizeUser for Gost89<S> {
-    type KeySize = consts::U32;
+    type KeySize = U32;
 }
 
 impl<S: Sbox> KeyInit for Gost89<S> {
@@ -94,11 +88,11 @@ impl<S: Sbox> KeyInit for Gost89<S> {
 }
 
 impl<S: Sbox> BlockSizeUser for Gost89<S> {
-    type BlockSize = consts::U8;
+    type BlockSize = U8;
 }
 
 impl<S: Sbox> ParBlocksSizeUser for Gost89<S> {
-    type ParBlocksSize = consts::U1;
+    type ParBlocksSize = U1;
 }
 
 impl<S: Sbox> BlockCipherEncBackend for Gost89<S> {

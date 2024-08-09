@@ -10,11 +10,7 @@
 //!
 //! # Examples
 //! ```
-//! use aria::cipher::{
-//!     array::Array,
-//!     block::{BlockCipherDecrypt, BlockCipherEncrypt},
-//!     Block, Key, KeyInit,
-//! };
+//! use aria::cipher::{Array, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 //! use aria::Aria128;
 //!
 //! let key = Array::from([0u8; 16]);
@@ -47,13 +43,10 @@ mod consts;
 pub use cipher;
 
 use cipher::{
-    block::{
-        BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
-        BlockCipherEncClosure, BlockCipherEncrypt,
-    },
     consts::{U1, U16},
     inout::InOut,
-    Block, BlockSizeUser, ParBlocksSizeUser,
+    Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
+    BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, ParBlocksSizeUser,
 };
 
 #[cfg(feature = "zeroize")]

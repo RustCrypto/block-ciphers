@@ -10,11 +10,7 @@
 //!
 //! # Examples
 //! ```
-//! use camellia::cipher::{
-//!     array::Array,
-//!     block::{BlockCipherDecrypt, BlockCipherEncrypt},
-//!     KeyInit,
-//! };
+//! use camellia::cipher::{Array, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 //! use camellia::Camellia128;
 //!
 //! let key = Array::from([0_u8; 16]);

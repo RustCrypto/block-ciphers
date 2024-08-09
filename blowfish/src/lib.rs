@@ -23,13 +23,10 @@ pub use cipher;
 
 use byteorder::{ByteOrder, BE, LE};
 use cipher::{
-    block::{
-        BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
-        BlockCipherEncClosure, BlockCipherEncrypt,
-    },
     consts::{U1, U56, U8},
-    AlgorithmName, Block, BlockSizeUser, InOut, InvalidLength, Key, KeyInit, KeySizeUser,
-    ParBlocksSizeUser,
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut,
+    InvalidLength, Key, KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
 use core::fmt;
 use core::marker::PhantomData;

@@ -7,7 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 ### Changed
-- Remove `html_root_url` ([#344])
 - Update Clippy and fix lints ([#378])
 - Bump `cipher` to v0.5.0-pre.1; MSRV 1.65 ([#394])
 - Bump `cipher` dependency to v0.5.0-pre.2 ([#398])

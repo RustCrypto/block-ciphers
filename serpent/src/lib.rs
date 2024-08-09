@@ -16,7 +16,7 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
 #![deny(unsafe_code)]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::needless_range_loop)]
 
@@ -24,7 +24,12 @@ pub use cipher;
 
 // TODO: remove dependency on byteorder
 use byteorder::{ByteOrder, LE};
-use cipher::{consts::U16, AlgorithmName, BlockCipher, InvalidLength, KeyInit, KeySizeUser};
+use cipher::{
+    consts::{U1, U16},
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut,
+    InvalidLength, KeyInit, KeySizeUser, ParBlocksSizeUser,
+};
 use core::fmt;
 
 #[cfg(feature = "zeroize")]
@@ -237,8 +242,6 @@ impl Serpent {
     }
 }
 
-impl BlockCipher for Serpent {}
-
 impl KeySizeUser for Serpent {
     type KeySize = U16;
 }
@@ -260,6 +263,50 @@ impl KeyInit for Serpent {
     }
 }
 
+impl BlockSizeUser for Serpent {
+    type BlockSize = U16;
+}
+
+impl ParBlocksSizeUser for Serpent {
+    type ParBlocksSize = U1;
+}
+
+impl BlockCipherEncrypt for Serpent {
+    #[inline]
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
+    }
+}
+
+impl BlockCipherEncBackend for Serpent {
+    #[inline]
+    fn encrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+        let mut b = block.clone_in().into();
+        for i in 0..ROUNDS {
+            round_bitslice(i, b, self.k, &mut b);
+        }
+        *block.get_out() = b.into();
+    }
+}
+
+impl BlockCipherDecrypt for Serpent {
+    #[inline]
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
+    }
+}
+
+impl BlockCipherDecBackend for Serpent {
+    #[inline]
+    fn decrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+        let mut b = block.clone_in().into();
+        for i in (0..ROUNDS).rev() {
+            round_inverse_bitslice(i, b, self.k, &mut b);
+        }
+        *block.get_out() = b.into();
+    }
+}
+
 impl fmt::Debug for Serpent {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("Serpent { ... }")
@@ -272,32 +319,12 @@ impl AlgorithmName for Serpent {
     }
 }
 
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl Drop for Serpent {
     fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
         self.k.zeroize();
     }
 }
 
 #[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl ZeroizeOnDrop for Serpent {}
-
-cipher::impl_simple_block_encdec!(
-    Serpent, U16, cipher, block,
-    encrypt: {
-        let mut b = block.clone_in().into();
-        for i in 0..ROUNDS {
-            round_bitslice(i, b, cipher.k, &mut b);
-        }
-        *block.get_out() = b.into();
-    }
-    decrypt: {
-        let mut b = block.clone_in().into();
-        for i in (0..ROUNDS).rev() {
-            round_inverse_bitslice(i, b, cipher.k, &mut b);
-        }
-        *block.get_out() = b.into();
-    }
-);

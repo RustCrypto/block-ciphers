@@ -1,7 +1,8 @@
-use core::ops::{Add, BitXor};
+use core::ops::{Add, BitXor, Mul};
 
 use cipher::{
     array::{Array, ArraySize},
+    crypto_common::BlockSizes,
     typenum::{Diff, Prod, Quot, Sum, U1, U16, U2, U4, U8},
     zeroize::DefaultIsZeroes,
 };
@@ -17,10 +18,18 @@ pub type ExpandedKeyTableSize<R> = Prod<Sum<R, U1>, U2>;
 pub type KeyAsWords<W, B> = Array<W, KeyAsWordsSize<W, B>>;
 pub type KeyAsWordsSize<W, B> = Quot<Diff<Sum<B, <W as Word>::Bytes>, U1>, <W as Word>::Bytes>;
 
-pub trait Word:
-    Default + Copy + From<u8> + Add<Output = Self> + DefaultIsZeroes + Default + private::Sealed
+pub trait Word
+where
+    Self: Default
+        + Copy
+        + From<u8>
+        + Add<Output = Self>
+        + DefaultIsZeroes
+        + Default
+        + private::Sealed,
+    BlockSize<Self>: BlockSizes,
 {
-    type Bytes: ArraySize;
+    type Bytes: ArraySize + Mul<U2>;
 
     const ZERO: Self;
     const THREE: Self;

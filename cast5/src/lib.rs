@@ -10,11 +10,7 @@
 //!
 //! # Examples
 //! ```
-//! use cast5::cipher::{
-//!     array::Array,
-//!     block::{BlockCipherDecrypt, BlockCipherEncrypt},
-//!     KeyInit,
-//! };
+//! use cast5::cipher::{Array, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 //! use cast5::Cast5;
 //!
 //! let key = Array::from([0u8; 16]);
@@ -48,13 +44,10 @@ mod consts;
 mod schedule;
 
 use cipher::{
-    block::{
-        BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
-        BlockCipherEncClosure, BlockCipherEncrypt,
-    },
     consts::{U1, U16, U8},
-    AlgorithmName, Block, BlockSizeUser, InOut, InvalidLength, Key, KeyInit, KeySizeUser,
-    ParBlocksSizeUser,
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut,
+    InvalidLength, Key, KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
 use core::fmt;
 

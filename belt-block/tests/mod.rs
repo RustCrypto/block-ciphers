@@ -3,10 +3,7 @@
 use belt_block::{belt_block_raw, belt_wblock_dec, belt_wblock_enc};
 #[cfg(feature = "cipher")]
 use belt_block::{
-    cipher::{
-        block::{BlockCipherDecrypt, BlockCipherEncrypt},
-        KeyInit,
-    },
+    cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit},
     BeltBlock,
 };
 use hex_literal::hex;

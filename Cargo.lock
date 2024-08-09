@@ -82,7 +82,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "cipher"
 version = "0.5.0-pre.6"
-source = "git+https://github.com/RustCrypto/traits?branch=block_backends#b34c1d6a01c507fbe0186ac40307aa35ced4e41e"
+source = "git+https://github.com/RustCrypto/traits?branch=block_backends#197ef4eff104c605c0e05330b97a0c8df33c9803"
 dependencies = [
  "blobby",
  "crypto-common",
@@ -102,7 +102,7 @@ dependencies = [
 [[package]]
 name = "crypto-common"
 version = "0.2.0-rc.0"
-source = "git+https://github.com/RustCrypto/traits?branch=block_backends#b34c1d6a01c507fbe0186ac40307aa35ced4e41e"
+source = "git+https://github.com/RustCrypto/traits?branch=block_backends#197ef4eff104c605c0e05330b97a0c8df33c9803"
 dependencies = [
  "hybrid-array",
 ]
@@ -119,6 +119,7 @@ name = "gift-cipher"
 version = "0.0.1-pre.0"
 dependencies = [
  "cipher",
+ "hex-literal",
 ]
 
 [[package]]
@@ -187,6 +188,7 @@ name = "rc5"
 version = "0.1.0-pre"
 dependencies = [
  "cipher",
+ "hex-literal",
 ]
 
 [[package]]

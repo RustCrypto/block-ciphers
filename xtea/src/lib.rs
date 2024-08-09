@@ -22,8 +22,10 @@
 pub use cipher;
 
 use cipher::{
-    consts::{U16, U8},
-    AlgorithmName, BlockCipher, InvalidLength, Key, KeyInit, KeySizeUser,
+    consts::{U1, U16, U8},
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut,
+    InvalidLength, Key, KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
 use core::fmt;
 
@@ -33,12 +35,10 @@ use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 mod consts;
 use consts::{DELTA, ROUNDS};
 
-/// XTEA block cipher.
+/// XTEA block self.
 pub struct Xtea {
     k: [u32; 4],
 }
-
-impl BlockCipher for Xtea {}
 
 impl KeySizeUser for Xtea {
     type KeySize = U16;
@@ -63,6 +63,148 @@ impl KeyInit for Xtea {
     }
 }
 
+impl BlockSizeUser for Xtea {
+    type BlockSize = U8;
+}
+
+impl ParBlocksSizeUser for Xtea {
+    type ParBlocksSize = U1;
+}
+
+impl BlockCipherEncrypt for Xtea {
+    #[inline]
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
+    }
+}
+
+impl BlockCipherEncBackend for Xtea {
+    #[inline]
+    fn encrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+        let v = block.get_in();
+        let mut v0 = u32::from_le_bytes(v[0..4].try_into().unwrap());
+        let mut v1 = u32::from_le_bytes(v[4..8].try_into().unwrap());
+        let mut sum = 0u32;
+
+        // Use 4 loops as otherwise unrolling will not be performed by default
+        for _ in 0..8 {
+            v0 = v0.wrapping_add(
+                (((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1))
+                    ^ sum.wrapping_add(self.k[(sum & 3) as usize]),
+            );
+            sum = sum.wrapping_add(DELTA);
+            v1 = v1.wrapping_add(
+                (((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0))
+                    ^ sum.wrapping_add(self.k[((sum >> 11) & 3) as usize]),
+            );
+        }
+        for _ in 0..8 {
+            v0 = v0.wrapping_add(
+                (((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1))
+                    ^ sum.wrapping_add(self.k[(sum & 3) as usize]),
+            );
+            sum = sum.wrapping_add(DELTA);
+            v1 = v1.wrapping_add(
+                (((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0))
+                    ^ sum.wrapping_add(self.k[((sum >> 11) & 3) as usize]),
+            );
+        }
+        for _ in 0..8 {
+            v0 = v0.wrapping_add(
+                (((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1))
+                    ^ sum.wrapping_add(self.k[(sum & 3) as usize]),
+            );
+            sum = sum.wrapping_add(DELTA);
+            v1 = v1.wrapping_add(
+                (((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0))
+                    ^ sum.wrapping_add(self.k[((sum >> 11) & 3) as usize]),
+            );
+        }
+        for _ in 0..8 {
+            v0 = v0.wrapping_add(
+                (((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1))
+                    ^ sum.wrapping_add(self.k[(sum & 3) as usize]),
+            );
+            sum = sum.wrapping_add(DELTA);
+            v1 = v1.wrapping_add(
+                (((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0))
+                    ^ sum.wrapping_add(self.k[((sum >> 11) & 3) as usize]),
+            );
+        }
+
+        let v = block.get_out();
+        v[0..4].copy_from_slice(&v0.to_le_bytes());
+        v[4..8].copy_from_slice(&v1.to_le_bytes());
+    }
+}
+
+impl BlockCipherDecrypt for Xtea {
+    #[inline]
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
+    }
+}
+
+impl BlockCipherDecBackend for Xtea {
+    #[inline]
+    fn decrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+        let v = block.get_in();
+        let mut v0 = u32::from_le_bytes(v[0..4].try_into().unwrap());
+        let mut v1 = u32::from_le_bytes(v[4..8].try_into().unwrap());
+        let mut sum = DELTA.wrapping_mul(ROUNDS as u32);
+
+        // Same as encrypt, just in reverse
+        for _ in 0..8 {
+            v1 = v1.wrapping_sub(
+                (((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0))
+                    ^ sum.wrapping_add(self.k[((sum >> 11) & 3) as usize]),
+            );
+            sum = sum.wrapping_sub(DELTA);
+            v0 = v0.wrapping_sub(
+                (((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1))
+                    ^ sum.wrapping_add(self.k[(sum & 3) as usize]),
+            );
+        }
+        for _ in 0..8 {
+            v1 = v1.wrapping_sub(
+                (((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0))
+                    ^ sum.wrapping_add(self.k[((sum >> 11) & 3) as usize]),
+            );
+            sum = sum.wrapping_sub(DELTA);
+            v0 = v0.wrapping_sub(
+                (((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1))
+                    ^ sum.wrapping_add(self.k[(sum & 3) as usize]),
+            );
+        }
+        for _ in 0..8 {
+            v1 = v1.wrapping_sub(
+                (((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0))
+                    ^ sum.wrapping_add(self.k[((sum >> 11) & 3) as usize]),
+            );
+            sum = sum.wrapping_sub(DELTA);
+            v0 = v0.wrapping_sub(
+                (((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1))
+                    ^ sum.wrapping_add(self.k[(sum & 3) as usize]),
+            );
+        }
+        for _ in 0..8 {
+            v1 = v1.wrapping_sub(
+                (((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0))
+                    ^ sum.wrapping_add(self.k[((sum >> 11) & 3) as usize]),
+            );
+            sum = sum.wrapping_sub(DELTA);
+            v0 = v0.wrapping_sub(
+                (((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1))
+                    ^ sum.wrapping_add(self.k[(sum & 3) as usize]),
+            );
+        }
+
+        let v = block.get_out();
+        v[0..4].copy_from_slice(&v0.to_le_bytes());
+        v[4..8].copy_from_slice(&v1.to_le_bytes());
+    }
+}
+
 impl fmt::Debug for Xtea {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("XTEA { ... }")
@@ -75,82 +217,12 @@ impl AlgorithmName for Xtea {
     }
 }
 
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl Drop for Xtea {
     fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
         self.k.zeroize();
     }
 }
 
 #[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl ZeroizeOnDrop for Xtea {}
-
-cipher::impl_simple_block_encdec!(
-    Xtea, U8, cipher, block,
-    encrypt: {
-        let v = block.get_in();
-        let mut v0 = u32::from_le_bytes(v[0..4].try_into().unwrap());
-        let mut v1 = u32::from_le_bytes(v[4..8].try_into().unwrap());
-        let mut sum = 0u32;
-
-        // Use 4 loops as otherwise unrolling will not be performed by default
-        for _ in 0..8 {
-            v0 = v0.wrapping_add((((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1)) ^ sum.wrapping_add(cipher.k[(sum & 3) as usize]));
-            sum = sum.wrapping_add(DELTA);
-            v1 = v1.wrapping_add((((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0)) ^ sum.wrapping_add(cipher.k[((sum >> 11) & 3) as usize]));
-        }
-        for _ in 0..8 {
-            v0 = v0.wrapping_add((((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1)) ^ sum.wrapping_add(cipher.k[(sum & 3) as usize]));
-            sum = sum.wrapping_add(DELTA);
-            v1 = v1.wrapping_add((((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0)) ^ sum.wrapping_add(cipher.k[((sum >> 11) & 3) as usize]));
-        }
-        for _ in 0..8 {
-            v0 = v0.wrapping_add((((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1)) ^ sum.wrapping_add(cipher.k[(sum & 3) as usize]));
-            sum = sum.wrapping_add(DELTA);
-            v1 = v1.wrapping_add((((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0)) ^ sum.wrapping_add(cipher.k[((sum >> 11) & 3) as usize]));
-        }
-        for _ in 0..8 {
-            v0 = v0.wrapping_add((((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1)) ^ sum.wrapping_add(cipher.k[(sum & 3) as usize]));
-            sum = sum.wrapping_add(DELTA);
-            v1 = v1.wrapping_add((((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0)) ^ sum.wrapping_add(cipher.k[((sum >> 11) & 3) as usize]));
-        }
-
-        let v = block.get_out();
-        v[0..4].copy_from_slice(&v0.to_le_bytes());
-        v[4..8].copy_from_slice(&v1.to_le_bytes());
-    }
-    decrypt: {
-        let v = block.get_in();
-        let mut v0 = u32::from_le_bytes(v[0..4].try_into().unwrap());
-        let mut v1 = u32::from_le_bytes(v[4..8].try_into().unwrap());
-        let mut sum = DELTA.wrapping_mul(ROUNDS as u32);
-
-        // Same as encrypt, just in reverse
-        for _ in 0..8 {
-            v1 = v1.wrapping_sub((((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0)) ^ sum.wrapping_add(cipher.k[((sum >> 11) & 3) as usize]));
-            sum = sum.wrapping_sub(DELTA);
-            v0 = v0.wrapping_sub((((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1)) ^ sum.wrapping_add(cipher.k[(sum & 3) as usize]));
-        }
-        for _ in 0..8 {
-            v1 = v1.wrapping_sub((((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0)) ^ sum.wrapping_add(cipher.k[((sum >> 11) & 3) as usize]));
-            sum = sum.wrapping_sub(DELTA);
-            v0 = v0.wrapping_sub((((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1)) ^ sum.wrapping_add(cipher.k[(sum & 3) as usize]));
-        }
-        for _ in 0..8 {
-            v1 = v1.wrapping_sub((((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0)) ^ sum.wrapping_add(cipher.k[((sum >> 11) & 3) as usize]));
-            sum = sum.wrapping_sub(DELTA);
-            v0 = v0.wrapping_sub((((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1)) ^ sum.wrapping_add(cipher.k[(sum & 3) as usize]));
-        }
-        for _ in 0..8 {
-            v1 = v1.wrapping_sub((((v0 << 4) ^ (v0 >> 5)).wrapping_add(v0)) ^ sum.wrapping_add(cipher.k[((sum >> 11) & 3) as usize]));
-            sum = sum.wrapping_sub(DELTA);
-            v0 = v0.wrapping_sub((((v1 << 4) ^ (v1 >> 5)).wrapping_add(v1)) ^ sum.wrapping_add(cipher.k[(sum & 3) as usize]));
-        }
-
-        let v = block.get_out();
-        v[0..4].copy_from_slice(&v0.to_le_bytes());
-        v[4..8].copy_from_slice(&v1.to_le_bytes());
-    }
-);

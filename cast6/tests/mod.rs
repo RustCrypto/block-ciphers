@@ -1,8 +1,5 @@
 use cast6::Cast6;
-use cipher::{
-    block::{BlockCipherDecrypt, BlockCipherEncrypt},
-    Block, KeyInit,
-};
+use cipher::{Block, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 use hex_literal::hex;
 
 /// Test vectors from RFC 2612 Appendix A

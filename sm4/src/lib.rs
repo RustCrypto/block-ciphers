@@ -16,12 +16,17 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
 #![deny(unsafe_code)]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 
 pub use cipher;
 
-use cipher::{consts::U16, AlgorithmName, BlockCipher, Key, KeyInit, KeySizeUser};
+use cipher::{
+    consts::{U1, U16},
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
+    KeyInit, KeySizeUser, ParBlocksSizeUser,
+};
 use core::fmt;
 
 #[cfg(feature = "zeroize")]
@@ -67,8 +72,6 @@ pub struct Sm4 {
     rk: [u32; 32],
 }
 
-impl BlockCipher for Sm4 {}
-
 impl KeySizeUser for Sm4 {
     type KeySize = U16;
 }
@@ -100,33 +103,24 @@ impl KeyInit for Sm4 {
     }
 }
 
-impl fmt::Debug for Sm4 {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("Sm4 { ... }")
+impl BlockSizeUser for Sm4 {
+    type BlockSize = U16;
+}
+
+impl ParBlocksSizeUser for Sm4 {
+    type ParBlocksSize = U1;
+}
+
+impl BlockCipherEncrypt for Sm4 {
+    #[inline]
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
     }
 }
 
-impl AlgorithmName for Sm4 {
-    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("Sm4")
-    }
-}
-
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
-impl Drop for Sm4 {
-    fn drop(&mut self) {
-        self.rk.zeroize();
-    }
-}
-
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
-impl ZeroizeOnDrop for Sm4 {}
-
-cipher::impl_simple_block_encdec!(
-    Sm4, U16, cipher, block,
-    encrypt: {
+impl BlockCipherEncBackend for Sm4 {
+    #[inline]
+    fn encrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
         let b = block.get_in();
         let mut x = [
             u32::from_be_bytes(b[0..4].try_into().unwrap()),
@@ -135,7 +129,7 @@ cipher::impl_simple_block_encdec!(
             u32::from_be_bytes(b[12..16].try_into().unwrap()),
         ];
 
-        let rk = &cipher.rk;
+        let rk = &self.rk;
         for i in 0..8 {
             x[0] ^= t(x[1] ^ x[2] ^ x[3] ^ rk[i * 4]);
             x[1] ^= t(x[2] ^ x[3] ^ x[0] ^ rk[i * 4 + 1]);
@@ -149,7 +143,18 @@ cipher::impl_simple_block_encdec!(
         block[8..12].copy_from_slice(&x[1].to_be_bytes());
         block[12..16].copy_from_slice(&x[0].to_be_bytes());
     }
-    decrypt: {
+}
+
+impl BlockCipherDecrypt for Sm4 {
+    #[inline]
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
+    }
+}
+
+impl BlockCipherDecBackend for Sm4 {
+    #[inline]
+    fn decrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
         let b = block.get_in();
         let mut x = [
             u32::from_be_bytes(b[0..4].try_into().unwrap()),
@@ -158,7 +163,7 @@ cipher::impl_simple_block_encdec!(
             u32::from_be_bytes(b[12..16].try_into().unwrap()),
         ];
 
-        let rk = &cipher.rk;
+        let rk = &self.rk;
         for i in 0..8 {
             x[0] ^= t(x[1] ^ x[2] ^ x[3] ^ rk[31 - i * 4]);
             x[1] ^= t(x[2] ^ x[3] ^ x[0] ^ rk[31 - (i * 4 + 1)]);
@@ -172,4 +177,26 @@ cipher::impl_simple_block_encdec!(
         block[8..12].copy_from_slice(&x[1].to_be_bytes());
         block[12..16].copy_from_slice(&x[0].to_be_bytes());
     }
-);
+}
+
+impl fmt::Debug for Sm4 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Sm4 { ... }")
+    }
+}
+
+impl AlgorithmName for Sm4 {
+    fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Sm4")
+    }
+}
+
+impl Drop for Sm4 {
+    fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
+        self.rk.zeroize();
+    }
+}
+
+#[cfg(feature = "zeroize")]
+impl ZeroizeOnDrop for Sm4 {}
