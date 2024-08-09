@@ -4,7 +4,7 @@ use crate::{
     Block, Key,
 };
 use cipher::{
-    typenum::Unsigned, BlockCipherDecBackend, BlockCipherEncBackend, BlockSizeUser, InOut,
+    consts, typenum::Unsigned, BlockCipherDecBackend, BlockCipherEncBackend, BlockSizeUser, InOut,
     ParBlocks, ParBlocksSizeUser,
 };
 
