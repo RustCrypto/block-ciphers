@@ -35,6 +35,9 @@ use core::{
     ops::{Add, Div, Mul, Sub},
 };
 
+#[cfg(feature = "zeroize")]
+use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
+
 mod primitives;
 
 use primitives::{
@@ -459,7 +462,7 @@ where
 }
 
 #[cfg(feature = "zeroize")]
-impl<W, R, B> cipher::zeroize::ZeroizeOnDrop for RC5<W, R, B>
+impl<W, R, B> ZeroizeOnDrop for RC5<W, R, B>
 where
     W: Word,
     // Block size
@@ -493,6 +496,6 @@ where
 {
     fn drop(&mut self) {
         #[cfg(feature = "zeroize")]
-        cipher::zeroize::Zeroize::zeroize(&mut *self.key_table)
+        self.key_table.zeroize()
     }
 }

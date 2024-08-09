@@ -113,11 +113,10 @@
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 
 #[cfg(feature = "hazmat")]
-#[cfg_attr(docsrs, doc(cfg(feature = "hazmat")))]
 pub mod hazmat;
 
 #[macro_use]

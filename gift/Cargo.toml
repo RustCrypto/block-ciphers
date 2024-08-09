@@ -23,4 +23,5 @@ hex-literal = "0.4"
 zeroize = ["cipher/zeroize"]
 
 [package.metadata.docs.rs]
+all-features = true
 rustdoc-args = ["--cfg", "docsrs"]

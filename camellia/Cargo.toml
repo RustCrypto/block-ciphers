@@ -23,4 +23,5 @@ cipher = { version = "=0.5.0-pre.6", features = ["dev"] }
 zeroize = ["cipher/zeroize"]
 
 [package.metadata.docs.rs]
+all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
