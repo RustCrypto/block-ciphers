@@ -78,12 +78,12 @@ jobs:
 
       # macOS tests
     macos:
-      strategy:
-      matrix:
-      rust:
-        - 1.65.0
-        - stable
       runs-on: macos-latest
+      strategy:
+        matrix:
+          rust:
+            - 1.65.0
+            - stable
       steps:
         - uses: actions/checkout@v4
         - uses: RustCrypto/actions/cargo-cache@master
@@ -91,11 +91,12 @@ jobs:
           with:
             toolchain: ${{ matrix.rust }}
         - run: |
-          cargo test
-          cargo test --all-features
+            cargo test
+            cargo test --all-features
         - env:
             RUSTFLAGS: "-Dwarnings --cfg kuznyechik_compact_soft"
           run: |
             cargo test
             cargo test --all-features
+
 
