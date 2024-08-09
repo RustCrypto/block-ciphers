@@ -12,13 +12,7 @@ use cipher::{
 
 use core::arch::aarch64::*;
 
-
-
-
-
-
-pub(super) type  RoundKeys = [uint8x16_t; 10];
-
+pub(super) type RoundKeys = [uint8x16_t; 10];
 
 type ParBlocksSize = U8;
 
@@ -37,13 +31,12 @@ macro_rules! unroll_par {
     };
 }
 
-
 #[inline(always)]
 unsafe fn sub_bytes(block: uint8x16_t, sbox: &[u8; 256]) -> uint8x16_t {
     use core::arch::aarch64::*;
     let value_vector = vdupq_n_u8(64);
-    
-    // Разделим таблицу sbox на четыре части
+
+    //Split the sbox table into four parts
     let sbox_part1 = uint8x16x4_t(
         vld1q_u8(&sbox[0] as *const u8),
         vld1q_u8(&sbox[16] as *const u8),
@@ -71,23 +64,20 @@ unsafe fn sub_bytes(block: uint8x16_t, sbox: &[u8; 256]) -> uint8x16_t {
         vld1q_u8(&sbox[224] as *const u8),
         vld1q_u8(&sbox[240] as *const u8),
     );
-    let mut block_1=block;
-    // Индексируем каждую часть таблицы sbox
+    let mut block_1 = block;
+    // Indexing each part of the sbox table
     let result1 = vqtbl4q_u8(sbox_part1, block);
-    block_1=vsubq_u8(block, value_vector);
+    block_1 = vsubq_u8(block, value_vector);
     let result2 = vqtbl4q_u8(sbox_part2, block_1);
-    block_1=vsubq_u8(block_1, value_vector);
+    block_1 = vsubq_u8(block_1, value_vector);
     let result3 = vqtbl4q_u8(sbox_part3, block_1);
-    block_1=vsubq_u8(block_1, value_vector);
+    block_1 = vsubq_u8(block_1, value_vector);
     let result4 = vqtbl4q_u8(sbox_part4, block_1);
-    // Объединяем результаты
+    // Merging results
     let result = vorrq_u8(vorrq_u8(result1, result2), vorrq_u8(result3, result4));
 
     result
 }
-
-
-
 
 #[inline(always)]
 unsafe fn transform(block: uint8x16_t, table: &Table) -> uint8x16_t {
@@ -140,8 +130,6 @@ unsafe fn transform(block: uint8x16_t, table: &Table) -> uint8x16_t {
     veorq_u8(lt, rt)
 }
 
-
-
 pub fn expand_enc_keys(key: &Key) -> RoundKeys {
     macro_rules! next_const {
         ($i:expr) => {{
@@ -184,11 +172,9 @@ pub fn expand_enc_keys(key: &Key) -> RoundKeys {
     }
 }
 
-
-
 pub fn inv_enc_keys(enc_keys: &RoundKeys) -> RoundKeys {
     unsafe {
-        let mut dec_keys =  [vdupq_n_u8(0); 10];
+        let mut dec_keys = [vdupq_n_u8(0); 10];
 
         dec_keys[0] = enc_keys[9];
         for i in 1..9 {
@@ -201,15 +187,11 @@ pub fn inv_enc_keys(enc_keys: &RoundKeys) -> RoundKeys {
     }
 }
 
-
-
 pub(crate) struct EncBackend<'a>(pub(crate) &'a RoundKeys);
-
 
 impl<'a> BlockSizeUser for EncBackend<'a> {
     type BlockSize = U16;
 }
-
 
 impl<'a> ParBlocksSizeUser for EncBackend<'a> {
     type ParBlocksSize = ParBlocksSize;
@@ -222,7 +204,7 @@ impl<'a> BlockBackend for EncBackend<'a> {
         unsafe {
             let (in_ptr, out_ptr) = block.into_raw();
             let mut b = vld1q_u8(in_ptr as *const u8);
-    
+
             for i in 0..9 {
                 b = veorq_u8(b, k[i]);
                 b = transform(b, &ENC_TABLE);
@@ -231,7 +213,7 @@ impl<'a> BlockBackend for EncBackend<'a> {
             vst1q_u8(out_ptr as *mut u8, b);
         }
     }
-    
+
     #[inline]
     fn proc_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
         let k = self.0;
@@ -239,21 +221,21 @@ impl<'a> BlockBackend for EncBackend<'a> {
             let (in_ptr, out_ptr) = blocks.into_raw();
             let in_ptr = in_ptr as *mut uint8x16_t;
             let out_ptr = out_ptr as *mut uint8x16_t;
-    
+
             let mut blocks = [vdupq_n_u8(0); ParBlocksSize::USIZE];
             unroll_par! {
                 i, {
                     blocks[i] = vld1q_u8(in_ptr.add(i) as *const u8);
                 }
             };
-    
+
             for i in 0..9 {
                 unroll_par!(j, {
                     let t = veorq_u8(blocks[j], k[i]);
                     blocks[j] = transform(t, &ENC_TABLE);
                 });
             }
-    
+
             unroll_par! {
                 i, {
                     let t = veorq_u8(blocks[i], k[9]);
@@ -262,7 +244,6 @@ impl<'a> BlockBackend for EncBackend<'a> {
             };
         }
     }
-    
 }
 
 pub(crate) struct DecBackend<'a>(pub(crate) &'a RoundKeys);
@@ -282,19 +263,19 @@ impl<'a> BlockBackend for DecBackend<'a> {
         unsafe {
             let (in_ptr, out_ptr) = block.into_raw();
             let mut b = vld1q_u8(in_ptr as *const u8);
-    
+
             b = veorq_u8(b, k[0]);
-    
+
             b = sub_bytes(b, &P);
             b = transform(b, &DEC_TABLE);
-    
+
             for i in 1..9 {
                 b = transform(b, &DEC_TABLE);
                 b = veorq_u8(b, k[i]);
             }
             b = sub_bytes(b, &P_INV);
             b = veorq_u8(b, k[9]);
-    
+
             vst1q_u8(out_ptr as *mut u8, b);
         }
     }
@@ -339,6 +320,4 @@ impl<'a> BlockBackend for DecBackend<'a> {
             }
         }
     }
-
-
 }
