@@ -37,24 +37,24 @@ jobs:
           toolchain: ${{ matrix.rust }}
           targets: ${{ matrix.target }}
       - run: cargo build --target ${{ matrix.target }}
-      - run: cargo build --target ${{ matrix.target }}
-        env:
+      - env:
           RUSTFLAGS: "-Dwarnings --cfg kuznyechik_force_soft"
-      - run: cargo build --target ${{ matrix.target }}
-        env:
+        run: cargo build --target ${{ matrix.target }}
+      - env:
           RUSTFLAGS: "-Dwarnings --cfg kuznyechik_force_soft --cfg kuznyechik_compact_soft"
+        run: cargo build --target ${{ matrix.target }}
 
   minimal-versions:
     uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
     with:
         working-directory: ${{ github.workflow }}
-  # macOS tests
-  macos:
-    runs-on: macos-latest
+
+  test:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         rust:
-          - 1.65.0
+          - 1.65.0 # MSRV
           - stable
     steps:
       - uses: actions/checkout@v4
@@ -66,18 +66,22 @@ jobs:
           cargo test
           cargo test --all-features
       - env:
-          RUSTFLAGS: "-Dwarnings --cfg kuznyechik_compact_soft"
+          RUSTFLAGS: "-Dwarnings --cfg kuznyechik_force_soft"
+        run: |
+          cargo test
+          cargo test --all-features
+      - env:
+          RUSTFLAGS: "-Dwarnings --cfg kuznyechik_force_soft --cfg kuznyechik_compact_soft"
         run: |
           cargo test
           cargo test --all-features
 
-
-  test:
-    runs-on: ubuntu-latest
+  macos:
+    runs-on: macos-latest
     strategy:
       matrix:
         rust:
-          - 1.65.0 # MSRV
+          - 1.65.0
           - stable
     steps:
       - uses: actions/checkout@v4
