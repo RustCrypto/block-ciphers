@@ -33,7 +33,6 @@ macro_rules! unroll_par {
 
 #[inline(always)]
 unsafe fn sub_bytes(block: uint8x16_t, sbox: &[u8; 256]) -> uint8x16_t {
-    use core::arch::aarch64::*;
     let value_vector = vdupq_n_u8(64);
 
     //Split the sbox table into four parts
@@ -64,15 +63,15 @@ unsafe fn sub_bytes(block: uint8x16_t, sbox: &[u8; 256]) -> uint8x16_t {
         vld1q_u8(&sbox[224] as *const u8),
         vld1q_u8(&sbox[240] as *const u8),
     );
-    let mut block_1 = block;
+
     // Indexing each part of the sbox table
     let result1 = vqtbl4q_u8(sbox_part1, block);
-    block_1 = vsubq_u8(block, value_vector);
+    let block_1 = vsubq_u8(block, value_vector);
     let result2 = vqtbl4q_u8(sbox_part2, block_1);
-    block_1 = vsubq_u8(block_1, value_vector);
-    let result3 = vqtbl4q_u8(sbox_part3, block_1);
-    block_1 = vsubq_u8(block_1, value_vector);
-    let result4 = vqtbl4q_u8(sbox_part4, block_1);
+    let block_2 = vsubq_u8(block_1, value_vector);
+    let result3 = vqtbl4q_u8(sbox_part3, block_2);
+    let block_3 = vsubq_u8(block_2, value_vector);
+    let result4 = vqtbl4q_u8(sbox_part4, block_3);
     // Merging results
     let result = vorrq_u8(vorrq_u8(result1, result2), vorrq_u8(result3, result4));
 
