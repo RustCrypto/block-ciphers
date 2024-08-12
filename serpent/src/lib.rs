@@ -22,8 +22,6 @@
 
 pub use cipher;
 
-// TODO: remove dependency on byteorder
-use byteorder::{ByteOrder, LE};
 use cipher::{
     consts::{U1, U16},
     AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
@@ -54,8 +52,7 @@ fn get_bit(x: usize, i: usize) -> u8 {
 }
 
 fn linear_transform_bitslice(input: Block128, output: &mut Block128) {
-    let mut words = [0u32; 4];
-    LE::read_u32_into(&input, &mut words);
+    let mut words: [u32; 4] = read_u32s(&input);
 
     words[0] = words[0].rotate_left(13);
     words[2] = words[2].rotate_left(3);
@@ -68,12 +65,11 @@ fn linear_transform_bitslice(input: Block128, output: &mut Block128) {
     words[0] = words[0].rotate_left(5);
     words[2] = words[2].rotate_left(22);
 
-    LE::write_u32_into(&words, output);
+    write_u32s(&words, output);
 }
 
 fn linear_transform_inverse_bitslice(input: Block128, output: &mut Block128) {
-    let mut words = [0u32; 4];
-    LE::read_u32_into(&input, &mut words);
+    let mut words: [u32; 4] = read_u32s(&input);
 
     words[2] = words[2].rotate_right(22);
     words[0] = words[0].rotate_right(5);
@@ -86,7 +82,7 @@ fn linear_transform_inverse_bitslice(input: Block128, output: &mut Block128) {
     words[2] = words[2].rotate_right(3);
     words[0] = words[0].rotate_right(13);
 
-    LE::write_u32_into(&words, output);
+    write_u32s(&words, output);
 }
 
 fn round_bitslice(i: usize, b_i: Block128, k: Subkeys, b_output: &mut Block128) {
@@ -125,12 +121,7 @@ fn apply_s_inverse(index: usize, nibble: u8) -> u8 {
 }
 
 fn apply_s_bitslice(index: usize, word: Word) -> Word {
-    let mut output = [0u8; 16];
-
-    let w1 = LE::read_u32(&word[0..4]);
-    let w2 = LE::read_u32(&word[4..8]);
-    let w3 = LE::read_u32(&word[8..12]);
-    let w4 = LE::read_u32(&word[12..16]);
+    let [w1, w2, w3, w4] = read_u32s(&word);
 
     let mut words = [0u32; 4];
 
@@ -148,17 +139,13 @@ fn apply_s_bitslice(index: usize, word: Word) -> Word {
         }
     }
 
-    LE::write_u32_into(&words, &mut output);
-
+    let mut output = [0u8; 16];
+    write_u32s(&words, &mut output);
     output
 }
 
 fn apply_s_inverse_bitslice(index: usize, word: Word) -> Word {
-    let mut output = [0u8; 16];
-    let w1 = LE::read_u32(&word[0..4]);
-    let w2 = LE::read_u32(&word[4..8]);
-    let w3 = LE::read_u32(&word[8..12]);
-    let w4 = LE::read_u32(&word[12..16]);
+    let [w1, w2, w3, w4] = read_u32s(&word);
     let mut words = [0u32; 4];
     for i in 0..32 {
         let quad = apply_s_inverse(
@@ -172,7 +159,8 @@ fn apply_s_inverse_bitslice(index: usize, word: Word) -> Word {
             words[l] |= u32::from(get_bit(quad as usize, l)) << i;
         }
     }
-    LE::write_u32_into(&words, &mut output);
+    let mut output = [0u8; 16];
+    write_u32s(&words, &mut output);
     output
 }
 
@@ -198,7 +186,8 @@ impl Serpent {
     fn key_schedule(key: [u8; 32]) -> Subkeys {
         let mut words = [0u32; 140];
 
-        LE::read_u32_into(&key, &mut words[..8]);
+        let words8: [u32; 8] = read_u32s(&key);
+        words[..8].copy_from_slice(&words8);
 
         for i in 0..132 {
             let slot = i + 8;
@@ -232,10 +221,8 @@ impl Serpent {
 
         let mut sub_keys: Subkeys = [[0u8; 16]; ROUNDS + 1];
         for i in 0..r {
-            LE::write_u32(&mut sub_keys[i][..4], k[4 * i]);
-            LE::write_u32(&mut sub_keys[i][4..8], k[4 * i + 1]);
-            LE::write_u32(&mut sub_keys[i][8..12], k[4 * i + 2]);
-            LE::write_u32(&mut sub_keys[i][12..], k[4 * i + 3]);
+            let keys: [u32; 4] = k[4 * i..][..4].try_into().unwrap();
+            write_u32s(&keys, &mut sub_keys[i]);
         }
 
         sub_keys
@@ -328,3 +315,19 @@ impl Drop for Serpent {
 
 #[cfg(feature = "zeroize")]
 impl ZeroizeOnDrop for Serpent {}
+
+fn read_u32s<const N: usize>(src: &[u8]) -> [u32; N] {
+    assert_eq!(src.len(), 4 * N);
+    let mut res = [0; N];
+    for (src, dst) in src.chunks_exact(4).zip(res.iter_mut()) {
+        *dst = u32::from_le_bytes(src.try_into().unwrap());
+    }
+    res
+}
+
+fn write_u32s<const N: usize>(src: &[u32; N], dst: &mut [u8]) {
+    assert_eq!(4 * src.len(), dst.len());
+    for (src, dst) in src.iter().zip(dst.chunks_exact_mut(4)) {
+        dst.copy_from_slice(&src.to_le_bytes());
+    }
+}

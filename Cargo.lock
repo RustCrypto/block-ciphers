@@ -195,7 +195,6 @@ dependencies = [
 name = "serpent"
 version = "0.6.0-pre"
 dependencies = [
- "byteorder",
  "cipher",
 ]
 
