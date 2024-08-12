@@ -82,7 +82,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "cipher"
 version = "0.5.0-pre.7"
-source = "git+https://github.com/RustCrypto/traits?branch=block_backends#c00ddc9915e7a5dfcb7d4c14cab08c64836e06a5"
+source = "git+https://github.com/RustCrypto/traits?branch=block_backends#021f308e2a6271262564dc2a4a77eec7526019e0"
 dependencies = [
  "blobby",
  "crypto-common",
@@ -102,7 +102,7 @@ dependencies = [
 [[package]]
 name = "crypto-common"
 version = "0.2.0-rc.1"
-source = "git+https://github.com/RustCrypto/traits?branch=block_backends#c00ddc9915e7a5dfcb7d4c14cab08c64836e06a5"
+source = "git+https://github.com/RustCrypto/traits?branch=block_backends#021f308e2a6271262564dc2a4a77eec7526019e0"
 dependencies = [
  "hybrid-array",
 ]
