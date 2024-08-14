@@ -82,7 +82,8 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "cipher"
 version = "0.5.0-pre.7"
-source = "git+https://github.com/RustCrypto/traits?branch=block_backends#19e6b3f01614cbb5232e99dbf60883f846e31626"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b1425e6ce000f05a73096556cabcfb6a10a3ffe3bb4d75416ca8f00819c0b6a"
 dependencies = [
  "blobby",
  "crypto-common",
@@ -92,9 +93,9 @@ dependencies = [
 
 [[package]]
 name = "cpufeatures"
-version = "0.2.12"
+version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53fe5e26ff1b7aef8bca9c6080520cfb8d9333c7568e1829cef191a9723e5504"
+checksum = "51e852e6dc9a5bed1fae92dd2375037bf2b768725bf3be87811edee3249d09ad"
 dependencies = [
  "libc",
 ]
@@ -102,7 +103,8 @@ dependencies = [
 [[package]]
 name = "crypto-common"
 version = "0.2.0-rc.1"
-source = "git+https://github.com/RustCrypto/traits?branch=block_backends#19e6b3f01614cbb5232e99dbf60883f846e31626"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0b8ce8218c97789f16356e7896b3714f26c2ee1079b79c0b7ae7064bb9089fa"
 dependencies = [
  "hybrid-array",
 ]
