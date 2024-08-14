@@ -19,8 +19,8 @@ mod test_expand;
 
 use cipher::{
     consts::{self, U16, U24, U32},
-    AlgorithmName, BlockCipher, BlockCipherDecrypt, BlockCipherEncrypt, BlockClosure,
-    BlockSizeUser, Key, KeyInit, KeySizeUser,
+    AlgorithmName, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncClosure,
+    BlockCipherEncrypt, BlockSizeUser, Key, KeyInit, KeySizeUser,
 };
 use core::fmt;
 
@@ -97,8 +97,6 @@ macro_rules! define_aes_impl {
             }
         }
 
-        impl BlockCipher for $name {}
-
         impl KeySizeUser for $name {
             type KeySize = $key_size;
         }
@@ -107,7 +105,7 @@ macro_rules! define_aes_impl {
             #[inline]
             fn new(key: &Key<Self>) -> Self {
                 let encrypt = $name_back_enc::new(key);
-                let decrypt = $name_back_dec::from(&encrypt);
+                let decrypt = $name_back_dec::from(encrypt.clone());
                 Self { encrypt, decrypt }
             }
         }
@@ -116,7 +114,7 @@ macro_rules! define_aes_impl {
             #[inline]
             fn from(encrypt: $name_enc) -> $name {
                 let encrypt = encrypt.backend.clone();
-                let decrypt = (&encrypt).into();
+                let decrypt = encrypt.clone().into();
                 Self { encrypt, decrypt }
             }
         }
@@ -125,7 +123,7 @@ macro_rules! define_aes_impl {
             #[inline]
             fn from(encrypt: &$name_enc) -> $name {
                 let encrypt = encrypt.backend.clone();
-                let decrypt = (&encrypt).into();
+                let decrypt = encrypt.clone().into();
                 Self { encrypt, decrypt }
             }
         }
@@ -135,14 +133,14 @@ macro_rules! define_aes_impl {
         }
 
         impl BlockCipherEncrypt for $name {
-            fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
-                f.call(&mut &self.encrypt)
+            fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
+                f.call(&self.encrypt)
             }
         }
 
         impl BlockCipherDecrypt for $name {
-            fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
-                f.call(&mut &self.decrypt)
+            fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = U16>) {
+                f.call(&self.decrypt)
             }
         }
 
@@ -185,8 +183,6 @@ macro_rules! define_aes_impl {
             }
         }
 
-        impl BlockCipher for $name_enc {}
-
         impl KeySizeUser for $name_enc {
             type KeySize = $key_size;
         }
@@ -204,8 +200,8 @@ macro_rules! define_aes_impl {
         }
 
         impl BlockCipherEncrypt for $name_enc {
-            fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
-                f.call(&mut &self.backend)
+            fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
+                f.call(&self.backend)
             }
         }
 
@@ -248,8 +244,6 @@ macro_rules! define_aes_impl {
             }
         }
 
-        impl BlockCipher for $name_dec {}
-
         impl KeySizeUser for $name_dec {
             type KeySize = $key_size;
         }
@@ -258,7 +252,7 @@ macro_rules! define_aes_impl {
             #[inline]
             fn new(key: &Key<Self>) -> Self {
                 let encrypt = $name_back_enc::new(key);
-                let backend = (&encrypt).into();
+                let backend = encrypt.clone().into();
                 Self { backend }
             }
         }
@@ -272,7 +266,7 @@ macro_rules! define_aes_impl {
 
         impl From<&$name_enc> for $name_dec {
             fn from(encrypt: &$name_enc) -> $name_dec {
-                let backend = (&encrypt.backend).into();
+                let backend = encrypt.backend.clone().into();
                 Self { backend }
             }
         }
@@ -282,8 +276,8 @@ macro_rules! define_aes_impl {
         }
 
         impl BlockCipherDecrypt for $name_dec {
-            fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
-                f.call(&mut &self.backend);
+            fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = U16>) {
+                f.call(&self.backend);
             }
         }
 

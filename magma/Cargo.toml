@@ -1,6 +1,6 @@
 [package]
 name = "magma"
-version = "0.10.0-pre.1"
+version = "0.10.0-pre.2"
 description = "Magma (GOST R 34.12-2015) block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
@@ -13,10 +13,10 @@ keywords = ["crypto", "magma", "gost", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "=0.5.0-pre.6"
+cipher = "=0.5.0-pre.7"
 
 [dev-dependencies]
-cipher = { version = "=0.5.0-pre.6", features = ["dev"] }
+cipher = { version = "=0.5.0-pre.7", features = ["dev"] }
 hex-literal = "0.4"
 
 [features]

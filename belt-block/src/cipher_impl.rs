@@ -1,6 +1,10 @@
 use crate::{belt_block_raw, from_u32, g13, g21, g5, key_idx, to_u32};
-use cipher::consts::{U16, U32};
-use cipher::{inout::InOut, AlgorithmName, Block, BlockCipher, Key, KeyInit, KeySizeUser};
+use cipher::{
+    consts::{U1, U16, U32},
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
+    KeyInit, KeySizeUser, ParBlocksSizeUser,
+};
 use core::{fmt, mem::swap, num::Wrapping};
 
 #[cfg(feature = "zeroize")]
@@ -8,15 +12,39 @@ use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// BelT block cipher.
 #[derive(Clone)]
-#[cfg_attr(docsrs, doc(cfg(feature = "cipher")))]
 pub struct BeltBlock {
     key: [u32; 8],
 }
 
-impl BeltBlock {
-    /// Encryption as described in section 6.1.3
+impl KeySizeUser for BeltBlock {
+    type KeySize = U32;
+}
+
+impl KeyInit for BeltBlock {
+    fn new(key: &Key<Self>) -> Self {
+        Self { key: to_u32(key) }
+    }
+}
+
+impl BlockSizeUser for BeltBlock {
+    type BlockSize = U16;
+}
+
+impl ParBlocksSizeUser for BeltBlock {
+    type ParBlocksSize = U1;
+}
+
+impl BlockCipherEncrypt for BeltBlock {
     #[inline]
-    fn encrypt(&self, mut block: InOut<'_, '_, Block<Self>>) {
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
+    }
+}
+
+impl BlockCipherEncBackend for BeltBlock {
+    #[inline]
+    fn encrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+        // Encryption as described in section 6.1.3
         // Steps 1 and 4
         let x = to_u32(block.get_in());
         let y = belt_block_raw(x, &self.key);
@@ -25,10 +53,18 @@ impl BeltBlock {
         // 6) Y ← b ‖ d ‖ a ‖ c
         *block_out = from_u32(&y).into();
     }
+}
 
-    /// Decryption as described in section 6.1.4
+impl BlockCipherDecrypt for BeltBlock {
     #[inline]
-    fn decrypt(&self, mut block: InOut<'_, '_, Block<Self>>) {
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
+    }
+}
+
+impl BlockCipherDecBackend for BeltBlock {
+    #[inline]
+    fn decrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
         let key = &self.key;
         let block_in: [u32; 4] = to_u32(block.get_in());
         // Steps 1 and 4
@@ -72,42 +108,18 @@ impl BeltBlock {
     }
 }
 
-impl BlockCipher for BeltBlock {}
-
-impl KeySizeUser for BeltBlock {
-    type KeySize = U32;
-}
-
-impl KeyInit for BeltBlock {
-    fn new(key: &Key<Self>) -> Self {
-        Self { key: to_u32(key) }
-    }
-}
-
 impl AlgorithmName for BeltBlock {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("BeltBlock")
     }
 }
 
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl Drop for BeltBlock {
     fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
         self.key.zeroize();
     }
 }
 
 #[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl ZeroizeOnDrop for BeltBlock {}
-
-cipher::impl_simple_block_encdec!(
-    BeltBlock, U16, cipher, block,
-    encrypt: {
-        cipher.encrypt(block);
-    }
-    decrypt: {
-        cipher.decrypt(block);
-    }
-);

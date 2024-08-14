@@ -12,10 +12,7 @@
 //! # Examples
 //! ```
 //! use magma::Magma;
-//! use magma::cipher::{
-//!     array::Array,
-//!     BlockCipherEncrypt, BlockCipherDecrypt, KeyInit,
-//! };
+//! use magma::cipher::{Array, BlockCipherEncrypt, BlockCipherDecrypt, KeyInit};
 //! use hex_literal::hex;
 //!
 //! // Example vector from GOST 34.12-2018
@@ -44,14 +41,16 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
 #![deny(unsafe_code)]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 
 pub use cipher;
 
 use cipher::{
-    consts::{U32, U8},
-    AlgorithmName, BlockCipher, Key, KeyInit, KeySizeUser,
+    consts::{U1, U32, U8},
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
+    KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
 use core::{fmt, marker::PhantomData};
 
@@ -70,13 +69,12 @@ pub struct Gost89<S: Sbox> {
     _p: PhantomData<S>,
 }
 
-impl<S: Sbox> BlockCipher for Gost89<S> {}
-
 impl<S: Sbox> KeySizeUser for Gost89<S> {
     type KeySize = U32;
 }
 
 impl<S: Sbox> KeyInit for Gost89<S> {
+    #[inline]
     fn new(key: &Key<Self>) -> Self {
         let mut key_u32 = [0u32; 8];
         key.chunks_exact(4)
@@ -86,6 +84,68 @@ impl<S: Sbox> KeyInit for Gost89<S> {
             key: key_u32,
             _p: PhantomData,
         }
+    }
+}
+
+impl<S: Sbox> BlockSizeUser for Gost89<S> {
+    type BlockSize = U8;
+}
+
+impl<S: Sbox> ParBlocksSizeUser for Gost89<S> {
+    type ParBlocksSize = U1;
+}
+
+impl<S: Sbox> BlockCipherEncBackend for Gost89<S> {
+    #[inline]
+    fn encrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+        let b = block.get_in();
+        let mut v = (to_u32(&b[0..4]), to_u32(&b[4..8]));
+        for _ in 0..3 {
+            for i in 0..8 {
+                v = (v.1, v.0 ^ S::g(v.1, self.key[i]));
+            }
+        }
+        for i in (0..8).rev() {
+            v = (v.1, v.0 ^ S::g(v.1, self.key[i]));
+        }
+        let block = block.get_out();
+        block[0..4].copy_from_slice(&v.1.to_be_bytes());
+        block[4..8].copy_from_slice(&v.0.to_be_bytes());
+    }
+}
+
+impl<S: Sbox> BlockCipherEncrypt for Gost89<S> {
+    #[inline]
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
+    }
+}
+
+impl<S: Sbox> BlockCipherDecBackend for Gost89<S> {
+    #[inline]
+    fn decrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+        let b = block.get_in();
+        let mut v = (to_u32(&b[0..4]), to_u32(&b[4..8]));
+
+        for i in 0..8 {
+            v = (v.1, v.0 ^ S::g(v.1, self.key[i]));
+        }
+
+        for _ in 0..3 {
+            for i in (0..8).rev() {
+                v = (v.1, v.0 ^ S::g(v.1, self.key[i]));
+            }
+        }
+        let block = block.get_out();
+        block[0..4].copy_from_slice(&v.1.to_be_bytes());
+        block[4..8].copy_from_slice(&v.0.to_be_bytes());
+    }
+}
+
+impl<S: Sbox> BlockCipherDecrypt for Gost89<S> {
+    #[inline]
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
     }
 }
 
@@ -113,62 +173,24 @@ impl<S: Sbox> fmt::Debug for Gost89<S> {
 impl<S: Sbox> AlgorithmName for Gost89<S> {
     fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if S::NAME == "Tc26" {
-            f.write_str("Magma { ... }")
+            f.write_str("Magma")
         } else {
             f.write_str("Gost89<")?;
             f.write_str(S::NAME)?;
-            f.write_str("> { ... }")
+            f.write_str(">")
         }
     }
 }
 
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl<S: Sbox> Drop for Gost89<S> {
     fn drop(&mut self) {
+        #[cfg(feature = "zeroize")]
         self.key.zeroize();
     }
 }
 
 #[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl<S: Sbox> ZeroizeOnDrop for Gost89<S> {}
-
-cipher::impl_simple_block_encdec!(
-    <S: Sbox> Gost89, U8, cipher, block,
-    encrypt: {
-        let b = block.get_in();
-        let mut v = (to_u32(&b[0..4]), to_u32(&b[4..8]));
-        for _ in 0..3 {
-            for i in 0..8 {
-                v = (v.1, v.0 ^ S::g(v.1, cipher.key[i]));
-            }
-        }
-        for i in (0..8).rev() {
-            v = (v.1, v.0 ^ S::g(v.1, cipher.key[i]));
-        }
-        let block = block.get_out();
-        block[0..4].copy_from_slice(&v.1.to_be_bytes());
-        block[4..8].copy_from_slice(&v.0.to_be_bytes());
-    }
-    decrypt: {
-        let b = block.get_in();
-        let mut v = (to_u32(&b[0..4]), to_u32(&b[4..8]));
-
-        for i in 0..8 {
-            v = (v.1, v.0 ^ S::g(v.1, cipher.key[i]));
-        }
-
-        for _ in 0..3 {
-            for i in (0..8).rev() {
-                v = (v.1, v.0 ^ S::g(v.1, cipher.key[i]));
-            }
-        }
-        let block = block.get_out();
-        block[0..4].copy_from_slice(&v.1.to_be_bytes());
-        block[4..8].copy_from_slice(&v.0.to_be_bytes());
-    }
-);
 
 /// Block cipher defined in GOST R 34.12-2015 (Magma)
 pub type Magma = Gost89<sboxes::Tc26>;

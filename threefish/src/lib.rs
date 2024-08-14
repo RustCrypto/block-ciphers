@@ -16,7 +16,7 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
 #![deny(unsafe_code)]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 
 #[cfg(feature = "cipher")]
@@ -26,8 +26,10 @@ use core::fmt;
 
 #[cfg(feature = "cipher")]
 use cipher::{
-    consts::{U128, U32, U64},
-    AlgorithmName, BlockCipher, Key, KeyInit, KeySizeUser,
+    consts::{U1, U128, U32, U64},
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
+    KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
 
 mod consts;
@@ -158,22 +160,80 @@ macro_rules! impl_threefish(
         }
 
         #[cfg(feature = "cipher")]
-        #[cfg_attr(docsrs, doc(cfg(feature = "cipher")))]
-        impl BlockCipher for $name {}
-
-        #[cfg(feature = "cipher")]
-        #[cfg_attr(docsrs, doc(cfg(feature = "cipher")))]
         impl KeySizeUser for $name {
             type KeySize = $block_size;
         }
 
         #[cfg(feature = "cipher")]
-        #[cfg_attr(docsrs, doc(cfg(feature = "cipher")))]
         impl KeyInit for $name {
             fn new(key: &Key<Self>) -> Self {
                 let mut tmp_key = [0u8; $n_w*8];
                 tmp_key.copy_from_slice(key);
                 Self::new_with_tweak(&tmp_key, &Default::default())
+            }
+        }
+
+        #[cfg(feature = "cipher")]
+        impl BlockSizeUser for $name {
+            type BlockSize = $block_size;
+        }
+
+        #[cfg(feature = "cipher")]
+        impl ParBlocksSizeUser for $name {
+            type ParBlocksSize = U1;
+        }
+
+        #[cfg(feature = "cipher")]
+        impl BlockCipherEncrypt for $name {
+            #[inline]
+            fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
+                f.call(self)
+            }
+        }
+
+        #[cfg(feature = "cipher")]
+        impl BlockCipherEncBackend for $name {
+            #[inline]
+            fn encrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+                let mut v = [0u64; $n_w];
+                let b = block.get_in();
+                for (vv, chunk) in v.iter_mut().zip(b.chunks_exact(8)) {
+                    *vv = u64::from_le_bytes(chunk.try_into().unwrap());
+                }
+
+                self.encrypt_block_u64(&mut v);
+
+                let block = block.get_out();
+                for (chunk, vv) in block.chunks_exact_mut(8).zip(v.iter()) {
+                    chunk.copy_from_slice(&vv.to_le_bytes());
+                }
+            }
+        }
+
+        #[cfg(feature = "cipher")]
+        impl BlockCipherDecrypt for $name {
+            #[inline]
+            fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
+                f.call(self)
+            }
+        }
+
+        #[cfg(feature = "cipher")]
+        impl BlockCipherDecBackend for $name {
+            #[inline]
+            fn decrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+                let mut v = [0u64; $n_w];
+                let b = block.get_in();
+                for (vv, chunk) in v.iter_mut().zip(b.chunks_exact(8)) {
+                    *vv = u64::from_le_bytes(chunk.try_into().unwrap());
+                }
+
+                self.decrypt_block_u64(&mut v);
+
+                let block = block.get_out();
+                for (chunk, vv) in block.chunks_exact_mut(8).zip(v.iter()) {
+                    chunk.copy_from_slice(&vv.to_le_bytes());
+                }
             }
         }
 
@@ -184,57 +244,21 @@ macro_rules! impl_threefish(
         }
 
         #[cfg(feature = "cipher")]
-        #[cfg_attr(docsrs, doc(cfg(feature = "cipher")))]
         impl AlgorithmName for $name {
             fn write_alg_name(f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 f.write_str(stringify!($name))
             }
         }
 
-        #[cfg(all(feature = "zeroize"))]
-        #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
         impl Drop for $name {
             fn drop(&mut self) {
+                #[cfg(all(feature = "zeroize"))]
                 self.sk.zeroize();
             }
         }
 
         #[cfg(all(feature = "zeroize"))]
-        #[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
         impl ZeroizeOnDrop for $name {}
-
-        #[cfg(feature = "cipher")]
-        cipher::impl_simple_block_encdec!(
-            $name, $block_size, cipher, block,
-            encrypt: {
-                let mut v = [0u64; $n_w];
-                let b = block.get_in();
-                for (vv, chunk) in v.iter_mut().zip(b.chunks_exact(8)) {
-                    *vv = u64::from_le_bytes(chunk.try_into().unwrap());
-                }
-
-                cipher.encrypt_block_u64(&mut v);
-
-                let block = block.get_out();
-                for (chunk, vv) in block.chunks_exact_mut(8).zip(v.iter()) {
-                    chunk.copy_from_slice(&vv.to_le_bytes());
-                }
-            }
-            decrypt: {
-                let mut v = [0u64; $n_w];
-                let b = block.get_in();
-                for (vv, chunk) in v.iter_mut().zip(b.chunks_exact(8)) {
-                    *vv = u64::from_le_bytes(chunk.try_into().unwrap());
-                }
-
-                cipher.decrypt_block_u64(&mut v);
-
-                let block = block.get_out();
-                for (chunk, vv) in block.chunks_exact_mut(8).zip(v.iter()) {
-                    chunk.copy_from_slice(&vv.to_le_bytes());
-                }
-            }
-        );
     )
 );
 

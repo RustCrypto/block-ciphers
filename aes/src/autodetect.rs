@@ -4,8 +4,8 @@
 use crate::soft;
 use cipher::{
     consts::{U16, U24, U32},
-    AlgorithmName, BlockCipher, BlockCipherDecrypt, BlockCipherEncrypt, BlockClosure,
-    BlockSizeUser, Key, KeyInit, KeySizeUser,
+    AlgorithmName, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncClosure,
+    BlockCipherEncrypt, BlockSizeUser, Key, KeyInit, KeySizeUser,
 };
 use core::fmt;
 use core::mem::ManuallyDrop;
@@ -128,41 +128,39 @@ macro_rules! define_aes_impl {
             type BlockSize = U16;
         }
 
-        impl BlockCipher for $name {}
-
         impl BlockCipherEncrypt for $name {
-            fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
+            fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
                 unsafe {
                     if self.token.get() {
                         #[target_feature(enable = "aes")]
                         unsafe fn inner(
                             state: &intrinsics::$name,
-                            f: impl BlockClosure<BlockSize = U16>,
+                            f: impl BlockCipherEncClosure<BlockSize = U16>,
                         ) {
-                            f.call(&mut state.get_enc_backend());
+                            f.call(state.get_enc_backend());
                         }
                         inner(&self.inner.intrinsics, f);
                     } else {
-                        f.call(&mut self.inner.soft.get_enc_backend());
+                        f.call(&self.inner.soft.get_enc_backend());
                     }
                 }
             }
         }
 
         impl BlockCipherDecrypt for $name {
-            fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
+            fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = U16>) {
                 unsafe {
                     if self.token.get() {
                         #[target_feature(enable = "aes")]
                         unsafe fn inner(
                             state: &intrinsics::$name,
-                            f: impl BlockClosure<BlockSize = U16>,
+                            f: impl BlockCipherDecClosure<BlockSize = U16>,
                         ) {
-                            f.call(&mut state.get_dec_backend());
+                            f.call(state.get_dec_backend());
                         }
                         inner(&self.inner.intrinsics, f);
                     } else {
-                        f.call(&mut self.inner.soft.get_dec_backend());
+                        f.call(&self.inner.soft.get_dec_backend());
                     }
                 }
             }
@@ -247,22 +245,20 @@ macro_rules! define_aes_impl {
             type BlockSize = U16;
         }
 
-        impl BlockCipher for $name_enc {}
-
         impl BlockCipherEncrypt for $name_enc {
-            fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
+            fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
                 unsafe {
                     if self.token.get() {
                         #[target_feature(enable = "aes")]
                         unsafe fn inner(
                             state: &intrinsics::$name_enc,
-                            f: impl BlockClosure<BlockSize = U16>,
+                            f: impl BlockCipherEncClosure<BlockSize = U16>,
                         ) {
-                            f.call(&mut state.get_enc_backend());
+                            f.call(state.get_enc_backend());
                         }
                         inner(&self.inner.intrinsics, f);
                     } else {
-                        f.call(&mut self.inner.soft.get_enc_backend());
+                        f.call(&self.inner.soft.get_enc_backend());
                     }
                 }
             }
@@ -376,22 +372,20 @@ macro_rules! define_aes_impl {
             type BlockSize = U16;
         }
 
-        impl BlockCipher for $name_dec {}
-
         impl BlockCipherDecrypt for $name_dec {
-            fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
+            fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = U16>) {
                 unsafe {
                     if self.token.get() {
                         #[target_feature(enable = "aes")]
                         unsafe fn inner(
                             state: &intrinsics::$name_dec,
-                            f: impl BlockClosure<BlockSize = U16>,
+                            f: impl BlockCipherDecClosure<BlockSize = U16>,
                         ) {
-                            f.call(&mut state.get_dec_backend());
+                            f.call(state.get_dec_backend());
                         }
                         inner(&self.inner.intrinsics, f);
                     } else {
-                        f.call(&mut self.inner.soft.get_dec_backend());
+                        f.call(&self.inner.soft.get_dec_backend());
                     }
                 }
             }

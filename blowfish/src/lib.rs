@@ -16,15 +16,17 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
 #![deny(unsafe_code)]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 
 pub use cipher;
 
 use byteorder::{ByteOrder, BE, LE};
 use cipher::{
-    consts::{U56, U8},
-    AlgorithmName, BlockCipher, InvalidLength, Key, KeyInit, KeySizeUser,
+    consts::{U1, U56, U8},
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut,
+    InvalidLength, Key, KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
 use core::fmt;
 use core::marker::PhantomData;
@@ -120,8 +122,6 @@ impl<T: ByteOrder> Blowfish<T> {
     }
 }
 
-impl<T: ByteOrder> BlockCipher for Blowfish<T> {}
-
 impl<T: ByteOrder> KeySizeUser for Blowfish<T> {
     type KeySize = U56;
 }
@@ -138,6 +138,48 @@ impl<T: ByteOrder> KeyInit for Blowfish<T> {
         let mut blowfish = Blowfish::init_state();
         blowfish.expand_key(key);
         Ok(blowfish)
+    }
+}
+
+impl<T: ByteOrder> BlockSizeUser for Blowfish<T> {
+    type BlockSize = U8;
+}
+
+impl<T: ByteOrder> ParBlocksSizeUser for Blowfish<T> {
+    type ParBlocksSize = U1;
+}
+
+impl<T: ByteOrder> BlockCipherEncrypt for Blowfish<T> {
+    #[inline]
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
+    }
+}
+
+impl<T: ByteOrder> BlockCipherEncBackend for Blowfish<T> {
+    #[inline]
+    fn encrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+        let mut b = [0u32; 2];
+        T::read_u32_into(block.get_in(), &mut b);
+        b = self.encrypt(b);
+        T::write_u32_into(&b, block.get_out());
+    }
+}
+
+impl<T: ByteOrder> BlockCipherDecrypt for Blowfish<T> {
+    #[inline]
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
+    }
+}
+
+impl<T: ByteOrder> BlockCipherDecBackend for Blowfish<T> {
+    #[inline]
+    fn decrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+        let mut b = [0u32; 2];
+        T::read_u32_into(block.get_in(), &mut b);
+        b = self.decrypt(b);
+        T::write_u32_into(&b, block.get_out());
     }
 }
 
@@ -165,34 +207,18 @@ impl AlgorithmName for Blowfish<LE> {
     }
 }
 
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl<T: ByteOrder> Drop for Blowfish<T> {
     fn drop(&mut self) {
-        self.s.zeroize();
-        self.p.zeroize();
+        #[cfg(feature = "zeroize")]
+        {
+            self.s.zeroize();
+            self.p.zeroize();
+        }
     }
 }
 
 #[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl<T: ByteOrder> ZeroizeOnDrop for Blowfish<T> {}
-
-cipher::impl_simple_block_encdec!(
-    <T: ByteOrder> Blowfish, U8, cipher, block,
-    encrypt: {
-        let mut b = [0u32; 2];
-        T::read_u32_into(block.get_in(), &mut b);
-        b = cipher.encrypt(b);
-        T::write_u32_into(&b, block.get_out());
-    }
-    decrypt: {
-        let mut b = [0u32; 2];
-        T::read_u32_into(block.get_in(), &mut b);
-        b = cipher.decrypt(b);
-        T::write_u32_into(&b, block.get_out());
-    }
-);
 
 /// Bcrypt extension of blowfish
 #[cfg(feature = "bcrypt")]

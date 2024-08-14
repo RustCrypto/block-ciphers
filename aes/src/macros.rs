@@ -20,11 +20,11 @@ macro_rules! impl_backends {
             keys: $keys_ty,
         }
 
-        impl cipher::BlockSizeUser for &$enc_name {
+        impl cipher::BlockSizeUser for $enc_name {
             type BlockSize = cipher::consts::U16;
         }
 
-        impl cipher::ParBlocksSizeUser for &$enc_name {
+        impl cipher::ParBlocksSizeUser for $enc_name {
             type ParBlocksSize = $par_size;
         }
 
@@ -40,15 +40,15 @@ macro_rules! impl_backends {
             }
         }
 
-        impl cipher::BlockBackend for &$enc_name {
+        impl cipher::BlockCipherEncBackend for $enc_name {
             #[inline(always)]
-            fn proc_block(&mut self, block: cipher::inout::InOut<'_, '_, cipher::Block<Self>>) {
+            fn encrypt_block(&self, block: cipher::inout::InOut<'_, '_, cipher::Block<Self>>) {
                 unsafe { $encrypt(&self.keys, block) }
             }
 
             #[inline(always)]
-            fn proc_par_blocks(
-                &mut self,
+            fn encrypt_par_blocks(
+                &self,
                 blocks: cipher::inout::InOut<'_, '_, cipher::ParBlocks<Self>>,
             ) {
                 unsafe { $encrypt_par(&self.keys, blocks) }
@@ -60,11 +60,11 @@ macro_rules! impl_backends {
             keys: $keys_ty,
         }
 
-        impl cipher::BlockSizeUser for &$dec_name {
+        impl cipher::BlockSizeUser for $dec_name {
             type BlockSize = cipher::consts::U16;
         }
 
-        impl cipher::ParBlocksSizeUser for &$dec_name {
+        impl cipher::ParBlocksSizeUser for $dec_name {
             type ParBlocksSize = $par_size;
         }
 
@@ -75,27 +75,27 @@ macro_rules! impl_backends {
         impl cipher::KeyInit for $dec_name {
             #[inline]
             fn new(key: &cipher::Key<Self>) -> Self {
-                From::from(&$enc_name::new(key))
+                From::from($enc_name::new(key))
             }
         }
 
-        impl From<&$enc_name> for $dec_name {
+        impl From<$enc_name> for $dec_name {
             #[inline]
-            fn from(enc: &$enc_name) -> $dec_name {
+            fn from(enc: $enc_name) -> $dec_name {
                 let keys = unsafe { $inv_keys(&enc.keys) };
                 Self { keys }
             }
         }
 
-        impl cipher::BlockBackend for &$dec_name {
+        impl cipher::BlockCipherDecBackend for $dec_name {
             #[inline(always)]
-            fn proc_block(&mut self, block: cipher::inout::InOut<'_, '_, cipher::Block<Self>>) {
+            fn decrypt_block(&self, block: cipher::inout::InOut<'_, '_, cipher::Block<Self>>) {
                 unsafe { $decrypt(&self.keys, block) }
             }
 
             #[inline(always)]
-            fn proc_par_blocks(
-                &mut self,
+            fn decrypt_par_blocks(
+                &self,
                 blocks: cipher::inout::InOut<'_, '_, cipher::ParBlocks<Self>>,
             ) {
                 unsafe { $decrypt_par(&self.keys, blocks) }

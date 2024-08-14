@@ -1,5 +1,5 @@
 use aria::{Aria128, Aria192, Aria256};
-use cipher::{array::Array, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
+use cipher::{Array, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 use hex_literal::hex;
 
 /// Test vector from RFC 5794, Appendix A.1

@@ -5,20 +5,23 @@
 #![no_std]
 #![doc(
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
-    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
-    html_root_url = "https://docs.rs/speck/0.0.1"
+    html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
-#![forbid(unsafe_code)]
+#![deny(unsafe_code)]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 
 pub use cipher;
 
 use cipher::{
-    consts::{U12, U16, U18, U24, U32, U4, U6, U8, U9},
-    AlgorithmName, BlockCipher, Key, KeyInit, KeySizeUser,
+    consts::*, AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure,
+    BlockCipherDecrypt, BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt,
+    BlockSizeUser, InOut, Key, KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
-use core::fmt;
-use core::mem::size_of;
+use core::{fmt, mem::size_of};
+
+#[cfg(feature = "zeroize")]
+use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 
 macro_rules! define_speck_impl {
     (
@@ -99,8 +102,6 @@ macro_rules! define_speck_impl {
             }
         }
 
-        impl BlockCipher for $name {}
-
         impl KeySizeUser for $name {
             type KeySize = $key_size;
         }
@@ -113,7 +114,7 @@ macro_rules! define_speck_impl {
 
                 for i in 0..$m - 1 {
                     l[i] = $name::from_be_bytes(
-                        &key[($m - 2 - i) * ($n / 8)..($m - 1 - i) * ($n / 8)]
+                        &key[($m - 2 - i) * ($n / 8)..($m - 1 - i) * ($n / 8)],
                     );
                 }
 
@@ -124,6 +125,70 @@ macro_rules! define_speck_impl {
                 }
 
                 Self { k }
+            }
+        }
+
+        impl BlockSizeUser for $name {
+            type BlockSize = $block_size;
+        }
+
+        impl ParBlocksSizeUser for $name {
+            type ParBlocksSize = U1;
+        }
+
+        impl BlockCipherEncrypt for $name {
+            #[inline]
+            fn encrypt_with_backend(
+                &self,
+                f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>,
+            ) {
+                f.call(self)
+            }
+        }
+
+        impl BlockCipherEncBackend for $name {
+            #[inline]
+            fn encrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+                let b = block.get_in();
+                let mut x = $name::from_be_bytes(&b[0..($n / 8)]);
+                let mut y = $name::from_be_bytes(&b[($n / 8)..2 * ($n / 8)]);
+                for i in 0..$rounds {
+                    let res = $name::round_function(self.k[i], x, y);
+                    x = res.0;
+                    y = res.1;
+                }
+
+                let b = block.get_out();
+                b[0..($n / 8)].copy_from_slice(&$name::to_be_bytes(x));
+                b[($n / 8)..2 * ($n / 8)].copy_from_slice(&$name::to_be_bytes(y));
+            }
+        }
+
+        impl BlockCipherDecrypt for $name {
+            #[inline]
+            fn decrypt_with_backend(
+                &self,
+                f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>,
+            ) {
+                f.call(self)
+            }
+        }
+
+        impl BlockCipherDecBackend for $name {
+            #[inline]
+            fn decrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
+                let b = block.get_in();
+                let mut x = $name::from_be_bytes(&b[0..($n / 8)]);
+                let mut y = $name::from_be_bytes(&b[($n / 8)..2 * ($n / 8)]);
+                for i in (0..$rounds).rev() {
+                    let res = $name::inverse_round_function(self.k[i], x, y);
+                    x = res.0;
+                    y = res.1;
+                }
+
+                let b = block.get_out();
+                b[0..($n / 8)].copy_from_slice(&$name::to_be_bytes(x));
+                b[($n / 8)..2 * ($n / 8)].copy_from_slice(&$name::to_be_bytes(y));
             }
         }
 
@@ -139,36 +204,15 @@ macro_rules! define_speck_impl {
             }
         }
 
-        cipher::impl_simple_block_encdec!($name, $block_size, cipher, block,
-            encrypt: {
-                let b = block.get_in();
-                let mut x = $name::from_be_bytes(&b[0..($n / 8)]);
-                let mut y = $name::from_be_bytes(&b[($n / 8)..2 * ($n / 8)]);
-                for i in 0..$rounds {
-                    let res = $name::round_function(cipher.k[i], x, y);
-                    x = res.0;
-                    y = res.1;
-                }
-
-                let b = block.get_out();
-                b[0..($n / 8)].copy_from_slice(&$name::to_be_bytes(x));
-                b[($n / 8)..2 * ($n / 8)].copy_from_slice(&$name::to_be_bytes(y));
+        impl Drop for $name {
+            fn drop(&mut self) {
+                #[cfg(feature = "zeroize")]
+                self.k.zeroize();
             }
-            decrypt: {
-                let b = block.get_in();
-                let mut x = $name::from_be_bytes(&b[0..($n / 8)]);
-                let mut y = $name::from_be_bytes(&b[($n / 8)..2 * ($n / 8)]);
-                for i in (0..$rounds).rev() {
-                    let res = $name::inverse_round_function(cipher.k[i], x, y);
-                    x = res.0;
-                    y = res.1;
-                }
+        }
 
-                let b = block.get_out();
-                b[0..($n / 8)].copy_from_slice(&$name::to_be_bytes(x));
-                b[($n / 8)..2 * ($n / 8)].copy_from_slice(&$name::to_be_bytes(y));
-            }
-        );
+        #[cfg(feature = "zeroize")]
+        impl ZeroizeOnDrop for $name {}
     };
 }
 

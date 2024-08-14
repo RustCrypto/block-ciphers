@@ -16,16 +16,17 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
 #![deny(unsafe_code)]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 #![allow(clippy::many_single_char_names)]
 
 pub use cipher;
 
 use cipher::{
-    consts::{U16, U8},
-    inout::InOut,
-    AlgorithmName, Block, BlockCipher, Key, KeyInit, KeySizeUser,
+    consts::{U1, U16, U8},
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
+    KeyInit, KeySizeUser, ParBlocksSizeUser,
 };
 use core::fmt;
 
@@ -183,8 +184,6 @@ impl Idea {
     }
 }
 
-impl BlockCipher for Idea {}
-
 impl KeySizeUser for Idea {
     type KeySize = U16;
 }
@@ -201,6 +200,42 @@ impl KeyInit for Idea {
     }
 }
 
+impl BlockSizeUser for Idea {
+    type BlockSize = U8;
+}
+
+impl ParBlocksSizeUser for Idea {
+    type ParBlocksSize = U1;
+}
+
+impl BlockCipherEncrypt for Idea {
+    #[inline]
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
+    }
+}
+
+impl BlockCipherEncBackend for Idea {
+    #[inline]
+    fn encrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
+        self.crypt(block, &self.enc_keys);
+    }
+}
+
+impl BlockCipherDecrypt for Idea {
+    #[inline]
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
+        f.call(self)
+    }
+}
+
+impl BlockCipherDecBackend for Idea {
+    #[inline]
+    fn decrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
+        self.crypt(block, &self.dec_keys);
+    }
+}
+
 impl fmt::Debug for Idea {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("Idea { ... }")
@@ -213,25 +248,15 @@ impl AlgorithmName for Idea {
     }
 }
 
-#[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl Drop for Idea {
     fn drop(&mut self) {
-        self.enc_keys.zeroize();
-        self.dec_keys.zeroize();
+        #[cfg(feature = "zeroize")]
+        {
+            self.enc_keys.zeroize();
+            self.dec_keys.zeroize();
+        }
     }
 }
 
 #[cfg(feature = "zeroize")]
-#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
 impl ZeroizeOnDrop for Idea {}
-
-cipher::impl_simple_block_encdec!(
-    Idea, U8, cipher, block,
-    encrypt: {
-        cipher.crypt(block, &cipher.enc_keys);
-    }
-    decrypt: {
-        cipher.crypt(block, &cipher.dec_keys);
-    }
-);
