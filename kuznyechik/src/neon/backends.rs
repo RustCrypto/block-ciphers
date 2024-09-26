@@ -1,6 +1,7 @@
-use super::consts::{Table, DEC_TABLE, ENC_TABLE, RKEY_GEN};
 use crate::{
     consts::{P, P_INV},
+    fused_tables::{Table, DEC_TABLE, ENC_TABLE},
+    utils::KEYGEN,
     Block, Key,
 };
 use cipher::{
@@ -81,11 +82,11 @@ unsafe fn transform(block: uint8x16_t, table: &Table) -> uint8x16_t {
     macro_rules! get {
         ($table:expr, $ind:expr, $i:expr) => {{
             let idx = vgetq_lane_u16($ind, $i) as usize;
-            let p = &($table.0[idx]) as *const u8 as *const uint8x16_t;
+            let p = $table.0.as_ptr().add(idx);
             // correct alignment of `p` is guaranteed since offset values
             // are shifted by 4 bits left and the table is aligned to 16 bytes
             debug_assert_eq!(p as usize % 16, 0);
-            vld1q_u8(p as *const u8)
+            vld1q_u8(p)
         }};
     }
 
@@ -130,7 +131,7 @@ unsafe fn transform(block: uint8x16_t, table: &Table) -> uint8x16_t {
 pub fn expand_enc_keys(key: &Key) -> RoundKeys {
     macro_rules! next_const {
         ($i:expr) => {{
-            let p = RKEY_GEN.0.as_ptr() as *const uint8x16_t;
+            let p = KEYGEN.as_ptr() as *const uint8x16_t;
             // correct alignment of `p` is guaranteed since the table
             // is aligned to 16 bytes
             let p = p.add($i);

@@ -4,7 +4,6 @@ use cipher::{
 };
 
 mod backends;
-mod consts;
 
 use backends::{expand, DecBackend, EncBackend, RoundKeys};
 

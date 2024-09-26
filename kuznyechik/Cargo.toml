@@ -5,7 +5,7 @@ description = "Kuznyechik (GOST R 34.12-2015) block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 edition = "2021"
-rust-version = "1.65"
+rust-version = "1.81"
 readme = "README.md"
 documentation = "https://docs.rs/kuznyechik"
 repository = "https://github.com/RustCrypto/block-ciphers"
@@ -25,7 +25,7 @@ zeroize = ["cipher/zeroize"]
 
 [lints.rust.unexpected_cfgs]
 level = "warn"
-check-cfg = ["cfg(kuznyechik_force_soft)", "cfg(kuznyechik_compact_soft)"]
+check-cfg = ['cfg(kuznyechik_backend, values("soft", "compact_soft"))']
 
 [package.metadata.docs.rs]
 all-features = true

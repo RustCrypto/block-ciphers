@@ -1,6 +1,8 @@
-use super::consts::GF;
-use crate::consts::{P, P_INV};
-use crate::{Block, Key};
+use crate::{
+    consts::{P, P_INV},
+    utils::{l_step, KEYGEN},
+    Block, Key,
+};
 use cipher::{
     consts, BlockCipherDecBackend, BlockCipherEncBackend, BlockSizeUser, InOut, ParBlocksSizeUser,
 };
@@ -14,35 +16,6 @@ fn x(a: &mut Block, b: &Block) {
     }
 }
 
-fn l_step(msg: &mut Block, i: usize) {
-    #[inline(always)]
-    fn get_idx(b: usize, i: usize) -> usize {
-        b.wrapping_sub(i) & 0x0F
-    }
-    #[inline(always)]
-    fn get_m(msg: &Block, b: usize, i: usize) -> usize {
-        msg[get_idx(b, i)] as usize
-    }
-
-    let mut x = msg[get_idx(15, i)];
-    x ^= GF[3][get_m(msg, 14, i)];
-    x ^= GF[1][get_m(msg, 13, i)];
-    x ^= GF[2][get_m(msg, 12, i)];
-    x ^= GF[0][get_m(msg, 11, i)];
-    x ^= GF[5][get_m(msg, 10, i)];
-    x ^= GF[4][get_m(msg, 9, i)];
-    x ^= msg[get_idx(8, i)];
-    x ^= GF[6][get_m(msg, 7, i)];
-    x ^= msg[get_idx(6, i)];
-    x ^= GF[4][get_m(msg, 5, i)];
-    x ^= GF[5][get_m(msg, 4, i)];
-    x ^= GF[0][get_m(msg, 3, i)];
-    x ^= GF[2][get_m(msg, 2, i)];
-    x ^= GF[1][get_m(msg, 1, i)];
-    x ^= GF[3][get_m(msg, 0, i)];
-    msg[get_idx(15, i)] = x;
-}
-
 #[inline(always)]
 fn lsx(block: &mut Block, key: &Block) {
     x(block, key);
@@ -52,7 +25,7 @@ fn lsx(block: &mut Block, key: &Block) {
     }
     // l
     for i in 0..16 {
-        l_step(block, i);
+        block.0 = l_step(block.0, i);
     }
 }
 
@@ -61,7 +34,7 @@ fn lsx_inv(block: &mut Block, key: &Block) {
     x(block, key);
     // l_inv
     for i in 0..16 {
-        l_step(block, 15 - i);
+        block.0 = l_step(block.0, 15 - i);
     }
     // s_inv
     for i in 0..16 {
@@ -70,22 +43,17 @@ fn lsx_inv(block: &mut Block, key: &Block) {
 }
 
 fn get_c(n: usize) -> Block {
-    let mut v = Block::default();
-    v[15] = n as u8;
-    for i in 0..16 {
-        l_step(&mut v, i);
-    }
-    v
+    KEYGEN[n].0.into()
 }
 
 fn f(k1: &mut Block, k2: &mut Block, n: usize) {
     for i in 0..4 {
         let mut k1_cpy = *k1;
-        lsx(&mut k1_cpy, &get_c(8 * n + 2 * i + 1));
+        lsx(&mut k1_cpy, &get_c(8 * n + 2 * i));
         x(k2, &k1_cpy);
 
         let mut k2_cpy = *k2;
-        lsx(&mut k2_cpy, &get_c(8 * n + 2 * i + 2));
+        lsx(&mut k2_cpy, &get_c(8 * n + 2 * i + 1));
         x(k1, &k2_cpy);
     }
 }

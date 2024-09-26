@@ -1,6 +1,7 @@
-use super::consts::{Table, DEC_TABLE, ENC_TABLE, RKEY_GEN};
 use crate::{
     consts::{P, P_INV},
+    fused_tables::{Table, DEC_TABLE, ENC_TABLE},
+    utils::KEYGEN,
     Block, Key,
 };
 use cipher::{
@@ -27,7 +28,7 @@ fn sub_bytes(block: u128, sbox: &[u8; 256]) -> u128 {
 
 #[inline(always)]
 fn transform(block: u128, table: &Table) -> u128 {
-    let table: &[[u128; 256]; 16] = unsafe { &*(table.as_ptr().cast()) };
+    let table: &[[u128; 256]; 16] = unsafe { &*(table.0.as_ptr().cast()) };
     let block = block.to_le_bytes();
     let mut res = 0u128;
     for i in 0..16 {
@@ -41,12 +42,7 @@ fn transform(block: u128, table: &Table) -> u128 {
 pub(super) fn expand_enc_keys(key: &Key) -> RoundKeys {
     #[inline(always)]
     fn next_const(i: usize) -> u128 {
-        // correct alignment of `p` is guaranteed since the table is aligned to 16 bytes
-        let t: &[u128; 32] = unsafe { &*(RKEY_GEN.as_ptr().cast()) };
-        let val = t[i];
-        #[cfg(target_endian = "big")]
-        let val = val.swap_bytes();
-        val
+        u128::from_le_bytes(KEYGEN[i].0)
     }
 
     let mut enc_keys = [0; 10];
