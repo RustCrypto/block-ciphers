@@ -37,6 +37,10 @@ const fn fused_enc_table() -> [u8; 16 * 4096] {
                 x ^= GFT_32[table[pos + 1] as usize];
                 x ^= GFT_148[table[pos] as usize];
 
+                // Strictly speaking, we don't need to move these bytes around because
+                // we do 16 iterations. See the `l_step` function for the reference.
+                // Unfortunately, we can not use the `l_step` function directly because
+                // of const eval limitations.
                 let mut k = 15;
                 while k > 0 {
                     k -= 1;
@@ -85,6 +89,7 @@ const fn fused_dec_table() -> [u8; 16 * 4096] {
                 x ^= GFT_32[table[pos + 14] as usize];
                 x ^= GFT_148[table[pos + 15] as usize];
 
+                // See comment in the `fused_enc_table` function.
                 let mut k = 0;
                 while k < 15 {
                     table[pos + k] = table[pos + k + 1];
