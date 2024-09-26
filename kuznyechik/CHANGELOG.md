@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump `cipher` to v0.5.0-pre.1; MSRV 1.65 ([#394])
 - Bump `cipher` dependency to v0.5.0-pre.2 ([#398])
 - Use `BlockCipherEncrypt`/`BlockCipherDecrypt` trait names ([#400])
-- bump `cipher` dependency to `0.5.0-pre.4` ([#413])
+- Bump `cipher` dependency to `0.5.0-pre.4` ([#413])
+- Use const eval to generate tables ([#451])
 
 ### Fixed
 - Fix kuznyechik 32bit build ([#406])
@@ -23,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#400]: https://github.com/RustCrypto/block-ciphers/pull/400
 [#406]: https://github.com/RustCrypto/block-ciphers/pull/406
 [#413]: https://github.com/RustCrypto/block-ciphers/pull/413
+[#451]: https://github.com/RustCrypto/block-ciphers/pull/451
 
 
 ## 0.8.2 (2023-08-06)
