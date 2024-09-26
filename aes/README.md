@@ -91,5 +91,5 @@ dual licensed as above, without any additional terms or conditions.
 [3]: https://github.com/RustCrypto/AEADs/tree/master/aes-gcm
 [4]: https://github.com/RustCrypto/AEADs/tree/master/aes-gcm-siv
 [5]: https://github.com/RustCrypto/AEADs
-[6]: https://research.nccgroup.com/2020/02/26/public-report-rustcrypto-aes-gcm-and-chacha20poly1305-implementation-review/
+[6]: https://web.archive.org/web/20240108154854/https://research.nccgroup.com/wp-content/uploads/2020/02/NCC_Group_MobileCoin_RustCrypto_AESGCM_ChaCha20Poly1305_Implementation_Review_2020-02-12_v1.0.pdf
 [7]: https://www.mobilecoin.com/
