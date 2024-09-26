@@ -6,8 +6,6 @@ use cipher::{
 };
 
 mod backends;
-#[path = "../fused_tables/consts.rs"]
-mod consts;
 
 use backends::{expand_enc_keys, inv_enc_keys, DecBackend, EncBackend, RoundKeys};
 

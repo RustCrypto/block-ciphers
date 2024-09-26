@@ -25,7 +25,7 @@ zeroize = ["cipher/zeroize"]
 
 [lints.rust.unexpected_cfgs]
 level = "warn"
-check-cfg = ["cfg(kuznyechik_force_soft)", "cfg(kuznyechik_compact_soft)"]
+check-cfg = ['cfg(kuznyechik_backend, values("soft", "compact_soft"))']
 
 [package.metadata.docs.rs]
 all-features = true

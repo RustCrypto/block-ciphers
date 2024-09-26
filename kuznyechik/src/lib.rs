@@ -10,13 +10,14 @@
 //!
 //! # Configuration Flags
 //!
-//! You can modify crate using the following configuration flag:
+//! You can modify crate using the `kuznyechik_backend` configuration flag.
+//! It accepts the following values
 //!
-//! - `kuznyechik_force_soft`: force software implementation.
-//! - `kuznyechik_compact_soft`: use compact software implementation.
+//! - `soft`: use software backend with big fused tables.
+//! - `compact_soft`: use software backend with small tables and slower performance.
 //!
-//! It can be enabled using `RUSTFLAGS` environmental variable
-//! (e.g. `RUSTFLAGS="--cfg kuznyechik_force_soft"`) or by modifying
+//! The flag can be enabled using `RUSTFLAGS` environmental variable
+//! (e.g. `RUSTFLAGS='--cfg kuznyechik_backend="soft"'`) or by modifying
 //! `.cargo/config`.
 //!
 //! [Kuznyechik]: https://en.wikipedia.org/wiki/Kuznyechik
@@ -42,26 +43,31 @@ use core::fmt;
 use cipher::zeroize::{zeroize_flat_type, ZeroizeOnDrop};
 
 mod consts;
+pub(crate) mod gft;
+pub(crate) mod utils;
 
 cfg_if::cfg_if!(
     if #[cfg(all(
         any(target_arch = "x86_64", target_arch = "x86"),
         target_feature = "sse2",
-        not(kuznyechik_force_soft),
+        not(any(kuznyechik_backend = "soft", kuznyechik_backend = "compact_soft")),
     ))] {
+        mod fused_tables;
         mod sse2;
         use sse2 as imp;
     } else if #[cfg(all(
         target_arch = "aarch64",
         target_feature = "neon",
-        not(kuznyechik_force_soft),
+        not(any(kuznyechik_backend = "soft", kuznyechik_backend = "compact_soft")),
     ))] {
+        mod fused_tables;
         mod neon;
         use neon as imp;
-    } else if #[cfg(kuznyechik_compact_soft)] {
+    } else if #[cfg(kuznyechik_backend = "compact_soft")] {
         mod compact_soft;
         use compact_soft as imp;
     } else {
+        mod fused_tables;
         mod big_soft;
         use big_soft as imp;
     }
