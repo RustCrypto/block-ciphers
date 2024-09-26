@@ -25,7 +25,7 @@ fn lsx(block: &mut Block, key: &Block) {
     }
     // l
     for i in 0..16 {
-        l_step(&mut block.0, i);
+        block.0 = l_step(block.0, i);
     }
 }
 
@@ -34,7 +34,7 @@ fn lsx_inv(block: &mut Block, key: &Block) {
     x(block, key);
     // l_inv
     for i in 0..16 {
-        l_step(&mut block.0, 15 - i);
+        block.0 = l_step(block.0, 15 - i);
     }
     // s_inv
     for i in 0..16 {
