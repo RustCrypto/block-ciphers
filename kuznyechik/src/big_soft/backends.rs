@@ -89,15 +89,15 @@ pub(super) fn inv_enc_keys(enc_keys: &RoundKeys) -> RoundKeys {
 
 pub(crate) struct EncBackend<'a>(pub(crate) &'a RoundKeys);
 
-impl<'a> BlockSizeUser for EncBackend<'a> {
+impl BlockSizeUser for EncBackend<'_> {
     type BlockSize = consts::U16;
 }
 
-impl<'a> ParBlocksSizeUser for EncBackend<'a> {
+impl ParBlocksSizeUser for EncBackend<'_> {
     type ParBlocksSize = ParBlocksSize;
 }
 
-impl<'a> BlockCipherEncBackend for EncBackend<'a> {
+impl BlockCipherEncBackend for EncBackend<'_> {
     #[inline]
     fn encrypt_block(&self, mut block: InOut<'_, '_, Block>) {
         let k = self.0;
@@ -136,15 +136,15 @@ impl<'a> BlockCipherEncBackend for EncBackend<'a> {
 
 pub(crate) struct DecBackend<'a>(pub(crate) &'a RoundKeys);
 
-impl<'a> BlockSizeUser for DecBackend<'a> {
+impl BlockSizeUser for DecBackend<'_> {
     type BlockSize = consts::U16;
 }
 
-impl<'a> ParBlocksSizeUser for DecBackend<'a> {
+impl ParBlocksSizeUser for DecBackend<'_> {
     type ParBlocksSize = consts::U1;
 }
 
-impl<'a> BlockCipherDecBackend for DecBackend<'a> {
+impl BlockCipherDecBackend for DecBackend<'_> {
     #[inline]
     fn decrypt_block(&self, mut block: InOut<'_, '_, Block>) {
         let k = self.0;
