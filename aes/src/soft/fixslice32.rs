@@ -1377,7 +1377,7 @@ pub(crate) mod hazmat {
         bitslice, inv_bitslice, inv_mix_columns_0, inv_shift_rows_1, inv_sub_bytes, mix_columns_0,
         shift_rows_1, sub_bytes, sub_bytes_nots, State,
     };
-    use crate::{Block, Block8};
+    use crate::hazmat::{Block, Block8};
 
     /// XOR the `src` block into the `dst` block in-place.
     fn xor_in_place(dst: &mut Block, src: &Block) {
