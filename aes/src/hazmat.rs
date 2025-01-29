@@ -11,7 +11,11 @@
 //! We do NOT recommend using it to implement any algorithm which has not
 //! received extensive peer review by cryptographers.
 
-use crate::{soft::fixslice::hazmat as soft, Block, Block8};
+use crate::soft::fixslice::hazmat as soft;
+
+pub use crate::Block;
+/// Eight 128-bit AES blocks
+pub type Block8 = cipher::array::Array<Block, cipher::consts::U8>;
 
 #[cfg(all(target_arch = "aarch64", not(aes_force_soft)))]
 use crate::armv8::hazmat as intrinsics;

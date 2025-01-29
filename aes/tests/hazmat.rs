@@ -3,7 +3,7 @@
 // TODO(tarcieri): support for using the hazmat functions with the `soft` backend
 #![cfg(feature = "hazmat")]
 
-use aes::{Block, Block8};
+use aes::hazmat::{Block, Block8};
 use hex_literal::hex;
 
 /// Round function tests vectors.

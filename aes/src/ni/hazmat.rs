@@ -5,7 +5,7 @@
 //! access to the AES round function gated under the `hazmat` crate feature.
 
 use super::arch::*;
-use crate::{Block, Block8};
+use crate::hazmat::{Block, Block8};
 use cipher::array::{Array, ArraySize};
 
 #[target_feature(enable = "sse2")]
