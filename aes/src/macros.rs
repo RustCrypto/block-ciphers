@@ -103,3 +103,29 @@ macro_rules! impl_backends {
         }
     };
 }
+
+macro_rules! weak_key_test {
+    ($key: expr, $k: ty) => {{
+        // Check if any bit of the upper half of the key is set
+        //
+        // This follows the interpretation laid out in section `11.4.10.4 Reject of weak keys`
+        // from the TPM specification:
+        // ```
+        // In the case of AES, at least one bit in the upper half of the key must be set
+        // ```
+        // See: https://trustedcomputinggroup.org/wp-content/uploads/TPM-2.0-1.83-Part-1-Architecture.pdf#page=82
+        let mut weak = subtle::Choice::from(0);
+
+        for v in &$key
+            [..(<<$k as cipher::KeySizeUser>::KeySize as cipher::typenum::Unsigned>::USIZE / 2)]
+        {
+            weak |= <_ as subtle::ConstantTimeGreater>::ct_gt(v, &0);
+        }
+
+        if weak.unwrap_u8() == 0 {
+            Err(cipher::crypto_common::WeakKeyError)
+        } else {
+            Ok(())
+        }
+    }};
+}
