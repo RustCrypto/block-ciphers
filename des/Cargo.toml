@@ -14,9 +14,11 @@ categories = ["cryptography", "no-std"]
 
 [dependencies]
 cipher = "=0.5.0-pre.7"
+subtle = { version = "2.6", default-features = false }
 
 [dev-dependencies]
 cipher = { version = "=0.5.0-pre.7", features = ["dev"] }
+hex-literal = "0.4"
 
 [features]
 zeroize = ["cipher/zeroize"]

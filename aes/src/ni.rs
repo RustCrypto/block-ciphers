@@ -30,6 +30,7 @@ use core::arch::x86_64 as arch;
 
 use cipher::{
     consts::{self, U16, U24, U32},
+    crypto_common::WeakKeyError,
     AlgorithmName, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncClosure,
     BlockCipherEncrypt, BlockSizeUser, Key, KeyInit, KeySizeUser,
 };
@@ -118,6 +119,10 @@ macro_rules! define_aes_impl {
                 let decrypt = $name_dec::from(&encrypt);
                 Self { encrypt, decrypt }
             }
+
+            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
+                weak_key_test!(key, Self)
+            }
         }
 
         impl From<$name_enc> for $name {
@@ -193,6 +198,10 @@ macro_rules! define_aes_impl {
                     backend: $name_back_enc::new(key),
                 }
             }
+
+            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
+                weak_key_test!(key, Self)
+            }
         }
 
         impl BlockSizeUser for $name_enc {
@@ -252,6 +261,10 @@ macro_rules! define_aes_impl {
             #[inline]
             fn new(key: &Key<Self>) -> Self {
                 $name_enc::new(key).into()
+            }
+
+            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
+                weak_key_test!(key, Self)
             }
         }
 
