@@ -174,7 +174,7 @@ mod tests {
             let mut h: [u32; 256] = [0u32; 256];
             for x in 0..256 {
                 let mut y: u32 = H[x] as u32;
-                y = y << r | y >> (32 - r);
+                y = (y << r) | (y >> (32 - r));
                 h[x] = y;
             }
             match r {

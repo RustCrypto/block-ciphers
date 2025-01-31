@@ -92,9 +92,9 @@ fn apply_s_bitslice(index: usize, [w1, w2, w3, w4]: Words) -> Words {
         let quad = apply_s(
             index,
             get_bit(w1 as usize, i)
-                | get_bit(w2 as usize, i) << 1
-                | get_bit(w3 as usize, i) << 2
-                | get_bit(w4 as usize, i) << 3,
+                | (get_bit(w2 as usize, i) << 1)
+                | (get_bit(w3 as usize, i) << 2)
+                | (get_bit(w4 as usize, i) << 3),
         );
 
         for l in 0..4 {
@@ -111,9 +111,9 @@ fn apply_s_inverse_bitslice(index: usize, [w1, w2, w3, w4]: Words) -> Words {
         let quad = apply_s_inverse(
             index,
             get_bit(w1 as usize, i)
-                | get_bit(w2 as usize, i) << 1
-                | get_bit(w3 as usize, i) << 2
-                | get_bit(w4 as usize, i) << 3,
+                | (get_bit(w2 as usize, i) << 1)
+                | (get_bit(w3 as usize, i) << 2)
+                | (get_bit(w4 as usize, i) << 3),
         );
         for l in 0..4 {
             words[l] |= u32::from(get_bit(quad as usize, l)) << i;
@@ -183,9 +183,9 @@ impl KeyInit for Serpent {
             // calculate keys in bitslicing mode
             for j in 0..32 {
                 let input = get_bit(a as usize, j)
-                    | get_bit(b as usize, j) << 1
-                    | get_bit(c as usize, j) << 2
-                    | get_bit(d as usize, j) << 3;
+                    | (get_bit(b as usize, j) << 1)
+                    | (get_bit(c as usize, j) << 2)
+                    | (get_bit(d as usize, j) << 3);
                 let output = apply_s(sbox_index, input);
                 for l in 0..4 {
                     k[4 * i + l] |= u32::from(get_bit(output as usize, l)) << j;
