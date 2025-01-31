@@ -62,7 +62,7 @@ fn gf_mult(mut a: u8, mut b: u8, p: u8) -> u8 {
 
 // q_i sbox
 fn sbox(i: usize, x: u8) -> u8 {
-    let (a0, b0) = (x >> 4 & 15, x & 15);
+    let (a0, b0) = ((x >> 4) & 15, x & 15);
     let a1 = a0 ^ b0;
     let b1 = (a0 ^ ((b0 << 3) | (b0 >> 1)) ^ (a0 << 3)) & 15;
     let (a2, b2) = (QBOX[i][0][a1 as usize], QBOX[i][1][b1 as usize]);
