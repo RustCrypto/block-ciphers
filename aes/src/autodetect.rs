@@ -4,6 +4,7 @@
 use crate::soft;
 use cipher::{
     consts::{U16, U24, U32},
+    crypto_common::WeakKeyError,
     AlgorithmName, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncClosure,
     BlockCipherEncrypt, BlockSizeUser, Key, KeyInit, KeySizeUser,
 };
@@ -102,6 +103,10 @@ macro_rules! define_aes_impl {
                 };
 
                 Self { inner, token }
+            }
+
+            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
+                weak_key_test!(key, Self)
             }
         }
 
@@ -219,6 +224,10 @@ macro_rules! define_aes_impl {
                 };
 
                 Self { inner, token }
+            }
+
+            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
+                weak_key_test!(key, Self)
             }
         }
 
@@ -346,6 +355,10 @@ macro_rules! define_aes_impl {
                 };
 
                 Self { inner, token }
+            }
+
+            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
+                weak_key_test!(key, Self)
             }
         }
 

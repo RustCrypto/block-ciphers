@@ -19,6 +19,7 @@ mod test_expand;
 
 use cipher::{
     consts::{self, U16, U24, U32},
+    crypto_common::WeakKeyError,
     AlgorithmName, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncClosure,
     BlockCipherEncrypt, BlockSizeUser, Key, KeyInit, KeySizeUser,
 };
@@ -108,6 +109,10 @@ macro_rules! define_aes_impl {
                 let decrypt = $name_back_dec::from(encrypt.clone());
                 Self { encrypt, decrypt }
             }
+
+            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
+                weak_key_test!(key, Self)
+            }
         }
 
         impl From<$name_enc> for $name {
@@ -193,6 +198,10 @@ macro_rules! define_aes_impl {
                 let backend = $name_back_enc::new(key);
                 Self { backend }
             }
+
+            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
+                weak_key_test!(key, Self)
+            }
         }
 
         impl BlockSizeUser for $name_enc {
@@ -254,6 +263,10 @@ macro_rules! define_aes_impl {
                 let encrypt = $name_back_enc::new(key);
                 let backend = encrypt.clone().into();
                 Self { backend }
+            }
+
+            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
+                weak_key_test!(key, Self)
             }
         }
 
