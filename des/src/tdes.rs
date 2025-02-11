@@ -12,10 +12,13 @@ use cipher::{
 use core::fmt;
 
 #[cfg(feature = "zeroize")]
-use cipher::zeroize::ZeroizeOnDrop;
+use cipher::zeroize::{ZeroizeOnDrop, Zeroizing};
 
 #[inline]
 fn weak_key_test<const SIZE: usize, U: KeyInit>(key: &Key<U>) -> Result<(), WeakKeyError> {
+    #[cfg(feature = "zeroize")]
+    let mut tmp = Zeroizing::new(Key::<U>::default());
+    #[cfg(not(feature = "zeroize"))]
     let mut tmp = Key::<U>::default();
 
     for i in 0..<U as KeySizeUser>::KeySize::USIZE {
