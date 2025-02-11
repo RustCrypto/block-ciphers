@@ -15,6 +15,7 @@ pub(crate) mod fixslice;
 use crate::Block;
 use cipher::{
     consts::{U16, U24, U32},
+    crypto_common::WeakKeyError,
     inout::InOut,
     AlgorithmName, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, Key, KeyInit,
@@ -66,6 +67,10 @@ macro_rules! define_aes_impl {
                 Self {
                     keys: $fixslice_key_schedule(key.into()),
                 }
+            }
+
+            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
+                weak_key_test!(key, Self)
             }
         }
 
@@ -146,6 +151,10 @@ macro_rules! define_aes_impl {
                 let inner = $name::new(key);
                 Self { inner }
             }
+
+            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
+                weak_key_test!(key, Self)
+            }
         }
 
         impl BlockSizeUser for $name_enc {
@@ -196,6 +205,10 @@ macro_rules! define_aes_impl {
             fn new(key: &Key<Self>) -> Self {
                 let inner = $name::new(key);
                 Self { inner }
+            }
+
+            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
+                weak_key_test!(key, Self)
             }
         }
 

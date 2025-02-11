@@ -10,6 +10,7 @@ dependencies = [
  "cipher",
  "cpufeatures",
  "hex-literal",
+ "subtle",
  "zeroize",
 ]
 
@@ -103,8 +104,7 @@ dependencies = [
 [[package]]
 name = "crypto-common"
 version = "0.2.0-rc.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0b8ce8218c97789f16356e7896b3714f26c2ee1079b79c0b7ae7064bb9089fa"
+source = "git+https://github.com/RustCrypto/traits.git#99f7bc9c264ebae9ee31a5327c3e3202e77c09f7"
 dependencies = [
  "hybrid-array",
 ]
@@ -114,6 +114,8 @@ name = "des"
 version = "0.9.0-pre.2"
 dependencies = [
  "cipher",
+ "hex-literal",
+ "subtle",
 ]
 
 [[package]]
@@ -215,6 +217,12 @@ dependencies = [
  "cipher",
  "hex-literal",
 ]
+
+[[package]]
+name = "subtle"
+version = "2.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 
 [[package]]
 name = "threefish"
