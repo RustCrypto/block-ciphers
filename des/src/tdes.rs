@@ -15,13 +15,21 @@ use core::fmt;
 use cipher::zeroize::ZeroizeOnDrop;
 
 #[inline]
-fn weak_key_test<U: KeyInit>(key: &Key<U>) -> Result<(), WeakKeyError> {
+fn weak_key_test(key: &[u8]) -> Result<(), WeakKeyError> {
     let sub_key_size = <Des as KeySizeUser>::KeySize::USIZE;
     assert_eq!(key.len() % sub_key_size, 0);
+
+    let mut is_weak = 0u8;
     for des_key in key.chunks_exact(sub_key_size) {
-        Des::weak_key_test(des_key.try_into().unwrap())?;
+        let des_key = des_key.try_into().unwrap();
+        is_weak |= super::weak_key_test(des_key);
     }
-    Ok(())
+
+    if is_weak == 0 {
+        Ok(())
+    } else {
+        Err(WeakKeyError)
+    }
 }
 
 /// Triple DES (3DES) block cipher.
@@ -50,7 +58,7 @@ impl KeyInit for TdesEde3 {
 
     #[inline]
     fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        weak_key_test::<Self>(key)
+        weak_key_test(key)
     }
 }
 
@@ -139,7 +147,7 @@ impl KeyInit for TdesEee3 {
 
     #[inline]
     fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        weak_key_test::<Self>(key)
+        weak_key_test(key)
     }
 }
 
@@ -225,7 +233,7 @@ impl KeyInit for TdesEde2 {
 
     #[inline]
     fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        weak_key_test::<Self>(key)
+        weak_key_test(key)
     }
 }
 
@@ -311,7 +319,7 @@ impl KeyInit for TdesEee2 {
 
     #[inline]
     fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        weak_key_test::<Self>(key)
+        weak_key_test(key)
     }
 }
 

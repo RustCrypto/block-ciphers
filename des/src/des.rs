@@ -53,13 +53,7 @@ impl KeyInit for Des {
 
     #[inline]
     fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        let key = u64::from_ne_bytes(key.0);
-        let mut is_weak = 0u8;
-
-        for &weak_key in crate::consts::WEAK_KEYS {
-            is_weak |= u8::from(key == weak_key);
-        }
-
+        let is_weak = super::weak_key_test(&key.0);
         if is_weak == 0 {
             Ok(())
         } else {
