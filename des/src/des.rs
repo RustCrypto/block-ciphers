@@ -53,11 +53,9 @@ impl KeyInit for Des {
 
     #[inline]
     fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        let is_weak = super::weak_key_test(&key.0);
-        if is_weak == 0 {
-            Ok(())
-        } else {
-            Err(WeakKeyError)
+        match super::weak_key_test(&key.0) {
+            0 => Ok(()),
+            _ => Err(WeakKeyError),
         }
     }
 }

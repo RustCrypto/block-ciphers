@@ -25,10 +25,9 @@ fn weak_key_test(key: &[u8]) -> Result<(), WeakKeyError> {
         is_weak |= super::weak_key_test(des_key);
     }
 
-    if is_weak == 0 {
-        Ok(())
-    } else {
-        Err(WeakKeyError)
+    match is_weak {
+        0 => Ok(()),
+        _ => Err(WeakKeyError),
     }
 }
 
