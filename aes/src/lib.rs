@@ -143,10 +143,40 @@ cfg_if! {
 }
 
 pub use cipher;
-use cipher::{array::Array, consts::U16};
+use cipher::{array::Array, consts::U16, crypto_common::WeakKeyError};
 
 /// 128-bit AES block
 pub type Block = Array<u8, U16>;
+
+/// Check if any bit of the upper half of the key is set.
+///
+/// This follows the interpretation laid out in section `11.4.10.4 Reject of weak keys`
+/// from the [TPM specification][0]:
+/// ```text
+/// In the case of AES, at least one bit in the upper half of the key must be set
+/// ```
+///
+/// [0]: https://trustedcomputinggroup.org/wp-content/uploads/TPM-2.0-1.83-Part-1-Architecture.pdf#page=82
+pub(crate) fn weak_key_test<const N: usize>(key: &[u8; N]) -> Result<(), WeakKeyError> {
+    let t = match N {
+        16 => u64::from_ne_bytes(key[..8].try_into().unwrap()),
+        24 => {
+            let t1 = u64::from_ne_bytes(key[..8].try_into().unwrap());
+            let t2 = u32::from_ne_bytes(key[8..12].try_into().unwrap());
+            t1 | u64::from(t2)
+        }
+        32 => {
+            let t1 = u64::from_ne_bytes(key[..8].try_into().unwrap());
+            let t2 = u64::from_ne_bytes(key[8..16].try_into().unwrap());
+            t1 | t2
+        }
+        _ => unreachable!(),
+    };
+    match t {
+        0 => Err(WeakKeyError),
+        _ => Ok(()),
+    }
+}
 
 #[cfg(test)]
 mod tests {
