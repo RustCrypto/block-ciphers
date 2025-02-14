@@ -105,8 +105,9 @@ macro_rules! define_aes_impl {
                 Self { inner, token }
             }
 
+            #[inline]
             fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-                weak_key_test!(key, Self)
+                crate::weak_key_test(&key.0)
             }
         }
 
@@ -226,8 +227,9 @@ macro_rules! define_aes_impl {
                 Self { inner, token }
             }
 
+            #[inline]
             fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-                weak_key_test!(key, Self)
+                crate::weak_key_test(&key.0)
             }
         }
 
@@ -357,8 +359,9 @@ macro_rules! define_aes_impl {
                 Self { inner, token }
             }
 
+            #[inline]
             fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-                weak_key_test!(key, Self)
+                crate::weak_key_test(&key.0)
             }
         }
 
