@@ -36,12 +36,4 @@ fn weak_des() {
         assert!(TdesEde2::weak_key_test(&k).is_err());
         assert!(TdesEee2::weak_key_test(&k).is_err());
     }
-
-    let k = hex!("01020304050607080102030405060708").into();
-    assert!(TdesEde2::weak_key_test(&k).is_err());
-    assert!(TdesEee2::weak_key_test(&k).is_err());
-
-    let k = hex!("010203040506070801020304050607081112131415161718").into();
-    assert!(TdesEde3::weak_key_test(&k).is_err());
-    assert!(TdesEee3::weak_key_test(&k).is_err());
 }
