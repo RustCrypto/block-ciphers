@@ -53,7 +53,8 @@ impl KeyInit for Des {
 
     #[inline]
     fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        match super::weak_key_test(&key.0) {
+        let key = u64::from_ne_bytes(key.0);
+        match super::weak_key_test(key) {
             0 => Ok(()),
             _ => Err(WeakKeyError),
         }

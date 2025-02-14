@@ -34,8 +34,7 @@ pub use crate::tdes::{TdesEde2, TdesEde3, TdesEee2, TdesEee3};
 /// Checks whether the key is weak.
 ///
 /// Returns 1 if the key is weak; otherwise, returns 0.
-fn weak_key_test(key: &[u8; 8]) -> u8 {
-    let key = u64::from_ne_bytes(*key);
+fn weak_key_test(key: u64) -> u8 {
     let mut is_weak = 0u8;
     for &weak_key in crate::consts::WEAK_KEYS {
         is_weak |= u8::from(key == weak_key);
