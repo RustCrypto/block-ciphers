@@ -4,7 +4,6 @@ use crate::{utils::gen_keys, Des};
 use cipher::{
     consts::{U1, U16, U24, U8},
     crypto_common::WeakKeyError,
-    typenum::Unsigned,
     AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
     KeyInit, KeySizeUser, ParBlocksSizeUser,
@@ -15,15 +14,34 @@ use core::fmt;
 use cipher::zeroize::ZeroizeOnDrop;
 
 #[inline]
-fn weak_key_test(key: &[u8]) -> Result<(), WeakKeyError> {
-    let sub_key_size = <Des as KeySizeUser>::KeySize::USIZE;
-    assert_eq!(key.len() % sub_key_size, 0);
+fn weak_key_test2(key: &[u8; 16]) -> Result<(), WeakKeyError> {
+    let k1 = u64::from_ne_bytes(key[..8].try_into().unwrap());
+    let k2 = u64::from_ne_bytes(key[8..16].try_into().unwrap());
 
     let mut is_weak = 0u8;
-    for des_key in key.chunks_exact(sub_key_size) {
-        let des_key = des_key.try_into().unwrap();
-        is_weak |= super::weak_key_test(des_key);
+    is_weak |= super::weak_key_test(k1);
+    is_weak |= super::weak_key_test(k2);
+    is_weak |= u8::from(k1 == k2);
+
+    match is_weak {
+        0 => Ok(()),
+        _ => Err(WeakKeyError),
     }
+}
+
+#[inline]
+fn weak_key_test3(key: &[u8; 24]) -> Result<(), WeakKeyError> {
+    let k1 = u64::from_ne_bytes(key[..8].try_into().unwrap());
+    let k2 = u64::from_ne_bytes(key[8..16].try_into().unwrap());
+    let k3 = u64::from_ne_bytes(key[16..24].try_into().unwrap());
+
+    let mut is_weak = 0u8;
+    is_weak |= super::weak_key_test(k1);
+    is_weak |= super::weak_key_test(k2);
+    is_weak |= super::weak_key_test(k3);
+    is_weak |= u8::from(k1 == k2);
+    is_weak |= u8::from(k1 == k3);
+    is_weak |= u8::from(k2 == k3);
 
     match is_weak {
         0 => Ok(()),
@@ -57,7 +75,7 @@ impl KeyInit for TdesEde3 {
 
     #[inline]
     fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        weak_key_test(key)
+        weak_key_test3(&key.0)
     }
 }
 
@@ -146,7 +164,7 @@ impl KeyInit for TdesEee3 {
 
     #[inline]
     fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        weak_key_test(key)
+        weak_key_test3(&key.0)
     }
 }
 
@@ -232,7 +250,7 @@ impl KeyInit for TdesEde2 {
 
     #[inline]
     fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        weak_key_test(key)
+        weak_key_test2(&key.0)
     }
 }
 
@@ -318,7 +336,7 @@ impl KeyInit for TdesEee2 {
 
     #[inline]
     fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        weak_key_test(key)
+        weak_key_test2(&key.0)
     }
 }
 
