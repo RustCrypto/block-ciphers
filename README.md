@@ -36,29 +36,25 @@ It's generally recommended not to use other cipher implementations in this repos
 
 | Name | Crate name | crates.io | Docs | MSRV |
 |------|------------|-----------|------|------|
-| [AES] (Rijndael) | [`aes`] | [![crates.io](https://img.shields.io/crates/v/aes.svg)](https://crates.io/crates/aes) | [![Documentation](https://docs.rs/aes/badge.svg)](https://docs.rs/aes) | ![MSRV 1.65][msrv-1.65] |
-| [ARIA] | [`aria`] | [![crates.io](https://img.shields.io/crates/v/aria.svg)](https://crates.io/crates/aria) | [![Documentation](https://docs.rs/aria/badge.svg)](https://docs.rs/aria) | ![MSRV 1.65][msrv-1.65] |
-| [BelT] block cipher | [`belt-block`] | [![crates.io](https://img.shields.io/crates/v/belt-block.svg)](https://crates.io/crates/belt-block) | [![Documentation](https://docs.rs/belt-block/badge.svg)](https://docs.rs/belt-block) | ![MSRV 1.65][msrv-1.65] |
-| [Blowfish] | [`blowfish`] | [![crates.io](https://img.shields.io/crates/v/blowfish.svg)](https://crates.io/crates/blowfish) | [![Documentation](https://docs.rs/blowfish/badge.svg)](https://docs.rs/blowfish) | ![MSRV 1.65][msrv-1.65] |
-| [Camellia] | [`camellia`] | [![crates.io](https://img.shields.io/crates/v/camellia.svg)](https://crates.io/crates/camellia) | [![Documentation](https://docs.rs/camellia/badge.svg)](https://docs.rs/camellia) | ![MSRV 1.65][msrv-1.65] |
-| [CAST5] (CAST-128) | [`cast5`] | [![crates.io](https://img.shields.io/crates/v/cast5.svg)](https://crates.io/crates/cast5) | [![Documentation](https://docs.rs/cast5/badge.svg)](https://docs.rs/cast5) | ![MSRV 1.65][msrv-1.65] |
-| [CAST6] (CAST-256) | [`cast6`] | [![crates.io](https://img.shields.io/crates/v/cast6.svg)](https://crates.io/crates/cast6) | [![Documentation](https://docs.rs/cast6/badge.svg)](https://docs.rs/cast6) | ![MSRV 1.65][msrv-1.65] |
-| [DES] + [3DES] (DEA, 3DEA) | [`des`] | [![crates.io](https://img.shields.io/crates/v/des.svg)](https://crates.io/crates/des) | [![Documentation](https://docs.rs/des/badge.svg)](https://docs.rs/des) | ![MSRV 1.65][msrv-1.65] |
-| [IDEA] | [`idea`] | [![crates.io](https://img.shields.io/crates/v/idea.svg)](https://crates.io/crates/idea) | [![Documentation](https://docs.rs/idea/badge.svg)](https://docs.rs/idea) | ![MSRV 1.65][msrv-1.65] |
-| [Kuznyechik] (GOST R 34.12-2015)  | [`kuznyechik`] | [![crates.io](https://img.shields.io/crates/v/kuznyechik.svg)](https://crates.io/crates/kuznyechik) | [![Documentation](https://docs.rs/kuznyechik/badge.svg)](https://docs.rs/kuznyechik) | ![MSRV 1.65][msrv-1.65] |
-| [Magma] (GOST R 34.12-2015) | [`magma`] | [![crates.io](https://img.shields.io/crates/v/magma.svg)](https://crates.io/crates/magma) | [![Documentation](https://docs.rs/magma/badge.svg)](https://docs.rs/magma) | ![MSRV 1.65][msrv-1.65] |
-| [RC2] (ARC2) | [`rc2`] | [![crates.io](https://img.shields.io/crates/v/rc2.svg)](https://crates.io/crates/rc2) | [![Documentation](https://docs.rs/rc2/badge.svg)](https://docs.rs/rc2) | ![MSRV 1.65][msrv-1.65] |
-| [RC5] | [`rc5`] | [![crates.io](https://img.shields.io/crates/v/rc5.svg)](https://crates.io/crates/rc5) | [![Documentation](https://docs.rs/rc5/badge.svg)](https://docs.rs/rc5) | ![MSRV 1.65][msrv-1.65] |
-| [Serpent] | [`serpent`] | [![crates.io](https://img.shields.io/crates/v/serpent.svg)](https://crates.io/crates/serpent) | [![Documentation](https://docs.rs/serpent/badge.svg)](https://docs.rs/serpent) | ![MSRV 1.65][msrv-1.65] |
-| [SM4] | [`sm4`] | [![crates.io](https://img.shields.io/crates/v/sm4.svg)](https://crates.io/crates/sm4) | [![Documentation](https://docs.rs/sm4/badge.svg)](https://docs.rs/sm4) | ![MSRV 1.65][msrv-1.65] |
-| [Speck] | [`speck-cipher`] | [![crates.io](https://img.shields.io/crates/v/speck-cipher.svg)](https://crates.io/crates/speck-cipher) | [![Documentation](https://docs.rs/speck-cipher/badge.svg)](https://docs.rs/speck-cipher) | ![MSRV 1.65][msrv-1.65] |
-| [Threefish] | [`threefish`] | [![crates.io](https://img.shields.io/crates/v/threefish.svg)](https://crates.io/crates/threefish) | [![Documentation](https://docs.rs/threefish/badge.svg)](https://docs.rs/threefish) | ![MSRV 1.65][msrv-1.65] |
-| [Twofish] | [`twofish`] | [![crates.io](https://img.shields.io/crates/v/twofish.svg)](https://crates.io/crates/twofish) | [![Documentation](https://docs.rs/twofish/badge.svg)](https://docs.rs/twofish) | ![MSRV 1.65][msrv-1.65] |
-| [XTEA] | [`xtea`] | [![crates.io](https://img.shields.io/crates/v/xtea.svg)](https://crates.io/crates/xtea) | [![Documentation](https://docs.rs/xtea/badge.svg)](https://docs.rs/xtea) | ![MSRV 1.65][msrv-1.65] |
-
-### Minimum Supported Rust Version (MSRV) Policy
-
-MSRV bump is considered a breaking change and will be performed only with a minor version bump.
+| [AES] (Rijndael) | [`aes`] | [![crates.io](https://img.shields.io/crates/v/aes.svg)](https://crates.io/crates/aes) | [![Documentation](https://docs.rs/aes/badge.svg)](https://docs.rs/aes) | ![MSRV 1.85][msrv-1.85] |
+| [ARIA] | [`aria`] | [![crates.io](https://img.shields.io/crates/v/aria.svg)](https://crates.io/crates/aria) | [![Documentation](https://docs.rs/aria/badge.svg)](https://docs.rs/aria) | ![MSRV 1.85][msrv-1.85] |
+| [BelT] block cipher | [`belt-block`] | [![crates.io](https://img.shields.io/crates/v/belt-block.svg)](https://crates.io/crates/belt-block) | [![Documentation](https://docs.rs/belt-block/badge.svg)](https://docs.rs/belt-block) | ![MSRV 1.85][msrv-1.85] |
+| [Blowfish] | [`blowfish`] | [![crates.io](https://img.shields.io/crates/v/blowfish.svg)](https://crates.io/crates/blowfish) | [![Documentation](https://docs.rs/blowfish/badge.svg)](https://docs.rs/blowfish) | ![MSRV 1.85][msrv-1.85] |
+| [Camellia] | [`camellia`] | [![crates.io](https://img.shields.io/crates/v/camellia.svg)](https://crates.io/crates/camellia) | [![Documentation](https://docs.rs/camellia/badge.svg)](https://docs.rs/camellia) | ![MSRV 1.85][msrv-1.85] |
+| [CAST5] (CAST-128) | [`cast5`] | [![crates.io](https://img.shields.io/crates/v/cast5.svg)](https://crates.io/crates/cast5) | [![Documentation](https://docs.rs/cast5/badge.svg)](https://docs.rs/cast5) | ![MSRV 1.85][msrv-1.85] |
+| [CAST6] (CAST-256) | [`cast6`] | [![crates.io](https://img.shields.io/crates/v/cast6.svg)](https://crates.io/crates/cast6) | [![Documentation](https://docs.rs/cast6/badge.svg)](https://docs.rs/cast6) | ![MSRV 1.85][msrv-1.85] |
+| [DES] + [3DES] (DEA, 3DEA) | [`des`] | [![crates.io](https://img.shields.io/crates/v/des.svg)](https://crates.io/crates/des) | [![Documentation](https://docs.rs/des/badge.svg)](https://docs.rs/des) | ![MSRV 1.85][msrv-1.85] |
+| [IDEA] | [`idea`] | [![crates.io](https://img.shields.io/crates/v/idea.svg)](https://crates.io/crates/idea) | [![Documentation](https://docs.rs/idea/badge.svg)](https://docs.rs/idea) | ![MSRV 1.85][msrv-1.85] |
+| [Kuznyechik] (GOST R 34.12-2015)  | [`kuznyechik`] | [![crates.io](https://img.shields.io/crates/v/kuznyechik.svg)](https://crates.io/crates/kuznyechik) | [![Documentation](https://docs.rs/kuznyechik/badge.svg)](https://docs.rs/kuznyechik) | ![MSRV 1.85][msrv-1.85] |
+| [Magma] (GOST R 34.12-2015) | [`magma`] | [![crates.io](https://img.shields.io/crates/v/magma.svg)](https://crates.io/crates/magma) | [![Documentation](https://docs.rs/magma/badge.svg)](https://docs.rs/magma) | ![MSRV 1.85][msrv-1.85] |
+| [RC2] (ARC2) | [`rc2`] | [![crates.io](https://img.shields.io/crates/v/rc2.svg)](https://crates.io/crates/rc2) | [![Documentation](https://docs.rs/rc2/badge.svg)](https://docs.rs/rc2) | ![MSRV 1.85][msrv-1.85] |
+| [RC5] | [`rc5`] | [![crates.io](https://img.shields.io/crates/v/rc5.svg)](https://crates.io/crates/rc5) | [![Documentation](https://docs.rs/rc5/badge.svg)](https://docs.rs/rc5) | ![MSRV 1.85][msrv-1.85] |
+| [Serpent] | [`serpent`] | [![crates.io](https://img.shields.io/crates/v/serpent.svg)](https://crates.io/crates/serpent) | [![Documentation](https://docs.rs/serpent/badge.svg)](https://docs.rs/serpent) | ![MSRV 1.85][msrv-1.85] |
+| [SM4] | [`sm4`] | [![crates.io](https://img.shields.io/crates/v/sm4.svg)](https://crates.io/crates/sm4) | [![Documentation](https://docs.rs/sm4/badge.svg)](https://docs.rs/sm4) | ![MSRV 1.85][msrv-1.85] |
+| [Speck] | [`speck-cipher`] | [![crates.io](https://img.shields.io/crates/v/speck-cipher.svg)](https://crates.io/crates/speck-cipher) | [![Documentation](https://docs.rs/speck-cipher/badge.svg)](https://docs.rs/speck-cipher) | ![MSRV 1.85][msrv-1.85] |
+| [Threefish] | [`threefish`] | [![crates.io](https://img.shields.io/crates/v/threefish.svg)](https://crates.io/crates/threefish) | [![Documentation](https://docs.rs/threefish/badge.svg)](https://docs.rs/threefish) | ![MSRV 1.85][msrv-1.85] |
+| [Twofish] | [`twofish`] | [![crates.io](https://img.shields.io/crates/v/twofish.svg)](https://crates.io/crates/twofish) | [![Documentation](https://docs.rs/twofish/badge.svg)](https://docs.rs/twofish) | ![MSRV 1.85][msrv-1.85] |
+| [XTEA] | [`xtea`] | [![crates.io](https://img.shields.io/crates/v/xtea.svg)](https://crates.io/crates/xtea) | [![Documentation](https://docs.rs/xtea/badge.svg)](https://docs.rs/xtea) | ![MSRV 1.85][msrv-1.85] |
 
 ## License
 
@@ -84,7 +80,7 @@ dual licensed as above, without any additional terms or conditions.
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
 [hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
-[msrv-1.65]: https://img.shields.io/badge/rustc-1.65.0+-blue.svg
+[msrv-1.85]: https://img.shields.io/badge/rustc-1.85.0+-blue.svg
 
 [//]: # (crates)
 
