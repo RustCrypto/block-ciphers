@@ -17,7 +17,7 @@ cipher = "=0.5.0-pre.8"
 
 [dev-dependencies]
 cipher = { version = "=0.5.0-pre.8", features = ["dev"] }
-hex-literal = "0.4"
+hex-literal = "1"
 
 [features]
 zeroize = ["cipher/zeroize"]
