@@ -1,9 +1,9 @@
 use crate::{
+    Aria128,
     consts::{C1, C2, C3},
     utils::{a, fe, fo},
-    Aria128,
 };
-use cipher::{consts::U16, AlgorithmName, Key, KeyInit, KeySizeUser};
+use cipher::{AlgorithmName, Key, KeyInit, KeySizeUser, consts::U16};
 use core::fmt;
 
 impl KeySizeUser for Aria128 {

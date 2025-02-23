@@ -1,12 +1,12 @@
 use crate::{
-    consts::{P, P_INV},
-    fused_tables::{Table, DEC_TABLE, ENC_TABLE},
-    utils::KEYGEN,
     Block, Key,
+    consts::{P, P_INV},
+    fused_tables::{DEC_TABLE, ENC_TABLE, Table},
+    utils::KEYGEN,
 };
 use cipher::{
-    consts, typenum::Unsigned, BlockCipherDecBackend, BlockCipherEncBackend, BlockSizeUser, InOut,
-    ParBlocks, ParBlocksSizeUser,
+    BlockCipherDecBackend, BlockCipherEncBackend, BlockSizeUser, InOut, ParBlocks,
+    ParBlocksSizeUser, consts, typenum::Unsigned,
 };
 
 use core::arch::aarch64::*;

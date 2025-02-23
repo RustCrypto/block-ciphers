@@ -24,7 +24,7 @@
 #[cfg(feature = "cipher")]
 pub use cipher;
 
-use crate::consts::{H13, H21, H29, H5};
+use crate::consts::{H5, H13, H21, H29};
 use core::{mem::swap, num::Wrapping};
 
 #[cfg(feature = "cipher")]

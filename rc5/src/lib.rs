@@ -19,14 +19,14 @@
 #![warn(missing_docs, rust_2018_idioms)]
 
 use cipher::{
+    AlgorithmName, Array, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, KeyInit,
+    KeySizeUser, ParBlocksSizeUser,
     array::ArraySize,
     consts::{U1, U2, U256},
     crypto_common::BlockSizes,
     inout::InOut,
     typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned},
-    AlgorithmName, Array, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
-    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, KeyInit,
-    KeySizeUser, ParBlocksSizeUser,
 };
 use core::{
     cmp::max,

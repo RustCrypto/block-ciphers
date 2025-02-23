@@ -26,15 +26,15 @@ use core::fmt;
 
 #[cfg(feature = "cipher")]
 use cipher::{
-    consts::{U1, U128, U32, U64},
     AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
     KeyInit, KeySizeUser, ParBlocksSizeUser,
+    consts::{U1, U32, U64, U128},
 };
 
 mod consts;
 
-use crate::consts::{C240, P1024, P256, P512, R1024, R256, R512};
+use crate::consts::{C240, P256, P512, P1024, R256, R512, R1024};
 
 #[cfg(feature = "zeroize")]
 use zeroize::{Zeroize, ZeroizeOnDrop};

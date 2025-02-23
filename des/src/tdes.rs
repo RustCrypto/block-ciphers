@@ -1,12 +1,12 @@
 //! Triple DES (3DES) block ciphers.
 
-use crate::{utils::gen_keys, Des};
+use crate::{Des, utils::gen_keys};
 use cipher::{
-    consts::{U1, U16, U24, U8},
-    crypto_common::WeakKeyError,
     AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
     KeyInit, KeySizeUser, ParBlocksSizeUser,
+    consts::{U1, U8, U16, U24},
+    crypto_common::WeakKeyError,
 };
 use core::fmt;
 

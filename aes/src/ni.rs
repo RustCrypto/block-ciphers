@@ -29,10 +29,10 @@ use core::arch::x86 as arch;
 use core::arch::x86_64 as arch;
 
 use cipher::{
-    consts::{self, U16, U24, U32},
-    crypto_common::WeakKeyError,
     AlgorithmName, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncClosure,
     BlockCipherEncrypt, BlockSizeUser, Key, KeyInit, KeySizeUser,
+    consts::{self, U16, U24, U32},
+    crypto_common::WeakKeyError,
 };
 use core::fmt;
 

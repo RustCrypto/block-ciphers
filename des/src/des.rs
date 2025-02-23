@@ -3,11 +3,11 @@
 #![allow(clippy::unreadable_literal)]
 
 use cipher::{
-    consts::{U1, U8},
-    crypto_common::WeakKeyError,
     AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
     KeyInit, KeySizeUser, ParBlocksSizeUser,
+    consts::{U1, U8},
+    crypto_common::WeakKeyError,
 };
 use core::fmt;
 

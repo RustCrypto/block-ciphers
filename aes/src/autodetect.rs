@@ -3,10 +3,10 @@
 
 use crate::soft;
 use cipher::{
-    consts::{U16, U24, U32},
-    crypto_common::WeakKeyError,
     AlgorithmName, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncClosure,
     BlockCipherEncrypt, BlockSizeUser, Key, KeyInit, KeySizeUser,
+    consts::{U16, U24, U32},
+    crypto_common::WeakKeyError,
 };
 use core::fmt;
 use core::mem::ManuallyDrop;
