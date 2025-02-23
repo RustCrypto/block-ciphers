@@ -1,3 +1,5 @@
+#![allow(unsafe_op_in_unsafe_fn)]
+
 use crate::{
     Block, Key,
     consts::{P, P_INV},
