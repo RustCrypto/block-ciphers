@@ -113,7 +113,7 @@ pub fn belt_wblock_enc(data: &mut [u8], key: &[u32; 8]) -> Result<(), InvalidLen
     }
 
     let len = data.len();
-    let n = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    let n = len.div_ceil(BLOCK_SIZE);
     for i in 1..(2 * n + 1) {
         let s = data[..len - 1]
             .chunks_exact(BLOCK_SIZE)
@@ -141,7 +141,7 @@ pub fn belt_wblock_dec(data: &mut [u8], key: &[u32; 8]) -> Result<(), InvalidLen
     }
 
     let len = data.len();
-    let n = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    let n = len.div_ceil(BLOCK_SIZE);
     for i in (1..(2 * n + 1)).rev() {
         let tail_pos = len - BLOCK_SIZE;
         let s = Block::try_from(&data[tail_pos..]).unwrap();
