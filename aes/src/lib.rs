@@ -186,7 +186,7 @@ mod tests {
         use super::soft;
 
         fn test_for<T: zeroize::ZeroizeOnDrop>(val: T) {
-            use core::mem::{size_of, ManuallyDrop};
+            use core::mem::{ManuallyDrop, size_of};
 
             let mut val = ManuallyDrop::new(val);
             let ptr = &val as *const _ as *const u8;

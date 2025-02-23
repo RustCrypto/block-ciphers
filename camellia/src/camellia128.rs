@@ -1,6 +1,6 @@
 use crate::{
-    utils::{gen_subkeys26, set_ka},
     Camellia128,
+    utils::{gen_subkeys26, set_ka},
 };
 use cipher::{AlgorithmName, Key, KeyInit};
 use core::{fmt, marker::PhantomData};

@@ -47,10 +47,10 @@
 pub use cipher;
 
 use cipher::{
-    consts::{U1, U32, U8},
     AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
     KeyInit, KeySizeUser, ParBlocksSizeUser,
+    consts::{U1, U8, U32},
 };
 use core::{fmt, marker::PhantomData};
 

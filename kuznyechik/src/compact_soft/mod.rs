@@ -5,7 +5,7 @@ use cipher::{
 
 mod backends;
 
-use backends::{expand, DecBackend, EncBackend, RoundKeys};
+use backends::{DecBackend, EncBackend, RoundKeys, expand};
 
 #[derive(Clone)]
 pub(crate) struct EncDecKeys(RoundKeys);

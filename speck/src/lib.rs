@@ -14,9 +14,9 @@
 pub use cipher;
 
 use cipher::{
-    consts::*, AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure,
-    BlockCipherDecrypt, BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt,
-    BlockSizeUser, InOut, Key, KeyInit, KeySizeUser, ParBlocksSizeUser,
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
+    KeyInit, KeySizeUser, ParBlocksSizeUser, consts::*,
 };
 use core::{fmt, mem::size_of};
 

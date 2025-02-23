@@ -2,6 +2,7 @@
 //!
 //! Note that `aes` target feature implicitly enables `neon`, see:
 //! https://doc.rust-lang.org/reference/attributes/codegen.html#aarch64
+#![allow(unsafe_op_in_unsafe_fn)]
 
 use crate::Block;
 use cipher::{

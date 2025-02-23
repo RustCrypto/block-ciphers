@@ -1,4 +1,5 @@
 //! AES key expansion support.
+#![allow(unsafe_op_in_unsafe_fn)]
 
 use core::{arch::aarch64::*, mem, slice};
 

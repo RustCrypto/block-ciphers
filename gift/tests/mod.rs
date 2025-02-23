@@ -1,4 +1,4 @@
-use cipher::{array::Array, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
+use cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit, array::Array};
 use gift_cipher::Gift128;
 use hex_literal::hex;
 

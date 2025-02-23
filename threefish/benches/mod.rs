@@ -2,7 +2,7 @@
 extern crate test;
 
 use cipher::{block_decryptor_bench, block_encryptor_bench};
-use threefish::{Threefish1024, Threefish256, Threefish512};
+use threefish::{Threefish256, Threefish512, Threefish1024};
 
 block_encryptor_bench!(
     Key: Threefish256,
