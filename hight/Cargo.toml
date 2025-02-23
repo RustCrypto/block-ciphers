@@ -1,6 +1,7 @@
 [package]
 name = "hight"
 version = "0.1.0"
+edition = "2021"
 description = "HIGHT - Block Cipher Suitable for Low-Resource Device"
 authors = ["Arul Sujith S"]
 license = "MIT OR Apache-2.0"
@@ -9,3 +10,7 @@ readme = "README.md"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "hight", "block-cipher"]
 categories = ["cryptography", "no-std"]
+
+[dependencies]
+hex-literal = "0.3"
+
