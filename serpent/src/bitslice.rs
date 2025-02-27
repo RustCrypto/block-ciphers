@@ -10,7 +10,7 @@
  * The specific Sbox circuits used here were described in
  *
  * "Speeding Up Serpent", Osvik
- * <https://www.cl.cam.ac.uk/archive/rja14/Papers/serpent.pdf>
+ * <https://www.ii.uib.no/~osvik/pub/aes3.pdf>
  */
 
 use crate::Words;
