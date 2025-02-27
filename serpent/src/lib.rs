@@ -47,6 +47,7 @@ pub struct Serpent {
     round_keys: RoundKeys,
 }
 
+#[inline]
 fn linear_transform_bitslice(mut words: Words) -> Words {
     words[0] = words[0].rotate_left(13);
     words[2] = words[2].rotate_left(3);
@@ -61,6 +62,7 @@ fn linear_transform_bitslice(mut words: Words) -> Words {
     words
 }
 
+#[inline]
 fn linear_transform_inverse_bitslice(mut words: Words) -> Words {
     words[2] = words[2].rotate_right(22);
     words[0] = words[0].rotate_right(5);
@@ -75,6 +77,7 @@ fn linear_transform_inverse_bitslice(mut words: Words) -> Words {
     words
 }
 
+#[inline]
 fn apply_s_bitslice(index: usize, [w1, w2, w3, w4]: Words) -> Words {
     match index % 8 {
         0 => bitslice::sbox_e0([w1, w2, w3, w4]),
@@ -89,6 +92,7 @@ fn apply_s_bitslice(index: usize, [w1, w2, w3, w4]: Words) -> Words {
     }
 }
 
+#[inline]
 fn apply_s_inverse_bitslice(index: usize, [w1, w2, w3, w4]: Words) -> Words {
     match index % 8 {
         0 => bitslice::sbox_d0([w1, w2, w3, w4]),
