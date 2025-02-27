@@ -30,381 +30,16 @@ use cipher::{
 };
 use core::fmt;
 
+mod bitslice;
+
 #[cfg(feature = "zeroize")]
 use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 
-mod consts;
-use consts::{PHI, ROUNDS};
+const PHI: u32 = 0x9e37_79b9;
+const ROUNDS: usize = 32;
 
 type Words = [u32; 4];
 type RoundKeys = [Words; ROUNDS + 1];
-
-const fn sbox_e0([mut w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    w4 ^= w1;
-    let mut t0 = w2;
-    w2 &= w4;
-    t0 ^= w3;
-    w2 ^= w1;
-    w1 |= w4;
-    w1 ^= t0;
-    t0 ^= w4;
-    w4 ^= w3;
-    w3 |= w2;
-    w3 ^= t0;
-    t0 = !t0;
-    t0 |= w2;
-    w2 ^= w4;
-    w2 ^= t0;
-    w4 |= w1;
-    w2 ^= w4;
-    t0 ^= w4;
-    [w2, t0, w3, w1]
-}
-
-const fn sbox_e1([mut w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    w1 = !w1;
-    w3 = !w3;
-    let mut t0 = w1;
-    w1 &= w2;
-    w3 ^= w1;
-    w1 |= w4;
-    w4 ^= w3;
-    w2 ^= w1;
-    w1 ^= t0;
-    t0 |= w2;
-    w2 ^= w4;
-    w3 |= w1;
-    w3 &= t0;
-    w1 ^= w2;
-    w2 &= w3;
-    w2 ^= w1;
-    w1 &= w3;
-    t0 ^= w1;
-    [w3, t0, w4, w2]
-}
-
-const fn sbox_e2([mut w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    let mut t0 = w1;
-    w1 &= w3;
-    w1 ^= w4;
-    w3 ^= w2;
-    w3 ^= w1;
-    w4 |= t0;
-    w4 ^= w2;
-    t0 ^= w3;
-    w2 = w4;
-    w4 |= t0;
-    w4 ^= w1;
-    w1 &= w2;
-    t0 ^= w1;
-    w2 ^= w4;
-    w2 ^= t0;
-    t0 = !t0;
-    [w3, w4, w2, t0]
-}
-
-const fn sbox_e3([mut w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    let mut t0 = w1;
-    w1 |= w4;
-    w4 ^= w2;
-    w2 &= t0;
-    t0 ^= w3;
-    w3 ^= w4;
-    w4 &= w1;
-    t0 |= w2;
-    w4 ^= t0;
-    w1 ^= w2;
-    t0 &= w1;
-    w2 ^= w4;
-    t0 ^= w3;
-    w2 |= w1;
-    w2 ^= w3;
-    w1 ^= w4;
-    w3 = w2;
-    w2 |= w4;
-    w1 ^= w2;
-    [w1, w3, w4, t0]
-}
-
-const fn sbox_e4([mut w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    w2 ^= w4;
-    w4 = !w4;
-    w3 ^= w4;
-    w4 ^= w1;
-    let mut t0 = w2;
-    w2 &= w4;
-    w2 ^= w3;
-    t0 ^= w4;
-    w1 ^= t0;
-    w3 &= t0;
-    w3 ^= w1;
-    w1 &= w2;
-    w4 ^= w1;
-    t0 |= w2;
-    t0 ^= w1;
-    w1 |= w4;
-    w1 ^= w3;
-    w3 &= w4;
-    w1 = !w1;
-    t0 ^= w3;
-    [w2, t0, w1, w4]
-}
-
-const fn sbox_e5([mut w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    w1 ^= w2;
-    w2 ^= w4;
-    w4 = !w4;
-    let mut t0 = w2;
-    w2 &= w1;
-    w3 ^= w4;
-    w2 ^= w3;
-    w3 |= t0;
-    t0 ^= w4;
-    w4 &= w2;
-    w4 ^= w1;
-    t0 ^= w2;
-    t0 ^= w3;
-    w3 ^= w1;
-    w1 &= w4;
-    w3 = !w3;
-    w1 ^= t0;
-    t0 |= w4;
-    t0 ^= w3;
-    w3 = w1;
-    w1 = w2;
-    w2 = w4;
-    w4 = t0;
-    [w1, w2, w3, w4]
-}
-
-const fn sbox_e6([mut w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    w3 = !w3;
-    let mut t0 = w4;
-    w4 &= w1;
-    w1 ^= t0;
-    w4 ^= w3;
-    w3 |= t0;
-    w2 ^= w4;
-    w3 ^= w1;
-    w1 |= w2;
-    w3 ^= w2;
-    t0 ^= w1;
-    w1 |= w4;
-    w1 ^= w3;
-    t0 ^= w4;
-    t0 ^= w1;
-    w4 = !w4;
-    w3 &= t0;
-    w4 ^= w3;
-    w3 = t0;
-    [w1, w2, w3, w4]
-}
-
-const fn sbox_e7([mut w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    let mut t0 = w2;
-    w2 |= w3;
-    w2 ^= w4;
-    t0 ^= w3;
-    w3 ^= w2;
-    w4 |= t0;
-    w4 &= w1;
-    t0 ^= w3;
-    w4 ^= w2;
-    w2 |= t0;
-    w2 ^= w1;
-    w1 |= t0;
-    w1 ^= w3;
-    w2 ^= t0;
-    w3 ^= w2;
-    w2 &= w1;
-    w2 ^= t0;
-    w3 = !w3;
-    w3 |= w1;
-    t0 ^= w3;
-    [t0, w4, w2, w1]
-}
-
-const fn sbox_d0([mut w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    w3 = !w3;
-    let mut t0 = w2;
-    w2 |= w1;
-    t0 = !t0;
-    w2 ^= w3;
-    w3 |= t0;
-    w2 ^= w4;
-    w1 ^= t0;
-    w3 ^= w1;
-    w1 &= w4;
-    t0 ^= w1;
-    w1 |= w2;
-    w1 ^= w3;
-    w4 ^= t0;
-    w3 ^= w2;
-    w4 ^= w1;
-    w4 ^= w2;
-    w3 &= w4;
-    t0 ^= w3;
-    [w1, t0, w2, w4]
-}
-
-const fn sbox_d1([mut w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    let mut t0 = w2;
-    w2 ^= w4;
-    w4 &= w2;
-    t0 ^= w3;
-    w4 ^= w1;
-    w1 |= w2;
-    w3 ^= w4;
-    w1 ^= t0;
-    w1 |= w3;
-    w2 ^= w4;
-    w1 ^= w2;
-    w2 |= w4;
-    w2 ^= w1;
-    t0 = !t0;
-    t0 ^= w2;
-    w2 |= w1;
-    w2 ^= w1;
-    w2 |= t0;
-    w4 ^= w2;
-    [t0, w1, w4, w3]
-}
-
-const fn sbox_d2([mut w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    w3 ^= w4;
-    w4 ^= w1;
-    let mut t0 = w4;
-    w4 &= w3;
-    w4 ^= w2;
-    w2 |= w3;
-    w2 ^= t0;
-    t0 &= w4;
-    w3 ^= w4;
-    t0 &= w1;
-    t0 ^= w3;
-    w3 &= w2;
-    w3 |= w1;
-    w4 = !w4;
-    w3 ^= w4;
-    w1 ^= w4;
-    w1 &= w2;
-    w4 ^= t0;
-    w4 ^= w1;
-    [w2, t0, w3, w4]
-}
-
-const fn sbox_d3([mut w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    let mut t0 = w3;
-    w3 ^= w2;
-    w1 ^= w3;
-    t0 &= w3;
-    t0 ^= w1;
-    w1 &= w2;
-    w2 ^= w4;
-    w4 |= t0;
-    w3 ^= w4;
-    w1 ^= w4;
-    w2 ^= t0;
-    w4 &= w3;
-    w4 ^= w2;
-    w2 ^= w1;
-    w2 |= w3;
-    w1 ^= w4;
-    w2 ^= t0;
-    w1 ^= w2;
-    [w3, w2, w4, w1]
-}
-
-const fn sbox_d4([mut w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    let mut t0 = w3;
-    w3 &= w4;
-    w3 ^= w2;
-    w2 |= w4;
-    w2 &= w1;
-    t0 ^= w3;
-    t0 ^= w2;
-    w2 &= w3;
-    w1 = !w1;
-    w4 ^= t0;
-    w2 ^= w4;
-    w4 &= w1;
-    w4 ^= w3;
-    w1 ^= w2;
-    w3 &= w1;
-    w4 ^= w1;
-    w3 ^= t0;
-    w3 |= w4;
-    w4 ^= w1;
-    w3 ^= w2;
-    [w1, w4, w3, t0]
-}
-
-const fn sbox_d5([w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    w2 = !w2;
-    let mut t0 = w4;
-    w3 ^= w2;
-    w4 |= w1;
-    w4 ^= w3;
-    w3 |= w2;
-    w3 &= w1;
-    t0 ^= w4;
-    w3 ^= t0;
-    t0 |= w1;
-    t0 ^= w2;
-    w2 &= w3;
-    w2 ^= w4;
-    t0 ^= w3;
-    w4 &= t0;
-    t0 ^= w2;
-    w4 ^= t0;
-    t0 = !t0;
-    w4 ^= w1;
-    [w2, t0, w4, w3]
-}
-
-const fn sbox_d6([mut w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    w1 ^= w3;
-    let mut t0 = w3;
-    w3 &= w1;
-    t0 ^= w4;
-    w3 = !w3;
-    w4 ^= w2;
-    w3 ^= w4;
-    t0 |= w1;
-    w1 ^= w3;
-    w4 ^= t0;
-    t0 ^= w2;
-    w2 &= w4;
-    w2 ^= w1;
-    w1 ^= w4;
-    w1 |= w3;
-    w4 ^= w2;
-    t0 ^= w1;
-    [w2, w3, t0, w4]
-}
-
-const fn sbox_d7([mut w1, mut w2, mut w3, mut w4]: Words) -> Words {
-    let mut t0 = w3;
-    w3 ^= w1;
-    w1 &= w4;
-    t0 |= w4;
-    w3 = !w3;
-    w4 ^= w2;
-    w2 |= w1;
-    w1 ^= w3;
-    w3 &= t0;
-    w4 &= t0;
-    w2 ^= w3;
-    w3 ^= w1;
-    w1 |= w3;
-    t0 ^= w2;
-    w1 ^= w4;
-    w4 ^= t0;
-    t0 |= w1;
-    w4 ^= w3;
-    t0 ^= w3;
-    [w4, w1, w2, t0]
-}
 
 /// Serpent block cipher.
 #[derive(Clone)]
@@ -442,28 +77,28 @@ fn linear_transform_inverse_bitslice(mut words: Words) -> Words {
 
 fn apply_s_bitslice(index: usize, [w1, w2, w3, w4]: Words) -> Words {
     match index % 8 {
-        0 => sbox_e0([w1, w2, w3, w4]),
-        1 => sbox_e1([w1, w2, w3, w4]),
-        2 => sbox_e2([w1, w2, w3, w4]),
-        3 => sbox_e3([w1, w2, w3, w4]),
-        4 => sbox_e4([w1, w2, w3, w4]),
-        5 => sbox_e5([w1, w2, w3, w4]),
-        6 => sbox_e6([w1, w2, w3, w4]),
-        7 => sbox_e7([w1, w2, w3, w4]),
+        0 => bitslice::sbox_e0([w1, w2, w3, w4]),
+        1 => bitslice::sbox_e1([w1, w2, w3, w4]),
+        2 => bitslice::sbox_e2([w1, w2, w3, w4]),
+        3 => bitslice::sbox_e3([w1, w2, w3, w4]),
+        4 => bitslice::sbox_e4([w1, w2, w3, w4]),
+        5 => bitslice::sbox_e5([w1, w2, w3, w4]),
+        6 => bitslice::sbox_e6([w1, w2, w3, w4]),
+        7 => bitslice::sbox_e7([w1, w2, w3, w4]),
         _ => unreachable!(),
     }
 }
 
 fn apply_s_inverse_bitslice(index: usize, [w1, w2, w3, w4]: Words) -> Words {
     match index % 8 {
-        0 => sbox_d0([w1, w2, w3, w4]),
-        1 => sbox_d1([w1, w2, w3, w4]),
-        2 => sbox_d2([w1, w2, w3, w4]),
-        3 => sbox_d3([w1, w2, w3, w4]),
-        4 => sbox_d4([w1, w2, w3, w4]),
-        5 => sbox_d5([w1, w2, w3, w4]),
-        6 => sbox_d6([w1, w2, w3, w4]),
-        7 => sbox_d7([w1, w2, w3, w4]),
+        0 => bitslice::sbox_d0([w1, w2, w3, w4]),
+        1 => bitslice::sbox_d1([w1, w2, w3, w4]),
+        2 => bitslice::sbox_d2([w1, w2, w3, w4]),
+        3 => bitslice::sbox_d3([w1, w2, w3, w4]),
+        4 => bitslice::sbox_d4([w1, w2, w3, w4]),
+        5 => bitslice::sbox_d5([w1, w2, w3, w4]),
+        6 => bitslice::sbox_d6([w1, w2, w3, w4]),
+        7 => bitslice::sbox_d7([w1, w2, w3, w4]),
         _ => unreachable!(),
     }
 }
