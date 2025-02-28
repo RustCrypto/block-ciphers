@@ -36,6 +36,9 @@ jobs:
           toolchain: ${{ matrix.rust }}
           targets: ${{ matrix.target }}
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
+      - env:
+          RUSTFLAGS: "-Dwarnings --cfg serpent_no_unroll"
+        run: cargo build --no-default-features --release --target ${{ matrix.target }}
 
   minimal-versions:
     if: false # TODO: temp disabled due to unpublished prerelease dependencies
@@ -60,3 +63,6 @@ jobs:
       - run: cargo test --no-default-features
       - run: cargo test
       - run: cargo test --all-features
+      - env:
+          RUSTFLAGS: "-Dwarnings --cfg serpent_no_unroll"
+        run: cargo test --all-features
