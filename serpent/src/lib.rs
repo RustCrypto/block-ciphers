@@ -31,6 +31,8 @@ use cipher::{
 use core::fmt;
 
 mod bitslice;
+#[macro_use]
+mod unroll;
 
 #[cfg(feature = "zeroize")]
 use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
@@ -54,73 +56,6 @@ fn xor(b1: Words, k: Words) -> Words {
         res[i] = b1[i] ^ k[i];
     }
     res
-}
-
-macro_rules! repeat31 {
-    ($i:ident, $body:block) => {
-        let $i = 0;
-        $body;
-        let $i = 1;
-        $body;
-        let $i = 2;
-        $body;
-        let $i = 3;
-        $body;
-        let $i = 4;
-        $body;
-        let $i = 5;
-        $body;
-        let $i = 6;
-        $body;
-        let $i = 7;
-        $body;
-        let $i = 8;
-        $body;
-        let $i = 9;
-        $body;
-        let $i = 10;
-        $body;
-        let $i = 11;
-        $body;
-        let $i = 12;
-        $body;
-        let $i = 13;
-        $body;
-        let $i = 14;
-        $body;
-        let $i = 15;
-        $body;
-        let $i = 16;
-        $body;
-        let $i = 17;
-        $body;
-        let $i = 18;
-        $body;
-        let $i = 19;
-        $body;
-        let $i = 20;
-        $body;
-        let $i = 21;
-        $body;
-        let $i = 22;
-        $body;
-        let $i = 23;
-        $body;
-        let $i = 24;
-        $body;
-        let $i = 25;
-        $body;
-        let $i = 26;
-        $body;
-        let $i = 27;
-        $body;
-        let $i = 28;
-        $body;
-        let $i = 29;
-        $body;
-        let $i = 30;
-        $body;
-    };
 }
 
 fn expand_key(source: &[u8], len_bits: usize) -> [u8; 32] {
@@ -208,7 +143,7 @@ impl BlockCipherEncBackend for Serpent {
     fn encrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
         let mut b: [u32; 4] = read_words(block.get_in().into());
 
-        repeat31!(i, {
+        unroll31!(i, {
             let xb = xor(b, self.round_keys[i]);
             let s = bitslice::apply_s(i, xb);
             b = bitslice::linear_transform(s);
@@ -238,7 +173,7 @@ impl BlockCipherDecBackend for Serpent {
         let xb = bitslice::apply_s_inv(ROUNDS - 1, s);
         b = xor(xb, self.round_keys[ROUNDS - 1]);
 
-        repeat31!(i, {
+        unroll31!(i, {
             let i = 30 - i;
             let s = bitslice::linear_transform_inv(b);
             let xb = bitslice::apply_s_inv(i, s);

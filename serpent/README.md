@@ -26,6 +26,14 @@ architectures.
 
 USE AT YOUR OWN RISK!
 
+## Configuration flags
+
+You can modify crate using the following configuration flags:
+
+- `serpent_no_unroll`: do not unroll rounds loop. Reduces binary size at the cost of slightly lower performance.
+
+The flag can be enabled using RUSTFLAGS environmental variable (e.g. RUSTFLAGS="--cfg serpent_no_unroll") or by modifying .cargo/config.
+
 ## Minimum Supported Rust Version
 
 Rust **1.65** or higher.

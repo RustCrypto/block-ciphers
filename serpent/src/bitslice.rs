@@ -1,4 +1,3 @@
-//!
 //! Serpent uses 8 4-bit Sboxes which were designed to be implemented using small
 //! circuits. For each block these Sboxes are applied in a bitsliced fashion.
 //!
@@ -11,7 +10,6 @@
 //!
 //! "Speeding Up Serpent", Osvik
 //! <https://www.ii.uib.no/~osvik/pub/aes3.pdf>
-//!
 
 use crate::Words;
 
