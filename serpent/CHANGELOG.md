@@ -10,10 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `serpent_no_unroll` configuration flag ([#476])
 
 ### Changed
+- Bump `cipher` dependency to v0.5
+- Edition changed to 2024 and MSRV bumped to 1.85 ([#472])
+- Relax MSRV policy and allow MSRV bumps in patch releases ([#477])
 - Improve bitslicing implementation ([#474])
 
+[#472]: https://github.com/RustCrypto/block-ciphers/pull/472
 [#474]: https://github.com/RustCrypto/block-ciphers/pull/474
 [#476]: https://github.com/RustCrypto/block-ciphers/pull/476
+[#477]: https://github.com/RustCrypto/block-ciphers/pull/477
 
 ## 0.5.1 (2022-02-17)
 ### Fixed
