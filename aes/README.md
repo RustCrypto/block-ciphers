@@ -15,8 +15,6 @@ This crate implements the low-level AES block function, and is intended
 for use for implementing higher-level constructions *only*. It is NOT
 intended for direct use in applications.
 
-[Documentation][docs-link]
-
 <img src="https://raw.githubusercontent.com/RustCrypto/media/85f62bb/img/block-ciphers/aes-round.svg" width="480px">
 
 ## Security
@@ -41,18 +39,6 @@ All implementations contained in the crate are designed to execute in constant
 time, either by relying on hardware intrinsics (i.e. AES-NI on x86/x86_64), or
 using a portable implementation based on bitslicing.
 
-## Minimum Supported Rust Version
-
-Rust **1.72** or higher.
-
-Minimum supported Rust version can be changed in future releases, but it will
-be done with a minor version bump.
-
-## SemVer Policy
-
-- All on-by-default features of this library are covered by SemVer
-- MSRV is considered exempt from SemVer as noted above
-
 ## License
 
 Licensed under either of:
@@ -75,7 +61,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-image]: https://docs.rs/aes/badge.svg
 [docs-link]: https://docs.rs/aes/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.72+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260039-block-ciphers
 [build-image]: https://github.com/RustCrypto/block-ciphers/workflows/aes/badge.svg?branch=master&event=push

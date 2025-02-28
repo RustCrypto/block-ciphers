@@ -10,8 +10,6 @@
 
 Pure Rust implementation of the [Camellia block cipher][1].
 
-[Documentation][docs-link]
-
 ## ⚠️ Security Warning: [Hazmat!][hazmat-link]
 
 This crate does not ensure ciphertexts are authentic (i.e. by using a MAC to
@@ -23,18 +21,6 @@ thoroughly assessed to ensure its operation is constant-time on common CPU
 architectures.
 
 USE AT YOUR OWN RISK!
-
-## Minimum Supported Rust Version
-
-Rust **1.65** or higher.
-
-Minimum supported Rust version can be changed in the future, but it will be
-done with a minor version bump.
-
-## SemVer Policy
-
-- All on-by-default features of this library are covered by SemVer
-- MSRV is considered exempt from SemVer as noted above
 
 ## License
 
@@ -58,7 +44,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-image]: https://docs.rs/camellia/badge.svg
 [docs-link]: https://docs.rs/camellia/
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.65+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
 [hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
 [hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
