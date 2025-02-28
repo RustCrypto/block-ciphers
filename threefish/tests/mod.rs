@@ -3,7 +3,7 @@
 #![cfg(feature = "cipher")]
 use cipher::{Block, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 use hex_literal::hex;
-use threefish::{Threefish1024, Threefish256, Threefish512};
+use threefish::{Threefish256, Threefish512, Threefish1024};
 
 struct Vector {
     key: &'static [u8],

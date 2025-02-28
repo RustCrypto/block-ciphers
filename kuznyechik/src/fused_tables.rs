@@ -1,6 +1,6 @@
 use crate::{
     consts,
-    gft::{GFT_133, GFT_148, GFT_16, GFT_192, GFT_194, GFT_251, GFT_32},
+    gft::{GFT_16, GFT_32, GFT_133, GFT_148, GFT_192, GFT_194, GFT_251},
     utils::Align16,
 };
 

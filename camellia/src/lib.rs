@@ -46,6 +46,7 @@ use core::marker::PhantomData;
 pub use cipher;
 
 use cipher::{
+    Block, BlockSizeUser, KeySizeUser, ParBlocksSizeUser,
     array::ArraySize,
     block::{
         BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
@@ -53,7 +54,6 @@ use cipher::{
     },
     consts::{U1, U16, U24, U32},
     inout::InOut,
-    Block, BlockSizeUser, KeySizeUser, ParBlocksSizeUser,
 };
 
 #[cfg(feature = "zeroize")]

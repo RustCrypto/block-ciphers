@@ -43,10 +43,10 @@ mod consts;
 pub use cipher;
 
 use cipher::{
-    consts::{U1, U16},
-    inout::InOut,
     Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
     BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, ParBlocksSizeUser,
+    consts::{U1, U16},
+    inout::InOut,
 };
 
 #[cfg(feature = "zeroize")]

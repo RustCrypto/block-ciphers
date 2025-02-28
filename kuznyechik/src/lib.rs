@@ -33,14 +33,14 @@
 
 pub use cipher;
 use cipher::{
+    AlgorithmName, BlockSizeUser, KeyInit, KeySizeUser,
     array::Array,
     consts::{U16, U32},
-    AlgorithmName, BlockSizeUser, KeyInit, KeySizeUser,
 };
 use core::fmt;
 
 #[cfg(feature = "zeroize")]
-use cipher::zeroize::{zeroize_flat_type, ZeroizeOnDrop};
+use cipher::zeroize::{ZeroizeOnDrop, zeroize_flat_type};
 
 mod consts;
 pub(crate) mod gft;

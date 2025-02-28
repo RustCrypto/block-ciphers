@@ -1,10 +1,10 @@
 use crate::{
-    consts::{P, P_INV},
-    utils::{l_step, KEYGEN},
     Block, Key,
+    consts::{P, P_INV},
+    utils::{KEYGEN, l_step},
 };
 use cipher::{
-    consts, BlockCipherDecBackend, BlockCipherEncBackend, BlockSizeUser, InOut, ParBlocksSizeUser,
+    BlockCipherDecBackend, BlockCipherEncBackend, BlockSizeUser, InOut, ParBlocksSizeUser, consts,
 };
 
 pub(super) type RoundKeys = [Block; 10];

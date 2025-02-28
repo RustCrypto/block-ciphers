@@ -1,14 +1,16 @@
+#![allow(unsafe_op_in_unsafe_fn)]
+
 use crate::{
-    consts::{P, P_INV},
-    fused_tables::{Table, DEC_TABLE, ENC_TABLE},
-    utils::KEYGEN,
     Block, Key,
+    consts::{P, P_INV},
+    fused_tables::{DEC_TABLE, ENC_TABLE, Table},
+    utils::KEYGEN,
 };
 use cipher::{
-    consts::{U16, U4},
+    BlockCipherDecBackend, BlockCipherEncBackend, BlockSizeUser, ParBlocks, ParBlocksSizeUser,
+    consts::{U4, U16},
     inout::InOut,
     typenum::Unsigned,
-    BlockCipherDecBackend, BlockCipherEncBackend, BlockSizeUser, ParBlocks, ParBlocksSizeUser,
 };
 
 #[cfg(target_arch = "x86")]

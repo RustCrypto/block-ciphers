@@ -3,7 +3,7 @@ use core::ops::{Add, BitXor, Mul};
 use cipher::{
     array::{Array, ArraySize},
     crypto_common::BlockSizes,
-    typenum::{Diff, Prod, Quot, Sum, U1, U16, U2, U4, U8},
+    typenum::{Diff, Prod, Quot, Sum, U1, U2, U4, U8, U16},
 };
 
 pub type BlockSize<W> = Prod<<W as Word>::Bytes, U2>;

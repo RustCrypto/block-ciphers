@@ -43,10 +43,10 @@ pub use cipher;
 mod consts;
 
 use cipher::{
-    consts::{U1, U16, U32},
     AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut,
     InvalidLength, Key, KeyInit, KeySizeUser, ParBlocksSizeUser,
+    consts::{U1, U16, U32},
 };
 use core::fmt;
 
