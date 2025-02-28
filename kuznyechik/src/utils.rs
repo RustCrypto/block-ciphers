@@ -1,4 +1,4 @@
-use crate::gft::{GFT_133, GFT_148, GFT_16, GFT_192, GFT_194, GFT_251, GFT_32};
+use crate::gft::{GFT_16, GFT_32, GFT_133, GFT_148, GFT_192, GFT_194, GFT_251};
 
 #[inline(always)]
 const fn get_idx(b: usize, i: usize) -> usize {

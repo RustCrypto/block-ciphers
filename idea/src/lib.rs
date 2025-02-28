@@ -23,10 +23,10 @@
 pub use cipher;
 
 use cipher::{
-    consts::{U1, U16, U8},
     AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
     KeyInit, KeySizeUser, ParBlocksSizeUser,
+    consts::{U1, U8, U16},
 };
 use core::fmt;
 

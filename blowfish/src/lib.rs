@@ -21,12 +21,12 @@
 
 pub use cipher;
 
-use byteorder::{ByteOrder, BE, LE};
+use byteorder::{BE, ByteOrder, LE};
 use cipher::{
-    consts::{U1, U56, U8},
     AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut,
     InvalidLength, Key, KeyInit, KeySizeUser, ParBlocksSizeUser,
+    consts::{U1, U8, U56},
 };
 use core::fmt;
 use core::marker::PhantomData;

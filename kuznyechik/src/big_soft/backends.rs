@@ -1,12 +1,12 @@
 use crate::{
-    consts::{P, P_INV},
-    fused_tables::{Table, DEC_TABLE, ENC_TABLE},
-    utils::KEYGEN,
     Block, Key,
+    consts::{P, P_INV},
+    fused_tables::{DEC_TABLE, ENC_TABLE, Table},
+    utils::KEYGEN,
 };
 use cipher::{
-    consts, Array, BlockCipherDecBackend, BlockCipherEncBackend, BlockSizeUser, InOut, ParBlocks,
-    ParBlocksSizeUser,
+    Array, BlockCipherDecBackend, BlockCipherEncBackend, BlockSizeUser, InOut, ParBlocks,
+    ParBlocksSizeUser, consts,
 };
 
 pub(super) type RoundKeys = [u128; 10];

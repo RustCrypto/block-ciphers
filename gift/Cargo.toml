@@ -4,8 +4,8 @@ version = "0.0.1-pre.0"
 description = "Pure Rust implementation of the Gift block cipher"
 authors = ["RustCrypto Developers", "Schmid7k"]
 license = "MIT OR Apache-2.0"
-rust-version = "1.65"
-edition = "2021"
+rust-version = "1.85"
+edition = "2024"
 readme = "README.md"
 documentation = "https://docs.rs/gift-cipher"
 repository = "https://github.com/RustCrypto/block-ciphers"
@@ -13,11 +13,11 @@ keywords = ["crypto", "gift", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "=0.5.0-pre.7"
+cipher = "=0.5.0-pre.8"
 
 [dev-dependencies]
-cipher = { version = "=0.5.0-pre.7", features = ["dev"] }
-hex-literal = "0.4"
+cipher = { version = "=0.5.0-pre.8", features = ["dev"] }
+hex-literal = "1"
 
 [features]
 zeroize = ["cipher/zeroize"]

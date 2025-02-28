@@ -42,10 +42,10 @@
 #![warn(missing_docs, rust_2018_idioms)]
 
 use cipher::{
-    consts::{U1, U16},
     AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
     KeyInit, KeySizeUser, ParBlocksSizeUser,
+    consts::{U1, U16},
 };
 use core::fmt;
 
