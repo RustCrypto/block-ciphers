@@ -47,66 +47,6 @@ pub struct Serpent {
     round_keys: RoundKeys,
 }
 
-#[inline]
-fn linear_transform_bitslice(mut words: Words) -> Words {
-    words[0] = words[0].rotate_left(13);
-    words[2] = words[2].rotate_left(3);
-    words[1] ^= words[0] ^ words[2];
-    words[3] = words[3] ^ words[2] ^ (words[0] << 3);
-    words[1] = words[1].rotate_left(1);
-    words[3] = words[3].rotate_left(7);
-    words[0] ^= words[1] ^ words[3];
-    words[2] = words[2] ^ words[3] ^ (words[1] << 7);
-    words[0] = words[0].rotate_left(5);
-    words[2] = words[2].rotate_left(22);
-    words
-}
-
-#[inline]
-fn linear_transform_inverse_bitslice(mut words: Words) -> Words {
-    words[2] = words[2].rotate_right(22);
-    words[0] = words[0].rotate_right(5);
-    words[2] = words[2] ^ words[3] ^ (words[1] << 7);
-    words[0] ^= words[1] ^ words[3];
-    words[3] = words[3].rotate_right(7);
-    words[1] = words[1].rotate_right(1);
-    words[3] = words[3] ^ words[2] ^ (words[0] << 3);
-    words[1] ^= words[0] ^ words[2];
-    words[2] = words[2].rotate_right(3);
-    words[0] = words[0].rotate_right(13);
-    words
-}
-
-#[inline]
-fn apply_s_bitslice(index: usize, [w1, w2, w3, w4]: Words) -> Words {
-    match index % 8 {
-        0 => bitslice::sbox_e0([w1, w2, w3, w4]),
-        1 => bitslice::sbox_e1([w1, w2, w3, w4]),
-        2 => bitslice::sbox_e2([w1, w2, w3, w4]),
-        3 => bitslice::sbox_e3([w1, w2, w3, w4]),
-        4 => bitslice::sbox_e4([w1, w2, w3, w4]),
-        5 => bitslice::sbox_e5([w1, w2, w3, w4]),
-        6 => bitslice::sbox_e6([w1, w2, w3, w4]),
-        7 => bitslice::sbox_e7([w1, w2, w3, w4]),
-        _ => unreachable!(),
-    }
-}
-
-#[inline]
-fn apply_s_inverse_bitslice(index: usize, [w1, w2, w3, w4]: Words) -> Words {
-    match index % 8 {
-        0 => bitslice::sbox_d0([w1, w2, w3, w4]),
-        1 => bitslice::sbox_d1([w1, w2, w3, w4]),
-        2 => bitslice::sbox_d2([w1, w2, w3, w4]),
-        3 => bitslice::sbox_d3([w1, w2, w3, w4]),
-        4 => bitslice::sbox_d4([w1, w2, w3, w4]),
-        5 => bitslice::sbox_d5([w1, w2, w3, w4]),
-        6 => bitslice::sbox_d6([w1, w2, w3, w4]),
-        7 => bitslice::sbox_d7([w1, w2, w3, w4]),
-        _ => unreachable!(),
-    }
-}
-
 #[inline(always)]
 fn xor(b1: Words, k: Words) -> Words {
     let mut res = [0u32; 4];
@@ -166,7 +106,7 @@ impl KeyInit for Serpent {
             let sbox_index = (ROUNDS + 3 - i) % ROUNDS;
             let [a, b, c, d]: [u32; 4] = words[4 * i..][..4].try_into().unwrap();
             // calculate keys in bitslicing mode
-            let output = apply_s_bitslice(sbox_index, [a, b, c, d]);
+            let output = bitslice::apply_s(sbox_index, [a, b, c, d]);
             for l in 0..4 {
                 k[4 * i + l] = output[l];
             }
@@ -203,12 +143,12 @@ impl BlockCipherEncBackend for Serpent {
 
         for i in 0..ROUNDS - 1 {
             let xb = xor(b, self.round_keys[i]);
-            let s = apply_s_bitslice(i, xb);
-            b = linear_transform_bitslice(s);
+            let s = bitslice::apply_s(i, xb);
+            b = bitslice::linear_transform(s);
         }
 
         let xb = xor(b, self.round_keys[ROUNDS - 1]);
-        let s = apply_s_bitslice(ROUNDS - 1, xb);
+        let s = bitslice::apply_s(ROUNDS - 1, xb);
         b = xor(s, self.round_keys[ROUNDS]);
 
         write_words(&b, block.get_out().into());
@@ -228,12 +168,12 @@ impl BlockCipherDecBackend for Serpent {
         let mut b: [u32; 4] = read_words(block.get_in().into());
 
         let s = xor(b, self.round_keys[ROUNDS]);
-        let xb = apply_s_inverse_bitslice(ROUNDS - 1, s);
+        let xb = bitslice::apply_s_inv(ROUNDS - 1, s);
         b = xor(xb, self.round_keys[ROUNDS - 1]);
 
         for i in (0..ROUNDS - 1).rev() {
-            let s = linear_transform_inverse_bitslice(b);
-            let xb = apply_s_inverse_bitslice(i, s);
+            let s = bitslice::linear_transform_inv(b);
+            let xb = bitslice::apply_s_inv(i, s);
             b = xor(xb, self.round_keys[i]);
         }
 
