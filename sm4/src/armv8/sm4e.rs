@@ -7,11 +7,10 @@
 #[cfg(feature = "zeroize")]
 use cipher::zeroize::ZeroizeOnDrop;
 use cipher::{
-    consts::{U16, U4, U8},
-    generic_array::GenericArray,
-    inout::{InOut, InOutBuf},
-    AlgorithmName, Block, BlockCipher, BlockDecrypt, BlockSizeUser, Key, KeyInit, KeySizeUser,
-    ParBlocks, ParBlocksSizeUser, Unsigned,
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
+    KeyInit, KeySizeUser, ParBlocks, ParBlocksSizeUser,
+    consts::{U4, U8, U16},
 };
 use cipher::{BlockBackend, BlockEncrypt};
 use core::{arch::aarch64::*, fmt};
@@ -92,13 +91,10 @@ macro_rules! sm4_e {
     }
 }
 
-type ParBlocks4<T> = GenericArray<Block<T>, U4>;
-type ParBlocks8<T> = GenericArray<Block<T>, U8>;
-
 #[inline]
 #[target_feature(enable = "sm4")]
-pub(super) unsafe fn sm4_encrypt4<T: BlockSizeUser>(
-    blocks: InOut<'_, '_, ParBlocks4<T>>,
+pub(super) unsafe fn sm4_encrypt4<T: ParBlocksSizeUser>(
+    blocks: InOut<'_, '_, ParBlocks<T>>,
     rk: &[uint32x4_t; 8],
 ) {
     let (in_ptr, out_ptr) = blocks.into_raw();
@@ -127,8 +123,8 @@ pub(super) unsafe fn sm4_encrypt4<T: BlockSizeUser>(
 
 #[inline]
 #[target_feature(enable = "sm4")]
-pub(super) unsafe fn sm4_encrypt8<T: BlockSizeUser>(
-    blocks: InOut<'_, '_, ParBlocks8<T>>,
+pub(super) unsafe fn sm4_encrypt8<T: ParBlocksSizeUser>(
+    blocks: InOut<'_, '_, ParBlocks<T>>,
     rk: &[uint32x4_t; 8],
 ) {
     let (in_ptr, out_ptr) = blocks.into_raw();
@@ -165,7 +161,7 @@ pub(super) unsafe fn sm4_encrypt8<T: BlockSizeUser>(
 
 #[inline]
 #[target_feature(enable = "sm4")]
-pub(super) unsafe fn sm4_encrypt1<T: BlockSizeUser>(
+pub(super) unsafe fn sm4_encrypt1<T: BlocksSizeUser>(
     block: InOut<'_, '_, Block<T>>,
     rk: &[uint32x4_t; 8],
 ) {
@@ -189,8 +185,8 @@ pub(super) unsafe fn sm4_encrypt1<T: BlockSizeUser>(
 
 #[inline]
 #[target_feature(enable = "sm4")]
-pub(super) unsafe fn sm4_decrypt4<T: BlockSizeUser>(
-    blocks: InOut<'_, '_, ParBlocks4<T>>,
+pub(super) unsafe fn sm4_decrypt4<T: ParBlocksSizeUser>(
+    blocks: InOut<'_, '_, ParBlocks<T>>,
     rk: &[uint32x4_t; 8],
 ) {
     let (in_ptr, out_ptr) = blocks.into_raw();
@@ -220,7 +216,7 @@ pub(super) unsafe fn sm4_decrypt4<T: BlockSizeUser>(
 #[inline]
 #[target_feature(enable = "sm4")]
 pub(super) unsafe fn sm4_decrypt8<T: BlockSizeUser>(
-    blocks: InOut<'_, '_, ParBlocks8<T>>,
+    blocks: InOut<'_, '_, ParBlocks<T>>,
     rk: &[uint32x4_t; 8],
 ) {
     let (in_ptr, out_ptr) = blocks.into_raw();
@@ -285,8 +281,6 @@ pub struct Sm4 {
     erk: [uint32x4_t; 8],
     drk: [uint32x4_t; 8],
 }
-
-impl BlockCipher for Sm4 {}
 
 impl KeySizeUser for Sm4 {
     type KeySize = U16;
@@ -359,8 +353,9 @@ impl BlockSizeUser for Sm4 {
     type BlockSize = U16;
 }
 
-impl BlockEncrypt for Sm4 {
-    fn encrypt_with_backend(&self, f: impl cipher::BlockClosure<BlockSize = Self::BlockSize>) {
+impl BlockCipherEncrypt for Sm4 {
+    #[inline]
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
         f.call(&mut Sm4Enc(self))
     }
 }
@@ -375,14 +370,14 @@ impl<'a> ParBlocksSizeUser for Sm4Enc<'a> {
     type ParBlocksSize = U8;
 }
 
-impl<'a> BlockBackend for Sm4Enc<'a> {
+impl<'a> BlockCipherEncBackend for Sm4Enc<'a> {
     #[inline(always)]
-    fn proc_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
+    fn encrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
         unsafe { sm4_encrypt1::<Self>(block, &self.0.erk) }
     }
 
     #[inline(always)]
-    fn proc_tail_blocks(&mut self, blocks: InOutBuf<'_, '_, Block<Self>>) {
+    fn encrypt_tail_blocks(&self, blocks: InOutBuf<'_, '_, Block<Self>>) {
         assert!(blocks.len() < Self::ParBlocksSize::USIZE);
 
         let (chunks, tail) = blocks.into_chunks::<U4>();
@@ -396,13 +391,13 @@ impl<'a> BlockBackend for Sm4Enc<'a> {
     }
 
     #[inline(always)]
-    fn proc_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
+    fn encrypt_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
         unsafe { sm4_encrypt8::<Self>(blocks, &self.0.erk) }
     }
 }
 
-impl BlockDecrypt for Sm4 {
-    fn decrypt_with_backend(&self, f: impl cipher::BlockClosure<BlockSize = Self::BlockSize>) {
+impl BlockCipherDecrypt for Sm4 {
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
         f.call(&mut Sm4Dec(self))
     }
 }
@@ -417,14 +412,14 @@ impl<'a> ParBlocksSizeUser for Sm4Dec<'a> {
     type ParBlocksSize = U8;
 }
 
-impl<'a> BlockBackend for Sm4Dec<'a> {
+impl<'a> BlockCipherDecBackend for Sm4Dec<'a> {
     #[inline(always)]
-    fn proc_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
+    fn decrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
         unsafe { sm4_decrypt1::<Self>(block, &self.0.drk) }
     }
 
     #[inline(always)]
-    fn proc_tail_blocks(&mut self, blocks: InOutBuf<'_, '_, Block<Self>>) {
+    fn decrypt_tail_blocks(&self, blocks: InOutBuf<'_, '_, Block<Self>>) {
         assert!(blocks.len() < Self::ParBlocksSize::USIZE);
 
         let (chunks, tail) = blocks.into_chunks::<U4>();
@@ -438,7 +433,7 @@ impl<'a> BlockBackend for Sm4Dec<'a> {
     }
 
     #[inline(always)]
-    fn proc_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
+    fn decrypt_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
         unsafe { sm4_decrypt8::<Self>(blocks, &self.0.drk) }
     }
 }

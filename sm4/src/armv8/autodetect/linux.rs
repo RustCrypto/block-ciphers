@@ -1,8 +1,9 @@
 #![allow(unsafe_code)]
 
 use cipher::{
-    consts::U16, AlgorithmName, BlockCipher, BlockClosure, BlockDecrypt, BlockEncrypt,
-    BlockSizeUser, Key, KeyInit, KeySizeUser,
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
+    KeyInit, KeySizeUser, ParBlocks, ParBlocksSizeUser, consts::U16,
 };
 use core::{fmt, mem::ManuallyDrop};
 
@@ -67,10 +68,8 @@ impl BlockSizeUser for Sm4 {
     type BlockSize = U16;
 }
 
-impl BlockCipher for Sm4 {}
-
-impl BlockEncrypt for Sm4 {
-    fn encrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
+impl BlockCipherEncrypt for Sm4 {
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
         unsafe {
             if self.token.get() {
                 self.cipher.sm4.encrypt_with_backend(f);
@@ -81,8 +80,8 @@ impl BlockEncrypt for Sm4 {
     }
 }
 
-impl BlockDecrypt for Sm4 {
-    fn decrypt_with_backend(&self, f: impl BlockClosure<BlockSize = U16>) {
+impl BlockCipherDecrypt for Sm4 {
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = U16>) {
         unsafe {
             if self.token.get() {
                 self.cipher.sm4.decrypt_with_backend(f);

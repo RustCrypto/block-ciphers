@@ -7,18 +7,15 @@
 #[cfg(feature = "zeroize")]
 use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 use cipher::{
-    consts::{U16, U4},
-    generic_array::GenericArray,
-    inout::InOut,
-    AlgorithmName, Block, BlockCipher, BlockDecrypt, BlockSizeUser, Key, KeyInit, KeySizeUser,
-    ParBlocks, ParBlocksSizeUser,
+    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
+    KeyInit, KeySizeUser, ParBlocks, ParBlocksSizeUser,
+    consts::{U4, U16},
 };
 use cipher::{BlockBackend, BlockEncrypt};
 use core::{arch::aarch64::*, fmt};
 
 use crate::consts::SBOX;
-
-type ParBlocks4<T> = GenericArray<Block<T>, U4>;
 
 #[inline]
 #[target_feature(enable = "neon")]
@@ -45,8 +42,8 @@ unsafe fn sbox_table_lookup(
 
 #[inline]
 #[target_feature(enable = "neon")]
-pub(super) unsafe fn sm4_process4<T: BlockSizeUser>(
-    blocks: InOut<'_, '_, ParBlocks4<T>>,
+pub(super) unsafe fn sm4_process4<T: ParBlocksSizeUser>(
+    blocks: InOut<'_, '_, ParBlocks<T>>,
     rk: &[u32; 32],
     encrypt: bool,
 ) {
@@ -161,8 +158,6 @@ pub struct Sm4 {
     rk: [u32; 32],
 }
 
-impl BlockCipher for Sm4 {}
-
 impl KeySizeUser for Sm4 {
     type KeySize = U16;
 }
@@ -203,8 +198,9 @@ impl BlockSizeUser for Sm4 {
     type BlockSize = U16;
 }
 
-impl BlockEncrypt for Sm4 {
-    fn encrypt_with_backend(&self, f: impl cipher::BlockClosure<BlockSize = Self::BlockSize>) {
+impl BlockCipherEncrypt for Sm4 {
+    #[inline]
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
         f.call(&mut Sm4Enc(self))
     }
 }
@@ -219,20 +215,20 @@ impl<'a> ParBlocksSizeUser for Sm4Enc<'a> {
     type ParBlocksSize = U4;
 }
 
-impl<'a> BlockBackend for Sm4Enc<'a> {
+impl<'a> BlockCipherEncBackend for Sm4Enc<'a> {
     #[inline(always)]
-    fn proc_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
+    fn encrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
         crate::soft::sm4_encrypt::<Self>(block, &self.0.rk);
     }
 
     #[inline(always)]
-    fn proc_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
+    fn encrypt_par_blocks(&self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
         unsafe { sm4_process4::<Self>(blocks, &self.0.rk, true) }
     }
 }
 
-impl BlockDecrypt for Sm4 {
-    fn decrypt_with_backend(&self, f: impl cipher::BlockClosure<BlockSize = Self::BlockSize>) {
+impl BlockCipherDecrypt for Sm4 {
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
         f.call(&mut Sm4Dec(self))
     }
 }
@@ -247,14 +243,14 @@ impl<'a> ParBlocksSizeUser for Sm4Dec<'a> {
     type ParBlocksSize = U4;
 }
 
-impl<'a> BlockBackend for Sm4Dec<'a> {
+impl<'a> BlockCipherDecBackend for Sm4Dec<'a> {
     #[inline(always)]
-    fn proc_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
+    fn decrypt_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
         crate::soft::sm4_decrypt::<Self>(block, &self.0.rk);
     }
 
     #[inline(always)]
-    fn proc_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
+    fn decrypt_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
         unsafe { sm4_process4::<Self>(blocks, &self.0.rk, false) }
     }
 }
