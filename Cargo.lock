@@ -206,7 +206,9 @@ dependencies = [
 name = "sm4"
 version = "0.6.0-pre"
 dependencies = [
+ "cfg-if",
  "cipher",
+ "cpufeatures",
  "hex-literal",
 ]
 
