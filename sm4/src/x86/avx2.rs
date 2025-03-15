@@ -328,21 +328,21 @@ impl BlockSizeUser for Sm4 {
 impl BlockCipherEncrypt for Sm4 {
     #[inline]
     fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
-        f.call(&mut Sm4Enc(self))
+        f.call(&Sm4Enc(self))
     }
 }
 
 pub struct Sm4Enc<'a>(&'a Sm4);
 
-impl<'a> BlockSizeUser for Sm4Enc<'a> {
+impl BlockSizeUser for Sm4Enc<'_> {
     type BlockSize = U16;
 }
 
-impl<'a> ParBlocksSizeUser for Sm4Enc<'a> {
+impl ParBlocksSizeUser for Sm4Enc<'_> {
     type ParBlocksSize = U8;
 }
 
-impl<'a> BlockCipherEncBackend for Sm4Enc<'a> {
+impl BlockCipherEncBackend for Sm4Enc<'_> {
     #[inline(always)]
     fn encrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
         crate::soft::sm4_encrypt::<Self>(block, &self.0.rk);
@@ -356,21 +356,21 @@ impl<'a> BlockCipherEncBackend for Sm4Enc<'a> {
 
 impl BlockCipherDecrypt for Sm4 {
     fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
-        f.call(&mut Sm4Dec(self))
+        f.call(&Sm4Dec(self))
     }
 }
 
 pub struct Sm4Dec<'a>(&'a Sm4);
 
-impl<'a> BlockSizeUser for Sm4Dec<'a> {
+impl BlockSizeUser for Sm4Dec<'_> {
     type BlockSize = U16;
 }
 
-impl<'a> ParBlocksSizeUser for Sm4Dec<'a> {
+impl ParBlocksSizeUser for Sm4Dec<'_> {
     type ParBlocksSize = U8;
 }
 
-impl<'a> BlockCipherDecBackend for Sm4Dec<'a> {
+impl BlockCipherDecBackend for Sm4Dec<'_> {
     #[inline(always)]
     fn decrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
         crate::soft::sm4_decrypt::<Self>(block, &self.0.rk);

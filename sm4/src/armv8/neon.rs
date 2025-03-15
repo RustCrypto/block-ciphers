@@ -200,7 +200,7 @@ impl BlockSizeUser for Sm4 {
 impl BlockCipherEncrypt for Sm4 {
     #[inline]
     fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
-        f.call(&mut Sm4Enc(self))
+        f.call(&Sm4Enc(self))
     }
 }
 
@@ -228,7 +228,7 @@ impl<'a> BlockCipherEncBackend for Sm4Enc<'a> {
 
 impl BlockCipherDecrypt for Sm4 {
     fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
-        f.call(&mut Sm4Dec(self))
+        f.call(&Sm4Dec(self))
     }
 }
 
