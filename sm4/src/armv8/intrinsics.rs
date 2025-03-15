@@ -1,6 +1,6 @@
 //! ARMv8 extension intrinsics
 
-#![allow(unsafe_code)]
+#![allow(unsafe_code, unsafe_op_in_unsafe_fn)]
 
 use core::arch::{aarch64::*, asm};
 

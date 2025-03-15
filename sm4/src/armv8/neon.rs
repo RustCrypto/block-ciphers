@@ -2,7 +2,7 @@
 //!
 //! Implementation was borrowed from <https://www.cnblogs.com/kentle/p/15585447.html> by kentle.
 
-#![allow(unsafe_code)]
+#![allow(unsafe_code, unsafe_op_in_unsafe_fn)]
 
 #[cfg(feature = "zeroize")]
 use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
@@ -12,7 +12,6 @@ use cipher::{
     KeyInit, KeySizeUser, ParBlocks, ParBlocksSizeUser,
     consts::{U4, U16},
 };
-use cipher::{BlockBackend, BlockEncrypt};
 use core::{arch::aarch64::*, fmt};
 
 use crate::consts::SBOX;
@@ -245,12 +244,12 @@ impl<'a> ParBlocksSizeUser for Sm4Dec<'a> {
 
 impl<'a> BlockCipherDecBackend for Sm4Dec<'a> {
     #[inline(always)]
-    fn decrypt_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
+    fn decrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
         crate::soft::sm4_decrypt::<Self>(block, &self.0.rk);
     }
 
     #[inline(always)]
-    fn decrypt_par_blocks(&mut self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
+    fn decrypt_par_blocks(&self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
         unsafe { sm4_process4::<Self>(blocks, &self.0.rk, false) }
     }
 }

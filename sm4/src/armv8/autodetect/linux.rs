@@ -1,9 +1,8 @@
 #![allow(unsafe_code)]
 
 use cipher::{
-    AlgorithmName, Block, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
-    BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
-    KeyInit, KeySizeUser, ParBlocks, ParBlocksSizeUser, consts::U16,
+    AlgorithmName, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncClosure,
+    BlockCipherEncrypt, BlockSizeUser, Key, KeyInit, KeySizeUser, consts::U16,
 };
 use core::{fmt, mem::ManuallyDrop};
 
