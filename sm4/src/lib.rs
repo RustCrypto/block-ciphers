@@ -26,7 +26,7 @@ mod consts;
 mod soft;
 
 cfg_if! {
-    if #[cfg(all(target_arch = "aarch64", sm4_armv8, not(sm4_force_soft)))] {
+    if #[cfg(all(target_arch = "aarch64", not(sm4_force_soft)))] {
         mod armv8;
         pub use self::armv8::autodetect::*;
     } else if #[cfg(all(
