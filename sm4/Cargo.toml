@@ -29,3 +29,9 @@ zeroize = ["cipher/zeroize"]
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(sm4_armv8)',
+    'cfg(sm4_force_soft)',
+] }
