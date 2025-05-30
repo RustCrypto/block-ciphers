@@ -1,6 +1,6 @@
 [package]
 name = "gift-cipher"
-version = "0.0.1-pre.0"
+version = "0.0.1-rc.0"
 description = "Pure Rust implementation of the Gift block cipher"
 authors = ["RustCrypto Developers", "Schmid7k"]
 license = "MIT OR Apache-2.0"
@@ -13,10 +13,10 @@ keywords = ["crypto", "gift", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "=0.5.0-pre.8"
+cipher = "0.5.0-rc.0"
 
 [dev-dependencies]
-cipher = { version = "=0.5.0-pre.8", features = ["dev"] }
+cipher = { version = "0.5.0-rc.0", features = ["dev"] }
 hex-literal = "1"
 
 [features]

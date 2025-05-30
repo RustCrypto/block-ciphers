@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "aes"
-version = "0.9.0-pre.3"
+version = "0.9.0-rc.0"
 dependencies = [
  "cfg-if",
  "cipher",
@@ -23,7 +23,7 @@ dependencies = [
 
 [[package]]
 name = "belt-block"
-version = "0.2.0-pre.3"
+version = "0.2.0-rc.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -37,7 +37,7 @@ checksum = "4a859067dcb257cb2ae028cb821399b55140b76fb8b2a360e052fe109019db43"
 
 [[package]]
 name = "blowfish"
-version = "0.10.0-pre.3"
+version = "0.10.0-rc.0"
 dependencies = [
  "byteorder",
  "cipher",
@@ -81,9 +81,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "cipher"
-version = "0.5.0-pre.8"
+version = "0.5.0-rc.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "276974d2acb7cf592603150941fc1ff6442acdeb1dc653ac2825928f4703c131"
+checksum = "bd4ef774202f1749465fc7cf88d70fc30620e8cacd5429268f4bff7d003bd976"
 dependencies = [
  "blobby",
  "crypto-common",
@@ -102,16 +102,16 @@ dependencies = [
 
 [[package]]
 name = "crypto-common"
-version = "0.2.0-rc.2"
+version = "0.2.0-rc.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "170d71b5b14dec99db7739f6fc7d6ec2db80b78c3acb77db48392ccc3d8a9ea0"
+checksum = "8a23fa214dea9efd4dacee5a5614646b30216ae0f05d4bb51bafb50e9da1c5be"
 dependencies = [
  "hybrid-array",
 ]
 
 [[package]]
 name = "des"
-version = "0.9.0-pre.3"
+version = "0.9.0-rc.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -119,7 +119,7 @@ dependencies = [
 
 [[package]]
 name = "gift-cipher"
-version = "0.0.1-pre.0"
+version = "0.0.1-rc.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -159,7 +159,7 @@ dependencies = [
 
 [[package]]
 name = "kuznyechik"
-version = "0.9.0-pre.3"
+version = "0.9.0-rc.0"
 dependencies = [
  "cfg-if",
  "cipher",
@@ -174,7 +174,7 @@ checksum = "875b3680cb2f8f71bdcf9a30f38d48282f5d3c95cbf9b3fa57269bb5d5c06828"
 
 [[package]]
 name = "magma"
-version = "0.10.0-pre.3"
+version = "0.10.0-rc.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -243,7 +243,7 @@ checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
 
 [[package]]
 name = "xtea"
-version = "0.0.1-pre.0"
+version = "0.0.1-rc.0"
 dependencies = [
  "cipher",
 ]
