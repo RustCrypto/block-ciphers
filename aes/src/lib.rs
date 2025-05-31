@@ -35,18 +35,26 @@
 //! runtime. On other platforms the `aes` target feature must be enabled via
 //! RUSTFLAGS.
 //!
-//! ## `x86`/`x86_64` intrinsics (AES-NI)
+//! ## `x86`/`x86_64` intrinsics (AES-NI and VAES)
 //! By default this crate uses runtime detection on `i686`/`x86_64` targets
-//! in order to determine if AES-NI is available, and if it is not, it will
-//! fallback to using a constant-time software implementation.
+//! in order to determine if AES-NI and VAES are available, and if they are
+//! not, it will fallback to using a constant-time software implementation.
 //!
-//! Passing `RUSTFLAGS=-C target-feature=+aes,+ssse3` explicitly at compile-time
-//! will override runtime detection and ensure that AES-NI is always used.
+//! Passing `RUSTFLAGS=-Ctarget-feature=+aes,+ssse3` explicitly at
+//! compile-time will override runtime detection and ensure that AES-NI is
+//! used or passing `RUSTFLAGS=-Ctarget-feature=+aes,+avx512f,+ssse3,+vaes`
+//! will ensure that AESNI and VAES are always used.
+//!
 //! Programs built in this manner will crash with an illegal instruction on
-//! CPUs which do not have AES-NI enabled.
+//! CPUs which do not have AES-NI and VAES enabled.
+//!
+//! Note: It is possible to disable the use of AVX512 for the VAES backend
+//! and limiting it to AVX (256-bit) by specifying `--cfg avx512_disable`.
+//! For CPUs which support VAES but not AVX512, the 256-bit VAES backend will
+//! be selected automatically without needing to specify this flag.
 //!
 //! Note: runtime detection is not possible on SGX targets. Please use the
-//! afforementioned `RUSTFLAGS` to leverage AES-NI on these targets.
+//! afforementioned `RUSTFLAGS` to leverage AES-NI and VAES on these targets.
 //!
 //! # Examples
 //! ```
@@ -134,8 +142,8 @@ cfg_if! {
         any(target_arch = "x86", target_arch = "x86_64"),
         not(aes_force_soft)
     ))] {
+        mod x86;
         mod autodetect;
-        mod ni;
         pub use autodetect::*;
     } else {
         pub use soft::*;
@@ -216,19 +224,19 @@ mod tests {
 
         #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), not(aes_force_soft)))]
         {
-            use super::ni;
+            use super::x86;
 
             cpufeatures::new!(aes_intrinsics, "aes");
             if aes_intrinsics::get() {
-                test_for(ni::Aes128::new(&key_128));
-                test_for(ni::Aes128Enc::new(&key_128));
-                test_for(ni::Aes128Dec::new(&key_128));
-                test_for(ni::Aes192::new(&key_192));
-                test_for(ni::Aes192Enc::new(&key_192));
-                test_for(ni::Aes192Dec::new(&key_192));
-                test_for(ni::Aes256::new(&key_256));
-                test_for(ni::Aes256Enc::new(&key_256));
-                test_for(ni::Aes256Dec::new(&key_256));
+                test_for(x86::Aes128::new(&key_128));
+                test_for(x86::Aes128Enc::new(&key_128));
+                test_for(x86::Aes128Dec::new(&key_128));
+                test_for(x86::Aes192::new(&key_192));
+                test_for(x86::Aes192Enc::new(&key_192));
+                test_for(x86::Aes192Dec::new(&key_192));
+                test_for(x86::Aes256::new(&key_256));
+                test_for(x86::Aes256Enc::new(&key_256));
+                test_for(x86::Aes256Dec::new(&key_256));
             }
         }
 

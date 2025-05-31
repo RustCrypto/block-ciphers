@@ -16,6 +16,7 @@ defaults:
 env:
   CARGO_INCREMENTAL: 0
   RUSTFLAGS: "-Dwarnings"
+  SDE_FULL_VERSION: "9.53.0-2025-03-16"
 
 jobs:
   # Builds for no_std platforms
@@ -68,7 +69,7 @@ jobs:
     env:
       CARGO_INCREMENTAL: 0
       RUSTDOCFLAGS: "-C target-feature=+aes,+ssse3"
-      RUSTFLAGS: "-Dwarnings -C target-feature=+aes,+ssse3"
+      RUSTFLAGS: "-Dwarnings -C target-feature=+aes,+ssse3 --cfg avx512_disable --cfg avx256_disable"
     strategy:
       matrix:
         include:
@@ -96,6 +97,80 @@ jobs:
       - run: cargo test --target ${{ matrix.target }}
       - run: cargo test --target ${{ matrix.target }} --features hazmat
       - run: cargo test --target ${{ matrix.target }} --all-features
+
+  # Tests for the VAES AVX backend
+  vaes256:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_INCREMENTAL: 0
+      RUSTFLAGS: "-Dwarnings --cfg avx512_disable"
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            rust: nightly-2025-05-28
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Intel SDE
+        run: |
+          curl -JLO "https://downloadmirror.intel.com/850782/sde-external-${{ env.SDE_FULL_VERSION }}-lin.tar.xz"
+          tar xvf sde-external-${{ env.SDE_FULL_VERSION }}-lin.tar.xz -C /opt
+          echo "/opt/sde-external-${{ env.SDE_FULL_VERSION }}-lin" >> $GITHUB_PATH
+      - uses: RustCrypto/actions/cargo-cache@master
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          targets: ${{ matrix.target }}
+      # NOTE: Write a `.cargo/config.toml` to configure the target for VAES
+      # NOTE: We use intel-sde as the runner since not all GitHub CI hosts support AVX512
+      - name: write .cargo/config.toml
+        shell: bash
+        run: |
+          cd ../aes/..
+          mkdir -p .cargo
+          echo '[target.${{ matrix.target }}]'  > .cargo/config.toml
+          echo 'runner = "sde64 -future --"'   >> .cargo/config.toml
+      - run: ${{ matrix.deps }}
+      - run: cargo test --target ${{ matrix.target }}
+      - run: cargo test --target ${{ matrix.target }} --features hazmat
+      - run: cargo test --target ${{ matrix.target }} --all-features
+
+  # Tests for the VAES AVX512 backend
+  vaes512:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_INCREMENTAL: 0
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            rust: nightly-2025-05-28
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Intel SDE
+        run: |
+          curl -JLO "https://downloadmirror.intel.com/850782/sde-external-${{ env.SDE_FULL_VERSION }}-lin.tar.xz"
+          tar xvf sde-external-${{ env.SDE_FULL_VERSION }}-lin.tar.xz -C /opt
+          echo "/opt/sde-external-${{ env.SDE_FULL_VERSION }}-lin" >> $GITHUB_PATH
+      - uses: RustCrypto/actions/cargo-cache@master
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          targets: ${{ matrix.target }}
+      # NOTE: Write a `.cargo/config.toml` to configure the target for VAES
+      # NOTE: We use intel-sde as the runner since not all GitHub CI hosts support AVX512
+      - name: write .cargo/config.toml
+        shell: bash
+        run: |
+          cd ../aes/..
+          mkdir -p .cargo
+          echo '[target.${{ matrix.target }}]'  > .cargo/config.toml
+          echo 'runner = "sde64 -future --"'   >> .cargo/config.toml
+      - run: ${{ matrix.deps }}
+      - run: cargo test --target ${{ matrix.target }}
+      - run: cargo test --target ${{ matrix.target }} --features hazmat
+      - run: cargo test --target ${{ matrix.target }} --all-features
+
 
   # Tests for CPU feature autodetection with fallback to portable software implementation
   autodetect:

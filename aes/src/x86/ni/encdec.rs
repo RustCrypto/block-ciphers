@@ -1,14 +1,14 @@
 #![allow(unsafe_op_in_unsafe_fn)]
 
-use super::arch::*;
 use crate::Block;
+use crate::x86::arch::*;
 use cipher::{
     array::{Array, ArraySize},
     inout::InOut,
 };
 
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn encrypt<const KEYS: usize>(
+pub(crate) unsafe fn encrypt<const KEYS: usize>(
     keys: &[__m128i; KEYS],
     block: InOut<'_, '_, Block>,
 ) {
@@ -25,7 +25,7 @@ pub(super) unsafe fn encrypt<const KEYS: usize>(
 }
 
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn decrypt<const KEYS: usize>(
+pub(crate) unsafe fn decrypt<const KEYS: usize>(
     keys: &[__m128i; KEYS],
     block: InOut<'_, '_, Block>,
 ) {
@@ -42,7 +42,7 @@ pub(super) unsafe fn decrypt<const KEYS: usize>(
 }
 
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn encrypt_par<const KEYS: usize, ParBlocks: ArraySize>(
+pub(crate) unsafe fn encrypt_par<const KEYS: usize, ParBlocks: ArraySize>(
     keys: &[__m128i; KEYS],
     blocks: InOut<'_, '_, Array<Block, ParBlocks>>,
 ) {
@@ -75,7 +75,7 @@ pub(super) unsafe fn encrypt_par<const KEYS: usize, ParBlocks: ArraySize>(
 }
 
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn decrypt_par<const KEYS: usize, ParBlocks: ArraySize>(
+pub(crate) unsafe fn decrypt_par<const KEYS: usize, ParBlocks: ArraySize>(
     keys: &[__m128i; KEYS],
     blocks: InOut<'_, '_, Array<Block, ParBlocks>>,
 ) {
