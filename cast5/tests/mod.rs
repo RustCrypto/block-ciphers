@@ -38,7 +38,7 @@ fn rfc2144_b1() {
 /// Test based on RFC 2144 Appendix B.2
 /// https://tools.ietf.org/html/rfc2144#appendix-B.1
 #[test]
-fn full_maintance_test() {
+fn full_maintenance_test() {
     let a = hex!("0123456712345678234567893456789A");
     let b = hex!("0123456712345678234567893456789A");
 
