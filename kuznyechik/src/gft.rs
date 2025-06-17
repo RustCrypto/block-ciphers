@@ -1,4 +1,4 @@
-//! Pre-computed mutliplication tables for coefficients of the linear transform
+//! Pre-computed multiplication tables for coefficients of the linear transform
 
 pub(crate) const GFT_16: [u8; 256] = mul_table_gf256(16);
 pub(crate) const GFT_32: [u8; 256] = mul_table_gf256(32);
