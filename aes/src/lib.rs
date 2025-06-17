@@ -79,7 +79,7 @@
 //! // Implementation supports parallel block processing. Number of blocks
 //! // processed in parallel depends in general on hardware capabilities.
 //! // This is achieved by instruction-level parallelism (ILP) on a single
-//! // CPU core, which is differen from multi-threaded parallelism.
+//! // CPU core, which is different from multi-threaded parallelism.
 //! let mut blocks = [block; 100];
 //! cipher.encrypt_blocks(&mut blocks);
 //!
