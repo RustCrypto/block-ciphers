@@ -54,7 +54,7 @@
 //! be selected automatically without needing to specify this flag.
 //!
 //! Note: runtime detection is not possible on SGX targets. Please use the
-//! afforementioned `RUSTFLAGS` to leverage AES-NI and VAES on these targets.
+//! aforementioned `RUSTFLAGS` to leverage AES-NI and VAES on these targets.
 //!
 //! # Examples
 //! ```
@@ -79,7 +79,7 @@
 //! // Implementation supports parallel block processing. Number of blocks
 //! // processed in parallel depends in general on hardware capabilities.
 //! // This is achieved by instruction-level parallelism (ILP) on a single
-//! // CPU core, which is differen from multi-threaded parallelism.
+//! // CPU core, which is different from multi-threaded parallelism.
 //! let mut blocks = [block; 100];
 //! cipher.encrypt_blocks(&mut blocks);
 //!

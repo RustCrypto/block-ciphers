@@ -1,0 +1,21 @@
+[files]
+extend-exclude = [
+    ".git/"
+]
+
+[default]
+extend-ignore-re = [
+    # Patterns which appear to be 32 or more hex characters
+    '\b[0-9A-H+/]{32,}\b',
+    # Test in belt-block
+    '\b5C07DAA4\b',
+    # Test in threefish
+    '\b8927673D5C1CAF3D\b',
+]
+
+[default.extend-words]
+"GOST" = "GOST"
+# encryption-decryption-encryption acronym in des
+"EDE" = "EDE"
+# Function name in aria
+"fo" = "fo"
