@@ -35,6 +35,13 @@
 //! runtime. On other platforms the `aes` target feature must be enabled via
 //! RUSTFLAGS.
 //!
+//! ## RISC-V rv64 (scalar) {Zkne, ZKnd} extensions
+//!
+//! Support is available for the RISC-V rv64 scalar crypto extensions for AES. This
+//! is not currently autodetected at runtime. In order to enable, you need to
+//! enable the appropriate target features at compile time. For example:
+//! `RUSTFLAGS=-C target-feature=+zkne,+zknd`.
+//!
 //! ## `x86`/`x86_64` intrinsics (AES-NI and VAES)
 //! By default this crate uses runtime detection on `i686`/`x86_64` targets
 //! in order to determine if AES-NI and VAES are available, and if they are
@@ -123,12 +130,26 @@
 )]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
+#![cfg_attr(
+    all(any(target_arch = "riscv64"), riscv_zkned),
+    feature(riscv_ext_intrinsics)
+)]
 
 #[cfg(feature = "hazmat")]
 pub mod hazmat;
 
 #[macro_use]
 mod macros;
+#[cfg_attr(not(any(
+    target_arch = "aarch64",
+    target_arch = "x86",
+    target_arch = "x86_64",
+)),
+// Architectures that have hardware-support backends, but that do not use
+// `autodetect` -- like RISC-V 64 -- will generate warnings about unused
+// definitions in `soft`. We silence them once here in order to avoid cluttering
+// `soft` with architecture specific conditionals.
+allow(unused))]
 mod soft;
 
 use cfg_if::cfg_if;
@@ -138,6 +159,9 @@ cfg_if! {
         mod armv8;
         mod autodetect;
         pub use autodetect::*;
+    } else if #[cfg(all(target_arch = "riscv64", riscv_zkned))] {
+        mod riscv;
+        pub use riscv::rv64::*;
     } else if #[cfg(all(
         any(target_arch = "x86", target_arch = "x86_64"),
         not(aes_force_soft)
