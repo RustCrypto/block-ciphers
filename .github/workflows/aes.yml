@@ -69,7 +69,7 @@ jobs:
     env:
       CARGO_INCREMENTAL: 0
       RUSTDOCFLAGS: "-C target-feature=+aes,+ssse3"
-      RUSTFLAGS: "-Dwarnings -C target-feature=+aes,+ssse3 --cfg aes_avx512_disable --cfg aes_avx256_disable"
+      RUSTFLAGS: "-Dwarnings -C target-feature=+aes,+ssse3"
     strategy:
       matrix:
         include:
@@ -103,7 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CARGO_INCREMENTAL: 0
-      RUSTFLAGS: "-Dwarnings --cfg aes_avx512_disable"
+      RUSTFLAGS: "-Dwarnings --cfg aes_avx256"
     strategy:
       matrix:
         include:
@@ -140,6 +140,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CARGO_INCREMENTAL: 0
+      RUSTFLAGS: "-Dwarnings --cfg aes_avx512"
     strategy:
       matrix:
         include:
