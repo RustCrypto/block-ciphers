@@ -323,6 +323,12 @@ jobs:
           - target: riscv64gc-unknown-linux-gnu
             rustflags: '-Ctarget-feature=+zkne,+zknd'
             rust: nightly
+          - target: riscv64gc-unknown-linux-gnu
+            rustflags: '-Ctarget-feature=+v,+zvkned --cfg=aes_zvkned'
+            rust: nightly
+          - target: riscv64gc-unknown-linux-gnu
+            rustflags: '-Ctarget-feature=+zkne,+zknd,+v,+zvkned --cfg=aes_zvkned'
+            rust: nightly
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -334,7 +340,9 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           targets: ${{ matrix.target }}
-      - uses: RustCrypto/actions/cross-install@master
+      - run: cargo install cross --git https://github.com/cross-rs/cross --rev e281947ca900da425e4ecea7483cfde646c8a1ea
+        env:
+          RUSTFLAGS: "-Dwarning -Astatic-mut-refs"
       - run: cross test --package aes --target ${{ matrix.target }}
         env:
           RUSTFLAGS: "-Dwarning ${{ matrix.rustflags }}"

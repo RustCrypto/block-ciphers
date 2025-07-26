@@ -1,50 +1,54 @@
-#![cfg_attr(all(riscv_zkned, riscv_zvkned),
-// When RVV crypto (Zvkned) and Scalar crypto (Zkn{ed}) is enabled, RVV will use
-// Scalar crypto AES-192 definitions. But the reset of the definitions from this
-// module will be unused, so we silence them once here.
-allow(unused))]
-
-//! AES block cipher implementation for RISC-V 64 using Scalar Cryptography Extensions: Zkne, Zknd
+//! AES block cipher implementation using the RISC-V Vector Cryptography Extensions: Zvkned
 //!
-//! RISC-V Scalar Cryptography Extension v1.0.1:
-//! https://github.com/riscv/riscv-crypto/releases/download/v1.0.1-scalar/riscv-crypto-spec-scalar-v1.0.1.pdf
+//! RISC-V Vector Cryptography Extension v1.0.0:
+//! https://github.com/riscv/riscv-crypto/releases/download/v1.0.0/riscv-crypto-spec-vector.pdf
 //!
 //! For reference, see the following other implementations:
 //!
-//!     1. The RISC-V Cryptography Extensions "benchmarks" reference for RISC-V 64 with Zkn{ed}:
-//!     https://github.com/riscv/riscv-crypto/tree/main/benchmarks/aes/zscrypto_rv64
+//!     1. The RISC-V Cryptography Extensions vector code samples AES-CBC proof of concept with Zvkned:
+//!     https://github.com/riscv/riscv-crypto/blob/main/doc/vector/code-samples/zvkned.s
 //!
-//!     2. The OpenSSL implementation for RISC-V 64 with Zkn{ed}:
-//!     https://github.com/openssl/openssl/blob/master/crypto/aes/asm/aes-riscv64-zkn.pl
+//!     2. The OpenSSL implementation for RISC-V 64 with Zvkned:
+//!     https://github.com/openssl/openssl/blob/master/crypto/aes/asm/aes-riscv64-zvkned.pl
 
-#![cfg(not(all(target_feature = "zkne", target_feature = "zknd")))]
-compile_error!("module requires riscv features `zkne` and `zknd`");
+#![cfg(not(all(target_feature = "v", target_feature = "zvkned")))]
+compile_error!("module requires riscv features `v` and `zvkned`");
 
 mod encdec;
-pub(crate) mod expand;
+mod expand;
 #[cfg(test)]
-pub(crate) mod test_expand;
+mod test_expand;
 
-pub(crate) type RoundKey = [u64; 2];
-pub(crate) type RoundKeys<const N: usize> = [RoundKey; N];
+// TODO(silvanshade):
+// - use scalar crypto for single blocks (test first; faster in QEMU though)
+// - register allocation
+// - use larger parallel block size
+// - interleave key-schedule for parallel blocks (allows for larger LMUL)
+// - use larger LMUL for parallel blocks
 
-use self::encdec::{decrypt1, decrypt8, encrypt1, encrypt8};
-use self::expand::{KeySchedule, inv_expanded_keys};
 use crate::riscv::Block;
+#[cfg(all(
+    target_arch = "riscv64",
+    target_feature = "zknd",
+    target_feature = "zkne"
+))]
+use cipher::consts::U24;
 use cipher::{
-    AlgorithmName, Array, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
+    AlgorithmName, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, Key, KeyInit,
     KeySizeUser, ParBlocksSizeUser,
-    consts::{U8, U16, U24, U32},
+    consts::{U16, U32, U64},
     crypto_common::WeakKeyError,
-    inout::InOut,
+    inout::{InOut, InOutBuf},
 };
-use core::fmt;
+use core::{fmt, num::NonZero};
 
-pub(crate) type Block8 = Array<Block, cipher::consts::U8>;
+type RoundKey = [u32; 4];
+type RoundKeys<const N: usize> = [RoundKey; N];
 
 macro_rules! define_aes_impl {
     (
+        $module:ident,
         $name:ident,
         $name_enc:ident,
         $name_dec:ident,
@@ -68,21 +72,21 @@ macro_rules! define_aes_impl {
         }
 
         impl KeyInit for $name {
-            #[inline(always)]
+            #[inline]
             fn new(key: &Key<Self>) -> Self {
                 let encrypt = $name_enc::new(key);
                 let decrypt = $name_dec::from(&encrypt);
                 Self { encrypt, decrypt }
             }
 
-            #[inline(always)]
+            #[inline]
             fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
                 crate::weak_key_test(&key.0)
             }
         }
 
         impl From<$name_enc> for $name {
-            #[inline(always)]
+            #[inline]
             fn from(encrypt: $name_enc) -> $name {
                 let decrypt = (&encrypt).into();
                 Self { encrypt, decrypt }
@@ -90,7 +94,7 @@ macro_rules! define_aes_impl {
         }
 
         impl From<&$name_enc> for $name {
-            #[inline(always)]
+            #[inline]
             fn from(encrypt: &$name_enc) -> $name {
                 let decrypt = encrypt.into();
                 let encrypt = encrypt.clone();
@@ -148,10 +152,10 @@ macro_rules! define_aes_impl {
         }
 
         impl KeyInit for $name_enc {
-            #[inline(always)]
+            #[inline]
             fn new(key: &Key<Self>) -> Self {
                 Self {
-                    round_keys: KeySchedule::<$words, $rounds>::expand_key(key.as_ref()),
+                    round_keys: self::expand::$module::expand_key(key.as_ref()),
                 }
             }
         }
@@ -179,7 +183,7 @@ macro_rules! define_aes_impl {
         }
 
         impl Drop for $name_enc {
-            #[inline(always)]
+            #[inline]
             fn drop(&mut self) {
                 #[cfg(feature = "zeroize")]
                 zeroize::Zeroize::zeroize(&mut self.round_keys);
@@ -208,14 +212,14 @@ macro_rules! define_aes_impl {
         }
 
         impl KeyInit for $name_dec {
-            #[inline(always)]
+            #[inline]
             fn new(key: &Key<Self>) -> Self {
                 $name_enc::new(key).into()
             }
         }
 
         impl From<$name_enc> for $name_dec {
-            #[inline(always)]
+            #[inline]
             fn from(enc: $name_enc) -> $name_dec {
                 Self::from(&enc)
             }
@@ -223,8 +227,7 @@ macro_rules! define_aes_impl {
 
         impl From<&$name_enc> for $name_dec {
             fn from(enc: &$name_enc) -> $name_dec {
-                let mut round_keys = enc.round_keys;
-                inv_expanded_keys(&mut round_keys);
+                let round_keys = enc.round_keys;
                 Self { round_keys }
             }
         }
@@ -252,7 +255,7 @@ macro_rules! define_aes_impl {
         }
 
         impl Drop for $name_dec {
-            #[inline(always)]
+            #[inline]
             fn drop(&mut self) {
                 #[cfg(feature = "zeroize")]
                 zeroize::Zeroize::zeroize(&mut self.round_keys);
@@ -269,18 +272,25 @@ macro_rules! define_aes_impl {
         }
 
         impl<'a> ParBlocksSizeUser for $name_back_enc<'a> {
-            type ParBlocksSize = U8;
+            type ParBlocksSize = U64;
         }
 
         impl<'a> BlockCipherEncBackend for $name_back_enc<'a> {
             #[inline(always)]
             fn encrypt_block(&self, block: InOut<'_, '_, Block>) {
-                encrypt1(&self.0.round_keys, block);
+                self::encdec::$module::encrypt_one(&self.0.round_keys, block);
             }
 
             #[inline(always)]
             fn encrypt_par_blocks(&self, blocks: InOut<'_, '_, cipher::ParBlocks<Self>>) {
-                encrypt8(&self.0.round_keys, blocks)
+                self::encdec::$module::encrypt_many(&self.0.round_keys, blocks)
+            }
+
+            #[inline]
+            fn encrypt_tail_blocks(&self, mut blocks: InOutBuf<'_, '_, Block>) {
+                if let Some(len) = NonZero::new(blocks.len()).map(NonZero::get) {
+                    self::encdec::$module::encrypt_vla(&self.0.round_keys, blocks.get(0), len)
+                };
             }
         }
 
@@ -291,24 +301,32 @@ macro_rules! define_aes_impl {
         }
 
         impl<'a> ParBlocksSizeUser for $name_back_dec<'a> {
-            type ParBlocksSize = U8;
+            type ParBlocksSize = U64;
         }
 
         impl<'a> BlockCipherDecBackend for $name_back_dec<'a> {
             #[inline(always)]
             fn decrypt_block(&self, block: InOut<'_, '_, Block>) {
-                decrypt1(&self.0.round_keys, block);
+                self::encdec::$module::decrypt_one(&self.0.round_keys, block);
             }
 
             #[inline(always)]
             fn decrypt_par_blocks(&self, blocks: InOut<'_, '_, cipher::ParBlocks<Self>>) {
-                decrypt8(&self.0.round_keys, blocks)
+                self::encdec::$module::decrypt_many(&self.0.round_keys, blocks)
+            }
+
+            #[inline]
+            fn decrypt_tail_blocks(&self, mut blocks: InOutBuf<'_, '_, Block>) {
+                if let Some(len) = NonZero::new(blocks.len()).map(NonZero::get) {
+                    self::encdec::$module::decrypt_vla(&self.0.round_keys, blocks.get(0), len)
+                };
             }
         }
     };
 }
 
 define_aes_impl!(
+    aes128,
     Aes128,
     Aes128Enc,
     Aes128Dec,
@@ -319,7 +337,33 @@ define_aes_impl!(
     11,
     "AES-128",
 );
+
+// NOTE: AES-192 is only implemented for RVV if RISC-V scalar crypto is also
+// enabled.
+//
+// This is because RVV does not provide key-expansion instructions for AES-192
+// but we can fallback to the RISC-V scalar AES-192 key-expansion if available.
+//
+// If RISC-V scalar crypto is not available, then we fall back to the purely
+// software based fixslice AES-192 implementation below
+//
+// # TODO:
+//
+// Use the fixslice or some other side-channel resistant AES-192 key-expansion
+// while still taking advantage of RVV crypto even if RISC-V scalar crypto is
+// unavailable.
+//
+// Maybe the best solution here would be to implement RVV accelerated fixslice.
+// This would also be useful in the case where RVV is available but RVV crypto
+// is not. Currently (2025) this is actually the most likely case anyway given
+// the relative rarity of RVV crypto implementations.
+#[cfg(all(
+    target_arch = "riscv64",
+    target_feature = "zknd",
+    target_feature = "zkne"
+))]
 define_aes_impl!(
+    aes192,
     Aes192,
     Aes192Enc,
     Aes192Dec,
@@ -330,7 +374,14 @@ define_aes_impl!(
     13,
     "AES-192",
 );
+#[cfg(not(all(
+    target_arch = "riscv64",
+    target_feature = "zknd",
+    target_feature = "zkne"
+)))]
+pub use crate::soft::Aes192;
 define_aes_impl!(
+    aes256,
     Aes256,
     Aes256Enc,
     Aes256Dec,

@@ -37,6 +37,7 @@ check-cfg = [
     "cfg(aes_avx256_disable)",
     "cfg(aes_avx512_disable)",
     "cfg(riscv_zkned)",
+    "cfg(riscv_zvkned)"
 ]
 
 [package.metadata.docs.rs]

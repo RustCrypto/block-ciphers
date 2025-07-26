@@ -1,26 +1,43 @@
 //! AES block cipher implementations for RISC-V using the Cryptography
 //! Extensions
 //!
-//! Supported targets: rv64 (scalar)
+//! Supported targets: rv64 (scalar), rvv
 //!
 //! NOTE: rv32 (scalar) is not currently implemented, primarily due to the
 //! difficulty in obtaining a suitable development environment (lack of distro
 //! support and lack of precompiled toolchains), the effort required for
 //! maintaining a test environment as 32-bit becomes less supported, and the
 //! overall scarcity of relevant hardware. If someone has a specific need for
-//! such an implementation, please open an issue.
+//! such an implementation, please open an issue. Theoretically, the rvv
+//! implementation should work for riscv32, for a hypothetical rv32
+//! implementation satisfying the vector feature requirements.
 //!
 //! NOTE: These implementations are currently not enabled through
 //! auto-detection. In order to use this implementation, you must enable the
 //! appropriate target-features.
 //!
+//! Additionally, for the vector implementation, since the `zvkned`
+//! target-feature is not yet defined in Rust, you must pass
+//! `--cfg=riscv_zvkned` to the compiler (through `RUSTFLAGS` or some other
+//! means). However, you still must enable the `v` target-feature.
+//!
 //! Examining the module structure for this implementation should give you an
 //! idea of how to specify these features in your own code.
 //!
-//! NOTE: AES-128, AES-192, and AES-256 are supported.
+//! NOTE: AES-128, AES-192, and AES-256 are supported for both the scalar and
+//! vector implementations.
+//!
+//! However, key expansion is not vector-accelerated for the AES-192 case
+//! (because RISC-V does not provide vector instructions for this case). Users
+//! concerned with vector performance are advised to select AES-129 or AES-256
+//! instead. Nevertheless, the AES-192 vector implementation will still fall
+//! back to the scalar AES-192 key-schedule implementation, if the appropriate
+//! scalar target-features are enabled.
 
 #[cfg(all(target_arch = "riscv64", riscv_zkned))]
 pub(crate) mod rv64;
+#[cfg(all(target_arch = "riscv64", riscv_zvkned,))]
+pub(crate) mod rvv;
 
 use crate::Block;
 
