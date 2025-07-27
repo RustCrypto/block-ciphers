@@ -451,10 +451,24 @@ macro_rules! define_aes_impl {
         }
         #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
         impl<'a> ParBlocksSizeUser for $name_backend::Vaes256<'a> {
+            // Block size of 30 is chosen based on AVX2's 16 YMM registers.
+            //
+            // * 1 register holds 2 keys per round (loads interleaved with rounds)
+            // * 15 registers hold 2 data blocks
+            //
+            // This gives (16 <total> - 1 <round key>) * 2 <data> = 30 <data>.
             type ParBlocksSize = U30;
         }
         #[cfg(all(target_arch = "x86_64", aes_avx512))]
         impl<'a> ParBlocksSizeUser for $name_backend::Vaes512<'a> {
+            // Block size of 64 is chosen based on AVX512's 32 ZMM registers.
+            //
+            // * 11, 13, 15 registers for keys, correspond to AES-128, AES-192, AES-256
+            // * 11, 13, 15 registers hold 4 keys each (no interleaved loading like VAES256)
+            // * 16 registers hold 4 data blocks
+            // * 1-4 registers remain unused (could use them but probably not worth it)
+            //
+            // This gives (32 <total> - 15 <AES-256 round keys> - 1 <unused>) * 4 <data> = 64 <data>.
             type ParBlocksSize = U64;
         }
 
