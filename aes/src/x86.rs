@@ -1,7 +1,7 @@
 pub(crate) mod ni;
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
 pub(crate) mod vaes256;
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", aes_avx512))]
 pub(crate) mod vaes512;
 
 #[cfg(target_arch = "x86")]
@@ -11,6 +11,8 @@ use core::arch::x86_64 as arch;
 
 use self::arch::*;
 use crate::Block;
+#[cfg(all(target_arch = "x86_64", aes_avx512))]
+use cipher::consts::U64;
 use cipher::{
     AlgorithmName, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
@@ -18,19 +20,15 @@ use cipher::{
     consts::{U9, U16, U24, U32},
     crypto_common::WeakKeyError,
 };
-#[cfg(target_arch = "x86_64")]
-use cipher::{
-    Array, InOutBuf,
-    consts::{U30, U64},
-    typenum::Unsigned,
-};
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
+use cipher::{Array, InOutBuf, consts::U30, typenum::Unsigned};
+#[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
 use core::cell::OnceCell;
 use core::fmt;
 
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
 pub(crate) type Block30 = Array<Block, U30>;
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", aes_avx512))]
 pub(crate) type Block64 = Array<Block, U64>;
 
 pub(crate) mod features {
@@ -41,81 +39,81 @@ pub(crate) mod features {
     pub(crate) mod aes {
         pub use super::features_aes::*;
     }
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
     pub(crate) mod avx {
         pub use super::features_avx::*;
     }
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(all(target_arch = "x86_64", aes_avx512))]
     pub(crate) mod avx512f {
         pub use super::features_avx512f::*;
     }
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
     pub(crate) mod vaes {
         pub use super::features_vaes::*;
     }
 }
 
 type Simd128RoundKeys<const ROUNDS: usize> = [__m128i; ROUNDS];
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
 type Simd256RoundKeys<const ROUNDS: usize> = [__m256i; ROUNDS];
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", aes_avx512))]
 type Simd512RoundKeys<const ROUNDS: usize> = [__m512i; ROUNDS];
 
 #[derive(Clone)]
 enum Backend {
     Ni,
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
     Vaes256,
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(all(target_arch = "x86_64", aes_avx512))]
     Vaes512,
 }
 
 #[derive(Clone, Copy)]
 struct Features {
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
     avx: self::features::avx::InitToken,
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(all(target_arch = "x86_64", aes_avx512))]
     avx512f: self::features::avx512f::InitToken,
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
     vaes: self::features::vaes::InitToken,
 }
 
 impl Features {
     fn new() -> Self {
         Self {
-            #[cfg(target_arch = "x86_64")]
+            #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
             avx: self::features::avx::init(),
-            #[cfg(target_arch = "x86_64")]
+            #[cfg(all(target_arch = "x86_64", aes_avx512))]
             avx512f: self::features::avx512f::init(),
-            #[cfg(target_arch = "x86_64")]
+            #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
             vaes: self::features::vaes::init(),
         }
     }
 
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
     fn has_vaes256(&self) -> bool {
         #[cfg(target_arch = "x86_64")]
-        if self.vaes.get() && self.avx.get() && !cfg!(aes_avx256_disable) {
+        if cfg!(aes_avx256) && self.vaes.get() && self.avx.get() {
             return true;
         }
         false
     }
 
-    #[cfg(target_arch = "x86_64")]
+    #[cfg(all(target_arch = "x86_64", aes_avx512))]
     fn has_vaes512(&self) -> bool {
         #[cfg(target_arch = "x86_64")]
-        if self.vaes.get() && self.avx512f.get() && !cfg!(aes_avx512_disable) {
+        if cfg!(aes_avx512) && self.vaes.get() && self.avx512f.get() {
             return true;
         }
         false
     }
 
     fn dispatch(&self) -> Backend {
-        #[cfg(target_arch = "x86_64")]
+        #[cfg(all(target_arch = "x86_64", aes_avx512))]
         if self.has_vaes512() {
             return self::Backend::Vaes512;
         }
-        #[cfg(target_arch = "x86_64")]
+        #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
         if self.has_vaes256() {
             return self::Backend::Vaes256;
         }
@@ -141,33 +139,35 @@ macro_rules! define_aes_impl {
             pub(crate) struct Ni<'a> {
                 pub(crate) keys: &'a Simd128RoundKeys<$rounds>,
             }
-            #[cfg(target_arch = "x86_64")]
+            #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
             impl<'a> Ni<'a> {
                 pub const fn par_blocks(&self) -> usize {
                     <Self as ParBlocksSizeUser>::ParBlocksSize::USIZE
                 }
             }
-            #[cfg(target_arch = "x86_64")]
+            #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
             impl<'a> From<&Vaes256<'a>> for Ni<'a> {
                 fn from(backend: &Vaes256<'a>) -> Self {
                     Self { keys: backend.keys }
                 }
             }
 
+            #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
             #[derive(Clone)]
-            #[cfg(target_arch = "x86_64")]
             pub(crate) struct Vaes256<'a> {
+                #[allow(unused)] // TODO: remove once cfg flags are removed
                 pub(crate) features: Features,
                 pub(crate) keys: &'a Simd128RoundKeys<$rounds>,
                 pub(crate) simd_256_keys: OnceCell<Simd256RoundKeys<$rounds>>,
             }
-            #[cfg(target_arch = "x86_64")]
+            #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
             impl<'a> Vaes256<'a> {
+                #[allow(unused)] // TODO: remove once cfg flags are removed
                 pub const fn par_blocks(&self) -> usize {
                     <Self as ParBlocksSizeUser>::ParBlocksSize::USIZE
                 }
             }
-            #[cfg(target_arch = "x86_64")]
+            #[cfg(all(target_arch = "x86_64", aes_avx512))]
             impl<'a> From<&Vaes512<'a>> for Vaes256<'a> {
                 fn from(backend: &Vaes512<'a>) -> Self {
                     Self {
@@ -178,7 +178,7 @@ macro_rules! define_aes_impl {
                 }
             }
 
-            #[cfg(target_arch = "x86_64")]
+            #[cfg(all(target_arch = "x86_64", aes_avx512))]
             pub(crate) struct Vaes512<'a> {
                 pub(crate) features: Features,
                 pub(crate) keys: &'a Simd128RoundKeys<$rounds>,
@@ -314,13 +314,13 @@ macro_rules! define_aes_impl {
                 let keys = &self.keys;
                 match features.dispatch() {
                     self::Backend::Ni => f.call(&mut $name_backend::Ni { keys }),
-                    #[cfg(target_arch = "x86_64")]
+                    #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
                     self::Backend::Vaes256 => f.call(&mut $name_backend::Vaes256 {
                         features,
                         keys,
                         simd_256_keys: OnceCell::new(),
                     }),
-                    #[cfg(target_arch = "x86_64")]
+                    #[cfg(all(target_arch = "x86_64", aes_avx512))]
                     self::Backend::Vaes512 => f.call(&mut $name_backend::Vaes512 {
                         features,
                         keys,
@@ -406,13 +406,13 @@ macro_rules! define_aes_impl {
                 let keys = &self.keys;
                 match features.dispatch() {
                     self::Backend::Ni => f.call(&mut $name_backend::Ni { keys }),
-                    #[cfg(target_arch = "x86_64")]
+                    #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
                     self::Backend::Vaes256 => f.call(&mut $name_backend::Vaes256 {
                         features,
                         keys,
                         simd_256_keys: OnceCell::new(),
                     }),
-                    #[cfg(target_arch = "x86_64")]
+                    #[cfg(all(target_arch = "x86_64", aes_avx512))]
                     self::Backend::Vaes512 => f.call(&mut $name_backend::Vaes512 {
                         features,
                         keys,
@@ -437,11 +437,11 @@ macro_rules! define_aes_impl {
         impl<'a> BlockSizeUser for $name_backend::Ni<'a> {
             type BlockSize = U16;
         }
-        #[cfg(target_arch = "x86_64")]
+        #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
         impl<'a> BlockSizeUser for $name_backend::Vaes256<'a> {
             type BlockSize = U16;
         }
-        #[cfg(target_arch = "x86_64")]
+        #[cfg(all(target_arch = "x86_64", aes_avx512))]
         impl<'a> BlockSizeUser for $name_backend::Vaes512<'a> {
             type BlockSize = U16;
         }
@@ -449,12 +449,26 @@ macro_rules! define_aes_impl {
         impl<'a> ParBlocksSizeUser for $name_backend::Ni<'a> {
             type ParBlocksSize = U9;
         }
-        #[cfg(target_arch = "x86_64")]
+        #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
         impl<'a> ParBlocksSizeUser for $name_backend::Vaes256<'a> {
+            // Block size of 30 is chosen based on AVX2's 16 YMM registers.
+            //
+            // * 1 register holds 2 keys per round (loads interleaved with rounds)
+            // * 15 registers hold 2 data blocks
+            //
+            // This gives (16 <total> - 1 <round key>) * 2 <data> = 30 <data>.
             type ParBlocksSize = U30;
         }
-        #[cfg(target_arch = "x86_64")]
+        #[cfg(all(target_arch = "x86_64", aes_avx512))]
         impl<'a> ParBlocksSizeUser for $name_backend::Vaes512<'a> {
+            // Block size of 64 is chosen based on AVX512's 32 ZMM registers.
+            //
+            // * 11, 13, 15 registers for keys, correspond to AES-128, AES-192, AES-256
+            // * 11, 13, 15 registers hold 4 keys each (no interleaved loading like VAES256)
+            // * 16 registers hold 4 data blocks
+            // * 1-4 registers remain unused (could use them but probably not worth it)
+            //
+            // This gives (32 <total> - 15 <AES-256 round keys> - 1 <unused>) * 4 <data> = 64 <data>.
             type ParBlocksSize = U64;
         }
 
@@ -472,7 +486,7 @@ macro_rules! define_aes_impl {
                 }
             }
         }
-        #[cfg(target_arch = "x86_64")]
+        #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
         impl<'a> BlockCipherEncBackend for $name_backend::Vaes256<'a> {
             #[inline]
             fn encrypt_block(&self, block: InOut<'_, '_, Block>) {
@@ -485,8 +499,8 @@ macro_rules! define_aes_impl {
                 unsafe {
                     let simd_256_keys = self
                         .simd_256_keys
-                        .get_or_init(|| vaes256::$module::broadcast_keys(&self.keys));
-                    vaes256::$module::encrypt30(simd_256_keys, blocks);
+                        .get_or_init(|| vaes256::encdec::broadcast_keys(&self.keys));
+                    vaes256::encdec::encrypt30(simd_256_keys, blocks);
                 }
             }
             #[inline]
@@ -514,7 +528,7 @@ macro_rules! define_aes_impl {
                 }
             }
         }
-        #[cfg(target_arch = "x86_64")]
+        #[cfg(all(target_arch = "x86_64", aes_avx512))]
         impl<'a> BlockCipherEncBackend for $name_backend::Vaes512<'a> {
             #[inline]
             fn encrypt_block(&self, block: InOut<'_, '_, Block>) {
@@ -527,8 +541,8 @@ macro_rules! define_aes_impl {
                 unsafe {
                     let simd_512_keys = self
                         .simd_512_keys
-                        .get_or_init(|| vaes512::$module::broadcast_keys(&self.keys));
-                    vaes512::$module::encrypt64(simd_512_keys, blocks);
+                        .get_or_init(|| vaes512::encdec::broadcast_keys(&self.keys));
+                    vaes512::encdec::encrypt64(simd_512_keys, blocks);
                 }
             }
             #[inline]
@@ -582,7 +596,7 @@ macro_rules! define_aes_impl {
                 }
             }
         }
-        #[cfg(target_arch = "x86_64")]
+        #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
         impl<'a> BlockCipherDecBackend for $name_backend::Vaes256<'a> {
             #[inline]
             fn decrypt_block(&self, block: InOut<'_, '_, Block>) {
@@ -595,8 +609,8 @@ macro_rules! define_aes_impl {
                 unsafe {
                     let simd_256_keys = self
                         .simd_256_keys
-                        .get_or_init(|| vaes256::$module::broadcast_keys(&self.keys));
-                    vaes256::$module::decrypt30(simd_256_keys, blocks);
+                        .get_or_init(|| vaes256::encdec::broadcast_keys(&self.keys));
+                    vaes256::encdec::decrypt30(simd_256_keys, blocks);
                 }
             }
             #[inline]
@@ -624,7 +638,7 @@ macro_rules! define_aes_impl {
                 }
             }
         }
-        #[cfg(target_arch = "x86_64")]
+        #[cfg(all(target_arch = "x86_64", aes_avx512))]
         impl<'a> BlockCipherDecBackend for $name_backend::Vaes512<'a> {
             #[inline]
             fn decrypt_block(&self, block: InOut<'_, '_, Block>) {
@@ -637,8 +651,8 @@ macro_rules! define_aes_impl {
                 unsafe {
                     let simd_512_keys = self
                         .simd_512_keys
-                        .get_or_init(|| vaes512::$module::broadcast_keys(&self.keys));
-                    vaes512::$module::decrypt64(simd_512_keys, blocks);
+                        .get_or_init(|| vaes512::encdec::broadcast_keys(&self.keys));
+                    vaes512::encdec::decrypt64(simd_512_keys, blocks);
                 }
             }
             #[inline]

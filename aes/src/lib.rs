@@ -45,13 +45,11 @@
 //! used or passing `RUSTFLAGS=-Ctarget-feature=+aes,+avx512f,+ssse3,+vaes`
 //! will ensure that AESNI and VAES are always used.
 //!
+//! Note: Enabling VAES256 or VAES512 still requires specifying `--cfg
+//! aes_avx256` or `--cfg aes_avx512` explicitly.
+//!
 //! Programs built in this manner will crash with an illegal instruction on
 //! CPUs which do not have AES-NI and VAES enabled.
-//!
-//! Note: It is possible to disable the use of AVX512 for the VAES backend
-//! and limiting it to AVX (256-bit) by specifying `--cfg aes_avx512_disable`.
-//! For CPUs which support VAES but not AVX512, the 256-bit VAES backend will
-//! be selected automatically without needing to specify this flag.
 //!
 //! Note: runtime detection is not possible on SGX targets. Please use the
 //! aforementioned `RUSTFLAGS` to leverage AES-NI and VAES on these targets.
