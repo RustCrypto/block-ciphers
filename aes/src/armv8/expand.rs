@@ -57,7 +57,7 @@ pub unsafe fn expand_key<const L: usize, const N: usize>(key: &[u8; L]) -> [uint
 /// This is the reverse of the encryption keys, with the Inverse Mix Columns
 /// operation applied to all but the first and last expanded key.
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn inv_expanded_keys<const N: usize>(keys: &[uint8x16_t; N]) -> [uint8x16_t; N] {
+pub unsafe fn inv_expanded_keys<const N: usize>(keys: &[uint8x16_t; N]) -> [uint8x16_t; N] {
     assert!(N == 11 || N == 13 || N == 15);
 
     let mut inv_keys: [uint8x16_t; N] = core::mem::zeroed();

@@ -13,7 +13,7 @@ use core::{arch::aarch64::*, mem};
 
 /// Perform AES encryption using the given expanded keys.
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn encrypt<const KEYS: usize>(
+pub(crate) unsafe fn encrypt<const KEYS: usize>(
     keys: &[uint8x16_t; KEYS],
     block: InOut<'_, '_, Block>,
 ) {
@@ -38,7 +38,7 @@ pub(super) unsafe fn encrypt<const KEYS: usize>(
 
 /// Perform AES decryption using the given expanded keys.
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn decrypt<const KEYS: usize>(
+pub(crate) unsafe fn decrypt<const KEYS: usize>(
     keys: &[uint8x16_t; KEYS],
     block: InOut<'_, '_, Block>,
 ) {
