@@ -35,6 +35,12 @@
 //! runtime. On other platforms the `aes` target feature must be enabled via
 //! RUSTFLAGS.
 //!
+//! ## ARMv9 (SVE2-AES)
+//! Support is available with SVE2-AES for `aarch64` targets with the `sve2-aes`
+//! feature enabled. Autodetection is not available for this backend and must be
+//! enabled explicitly by specifying RUSTFLAGS="-Ctarget-feature=+sve2,+sve2-aes
+//! --cfg=armv9_sve2_aes".
+//!
 //! ## `x86`/`x86_64` intrinsics (AES-NI and VAES)
 //! By default this crate uses runtime detection on `i686`/`x86_64` targets
 //! in order to determine if AES-NI and VAES are available, and if they are
@@ -129,12 +135,26 @@ pub mod hazmat;
 
 #[macro_use]
 mod macros;
+#[cfg_attr(any(
+    not(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64")),
+    armv9_sve2_aes,
+),
+// Architectures that have hardware-support backends, but that do not use
+// `autodetect` will generate warnings about unused definitions in `soft`. We
+// silence them once here in order to avoid cluttering `soft` with architecture
+// specific conditionals.
+allow(unused))]
 mod soft;
 
 use cfg_if::cfg_if;
 
 cfg_if! {
-    if #[cfg(all(target_arch = "aarch64", not(aes_force_soft)))] {
+    if #[cfg(all(target_arch = "aarch64", armv9_sve2_aes, not(aes_force_soft)))] {
+        #[allow(unused)]
+        mod armv8;
+        mod armv9;
+        pub use armv9::*;
+    } else if #[cfg(all(target_arch = "aarch64", not(aes_force_soft)))] {
         mod armv8;
         mod autodetect;
         pub use autodetect::*;

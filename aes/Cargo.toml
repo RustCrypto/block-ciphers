@@ -31,7 +31,13 @@ hazmat = [] # Expose cryptographically hazardous APIs
 
 [lints.rust.unexpected_cfgs]
 level = "warn"
-check-cfg = ["cfg(aes_compact)", "cfg(aes_force_soft)", "cfg(aes_avx256_disable)", "cfg(aes_avx512_disable)"]
+check-cfg = [
+    "cfg(aes_compact)",
+    "cfg(aes_force_soft)",
+    "cfg(aes_avx256_disable)",
+    "cfg(aes_avx512_disable)",
+    "cfg(armv9_sve2_aes)",
+]
 
 [package.metadata.docs.rs]
 all-features = true

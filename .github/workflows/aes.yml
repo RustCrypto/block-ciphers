@@ -310,6 +310,37 @@ jobs:
       - run: cross test --package aes --target ${{ matrix.target }} --features hazmat
       - run: cross test --package aes --target ${{ matrix.target }} --all-features
 
+  armv9:
+    strategy:
+      matrix:
+        include:
+          - target: aarch64-unknown-linux-gnu
+            rustflags: ''
+            rust: 1.85.0 # MSRV
+          - target: aarch64-unknown-linux-gnu
+            rustflags: '-Ctarget-cpu=fujitsu-monaka -Ctarget-feature=+sve2-aes'
+            rust: nightly
+          - target: aarch64-unknown-linux-gnu
+            rustflags: '-Ctarget-cpu=fujitsu-monaka -Ctarget-feature=+sve2-aes --cfg=armv9_sve2_aes'
+            rust: nightly
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: RustCrypto/actions/cargo-cache@master
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          targets: ${{ matrix.target }}
+      - run: cargo install cross --git https://github.com/cross-rs/cross --rev e281947ca900da425e4ecea7483cfde646c8a1ea
+        env:
+          RUSTFLAGS: "-Dwarnings -Astatic-mut-refs"
+      - run: cross test --package aes --target ${{ matrix.target }}
+        env:
+          RUSTFLAGS: "-Dwarnings ${{ matrix.rustflags }}"
+
   clippy:
     env:
       RUSTFLAGS: "-Dwarnings --cfg aes_compact"
