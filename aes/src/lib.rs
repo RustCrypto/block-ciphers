@@ -129,7 +129,6 @@ pub mod hazmat;
 
 #[macro_use]
 mod macros;
-mod soft;
 
 use cfg_if::cfg_if;
 
@@ -145,7 +144,9 @@ cfg_if! {
         mod x86;
         mod autodetect;
         pub use autodetect::*;
+        mod soft;
     } else {
+        mod soft;
         pub use soft::*;
     }
 }
