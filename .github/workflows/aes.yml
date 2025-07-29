@@ -310,6 +310,35 @@ jobs:
       - run: cross test --package aes --target ${{ matrix.target }} --features hazmat
       - run: cross test --package aes --target ${{ matrix.target }} --all-features
 
+  riscv:
+    strategy:
+      matrix:
+        include:
+          - target: riscv64gc-unknown-linux-gnu
+            rustflags: ''
+            rust: stable
+          - target: riscv64gc-unknown-linux-gnu
+            rustflags: ''
+            rust: nightly
+          - target: riscv64gc-unknown-linux-gnu
+            rustflags: '-Ctarget-feature=+zkne,+zknd'
+            rust: nightly
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: RustCrypto/actions/cargo-cache@master
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          targets: ${{ matrix.target }}
+      - uses: RustCrypto/actions/cross-install@master
+      - run: cross test --package aes --target ${{ matrix.target }}
+        env:
+          RUSTFLAGS: "-Dwarning ${{ matrix.rustflags }}"
+
   clippy:
     env:
       RUSTFLAGS: "-Dwarnings --cfg aes_compact"
