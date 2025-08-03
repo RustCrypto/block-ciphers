@@ -1,5 +1,4 @@
-use crate::x86::arch::*;
-use crate::x86::ni::expand::*;
+use super::{arch::*, expand::*};
 use hex_literal::hex;
 
 pub(crate) fn check(a: &[__m128i], b: &[[u64; 2]]) {
@@ -19,7 +18,7 @@ pub(crate) fn check(a: &[__m128i], b: &[[u64; 2]]) {
 fn aes128_expand_key_test() {
     let keys = [0x00; 16];
     check(
-        &unsafe { aes128::expand_key(&keys) },
+        &unsafe { aes128_expand_key(&keys) },
         &[
             [0x0000000000000000, 0x0000000000000000],
             [0x6263636362636363, 0x6263636362636363],
@@ -37,7 +36,7 @@ fn aes128_expand_key_test() {
 
     let keys = [0xff; 16];
     check(
-        &unsafe { aes128::expand_key(&keys) },
+        &unsafe { aes128_expand_key(&keys) },
         &[
             [0xffffffffffffffff, 0xffffffffffffffff],
             [0xe8e9e9e917161616, 0xe8e9e9e917161616],
@@ -55,7 +54,7 @@ fn aes128_expand_key_test() {
 
     let keys = hex!("000102030405060708090a0b0c0d0e0f");
     check(
-        &unsafe { aes128::expand_key(&keys) },
+        &unsafe { aes128_expand_key(&keys) },
         &[
             [0x0001020304050607, 0x08090a0b0c0d0e0f],
             [0xd6aa74fdd2af72fa, 0xdaa678f1d6ab76fe],
@@ -73,7 +72,7 @@ fn aes128_expand_key_test() {
 
     let keys = hex!("6920e299a5202a6d656e636869746f2a");
     check(
-        &unsafe { aes128::expand_key(&keys) },
+        &unsafe { aes128_expand_key(&keys) },
         &[
             [0x6920e299a5202a6d, 0x656e636869746f2a],
             [0xfa8807605fa82d0d, 0x3ac64e6553b2214f],
@@ -91,7 +90,7 @@ fn aes128_expand_key_test() {
 
     let keys = hex!("2b7e151628aed2a6abf7158809cf4f3c");
     check(
-        &unsafe { aes128::expand_key(&keys) },
+        &unsafe { aes128_expand_key(&keys) },
         &[
             [0x2b7e151628aed2a6, 0xabf7158809cf4f3c],
             [0xa0fafe1788542cb1, 0x23a339392a6c7605],
@@ -116,7 +115,7 @@ fn aes128_expand_key_test() {
 fn aes192_expand_key_test() {
     let keys = [0x00; 24];
     check(
-        &unsafe { aes192::expand_key(&keys) },
+        &unsafe { aes192_expand_key(&keys) },
         &[
             [0x0000000000000000, 0x0000000000000000],
             [0x0000000000000000, 0x6263636362636363],
@@ -136,7 +135,7 @@ fn aes192_expand_key_test() {
 
     let keys = [0xff; 24];
     check(
-        &unsafe { aes192::expand_key(&keys) },
+        &unsafe { aes192_expand_key(&keys) },
         &[
             [0xffffffffffffffff, 0xffffffffffffffff],
             [0xffffffffffffffff, 0xe8e9e9e917161616],
@@ -156,7 +155,7 @@ fn aes192_expand_key_test() {
 
     let keys = hex!("000102030405060708090a0b0c0d0e0f1011121314151617");
     check(
-        &unsafe { aes192::expand_key(&keys) },
+        &unsafe { aes192_expand_key(&keys) },
         &[
             [0x0001020304050607, 0x08090a0b0c0d0e0f],
             [0x1011121314151617, 0x5846f2f95c43f4fe],
@@ -176,7 +175,7 @@ fn aes192_expand_key_test() {
 
     let keys = hex!("8e73b0f7da0e6452c810f32b809079e562f8ead2522c6b7b");
     check(
-        &unsafe { aes192::expand_key(&keys) },
+        &unsafe { aes192_expand_key(&keys) },
         &[
             [0x8e73b0f7da0e6452, 0xc810f32b809079e5],
             [0x62f8ead2522c6b7b, 0xfe0c91f72402f5a5],
@@ -203,7 +202,7 @@ fn aes192_expand_key_test() {
 fn aes256_expand_key_test() {
     let keys = [0x00; 32];
     check(
-        &unsafe { aes256::expand_key(&keys) },
+        &unsafe { aes256_expand_key(&keys) },
         &[
             [0x0000000000000000, 0x0000000000000000],
             [0x0000000000000000, 0x0000000000000000],
@@ -225,7 +224,7 @@ fn aes256_expand_key_test() {
 
     let keys = [0xff; 32];
     check(
-        &unsafe { aes256::expand_key(&keys) },
+        &unsafe { aes256_expand_key(&keys) },
         &[
             [0xffffffffffffffff, 0xffffffffffffffff],
             [0xffffffffffffffff, 0xffffffffffffffff],
@@ -247,7 +246,7 @@ fn aes256_expand_key_test() {
 
     let keys = hex!("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
     check(
-        &unsafe { aes256::expand_key(&keys) },
+        &unsafe { aes256_expand_key(&keys) },
         &[
             [0x0001020304050607, 0x08090a0b0c0d0e0f],
             [0x1011121314151617, 0x18191a1b1c1d1e1f],
@@ -269,7 +268,7 @@ fn aes256_expand_key_test() {
 
     let keys = hex!("603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4");
     check(
-        &unsafe { aes256::expand_key(&keys) },
+        &unsafe { aes256_expand_key(&keys) },
         &[
             [0x603deb1015ca71be, 0x2b73aef0857d7781],
             [0x1f352c073b6108d7, 0x2d9810a30914dff4],
