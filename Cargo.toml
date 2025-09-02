@@ -27,6 +27,6 @@ members = [
 opt-level = 2
 
 [patch.crates-io]
-block-buffer = { git = "https://github.com/RustCrypto/utils.git" }
-cipher = { git = "https://github.com/RustCrypto/traits.git" }
-inout = { git = "https://github.com/RustCrypto/utils.git" }
+block-buffer = { git = "https://github.com/RustCrypto/utils" }
+cipher = { git = "https://github.com/RustCrypto/traits" }
+inout = { git = "https://github.com/RustCrypto/utils" }
