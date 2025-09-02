@@ -1,6 +1,6 @@
 [package]
 name = "gift-cipher"
-version = "0.0.1-rc.0"
+version = "0.0.1-rc.1"
 description = "Pure Rust implementation of the Gift block cipher"
 authors = ["RustCrypto Developers", "Schmid7k"]
 license = "MIT OR Apache-2.0"
