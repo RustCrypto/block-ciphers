@@ -36,6 +36,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4a859067dcb257cb2ae028cb821399b55140b76fb8b2a360e052fe109019db43"
 
 [[package]]
+name = "block-buffer"
+version = "0.11.0-rc.4"
+source = "git+https://github.com/RustCrypto/utils.git#adfccfea2686ef191b607f653cc3587753b6ec66"
+dependencies = [
+ "hybrid-array",
+ "zeroize",
+]
+
+[[package]]
 name = "blowfish"
 version = "0.10.0-rc.0"
 dependencies = [
@@ -82,10 +91,10 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "cipher"
 version = "0.5.0-rc.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd4ef774202f1749465fc7cf88d70fc30620e8cacd5429268f4bff7d003bd976"
+source = "git+https://github.com/RustCrypto/traits.git#062af9bd26c388f371dfec79cdaf889b515fe381"
 dependencies = [
  "blobby",
+ "block-buffer",
  "crypto-common",
  "inout",
  "zeroize",
@@ -103,8 +112,7 @@ dependencies = [
 [[package]]
 name = "crypto-common"
 version = "0.2.0-rc.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a23fa214dea9efd4dacee5a5614646b30216ae0f05d4bb51bafb50e9da1c5be"
+source = "git+https://github.com/RustCrypto/traits.git#062af9bd26c388f371dfec79cdaf889b515fe381"
 dependencies = [
  "hybrid-array",
 ]
@@ -133,9 +141,9 @@ checksum = "bcaaec4551594c969335c98c903c1397853d4198408ea609190f420500f6be71"
 
 [[package]]
 name = "hybrid-array"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4dab50e193aebe510fe0e40230145820e02f48dae0cf339ea4204e6e708ff7bd"
+checksum = "6fe39a812f039072707ce38020acbab2f769087952eddd9e2b890f37654b2349"
 dependencies = [
  "typenum",
  "zeroize",
@@ -150,9 +158,8 @@ dependencies = [
 
 [[package]]
 name = "inout"
-version = "0.2.0-rc.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac5e145e8ade9f74c0a5efc60ccb4e714b0144f7e2220b7ca64254feee71c57f"
+version = "0.2.0-rc.5"
+source = "git+https://github.com/RustCrypto/utils.git#adfccfea2686ef191b607f653cc3587753b6ec66"
 dependencies = [
  "hybrid-array",
 ]
