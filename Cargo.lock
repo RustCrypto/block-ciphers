@@ -32,7 +32,7 @@ dependencies = [
 [[package]]
 name = "blobby"
 version = "0.4.0-pre.0"
-source = "git+https://github.com/RustCrypto/utils#303c9e8e8fd5e08de4719bd6614935bc68c63a55"
+source = "git+https://github.com/RustCrypto/utils#8fd37074861e2d8e400a53d68e10ce713944fa65"
 
 [[package]]
 name = "block-buffer"
