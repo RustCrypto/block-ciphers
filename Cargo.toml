@@ -30,4 +30,5 @@ opt-level = 2
 # https://github.com/RustCrypto/traits/pull/1998
 cipher = { git = "https://github.com/RustCrypto/traits" }
 # https://github.com/RustCrypto/utils/pull/1187
+# https://github.com/RustCrypto/utils/pull/1207
 blobby = { git = "https://github.com/RustCrypto/utils" }
