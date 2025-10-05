@@ -25,6 +25,13 @@ use cipher::{
 };
 use core::fmt;
 
+pub(crate) mod features {
+    cpufeatures::new!(features_aes, "aes");
+    pub(crate) mod aes {
+        pub use super::features_aes::*;
+    }
+}
+
 impl_backends!(
     enc_name = Aes128BackEnc,
     dec_name = Aes128BackDec,
@@ -84,18 +91,6 @@ macro_rules! define_aes_impl {
         pub struct $name {
             encrypt: $name_back_enc,
             decrypt: $name_back_dec,
-        }
-
-        impl $name {
-            #[inline(always)]
-            pub(crate) fn get_enc_backend(&self) -> &$name_back_enc {
-                &self.encrypt
-            }
-
-            #[inline(always)]
-            pub(crate) fn get_dec_backend(&self) -> &$name_back_dec {
-                &self.decrypt
-            }
         }
 
         impl KeySizeUser for $name {
@@ -182,13 +177,6 @@ macro_rules! define_aes_impl {
             backend: $name_back_enc,
         }
 
-        impl $name_enc {
-            #[inline(always)]
-            pub(crate) fn get_enc_backend(&self) -> &$name_back_enc {
-                &self.backend
-            }
-        }
-
         impl KeySizeUser for $name_enc {
             type KeySize = $key_size;
         }
@@ -246,13 +234,6 @@ macro_rules! define_aes_impl {
         #[derive(Clone)]
         pub struct $name_dec {
             backend: $name_back_dec,
-        }
-
-        impl $name_dec {
-            #[inline(always)]
-            pub(crate) fn get_dec_backend(&self) -> &$name_back_dec {
-                &self.backend
-            }
         }
 
         impl KeySizeUser for $name_dec {
