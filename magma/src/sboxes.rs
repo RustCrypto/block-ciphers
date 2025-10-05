@@ -41,9 +41,9 @@ pub(crate) trait SboxExt: Sbox {
     fn apply_sbox(a: u32) -> u32 {
         let mut v = 0;
         for i in 0..4 {
-            let shft = 8 * i;
-            let k = ((a & (0xffu32 << shft)) >> shft) as usize;
-            v += (Self::EXP_SBOX[i][k] as u32) << shft;
+            let shift = 8 * i;
+            let k = ((a & (0xffu32 << shift)) >> shift) as usize;
+            v += (Self::EXP_SBOX[i][k] as u32) << shift;
         }
         v
     }
