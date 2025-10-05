@@ -29,4 +29,3 @@ check-cfg = ['cfg(kuznyechik_backend, values("soft", "compact_soft"))']
 
 [package.metadata.docs.rs]
 all-features = true
-rustdoc-args = ["--cfg", "docsrs"]

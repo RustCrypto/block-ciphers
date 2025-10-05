@@ -35,4 +35,3 @@ check-cfg = ["cfg(aes_compact)", "cfg(aes_force_soft)"]
 
 [package.metadata.docs.rs]
 all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
