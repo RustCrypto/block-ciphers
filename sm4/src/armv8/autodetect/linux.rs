@@ -28,9 +28,9 @@ impl KeySizeUser for Sm4 {
 impl KeyInit for Sm4 {
     #[inline]
     fn new(key: &Key<Self>) -> Self {
-        let (token, intrinsics_presense) = sm4_intrinsics::init_get();
+        let (token, intrinsics_presence) = sm4_intrinsics::init_get();
 
-        let cipher = if intrinsics_presense {
+        let cipher = if intrinsics_presence {
             Sm4Cipher {
                 sm4: ManuallyDrop::new(CryptoExtensionSm4::new(key)),
             }
