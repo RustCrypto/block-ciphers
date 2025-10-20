@@ -38,7 +38,7 @@ fn rfc2144_b1() {
 /// Test based on RFC 2144 Appendix B.2
 /// https://tools.ietf.org/html/rfc2144#appendix-B.1
 #[test]
-fn full_maintance_test() {
+fn full_maintenance_test() {
     let a = hex!("0123456712345678234567893456789A");
     let b = hex!("0123456712345678234567893456789A");
 
@@ -80,4 +80,4 @@ fn full_maintance_test() {
 
 // Test vectors from NESSIE:
 // https://www.cosic.esat.kuleuven.be/nessie/testvectors/bc/cast-128/Cast-128-128-64.verified.test-vectors
-cipher::block_cipher_test!(cast5_nessie, "cast5", cast5::Cast5);
+cipher::block_cipher_test!(cast5, cast5::Cast5);

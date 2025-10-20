@@ -13,14 +13,14 @@ keywords = ["crypto", "sm4", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "=0.5.0-pre.8"
+cipher = "0.5.0-rc.1"
 cfg-if = "1"
 
 [target.'cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))'.dependencies]
 cpufeatures = "0.2.11"
 
 [dev-dependencies]
-cipher = { version = "=0.5.0-pre.8", features = ["dev"] }
+cipher = { version = "0.5.0-rc.1", features = ["dev"] }
 hex-literal = "1"
 
 [features]
@@ -28,7 +28,6 @@ zeroize = ["cipher/zeroize"]
 
 [package.metadata.docs.rs]
 all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(sm4_force_soft)'] }

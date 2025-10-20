@@ -12,12 +12,10 @@ use core::fmt;
 use core::mem::ManuallyDrop;
 
 #[cfg(target_arch = "aarch64")]
-use crate::armv8 as intrinsics;
+use crate::armv8 as arch;
 
 #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
-use crate::ni as intrinsics;
-
-cpufeatures::new!(aes_intrinsics, "aes");
+use crate::x86 as arch;
 
 macro_rules! define_aes_impl {
     (
@@ -29,21 +27,21 @@ macro_rules! define_aes_impl {
         doc = $doc:expr,
     ) => {
         mod $module {
-            use super::{intrinsics, soft};
+            use super::{arch, soft};
             use core::mem::ManuallyDrop;
 
             pub(super) union Inner {
-                pub(super) intrinsics: ManuallyDrop<intrinsics::$name>,
+                pub(super) arch: ManuallyDrop<arch::$name>,
                 pub(super) soft: ManuallyDrop<soft::$name>,
             }
 
             pub(super) union InnerEnc {
-                pub(super) intrinsics: ManuallyDrop<intrinsics::$name_enc>,
+                pub(super) arch: ManuallyDrop<arch::$name_enc>,
                 pub(super) soft: ManuallyDrop<soft::$name_enc>,
             }
 
             pub(super) union InnerDec {
-                pub(super) intrinsics: ManuallyDrop<intrinsics::$name_dec>,
+                pub(super) arch: ManuallyDrop<arch::$name_dec>,
                 pub(super) soft: ManuallyDrop<soft::$name_dec>,
             }
         }
@@ -52,7 +50,7 @@ macro_rules! define_aes_impl {
         #[doc = "block cipher"]
         pub struct $name {
             inner: $module::Inner,
-            token: aes_intrinsics::InitToken,
+            token: arch::features::aes::InitToken,
         }
 
         impl KeySizeUser for $name {
@@ -70,9 +68,7 @@ macro_rules! define_aes_impl {
                 use core::ops::Deref;
                 let inner = if enc.token.get() {
                     $module::Inner {
-                        intrinsics: ManuallyDrop::new(unsafe {
-                            enc.inner.intrinsics.deref().into()
-                        }),
+                        arch: ManuallyDrop::new(unsafe { enc.inner.arch.deref().into() }),
                     }
                 } else {
                     $module::Inner {
@@ -90,11 +86,11 @@ macro_rules! define_aes_impl {
         impl KeyInit for $name {
             #[inline]
             fn new(key: &Key<Self>) -> Self {
-                let (token, aesni_present) = aes_intrinsics::init_get();
+                let (token, aes_features) = arch::features::aes::init_get();
 
-                let inner = if aesni_present {
+                let inner = if aes_features {
                     $module::Inner {
-                        intrinsics: ManuallyDrop::new(intrinsics::$name::new(key)),
+                        arch: ManuallyDrop::new(arch::$name::new(key)),
                     }
                 } else {
                     $module::Inner {
@@ -115,7 +111,7 @@ macro_rules! define_aes_impl {
             fn clone(&self) -> Self {
                 let inner = if self.token.get() {
                     $module::Inner {
-                        intrinsics: unsafe { self.inner.intrinsics.clone() },
+                        arch: unsafe { self.inner.arch.clone() },
                     }
                 } else {
                     $module::Inner {
@@ -136,38 +132,20 @@ macro_rules! define_aes_impl {
 
         impl BlockCipherEncrypt for $name {
             fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
-                unsafe {
-                    if self.token.get() {
-                        #[target_feature(enable = "aes")]
-                        unsafe fn inner(
-                            state: &intrinsics::$name,
-                            f: impl BlockCipherEncClosure<BlockSize = U16>,
-                        ) {
-                            f.call(state.get_enc_backend());
-                        }
-                        inner(&self.inner.intrinsics, f);
-                    } else {
-                        f.call(&self.inner.soft.get_enc_backend());
-                    }
+                if self.token.get() {
+                    unsafe { &self.inner.arch }.encrypt_with_backend(f)
+                } else {
+                    unsafe { &self.inner.soft }.encrypt_with_backend(f)
                 }
             }
         }
 
         impl BlockCipherDecrypt for $name {
             fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = U16>) {
-                unsafe {
-                    if self.token.get() {
-                        #[target_feature(enable = "aes")]
-                        unsafe fn inner(
-                            state: &intrinsics::$name,
-                            f: impl BlockCipherDecClosure<BlockSize = U16>,
-                        ) {
-                            f.call(state.get_dec_backend());
-                        }
-                        inner(&self.inner.intrinsics, f);
-                    } else {
-                        f.call(&self.inner.soft.get_dec_backend());
-                    }
+                if self.token.get() {
+                    unsafe { &self.inner.arch }.decrypt_with_backend(f)
+                } else {
+                    unsafe { &self.inner.soft }.decrypt_with_backend(f)
                 }
             }
         }
@@ -188,7 +166,7 @@ macro_rules! define_aes_impl {
             #[inline]
             fn drop(&mut self) {
                 if self.token.get() {
-                    unsafe { ManuallyDrop::drop(&mut self.inner.intrinsics) };
+                    unsafe { ManuallyDrop::drop(&mut self.inner.arch) };
                 } else {
                     unsafe { ManuallyDrop::drop(&mut self.inner.soft) };
                 };
@@ -202,7 +180,7 @@ macro_rules! define_aes_impl {
         #[doc = "block cipher (encrypt-only)"]
         pub struct $name_enc {
             inner: $module::InnerEnc,
-            token: aes_intrinsics::InitToken,
+            token: arch::features::aes::InitToken,
         }
 
         impl KeySizeUser for $name_enc {
@@ -212,11 +190,11 @@ macro_rules! define_aes_impl {
         impl KeyInit for $name_enc {
             #[inline]
             fn new(key: &Key<Self>) -> Self {
-                let (token, aesni_present) = aes_intrinsics::init_get();
+                let (token, aes_features) = arch::features::aes::init_get();
 
-                let inner = if aesni_present {
+                let inner = if aes_features {
                     $module::InnerEnc {
-                        intrinsics: ManuallyDrop::new(intrinsics::$name_enc::new(key)),
+                        arch: ManuallyDrop::new(arch::$name_enc::new(key)),
                     }
                 } else {
                     $module::InnerEnc {
@@ -237,7 +215,7 @@ macro_rules! define_aes_impl {
             fn clone(&self) -> Self {
                 let inner = if self.token.get() {
                     $module::InnerEnc {
-                        intrinsics: unsafe { self.inner.intrinsics.clone() },
+                        arch: unsafe { self.inner.arch.clone() },
                     }
                 } else {
                     $module::InnerEnc {
@@ -258,19 +236,10 @@ macro_rules! define_aes_impl {
 
         impl BlockCipherEncrypt for $name_enc {
             fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
-                unsafe {
-                    if self.token.get() {
-                        #[target_feature(enable = "aes")]
-                        unsafe fn inner(
-                            state: &intrinsics::$name_enc,
-                            f: impl BlockCipherEncClosure<BlockSize = U16>,
-                        ) {
-                            f.call(state.get_enc_backend());
-                        }
-                        inner(&self.inner.intrinsics, f);
-                    } else {
-                        f.call(&self.inner.soft.get_enc_backend());
-                    }
+                if self.token.get() {
+                    unsafe { &self.inner.arch }.encrypt_with_backend(f)
+                } else {
+                    unsafe { &self.inner.soft }.encrypt_with_backend(f)
                 }
             }
         }
@@ -291,7 +260,7 @@ macro_rules! define_aes_impl {
             #[inline]
             fn drop(&mut self) {
                 if self.token.get() {
-                    unsafe { ManuallyDrop::drop(&mut self.inner.intrinsics) };
+                    unsafe { ManuallyDrop::drop(&mut self.inner.arch) };
                 } else {
                     unsafe { ManuallyDrop::drop(&mut self.inner.soft) };
                 };
@@ -305,7 +274,7 @@ macro_rules! define_aes_impl {
         #[doc = "block cipher (decrypt-only)"]
         pub struct $name_dec {
             inner: $module::InnerDec,
-            token: aes_intrinsics::InitToken,
+            token: arch::features::aes::InitToken,
         }
 
         impl KeySizeUser for $name_dec {
@@ -324,9 +293,7 @@ macro_rules! define_aes_impl {
                 use core::ops::Deref;
                 let inner = if enc.token.get() {
                     $module::InnerDec {
-                        intrinsics: ManuallyDrop::new(unsafe {
-                            enc.inner.intrinsics.deref().into()
-                        }),
+                        arch: ManuallyDrop::new(unsafe { enc.inner.arch.deref().into() }),
                     }
                 } else {
                     $module::InnerDec {
@@ -344,11 +311,11 @@ macro_rules! define_aes_impl {
         impl KeyInit for $name_dec {
             #[inline]
             fn new(key: &Key<Self>) -> Self {
-                let (token, aesni_present) = aes_intrinsics::init_get();
+                let (token, aes_features) = arch::features::aes::init_get();
 
-                let inner = if aesni_present {
+                let inner = if aes_features {
                     $module::InnerDec {
-                        intrinsics: ManuallyDrop::new(intrinsics::$name_dec::new(key)),
+                        arch: ManuallyDrop::new(arch::$name_dec::new(key)),
                     }
                 } else {
                     $module::InnerDec {
@@ -369,7 +336,7 @@ macro_rules! define_aes_impl {
             fn clone(&self) -> Self {
                 let inner = if self.token.get() {
                     $module::InnerDec {
-                        intrinsics: unsafe { self.inner.intrinsics.clone() },
+                        arch: unsafe { self.inner.arch.clone() },
                     }
                 } else {
                     $module::InnerDec {
@@ -390,19 +357,10 @@ macro_rules! define_aes_impl {
 
         impl BlockCipherDecrypt for $name_dec {
             fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = U16>) {
-                unsafe {
-                    if self.token.get() {
-                        #[target_feature(enable = "aes")]
-                        unsafe fn inner(
-                            state: &intrinsics::$name_dec,
-                            f: impl BlockCipherDecClosure<BlockSize = U16>,
-                        ) {
-                            f.call(state.get_dec_backend());
-                        }
-                        inner(&self.inner.intrinsics, f);
-                    } else {
-                        f.call(&self.inner.soft.get_dec_backend());
-                    }
+                if self.token.get() {
+                    unsafe { &self.inner.arch }.decrypt_with_backend(f)
+                } else {
+                    unsafe { &self.inner.soft }.decrypt_with_backend(f)
                 }
             }
         }
@@ -423,7 +381,7 @@ macro_rules! define_aes_impl {
             #[inline]
             fn drop(&mut self) {
                 if self.token.get() {
-                    unsafe { ManuallyDrop::drop(&mut self.inner.intrinsics) };
+                    unsafe { ManuallyDrop::drop(&mut self.inner.arch) };
                 } else {
                     unsafe { ManuallyDrop::drop(&mut self.inner.soft) };
                 };

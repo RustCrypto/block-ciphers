@@ -35,18 +35,24 @@
 //! runtime. On other platforms the `aes` target feature must be enabled via
 //! RUSTFLAGS.
 //!
-//! ## `x86`/`x86_64` intrinsics (AES-NI)
+//! ## `x86`/`x86_64` intrinsics (AES-NI and VAES)
 //! By default this crate uses runtime detection on `i686`/`x86_64` targets
-//! in order to determine if AES-NI is available, and if it is not, it will
-//! fallback to using a constant-time software implementation.
+//! in order to determine if AES-NI and VAES are available, and if they are
+//! not, it will fallback to using a constant-time software implementation.
 //!
-//! Passing `RUSTFLAGS=-C target-feature=+aes,+ssse3` explicitly at compile-time
-//! will override runtime detection and ensure that AES-NI is always used.
+//! Passing `RUSTFLAGS=-Ctarget-feature=+aes,+ssse3` explicitly at
+//! compile-time will override runtime detection and ensure that AES-NI is
+//! used or passing `RUSTFLAGS=-Ctarget-feature=+aes,+avx512f,+ssse3,+vaes`
+//! will ensure that AESNI and VAES are always used.
+//!
+//! Note: Enabling VAES256 or VAES512 still requires specifying `--cfg
+//! aes_avx256` or `--cfg aes_avx512` explicitly.
+//!
 //! Programs built in this manner will crash with an illegal instruction on
-//! CPUs which do not have AES-NI enabled.
+//! CPUs which do not have AES-NI and VAES enabled.
 //!
 //! Note: runtime detection is not possible on SGX targets. Please use the
-//! afforementioned `RUSTFLAGS` to leverage AES-NI on these targets.
+//! aforementioned `RUSTFLAGS` to leverage AES-NI and VAES on these targets.
 //!
 //! # Examples
 //! ```
@@ -71,7 +77,7 @@
 //! // Implementation supports parallel block processing. Number of blocks
 //! // processed in parallel depends in general on hardware capabilities.
 //! // This is achieved by instruction-level parallelism (ILP) on a single
-//! // CPU core, which is differen from multi-threaded parallelism.
+//! // CPU core, which is different from multi-threaded parallelism.
 //! let mut blocks = [block; 100];
 //! cipher.encrypt_blocks(&mut blocks);
 //!
@@ -113,7 +119,7 @@
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs, rust_2018_idioms)]
 
 #[cfg(feature = "hazmat")]
@@ -134,8 +140,8 @@ cfg_if! {
         any(target_arch = "x86", target_arch = "x86_64"),
         not(aes_force_soft)
     ))] {
+        mod x86;
         mod autodetect;
-        mod ni;
         pub use autodetect::*;
     } else {
         pub use soft::*;
@@ -216,19 +222,19 @@ mod tests {
 
         #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), not(aes_force_soft)))]
         {
-            use super::ni;
+            use super::x86;
 
             cpufeatures::new!(aes_intrinsics, "aes");
             if aes_intrinsics::get() {
-                test_for(ni::Aes128::new(&key_128));
-                test_for(ni::Aes128Enc::new(&key_128));
-                test_for(ni::Aes128Dec::new(&key_128));
-                test_for(ni::Aes192::new(&key_192));
-                test_for(ni::Aes192Enc::new(&key_192));
-                test_for(ni::Aes192Dec::new(&key_192));
-                test_for(ni::Aes256::new(&key_256));
-                test_for(ni::Aes256Enc::new(&key_256));
-                test_for(ni::Aes256Dec::new(&key_256));
+                test_for(x86::Aes128::new(&key_128));
+                test_for(x86::Aes128Enc::new(&key_128));
+                test_for(x86::Aes128Dec::new(&key_128));
+                test_for(x86::Aes192::new(&key_192));
+                test_for(x86::Aes192Enc::new(&key_192));
+                test_for(x86::Aes192Dec::new(&key_192));
+                test_for(x86::Aes256::new(&key_256));
+                test_for(x86::Aes256Enc::new(&key_256));
+                test_for(x86::Aes256Dec::new(&key_256));
             }
         }
 

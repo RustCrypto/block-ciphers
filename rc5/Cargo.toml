@@ -12,10 +12,10 @@ keywords = ["crypto", "rc5", "block-cipher"]
 categories = ["cryptography"]
 
 [dependencies]
-cipher = "=0.5.0-pre.8"
+cipher = "0.5.0-rc.1"
 
 [dev-dependencies]
-cipher = { version = "=0.5.0-pre.8", features = ["dev"] }
+cipher = { version = "0.5.0-rc.1", features = ["dev"] }
 hex-literal = "1"
 
 [features]
@@ -23,4 +23,3 @@ zeroize = ["cipher/zeroize"]
 
 [package.metadata.docs.rs]
 all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
