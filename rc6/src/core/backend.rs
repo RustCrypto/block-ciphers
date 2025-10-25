@@ -8,7 +8,7 @@ use cipher::{
     array::{Array, ArraySize},
     crypto_common::BlockSizes,
     inout::InOut,
-    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U2, U256, U4},
+    typenum::{Diff, IsLess, Le, NonZero, Sum, U1, U2, U4, U256, Unsigned},
 };
 
 use super::{

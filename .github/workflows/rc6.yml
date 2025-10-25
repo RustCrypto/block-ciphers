@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.65.0 # MSRVs
+          - 1.85.0 # MSRVs
           - stable
         target:
           - thumbv7em-none-eabi
@@ -38,14 +38,14 @@ jobs:
   minimal-versions:
     uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
     with:
-        working-directory: ${{ github.workflow }}
+      working-directory: ${{ github.workflow }}
 
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         rust:
-          - 1.65.0 # MSRVs
+          - 1.85.0 # MSRVs
           - stable
     steps:
       - uses: actions/checkout@v3

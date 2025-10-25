@@ -3,7 +3,7 @@
 #[allow(deprecated)] // uses `clone_from_slice`
 mod tests {
     use cipher::consts::*;
-    use cipher::{array::Array, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
+    use cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit, array::Array};
     use rc6::RC6;
 
     #[test]

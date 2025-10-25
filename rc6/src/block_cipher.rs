@@ -1,15 +1,18 @@
 use core::ops::{Add, Div, Mul, Sub};
 
 use cipher::{
+    AlgorithmName, Block, BlockSizeUser, KeyInit, KeySizeUser, ParBlocksSizeUser,
     array::ArraySize,
+    block::{
+        BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
+        BlockCipherEncClosure, BlockCipherEncrypt,
+    },
     crypto_common::BlockSizes,
     inout::InOut,
-    typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned, U1, U12, U16, U2, U20, U24, U256, U4, U8},
-    AlgorithmName, Block, BlockBackend, BlockCipher, BlockCipherDecrypt, BlockCipherEncrypt,
-    BlockSizeUser, KeyInit, KeySizeUser, ParBlocksSizeUser,
+    typenum::{Diff, IsLess, Le, NonZero, Sum, U1, U2, U4, U8, U12, U16, U20, U24, U256, Unsigned},
 };
 
-use crate::core::{BlockSize, ExpandedKeyTableSize, KeyAsWordsSize, Word, RC6};
+use crate::core::{BlockSize, ExpandedKeyTableSize, KeyAsWordsSize, RC6, Word};
 
 impl<W, R, B> KeyInit for RC6<W, R, B>
 where
@@ -59,23 +62,6 @@ where
     type KeySize = B;
 }
 
-impl<W, R, B> BlockCipher for RC6<W, R, B>
-where
-    W: Word,
-    // Block size
-    W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
-    // Rounds range
-    R: Unsigned,
-    R: IsLess<U256>,
-    Le<R, U256>: NonZero,
-    // ExpandedKeyTableSize
-    R: Add<U2>,
-    Sum<R, U2>: Mul<U2>,
-    ExpandedKeyTableSize<R>: ArraySize,
-{
-}
-
 impl<W, R, B> BlockSizeUser for RC6<W, R, B>
 where
     W: Word,
@@ -118,8 +104,8 @@ where
     Diff<Sum<B, W::Bytes>, U1>: Div<W::Bytes>,
     KeyAsWordsSize<W, B>: ArraySize,
 {
-    fn encrypt_with_backend(&self, f: impl cipher::BlockClosure<BlockSize = Self::BlockSize>) {
-        f.call(&mut RC6EncryptBackend { enc_dec: self })
+    fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
+        f.call(&RC6EncryptBackend { enc_dec: self })
     }
 }
 
@@ -140,7 +126,7 @@ where
 {
     enc_dec: &'a RC6<W, R, B>,
 }
-impl<'a, W, R, B> BlockSizeUser for RC6EncryptBackend<'a, W, R, B>
+impl<W, R, B> BlockSizeUser for RC6EncryptBackend<'_, W, R, B>
 where
     W: Word,
     // Block size
@@ -158,7 +144,7 @@ where
     type BlockSize = BlockSize<W>;
 }
 
-impl<'a, W, R, B> ParBlocksSizeUser for RC6EncryptBackend<'a, W, R, B>
+impl<W, R, B> ParBlocksSizeUser for RC6EncryptBackend<'_, W, R, B>
 where
     W: Word,
     // Block size
@@ -176,7 +162,7 @@ where
     type ParBlocksSize = U1;
 }
 
-impl<'a, W, R, B> BlockBackend for RC6EncryptBackend<'a, W, R, B>
+impl<W, R, B> BlockCipherEncBackend for RC6EncryptBackend<'_, W, R, B>
 where
     W: Word,
     // Block size
@@ -191,7 +177,7 @@ where
     Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArraySize,
     // Key range
-    B: BlockSizes,
+    B: ArraySize,
     B: IsLess<U256>,
     Le<B, U256>: NonZero,
     // KeyAsWordsSize
@@ -201,7 +187,7 @@ where
     KeyAsWordsSize<W, B>: ArraySize,
 {
     #[inline(always)]
-    fn proc_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
+    fn encrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
         let backend = self.enc_dec;
         backend.encrypt(block)
     }
@@ -231,8 +217,8 @@ where
     Diff<Sum<B, W::Bytes>, U1>: Div<W::Bytes>,
     KeyAsWordsSize<W, B>: ArraySize,
 {
-    fn decrypt_with_backend(&self, f: impl cipher::BlockClosure<BlockSize = Self::BlockSize>) {
-        f.call(&mut RC6DecryptBackend { enc_dec: self })
+    fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
+        f.call(&RC6DecryptBackend { enc_dec: self })
     }
 }
 
@@ -253,7 +239,7 @@ where
 {
     enc_dec: &'a RC6<W, R, B>,
 }
-impl<'a, W, R, B> BlockSizeUser for RC6DecryptBackend<'a, W, R, B>
+impl<W, R, B> BlockSizeUser for RC6DecryptBackend<'_, W, R, B>
 where
     W: Word,
     // Block size
@@ -271,7 +257,7 @@ where
     type BlockSize = BlockSize<W>;
 }
 
-impl<'a, W, R, B> ParBlocksSizeUser for RC6DecryptBackend<'a, W, R, B>
+impl<W, R, B> ParBlocksSizeUser for RC6DecryptBackend<'_, W, R, B>
 where
     W: Word,
     // Block size
@@ -289,7 +275,7 @@ where
     type ParBlocksSize = U1;
 }
 
-impl<'a, W, R, B> BlockBackend for RC6DecryptBackend<'a, W, R, B>
+impl<W, R, B> BlockCipherDecBackend for RC6DecryptBackend<'_, W, R, B>
 where
     W: Word,
     // Block size
@@ -314,7 +300,7 @@ where
     KeyAsWordsSize<W, B>: ArraySize,
 {
     #[inline(always)]
-    fn proc_block(&mut self, block: InOut<'_, '_, Block<Self>>) {
+    fn decrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
         let backend = self.enc_dec;
         backend.decrypt(block)
     }
