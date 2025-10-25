@@ -15,6 +15,7 @@ members = [
     "magma",
     "rc2",
     "rc5",
+    "rc6",
     "serpent",
     "sm4",
     "speck",
