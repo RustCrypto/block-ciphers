@@ -1,6 +1,6 @@
 [package]
 name = "sm4"
-version = "0.6.0-pre"
+version = "0.6.0-rc.2"
 description = "SM4 block cipher algorithm"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
