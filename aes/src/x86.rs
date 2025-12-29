@@ -17,7 +17,7 @@ use cipher::{
     AlgorithmName, BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt,
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
     KeyInit, KeySizeUser, ParBlocksSizeUser,
-    consts::{U9, U16, U24, U32},
+    consts::{U8, U16, U24, U32},
     crypto_common::WeakKeyError,
 };
 #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
@@ -447,7 +447,7 @@ macro_rules! define_aes_impl {
         }
 
         impl<'a> ParBlocksSizeUser for $name_backend::Ni<'a> {
-            type ParBlocksSize = U9;
+            type ParBlocksSize = U8;
         }
         #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
         impl<'a> ParBlocksSizeUser for $name_backend::Vaes256<'a> {
