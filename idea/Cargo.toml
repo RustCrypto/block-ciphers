@@ -1,6 +1,6 @@
 [package]
 name = "idea"
-version = "0.6.0-pre"
+version = "0.6.0-rc.0"
 description = "IDEA block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"

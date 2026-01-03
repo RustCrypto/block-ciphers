@@ -1,6 +1,6 @@
 [package]
 name = "twofish"
-version = "0.8.0-pre"
+version = "0.8.0-rc.0"
 description = "Twofish block cipher"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
