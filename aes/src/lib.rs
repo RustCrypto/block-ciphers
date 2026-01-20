@@ -106,7 +106,7 @@
 //! - `aes_compact`: reduce code size at the cost of slower performance
 //!   (affects only software backend).
 //!
-//! It can be enabled using `RUSTFLAGS` environmental variable
+//! It can be enabled using `RUSTFLAGS` environment variable
 //! (e.g. `RUSTFLAGS="--cfg aes_compact"`) or by modifying `.cargo/config`.
 //!
 //! [AES]: https://en.wikipedia.org/wiki/Advanced_Encryption_Standard
