@@ -16,7 +16,7 @@
 //! - `soft`: use software backend with big fused tables.
 //! - `compact_soft`: use software backend with small tables and slower performance.
 //!
-//! The flag can be enabled using `RUSTFLAGS` environmental variable
+//! The flag can be enabled using `RUSTFLAGS` environment variable
 //! (e.g. `RUSTFLAGS='--cfg kuznyechik_backend="soft"'`) or by modifying
 //! `.cargo/config`.
 //!
