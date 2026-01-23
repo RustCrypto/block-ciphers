@@ -6,7 +6,6 @@ use cipher::{
     AlgorithmName, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncClosure,
     BlockCipherEncrypt, BlockSizeUser, Key, KeyInit, KeySizeUser,
     consts::{U16, U24, U32},
-    crypto_common::WeakKeyError,
 };
 use core::fmt;
 use core::mem::ManuallyDrop;
@@ -99,11 +98,6 @@ macro_rules! define_aes_impl {
                 };
 
                 Self { inner, token }
-            }
-
-            #[inline]
-            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-                crate::weak_key_test(&key.0)
             }
         }
 
@@ -203,11 +197,6 @@ macro_rules! define_aes_impl {
                 };
 
                 Self { inner, token }
-            }
-
-            #[inline]
-            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-                crate::weak_key_test(&key.0)
             }
         }
 
@@ -324,11 +313,6 @@ macro_rules! define_aes_impl {
                 };
 
                 Self { inner, token }
-            }
-
-            #[inline]
-            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-                crate::weak_key_test(&key.0)
             }
         }
 
