@@ -18,7 +18,6 @@ use cipher::{
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, Key, KeyInit,
     KeySizeUser, ParBlocksSizeUser,
     consts::{U16, U24, U32},
-    crypto_common::WeakKeyError,
     inout::InOut,
 };
 use core::fmt;
@@ -55,11 +54,6 @@ macro_rules! define_aes_impl {
                 Self {
                     keys: $fixslice_key_schedule(key.into()),
                 }
-            }
-
-            #[inline]
-            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-                crate::weak_key_test(&key.0)
             }
         }
 
@@ -133,11 +127,6 @@ macro_rules! define_aes_impl {
                 let inner = $name::new(key);
                 Self { inner }
             }
-
-            #[inline]
-            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-                crate::weak_key_test(&key.0)
-            }
         }
 
         impl BlockSizeUser for $name_enc {
@@ -181,11 +170,6 @@ macro_rules! define_aes_impl {
             fn new(key: &Key<Self>) -> Self {
                 let inner = $name::new(key);
                 Self { inner }
-            }
-
-            #[inline]
-            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-                crate::weak_key_test(&key.0)
             }
         }
 

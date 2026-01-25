@@ -18,7 +18,6 @@ use cipher::{
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
     KeyInit, KeySizeUser, ParBlocksSizeUser,
     consts::{U8, U16, U24, U32},
-    crypto_common::WeakKeyError,
 };
 #[cfg(all(target_arch = "x86_64", any(aes_avx256, aes_avx512)))]
 use cipher::{Array, InOutBuf, consts::U30, typenum::Unsigned};
@@ -208,11 +207,6 @@ macro_rules! define_aes_impl {
                 let decrypt = $name_dec::from(&encrypt);
                 Self { encrypt, decrypt }
             }
-
-            #[inline]
-            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-                crate::weak_key_test(&key.0)
-            }
         }
 
         impl From<$name_enc> for $name {
@@ -296,11 +290,6 @@ macro_rules! define_aes_impl {
                     features: Features::new(),
                 }
             }
-
-            #[inline]
-            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-                crate::weak_key_test(&key.0)
-            }
         }
 
         impl BlockSizeUser for $name_enc {
@@ -370,11 +359,6 @@ macro_rules! define_aes_impl {
             #[inline]
             fn new(key: &Key<Self>) -> Self {
                 $name_enc::new(key).into()
-            }
-
-            #[inline]
-            fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-                crate::weak_key_test(&key.0)
             }
         }
 
