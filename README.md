@@ -52,6 +52,7 @@ It's generally recommended not to use other cipher implementations in this repos
 | [RC5] | [`rc5`] | [![crates.io](https://img.shields.io/crates/v/rc5.svg)](https://crates.io/crates/rc5) | [![Documentation](https://docs.rs/rc5/badge.svg)](https://docs.rs/rc5) | ![MSRV 1.85][msrv-1.85] |
 | [RC6] | [`rc6`] | [![crates.io](https://img.shields.io/crates/v/rc6.svg)](https://crates.io/crates/rc6) | [![Documentation](https://docs.rs/rc6/badge.svg)](https://docs.rs/rc6) | ![MSRV 1.85][msrv-1.85] |
 | [Serpent] | [`serpent`] | [![crates.io](https://img.shields.io/crates/v/serpent.svg)](https://crates.io/crates/serpent) | [![Documentation](https://docs.rs/serpent/badge.svg)](https://docs.rs/serpent) | ![MSRV 1.85][msrv-1.85] |
+| [Simon] | [`simon-cipher`] | [![crates.io](https://img.shields.io/crates/v/simon-cipher.svg)](https://crates.io/crates/simon-cipher) | [![Documentation](https://docs.rs/simon-cipher/badge.svg)](https://docs.rs/simon-cipher) | ![MSRV 1.85][msrv-1.85] |
 | [SM4] | [`sm4`] | [![crates.io](https://img.shields.io/crates/v/sm4.svg)](https://crates.io/crates/sm4) | [![Documentation](https://docs.rs/sm4/badge.svg)](https://docs.rs/sm4) | ![MSRV 1.85][msrv-1.85] |
 | [Speck] | [`speck-cipher`] | [![crates.io](https://img.shields.io/crates/v/speck-cipher.svg)](https://crates.io/crates/speck-cipher) | [![Documentation](https://docs.rs/speck-cipher/badge.svg)](https://docs.rs/speck-cipher) | ![MSRV 1.85][msrv-1.85] |
 | [Threefish] | [`threefish`] | [![crates.io](https://img.shields.io/crates/v/threefish.svg)](https://crates.io/crates/threefish) | [![Documentation](https://docs.rs/threefish/badge.svg)](https://docs.rs/threefish) | ![MSRV 1.85][msrv-1.85] |
@@ -102,6 +103,7 @@ dual licensed as above, without any additional terms or conditions.
 [`rc5`]: ./rc5
 [`rc6`]: ./rc6
 [`serpent`]: ./serpent
+[`simon-cipher`]: ./simon
 [`sm4`]: ./sm4
 [`speck-cipher`]: ./speck
 [`threefish`]: ./threefish
@@ -131,6 +133,7 @@ dual licensed as above, without any additional terms or conditions.
 [RC5]: https://en.wikipedia.org/wiki/RC5
 [RC6]: https://en.wikipedia.org/wiki/RC6
 [Serpent]: https://en.wikipedia.org/wiki/Serpent_(cipher)
+[Simon]: https://en.wikipedia.org/wiki/Simon_(cipher)
 [SM4]: https://en.wikipedia.org/wiki/SM4_(cipher)
 [Speck]: https://en.wikipedia.org/wiki/Speck_(cipher)
 [Threefish]: https://en.wikipedia.org/wiki/Threefish

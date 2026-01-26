@@ -221,6 +221,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "simon-cipher"
+version = "0.1.0"
+dependencies = [
+ "cipher",
+ "hex-literal",
+]
+
+[[package]]
 name = "sm4"
 version = "0.6.0-rc.2"
 dependencies = [
