@@ -7,7 +7,6 @@ use cipher::{
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
     KeyInit, KeySizeUser, ParBlocksSizeUser,
     consts::{U1, U8},
-    crypto_common::WeakKeyError,
 };
 use core::fmt;
 
@@ -49,15 +48,6 @@ impl KeyInit for Des {
     fn new(key: &Key<Self>) -> Self {
         let keys = gen_keys(u64::from_be_bytes(key.0));
         Self { keys }
-    }
-
-    #[inline]
-    fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        let key = u64::from_ne_bytes(key.0);
-        match super::weak_key_test(key) {
-            0 => Ok(()),
-            _ => Err(WeakKeyError),
-        }
     }
 }
 
