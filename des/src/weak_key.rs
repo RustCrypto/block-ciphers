@@ -14,12 +14,29 @@ pub fn weak_key_test(key: &[u8]) -> Result<(), WeakKeyError> {
     );
 
     let mut is_weak = 0u8;
+
     for subkey in key.chunks_exact(8) {
         let key = u64::from_ne_bytes(subkey.try_into().expect("`subkey` length is equal to 8"));
         for &weak_key in WEAK_KEYS {
             is_weak |= u8::from(key == weak_key);
         }
     }
+
+    match key.len() {
+        16 => {
+            is_weak |= u8::from(key[..8] == key[8..]);
+        }
+        24 => {
+            let k1 = &key[..8];
+            let k2 = &key[8..16];
+            let k3 = &key[16..];
+            is_weak |= u8::from(k1 == k2);
+            is_weak |= u8::from(k1 == k3);
+            is_weak |= u8::from(k2 == k3);
+        }
+        _ => {}
+    }
+
     match is_weak {
         0 => Ok(()),
         _ => Err(WeakKeyError),
