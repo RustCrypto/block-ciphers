@@ -6,48 +6,11 @@ use cipher::{
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, InOut, Key,
     KeyInit, KeySizeUser, ParBlocksSizeUser,
     consts::{U1, U8, U16, U24},
-    crypto_common::WeakKeyError,
 };
 use core::fmt;
 
 #[cfg(feature = "zeroize")]
 use cipher::zeroize::ZeroizeOnDrop;
-
-#[inline]
-fn weak_key_test2(key: &[u8; 16]) -> Result<(), WeakKeyError> {
-    let k1 = u64::from_ne_bytes(key[..8].try_into().unwrap());
-    let k2 = u64::from_ne_bytes(key[8..16].try_into().unwrap());
-
-    let mut is_weak = 0u8;
-    is_weak |= super::weak_key_test(k1);
-    is_weak |= super::weak_key_test(k2);
-    is_weak |= u8::from(k1 == k2);
-
-    match is_weak {
-        0 => Ok(()),
-        _ => Err(WeakKeyError),
-    }
-}
-
-#[inline]
-fn weak_key_test3(key: &[u8; 24]) -> Result<(), WeakKeyError> {
-    let k1 = u64::from_ne_bytes(key[..8].try_into().unwrap());
-    let k2 = u64::from_ne_bytes(key[8..16].try_into().unwrap());
-    let k3 = u64::from_ne_bytes(key[16..24].try_into().unwrap());
-
-    let mut is_weak = 0u8;
-    is_weak |= super::weak_key_test(k1);
-    is_weak |= super::weak_key_test(k2);
-    is_weak |= super::weak_key_test(k3);
-    is_weak |= u8::from(k1 == k2);
-    is_weak |= u8::from(k1 == k3);
-    is_weak |= u8::from(k2 == k3);
-
-    match is_weak {
-        0 => Ok(()),
-        _ => Err(WeakKeyError),
-    }
-}
 
 /// Triple DES (3DES) block cipher.
 #[derive(Clone)]
@@ -71,11 +34,6 @@ impl KeyInit for TdesEde3 {
         let d2 = Des { keys: gen_keys(k2) };
         let d3 = Des { keys: gen_keys(k3) };
         Self { d1, d2, d3 }
-    }
-
-    #[inline]
-    fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        weak_key_test3(&key.0)
     }
 }
 
@@ -161,11 +119,6 @@ impl KeyInit for TdesEee3 {
         let d3 = Des { keys: gen_keys(k3) };
         Self { d1, d2, d3 }
     }
-
-    #[inline]
-    fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        weak_key_test3(&key.0)
-    }
 }
 
 impl BlockSizeUser for TdesEee3 {
@@ -247,11 +200,6 @@ impl KeyInit for TdesEde2 {
         let d2 = Des { keys: gen_keys(k2) };
         Self { d1, d2 }
     }
-
-    #[inline]
-    fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        weak_key_test2(&key.0)
-    }
 }
 
 impl BlockSizeUser for TdesEde2 {
@@ -332,11 +280,6 @@ impl KeyInit for TdesEee2 {
         let d1 = Des { keys: gen_keys(k1) };
         let d2 = Des { keys: gen_keys(k2) };
         Self { d1, d2 }
-    }
-
-    #[inline]
-    fn weak_key_test(key: &Key<Self>) -> Result<(), WeakKeyError> {
-        weak_key_test2(&key.0)
     }
 }
 
