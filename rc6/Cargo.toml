@@ -1,6 +1,6 @@
 [package]
 name = "rc6"
-version = "0.1.0-rc.2"
+version = "0.1.0-rc.3"
 description = "RC6 block cipher"
 authors = ["RustCrypto Developers"]
 edition = "2024"
