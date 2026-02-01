@@ -1,6 +1,6 @@
 [package]
 name = "belt-block"
-version = "0.2.0-rc.2"
+version = "0.2.0-rc.3"
 description = "belt-block block cipher implementation"
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
