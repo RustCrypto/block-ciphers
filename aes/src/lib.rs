@@ -129,9 +129,7 @@ pub mod hazmat;
 mod macros;
 mod soft;
 
-use cfg_if::cfg_if;
-
-cfg_if! {
+cpubits::cfg_if! {
     if #[cfg(all(target_arch = "aarch64", not(aes_force_soft)))] {
         mod armv8;
         mod autodetect;
