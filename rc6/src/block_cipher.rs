@@ -7,7 +7,7 @@ use cipher::{
         BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
         BlockCipherEncClosure, BlockCipherEncrypt,
     },
-    crypto_common::BlockSizes,
+    common::BlockSizes,
     inout::InOut,
     typenum::{Diff, IsLess, Le, NonZero, Sum, U1, U2, U4, U8, U12, U16, U20, U24, U256, Unsigned},
 };

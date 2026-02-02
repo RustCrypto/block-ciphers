@@ -13,11 +13,11 @@ keywords = ["crypto", "blowfish", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = "0.5.0-rc.7"
+cipher = "0.5.0-rc.8"
 byteorder = { version = "1.1", default-features = false }
 
 [dev-dependencies]
-cipher = { version = "0.5.0-rc.7", features = ["dev"] }
+cipher = { version = "0.5.0-rc.8", features = ["dev"] }
 
 [features]
 bcrypt = []
