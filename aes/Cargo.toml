@@ -13,8 +13,8 @@ keywords = ["crypto", "aes", "rijndael", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cfg-if = "1"
 cipher = "0.5.0-rc.7"
+cpubits = "0.1.0-rc.3"
 zeroize = { version = "1.5.6", optional = true, default-features = false, features = ["aarch64"] }
 
 [target.'cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))'.dependencies]
@@ -29,7 +29,13 @@ hazmat = [] # Expose cryptographically hazardous APIs
 
 [lints.rust.unexpected_cfgs]
 level = "warn"
-check-cfg = ["cfg(aes_compact)", "cfg(aes_force_soft)", "cfg(aes_avx256)", "cfg(aes_avx512)"]
+check-cfg = [
+    'cfg(aes_compact)',
+    'cfg(aes_force_soft)',
+    'cfg(aes_avx256)',
+    'cfg(aes_avx512)',
+    'cfg(cpubits, values("16", "32", "64"))'
+]
 
 [package.metadata.docs.rs]
 all-features = true
