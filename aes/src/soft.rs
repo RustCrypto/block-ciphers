@@ -14,7 +14,7 @@ cpubits::cpubits! {
         pub(crate) mod fixslice;
     }
     64 => {
-        #[path = "soft/fixslice32.rs"]
+        #[path = "soft/fixslice64.rs"]
         pub(crate) mod fixslice;
     }
 }
