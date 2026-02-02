@@ -23,8 +23,8 @@ use cipher::{
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, KeyInit,
     KeySizeUser, ParBlocksSizeUser,
     array::ArraySize,
+    common::BlockSizes,
     consts::{U1, U2, U256},
-    crypto_common::BlockSizes,
     inout::InOut,
     typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned},
 };

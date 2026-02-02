@@ -6,7 +6,7 @@ use core::{
 
 use cipher::{
     array::{Array, ArraySize},
-    crypto_common::BlockSizes,
+    common::BlockSizes,
     inout::InOut,
     typenum::{Diff, IsLess, Le, NonZero, Sum, U1, U2, U4, U256, Unsigned},
 };
