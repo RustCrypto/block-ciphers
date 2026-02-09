@@ -13,11 +13,11 @@ keywords = ["crypto", "threefish", "block-cipher"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-cipher = { version = "0.5.0-rc.8", optional = true }
+cipher = { version = "0.5", optional = true }
 zeroize = { version = "1.6", optional = true, default-features = false }
 
 [dev-dependencies]
-cipher = { version = "0.5.0-rc.8", features = ["dev"] }
+cipher = { version = "0.5", features = ["dev"] }
 hex-literal = "1"
 
 [features]
