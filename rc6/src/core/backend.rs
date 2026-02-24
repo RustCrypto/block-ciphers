@@ -6,7 +6,6 @@ use core::{
 
 use cipher::{
     array::{Array, ArraySize},
-    common::BlockSizes,
     inout::InOut,
     typenum::{Diff, IsLess, Le, NonZero, Sum, U1, U2, U4, U256, Unsigned},
 };
@@ -34,7 +33,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -127,7 +126,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,

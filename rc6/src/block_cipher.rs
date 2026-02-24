@@ -7,7 +7,6 @@ use cipher::{
         BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncBackend,
         BlockCipherEncClosure, BlockCipherEncrypt,
     },
-    common::BlockSizes,
     inout::InOut,
     typenum::{Diff, IsLess, Le, NonZero, Sum, U1, U2, U4, U8, U12, U16, U20, U24, U256, Unsigned},
 };
@@ -19,7 +18,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -48,7 +47,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -67,7 +66,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -85,7 +84,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -95,7 +94,7 @@ where
     Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArraySize,
     // Key range
-    B: BlockSizes,
+    B: ArraySize,
     B: IsLess<U256>,
     Le<B, U256>: NonZero,
     // KeyAsWordsSize
@@ -114,7 +113,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -131,7 +130,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -149,7 +148,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -167,7 +166,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -198,7 +197,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -208,7 +207,7 @@ where
     Sum<R, U2>: Mul<U2>,
     ExpandedKeyTableSize<R>: ArraySize,
     // Key range
-    B: BlockSizes,
+    B: ArraySize,
     B: IsLess<U256>,
     Le<B, U256>: NonZero,
     // KeyAsWordsSize
@@ -227,7 +226,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -244,7 +243,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -262,7 +261,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -280,7 +279,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -311,7 +310,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U4>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
