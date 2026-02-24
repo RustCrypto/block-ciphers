@@ -1,4 +1,5 @@
 name: rc5
+
 on:
   pull_request:
     paths:
@@ -42,7 +43,6 @@ jobs:
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
 
   minimal-versions:
-    if: false # TODO: temp disabled due to unpublished prerelease dependencies
     uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
     with:
         working-directory: ${{ github.workflow }}

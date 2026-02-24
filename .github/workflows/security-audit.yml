@@ -1,4 +1,5 @@
 name: Security Audit
+
 on:
   pull_request:
     paths:

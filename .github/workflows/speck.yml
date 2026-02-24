@@ -42,17 +42,9 @@ jobs:
       - run: cargo build --no-default-features --release --target ${{ matrix.target }}
 
   minimal-versions:
-    if: false # TODO: temp disabled due to unpublished prerelease dependencies
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: dtolnay/rust-toolchain@master
-      with:
-        toolchain: nightly
-    - run: rm ../Cargo.toml
-    - run: cargo update -Z minimal-versions
-    - run: cargo test --release
-    - run: cargo test --release --all-features
+    uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
+    with:
+        working-directory: ${{ github.workflow }}
 
   test:
     runs-on: ubuntu-latest

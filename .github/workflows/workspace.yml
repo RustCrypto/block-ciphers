@@ -6,8 +6,6 @@ on:
       - README.md
   push:
     branches: master
-    paths-ignore:
-      - README.md
 
 # Cancels CI jobs when new commits are pushed to a PR branch
 concurrency:
