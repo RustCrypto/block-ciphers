@@ -2,7 +2,6 @@ use core::ops::{Add, BitXor, Mul};
 
 use cipher::{
     array::{Array, ArraySize},
-    common::BlockSizes,
     typenum::{Diff, Prod, Quot, Sum, U1, U2, U4, U8, U16},
 };
 
@@ -20,7 +19,7 @@ pub type KeyAsWordsSize<W, B> = Quot<Diff<Sum<B, <W as Word>::Bytes>, U1>, <W as
 pub trait Word
 where
     Self: Default + Copy + From<u8> + Add<Output = Self> + Default + private::Sealed,
-    BlockSize<Self>: BlockSizes,
+    BlockSize<Self>: ArraySize,
 {
     type Bytes: ArraySize + Mul<U2>;
 

@@ -23,7 +23,6 @@ use cipher::{
     BlockCipherEncBackend, BlockCipherEncClosure, BlockCipherEncrypt, BlockSizeUser, KeyInit,
     KeySizeUser, ParBlocksSizeUser,
     array::ArraySize,
-    common::BlockSizes,
     consts::{U1, U2, U256},
     inout::InOut,
     typenum::{Diff, IsLess, Le, NonZero, Sum, Unsigned},
@@ -51,7 +50,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -70,7 +69,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -156,7 +155,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -187,7 +186,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -219,7 +218,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -238,7 +237,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -256,7 +255,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -274,7 +273,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -303,7 +302,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -344,7 +343,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -373,7 +372,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -414,7 +413,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -440,7 +439,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -467,7 +466,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
@@ -484,7 +483,7 @@ where
     W: Word,
     // Block size
     W::Bytes: Mul<U2>,
-    BlockSize<W>: BlockSizes,
+    BlockSize<W>: ArraySize,
     // Rounds range
     R: Unsigned,
     R: IsLess<U256>,
