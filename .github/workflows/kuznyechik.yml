@@ -4,7 +4,6 @@ on:
   pull_request:
     paths:
       - ".github/workflows/kuznyechik.yml"
-      - ".github/workflows/kuznyechik.yml"
       - "kuznyechik/**"
       - "Cargo.*"
   push:

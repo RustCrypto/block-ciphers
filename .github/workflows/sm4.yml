@@ -3,6 +3,7 @@ name: sm4
 on:
   pull_request:
     paths:
+      - ".github/workflows/sm4.yml"
       - "sm4/**"
       - "Cargo.*"
   push:
