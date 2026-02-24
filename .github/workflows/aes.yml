@@ -65,7 +65,6 @@ jobs:
           cargo build --target ${{ matrix.target }} --features hazmat
 
   minimal-versions:
-    if: false # TODO: temp disabled due to unpublished prerelease dependencies
     uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
     with:
       working-directory: ${{ github.workflow }}
