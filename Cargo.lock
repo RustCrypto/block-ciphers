@@ -92,7 +92,8 @@ checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 [[package]]
 name = "cipher"
 version = "0.5.1"
-source = "git+https://github.com/RustCrypto/traits?branch=block_sizes#8359276d485a3cae7c47f969d267a66245fa669b"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e34d8227fe1ba289043aeb13792056ff80fd6de1a9f49137a5f499de8e8c78ea"
 dependencies = [
  "blobby",
  "block-buffer",
@@ -119,7 +120,8 @@ dependencies = [
 [[package]]
 name = "crypto-common"
 version = "0.2.1"
-source = "git+https://github.com/RustCrypto/traits?branch=block_sizes#8359276d485a3cae7c47f969d267a66245fa669b"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77727bb15fa921304124b128af125e7e3b968275d1b108b379190264f4423710"
 dependencies = [
  "hybrid-array",
 ]
