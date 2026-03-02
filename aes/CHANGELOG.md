@@ -12,10 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Bump `cipher` dependency to v0.5
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#472])
-- Refactor ARMv8 expand_key ([#367])
+- Refactor ARMv8 `expand_key` ([#367])
 - Added `#[inline]` attributes for `KeyInit::new` impls ([#386])
 - Rework backends ([#442])
-- Move Block8 to the hazmat module ([#468])
+- Move `Block8` to the hazmat module ([#468])
 - Relax MSRV policy and allow MSRV bumps in patch releases ([#477])
 - Replace inline ASM with ARMv8 intrinsics ([#380])
 - Enable ARMv8 backend by default ([#395])
