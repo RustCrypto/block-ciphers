@@ -17,9 +17,9 @@ macro_rules! new_test {
             for i in 1..50 {
                 let twofish = Twofish::new_from_slice(&key).unwrap();
 
-                let mut buf = plain.clone();
+                let mut buf = plain;
                 twofish.encrypt_block(&mut buf);
-                cipher = buf.clone();
+                cipher = buf;
                 twofish.decrypt_block(&mut buf);
                 assert_eq!(plain, buf);
 
