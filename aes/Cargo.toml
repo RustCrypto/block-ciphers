@@ -31,9 +31,7 @@ hazmat = [] # Expose cryptographically hazardous APIs
 level = "warn"
 check-cfg = [
     'cfg(aes_compact)',
-    'cfg(aes_force_soft)',
-    'cfg(aes_avx256)',
-    'cfg(aes_avx512)',
+    'cfg(aes_backend, values("soft", "avx256", "avx512"))',
     'cfg(cpubits, values("16", "32", "64"))'
 ]
 
