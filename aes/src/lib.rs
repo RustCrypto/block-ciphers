@@ -102,7 +102,10 @@
 //!
 //! You can modify crate using the following configuration flags:
 //!
-//! - `aes_backend = "soft"`: force software implementation.
+//! - `aes_backend`: explicitly select one of the following backends:
+//!   `"soft"`: force software backend
+//!   `"avx256"`: force AVX2 backend
+//!   `"avx512"`: force AVX-512 backend
 //! - `aes_compact`: reduce code size at the cost of slower performance
 //!   (affects only software backend).
 //!
