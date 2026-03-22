@@ -46,7 +46,7 @@
 //! will ensure that AESNI and VAES are always used.
 //!
 //! Note: Enabling VAES256 or VAES512 still requires specifying `--cfg
-//! aes_avx256` or `--cfg aes_avx512` explicitly.
+//! aes_backend = "avx256"` or `--cfg aes_backend = "avx512"` explicitly.
 //!
 //! Programs built in this manner will crash with an illegal instruction on
 //! CPUs which do not have AES-NI and VAES enabled.
@@ -102,7 +102,10 @@
 //!
 //! You can modify crate using the following configuration flags:
 //!
-//! - `aes_force_soft`: force software implementation.
+//! - `aes_backend`: explicitly select one of the following backends:
+//!   `"soft"`: force software backend
+//!   `"avx256"`: force AVX2 backend
+//!   `"avx512"`: force AVX-512 backend
 //! - `aes_compact`: reduce code size at the cost of slower performance
 //!   (affects only software backend).
 //!
@@ -130,13 +133,13 @@ mod macros;
 mod soft;
 
 cpubits::cfg_if! {
-    if #[cfg(all(target_arch = "aarch64", not(aes_force_soft)))] {
+    if #[cfg(all(target_arch = "aarch64", not(aes_backend = "soft")))] {
         mod armv8;
         mod autodetect;
         pub use autodetect::*;
     } else if #[cfg(all(
         any(target_arch = "x86", target_arch = "x86_64"),
-        not(aes_force_soft)
+        not(aes_backend = "soft")
     ))] {
         mod x86;
         mod autodetect;
@@ -188,7 +191,10 @@ mod tests {
         test_for(soft::Aes256Enc::new(&key_256));
         test_for(soft::Aes256Dec::new(&key_256));
 
-        #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), not(aes_force_soft)))]
+        #[cfg(all(
+            any(target_arch = "x86", target_arch = "x86_64"),
+            not(aes_backend = "soft")
+        ))]
         {
             use super::x86;
 
@@ -206,7 +212,7 @@ mod tests {
             }
         }
 
-        #[cfg(all(target_arch = "aarch64", not(aes_force_soft)))]
+        #[cfg(all(target_arch = "aarch64", not(aes_backend = "soft")))]
         {
             use super::armv8;
 

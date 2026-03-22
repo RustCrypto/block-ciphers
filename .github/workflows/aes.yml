@@ -49,17 +49,17 @@ jobs:
           cargo build --target ${{ matrix.target }}
           cargo build --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
+          RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft"'
         run: |
           cargo build --target ${{ matrix.target }}
           cargo build --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_compact"
+          RUSTFLAGS: '-Dwarnings --cfg aes_compact'
         run: |
           cargo build --target ${{ matrix.target }}
           cargo build --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft --cfg aes_compact"
+          RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft" --cfg aes_compact'
         run: |
           cargo build --target ${{ matrix.target }}
           cargo build --target ${{ matrix.target }} --features hazmat
@@ -112,7 +112,7 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             rust: stable
-            RUSTFLAGS: "-Dwarnings --cfg aes_avx256"
+            RUSTFLAGS: '-Dwarnings --cfg aes_backend="avx256"'
     env:
       CARGO_INCREMENTAL: 0
       RUSTFLAGS: ${{ matrix.RUSTFLAGS }}
@@ -150,10 +150,7 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             rust: stable
-            RUSTFLAGS: "-Dwarnings --cfg aes_avx512"
-          - target: x86_64-unknown-linux-gnu
-            rust: stable
-            RUSTFLAGS: "-Dwarnings --cfg aes_avx256 --cfg aes_avx512"
+            RUSTFLAGS: '-Dwarnings --cfg aes_backend="avx512"'
     env:
       CARGO_INCREMENTAL: 0
       RUSTFLAGS: ${{ matrix.RUSTFLAGS }}
@@ -214,11 +211,11 @@ jobs:
       - run: cargo test --target ${{ matrix.target }} --features hazmat
       - run: cargo test --target ${{ matrix.target }} --all-features
 
-  # Tests for the portable software backend (i.e. `aes_force_soft`-only)
+  # Tests for the portable software backend (i.e. `aes_backend="soft"`-only)
   soft:
     runs-on: ubuntu-latest
     env:
-      RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
+      RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft"'
     strategy:
       matrix:
         include:
@@ -280,17 +277,17 @@ jobs:
           cross test --package aes --target ${{ matrix.target }}
           cross test --package aes --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
+          RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft"'
         run: |
           cross test --package aes --target ${{ matrix.target }}
           cross test --package aes --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_compact"
+          RUSTFLAGS: '-Dwarnings --cfg aes_compact'
         run: |
           cross test --package aes --target ${{ matrix.target }}
           cross test --package aes --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft --cfg aes_compact"
+          RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft" --cfg aes_compact'
         run: |
           cross test --package aes --target ${{ matrix.target }}
           cross test --package aes --target ${{ matrix.target }} --features hazmat
@@ -322,7 +319,7 @@ jobs:
 
   clippy:
     env:
-      RUSTFLAGS: "-Dwarnings --cfg aes_compact"
+      RUSTFLAGS: '-Dwarnings --cfg aes_compact'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
