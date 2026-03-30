@@ -17,15 +17,18 @@ pub use crate::Block;
 /// Eight 128-bit AES blocks
 pub type Block8 = cipher::array::Array<Block, cipher::consts::U8>;
 
-#[cfg(all(target_arch = "aarch64", not(aes_force_soft)))]
+#[cfg(all(target_arch = "aarch64", not(aes_backend = "soft")))]
 use crate::armv8::hazmat as intrinsics;
 
-#[cfg(all(any(target_arch = "x86_64", target_arch = "x86"), not(aes_force_soft)))]
+#[cfg(all(
+    any(target_arch = "x86", target_arch = "x86_64"),
+    not(aes_backend = "soft")
+))]
 use crate::x86::ni::hazmat as intrinsics;
 
 #[cfg(all(
     any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"),
-    not(aes_force_soft)
+    not(aes_backend = "soft")
 ))]
 cpufeatures::new!(aes_intrinsics, "aes");
 
@@ -35,7 +38,7 @@ macro_rules! if_intrinsics_available {
     ($body:expr) => {{
         #[cfg(all(
             any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"),
-            not(aes_force_soft)
+            not(aes_backend = "soft")
         ))]
         if aes_intrinsics::get() {
             unsafe { $body }

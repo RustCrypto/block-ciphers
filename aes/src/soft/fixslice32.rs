@@ -62,13 +62,13 @@ pub(crate) fn aes128_key_schedule(key: &[u8; 16]) -> FixsliceKeys128 {
     }
 
     // Adjust to match fixslicing format
-    #[cfg(aes_compact)]
+    #[cfg(aes_backend_soft = "compact")]
     {
         for i in (8..88).step_by(16) {
             inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
         }
     }
-    #[cfg(not(aes_compact))]
+    #[cfg(not(aes_backend_soft = "compact"))]
     {
         for i in (8..72).step_by(32) {
             inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
@@ -157,13 +157,13 @@ pub(crate) fn aes192_key_schedule(key: &[u8; 24]) -> FixsliceKeys192 {
     }
 
     // Adjust to match fixslicing format
-    #[cfg(aes_compact)]
+    #[cfg(aes_backend_soft = "compact")]
     {
         for i in (8..104).step_by(16) {
             inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
         }
     }
-    #[cfg(not(aes_compact))]
+    #[cfg(not(aes_backend_soft = "compact"))]
     {
         for i in (0..96).step_by(32) {
             inv_shift_rows_1(&mut rkeys[(i + 8)..(i + 16)]);
@@ -215,13 +215,13 @@ pub(crate) fn aes256_key_schedule(key: &[u8; 32]) -> FixsliceKeys256 {
     }
 
     // Adjust to match fixslicing format
-    #[cfg(aes_compact)]
+    #[cfg(aes_backend_soft = "compact")]
     {
         for i in (8..120).step_by(16) {
             inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
         }
     }
-    #[cfg(not(aes_compact))]
+    #[cfg(not(aes_backend_soft = "compact"))]
     {
         for i in (8..104).step_by(32) {
             inv_shift_rows_1(&mut rkeys[i..(i + 8)]);
@@ -250,14 +250,14 @@ pub(crate) fn aes128_decrypt(rkeys: &FixsliceKeys128, blocks: &BatchBlocks) -> B
     add_round_key(&mut state, &rkeys[80..]);
     inv_sub_bytes(&mut state);
 
-    #[cfg(not(aes_compact))]
+    #[cfg(not(aes_backend_soft = "compact"))]
     {
         inv_shift_rows_2(&mut state);
     }
 
     let mut rk_off = 72;
     loop {
-        #[cfg(aes_compact)]
+        #[cfg(aes_backend_soft = "compact")]
         {
             inv_shift_rows_2(&mut state);
         }
@@ -276,7 +276,7 @@ pub(crate) fn aes128_decrypt(rkeys: &FixsliceKeys128, blocks: &BatchBlocks) -> B
         inv_sub_bytes(&mut state);
         rk_off -= 8;
 
-        #[cfg(not(aes_compact))]
+        #[cfg(not(aes_backend_soft = "compact"))]
         {
             add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
             inv_mix_columns_3(&mut state);
@@ -312,7 +312,7 @@ pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &BatchBlocks) -> B
         add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
         rk_off += 8;
 
-        #[cfg(aes_compact)]
+        #[cfg(aes_backend_soft = "compact")]
         {
             shift_rows_2(&mut state);
         }
@@ -321,7 +321,7 @@ pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &BatchBlocks) -> B
             break;
         }
 
-        #[cfg(not(aes_compact))]
+        #[cfg(not(aes_backend_soft = "compact"))]
         {
             sub_bytes(&mut state);
             mix_columns_2(&mut state);
@@ -340,7 +340,7 @@ pub(crate) fn aes128_encrypt(rkeys: &FixsliceKeys128, blocks: &BatchBlocks) -> B
         rk_off += 8;
     }
 
-    #[cfg(not(aes_compact))]
+    #[cfg(not(aes_backend_soft = "compact"))]
     {
         shift_rows_2(&mut state);
     }
@@ -364,11 +364,11 @@ pub(crate) fn aes192_decrypt(rkeys: &FixsliceKeys192, blocks: &BatchBlocks) -> B
 
     let mut rk_off = 88;
     loop {
-        #[cfg(aes_compact)]
+        #[cfg(aes_backend_soft = "compact")]
         {
             inv_shift_rows_2(&mut state);
         }
-        #[cfg(not(aes_compact))]
+        #[cfg(not(aes_backend_soft = "compact"))]
         {
             add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
             inv_mix_columns_3(&mut state);
@@ -418,11 +418,11 @@ pub(crate) fn aes192_encrypt(rkeys: &FixsliceKeys192, blocks: &BatchBlocks) -> B
         add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
         rk_off += 8;
 
-        #[cfg(aes_compact)]
+        #[cfg(aes_backend_soft = "compact")]
         {
             shift_rows_2(&mut state);
         }
-        #[cfg(not(aes_compact))]
+        #[cfg(not(aes_backend_soft = "compact"))]
         {
             sub_bytes(&mut state);
             mix_columns_2(&mut state);
@@ -462,14 +462,14 @@ pub(crate) fn aes256_decrypt(rkeys: &FixsliceKeys256, blocks: &BatchBlocks) -> B
     add_round_key(&mut state, &rkeys[112..]);
     inv_sub_bytes(&mut state);
 
-    #[cfg(not(aes_compact))]
+    #[cfg(not(aes_backend_soft = "compact"))]
     {
         inv_shift_rows_2(&mut state);
     }
 
     let mut rk_off = 104;
     loop {
-        #[cfg(aes_compact)]
+        #[cfg(aes_backend_soft = "compact")]
         {
             inv_shift_rows_2(&mut state);
         }
@@ -488,7 +488,7 @@ pub(crate) fn aes256_decrypt(rkeys: &FixsliceKeys256, blocks: &BatchBlocks) -> B
         inv_sub_bytes(&mut state);
         rk_off -= 8;
 
-        #[cfg(not(aes_compact))]
+        #[cfg(not(aes_backend_soft = "compact"))]
         {
             add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
             inv_mix_columns_3(&mut state);
@@ -524,7 +524,7 @@ pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &BatchBlocks) -> B
         add_round_key(&mut state, &rkeys[rk_off..(rk_off + 8)]);
         rk_off += 8;
 
-        #[cfg(aes_compact)]
+        #[cfg(aes_backend_soft = "compact")]
         {
             shift_rows_2(&mut state);
         }
@@ -533,7 +533,7 @@ pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &BatchBlocks) -> B
             break;
         }
 
-        #[cfg(not(aes_compact))]
+        #[cfg(not(aes_backend_soft = "compact"))]
         {
             sub_bytes(&mut state);
             mix_columns_2(&mut state);
@@ -552,7 +552,7 @@ pub(crate) fn aes256_encrypt(rkeys: &FixsliceKeys256, blocks: &BatchBlocks) -> B
         rk_off += 8;
     }
 
-    #[cfg(not(aes_compact))]
+    #[cfg(not(aes_backend_soft = "compact"))]
     {
         shift_rows_2(&mut state);
     }
@@ -1072,7 +1072,7 @@ define_mix_columns!(
     rotate_rows_and_columns_2_2
 );
 
-#[cfg(not(aes_compact))]
+#[cfg(not(aes_backend_soft = "compact"))]
 define_mix_columns!(
     mix_columns_2,
     inv_mix_columns_2,
@@ -1080,7 +1080,7 @@ define_mix_columns!(
     rotate_rows_2
 );
 
-#[cfg(not(aes_compact))]
+#[cfg(not(aes_backend_soft = "compact"))]
 define_mix_columns!(
     mix_columns_3,
     inv_mix_columns_3,
@@ -1102,7 +1102,7 @@ fn delta_swap_2(a: &mut u32, b: &mut u32, shift: u32, mask: u32) {
 }
 
 /// Applies ShiftRows once on an AES state (or key).
-#[cfg(any(not(aes_compact), feature = "hazmat"))]
+#[cfg(any(not(aes_backend_soft = "compact"), feature = "hazmat"))]
 #[inline]
 fn shift_rows_1(state: &mut [u32]) {
     debug_assert_eq!(state.len(), 8);
@@ -1141,7 +1141,7 @@ fn inv_shift_rows_2(state: &mut [u32]) {
     shift_rows_2(state);
 }
 
-#[cfg(not(aes_compact))]
+#[cfg(not(aes_backend_soft = "compact"))]
 #[inline(always)]
 fn inv_shift_rows_3(state: &mut [u32]) {
     shift_rows_1(state);
@@ -1343,7 +1343,7 @@ fn rotate_rows_and_columns_1_1(x: u32) -> u32 {
     (ror(x, ror_distance(0, 1)) & 0xc0c0c0c0)
 }
 
-#[cfg(not(aes_compact))]
+#[cfg(not(aes_backend_soft = "compact"))]
 #[inline(always)]
 #[rustfmt::skip]
 fn rotate_rows_and_columns_1_2(x: u32) -> u32 {
@@ -1351,7 +1351,7 @@ fn rotate_rows_and_columns_1_2(x: u32) -> u32 {
     (ror(x, ror_distance(0, 2)) & 0xf0f0f0f0)
 }
 
-#[cfg(not(aes_compact))]
+#[cfg(not(aes_backend_soft = "compact"))]
 #[inline(always)]
 #[rustfmt::skip]
 fn rotate_rows_and_columns_1_3(x: u32) -> u32 {

@@ -22,7 +22,7 @@ macro_rules! new_test {
             let ciphertext = hex!($ct_hex);
             let cipher = $cipher::new(&key.into());
 
-            let mut block = plaintext.clone().into();
+            let mut block = plaintext.into();
             cipher.encrypt_block(&mut block);
 
             assert_eq!(&ciphertext, block.as_slice());

@@ -18,7 +18,7 @@
 //! // Initialize cipher
 //! let cipher = Aria128::new(&key);
 //!
-//! let block_copy = block.clone();
+//! let block_copy = block;
 //! // Encrypt block in-place
 //! cipher.encrypt_block(&mut block);
 //! // And decrypt it back
