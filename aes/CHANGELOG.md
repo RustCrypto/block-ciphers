@@ -6,9 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## 0.9.0 (UNRELEASED)
-### Added
-- Weak key detection in the `KeyInit::weak_key_test` method ([#465], [#469])
-
 ### Changed
 - Bump `cipher` dependency to v0.5
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#472])
@@ -25,9 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#386]: https://github.com/RustCrypto/block-ciphers/pull/386
 [#395]: https://github.com/RustCrypto/block-ciphers/pull/395
 [#442]: https://github.com/RustCrypto/block-ciphers/pull/442
-[#465]: https://github.com/RustCrypto/block-ciphers/pull/465
 [#468]: https://github.com/RustCrypto/block-ciphers/pull/468
-[#469]: https://github.com/RustCrypto/block-ciphers/pull/469
 [#472]: https://github.com/RustCrypto/block-ciphers/pull/472
 [#477]: https://github.com/RustCrypto/block-ciphers/pull/477
 
