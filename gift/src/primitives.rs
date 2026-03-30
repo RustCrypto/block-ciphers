@@ -5,7 +5,7 @@ pub(crate) fn u32big(x: &[u8]) -> u32 {
 
 #[inline]
 pub(crate) fn ror(x: &u32, y: &u32) -> u32 {
-    ((*x) >> (*y)) | (*x << (32 - (*y)))
+    (*x).rotate_right(*y)
 }
 
 #[inline]
