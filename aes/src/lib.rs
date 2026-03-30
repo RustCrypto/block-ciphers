@@ -103,14 +103,14 @@
 //! You can modify crate using the following configuration flags:
 //!
 //! - `aes_backend`: explicitly select one of the following backends:
-//!   `"soft"`: force software backend
-//!   `"avx256"`: force AVX2 backend
-//!   `"avx512"`: force AVX-512 backend
-//! - `aes_compact`: reduce code size at the cost of slower performance
-//!   (affects only software backend).
+//!   - `soft`: force software backend
+//!   - `avx256`: force AVX2 backend
+//!   - `avx512`: force AVX-512 backend
+//! - `aes_backend_soft`: modify software backend:
+//!   - `compact`: use compact implementation (less performant, but results in a smaller binary)
 //!
 //! It can be enabled using `RUSTFLAGS` environment variable
-//! (e.g. `RUSTFLAGS="--cfg aes_compact"`) or by modifying `.cargo/config`.
+//! (e.g. `RUSTFLAGS='--cfg aes_backend="soft"'`) or by modifying `.cargo/config`.
 //!
 //! [AES]: https://en.wikipedia.org/wiki/Advanced_Encryption_Standard
 //! [fixslicing]: https://eprint.iacr.org/2020/1123.pdf
