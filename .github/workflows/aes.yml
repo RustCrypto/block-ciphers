@@ -54,12 +54,12 @@ jobs:
           cargo build --target ${{ matrix.target }}
           cargo build --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: '-Dwarnings --cfg aes_compact'
+          RUSTFLAGS: '-Dwarnings --cfg aes_backend_soft="compact"'
         run: |
           cargo build --target ${{ matrix.target }}
           cargo build --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft" --cfg aes_compact'
+          RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft" --cfg aes_backend_soft="compact"'
         run: |
           cargo build --target ${{ matrix.target }}
           cargo build --target ${{ matrix.target }} --features hazmat
@@ -282,12 +282,12 @@ jobs:
           cross test --package aes --target ${{ matrix.target }}
           cross test --package aes --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: '-Dwarnings --cfg aes_compact'
+          RUSTFLAGS: '-Dwarnings --cfg aes_backend_soft="compact"'
         run: |
           cross test --package aes --target ${{ matrix.target }}
           cross test --package aes --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft" --cfg aes_compact'
+          RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft" --cfg aes_backend_soft="compact"'
         run: |
           cross test --package aes --target ${{ matrix.target }}
           cross test --package aes --target ${{ matrix.target }} --features hazmat
@@ -319,7 +319,7 @@ jobs:
 
   clippy:
     env:
-      RUSTFLAGS: '-Dwarnings --cfg aes_compact'
+      RUSTFLAGS: '-Dwarnings --cfg aes_backend_soft="compact"'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
