@@ -15,7 +15,7 @@ dependencies = [
 
 [[package]]
 name = "aria"
-version = "0.2.0-rc.1"
+version = "0.2.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -23,7 +23,7 @@ dependencies = [
 
 [[package]]
 name = "belt-block"
-version = "0.2.0-rc.3"
+version = "0.2.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -47,7 +47,7 @@ dependencies = [
 
 [[package]]
 name = "blowfish"
-version = "0.10.0-rc.3"
+version = "0.10.0"
 dependencies = [
  "byteorder",
  "cipher",
@@ -61,7 +61,7 @@ checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
 
 [[package]]
 name = "camellia"
-version = "0.2.0-rc.1"
+version = "0.2.0"
 dependencies = [
  "byteorder",
  "cipher",
@@ -69,7 +69,7 @@ dependencies = [
 
 [[package]]
 name = "cast5"
-version = "0.12.0-rc.1"
+version = "0.12.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -77,7 +77,7 @@ dependencies = [
 
 [[package]]
 name = "cast6"
-version = "0.2.0-rc.1"
+version = "0.2.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -128,7 +128,7 @@ dependencies = [
 
 [[package]]
 name = "des"
-version = "0.9.0-rc.3"
+version = "0.9.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -136,7 +136,7 @@ dependencies = [
 
 [[package]]
 name = "gift-cipher"
-version = "0.1.0-rc.3"
+version = "0.1.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -160,7 +160,7 @@ dependencies = [
 
 [[package]]
 name = "idea"
-version = "0.6.0-rc.1"
+version = "0.6.0"
 dependencies = [
  "cipher",
 ]
@@ -176,7 +176,7 @@ dependencies = [
 
 [[package]]
 name = "kuznyechik"
-version = "0.9.0-rc.3"
+version = "0.9.0"
 dependencies = [
  "cfg-if",
  "cipher",
@@ -191,7 +191,7 @@ checksum = "48f5d2a454e16a5ea0f4ced81bd44e4cfc7bd3a507b61887c99fd3538b28e4af"
 
 [[package]]
 name = "magma"
-version = "0.10.0-rc.3"
+version = "0.10.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -199,14 +199,14 @@ dependencies = [
 
 [[package]]
 name = "rc2"
-version = "0.9.0-rc.1"
+version = "0.9.0"
 dependencies = [
  "cipher",
 ]
 
 [[package]]
 name = "rc5"
-version = "0.1.0-rc.1"
+version = "0.1.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -214,21 +214,21 @@ dependencies = [
 
 [[package]]
 name = "rc6"
-version = "0.1.0-rc.3"
+version = "0.1.0"
 dependencies = [
  "cipher",
 ]
 
 [[package]]
 name = "serpent"
-version = "0.6.0-rc.3"
+version = "0.6.0"
 dependencies = [
  "cipher",
 ]
 
 [[package]]
 name = "sm4"
-version = "0.6.0-rc.3"
+version = "0.6.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -236,7 +236,7 @@ dependencies = [
 
 [[package]]
 name = "speck-cipher"
-version = "0.1.0-rc.3"
+version = "0.1.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -244,7 +244,7 @@ dependencies = [
 
 [[package]]
 name = "threefish"
-version = "0.6.0-rc.1"
+version = "0.6.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -253,7 +253,7 @@ dependencies = [
 
 [[package]]
 name = "twofish"
-version = "0.8.0-rc.1"
+version = "0.8.0"
 dependencies = [
  "cipher",
  "hex-literal",
@@ -267,7 +267,7 @@ checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
 
 [[package]]
 name = "xtea"
-version = "0.1.0-rc.1"
+version = "0.1.0"
 dependencies = [
  "cipher",
 ]
