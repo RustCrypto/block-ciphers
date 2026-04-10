@@ -1,17 +1,17 @@
-name: speck
+name: gift-cipher
 
 on:
   pull_request:
     paths:
-      - ".github/workflows/speck.yml"
-      - "speck/**"
+      - ".github/workflows/gift-cipher.yml"
+      - "gift-cipher/**"
       - "Cargo.*"
   push:
     branches: master
 
 defaults:
   run:
-    working-directory: speck
+    working-directory: gift-cipher
 
 env:
   CARGO_INCREMENTAL: 0
@@ -35,6 +35,7 @@ jobs:
           - wasm32-unknown-unknown
     steps:
       - uses: actions/checkout@v6
+      - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
@@ -44,7 +45,7 @@ jobs:
   minimal-versions:
     uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
     with:
-        working-directory: ${{ github.workflow }}
+      working-directory: ${{ github.workflow }}
 
   test:
     runs-on: ubuntu-latest
@@ -54,11 +55,12 @@ jobs:
           - 1.85.0 # MSRV
           - stable
     steps:
-    - uses: actions/checkout@v6
-    - uses: dtolnay/rust-toolchain@master
-      with:
-        toolchain: ${{ matrix.rust }}
-    - run: cargo check --all-features
-    - run: cargo test --no-default-features
-    - run: cargo test
-    - run: cargo test --all-features
+      - uses: actions/checkout@v6
+      - uses: RustCrypto/actions/cargo-cache@master
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - run: cargo check --all-features
+      - run: cargo test --no-default-features
+      - run: cargo test
+      - run: cargo test --all-features
