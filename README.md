@@ -94,7 +94,7 @@ dual licensed as above, without any additional terms or conditions.
 [`cast5`]: ./cast5
 [`cast6`]: ./cast6
 [`des`]: ./des
-[`gift-cipher`]: ./gift
+[`gift-cipher`]: ./gift-cipher
 [`idea`]: ./idea
 [`kuznyechik`]: ./kuznyechik
 [`magma`]: ./magma
@@ -103,7 +103,7 @@ dual licensed as above, without any additional terms or conditions.
 [`rc6`]: ./rc6
 [`serpent`]: ./serpent
 [`sm4`]: ./sm4
-[`speck-cipher`]: ./speck
+[`speck-cipher`]: ./speck-cipher
 [`threefish`]: ./threefish
 [`twofish`]: ./twofish
 [`xtea`]: ./xtea
