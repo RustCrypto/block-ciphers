@@ -68,7 +68,6 @@ pub(super) unsafe fn encrypt_par<const KEYS: usize, ParBlocks: ArraySize>(
     keys: &[uint8x16_t; KEYS],
     blocks: InOut<'_, '_, Array<Block, ParBlocks>>,
 ) {
-    #[inline(always)]
     #[target_feature(enable = "aes")]
     unsafe fn par_round<ParBlocks: ArraySize>(
         key: uint8x16_t,
@@ -127,7 +126,6 @@ pub(super) unsafe fn decrypt_par<const KEYS: usize, ParBlocks: ArraySize>(
     keys: &[uint8x16_t; KEYS],
     blocks: InOut<'_, '_, Array<Block, ParBlocks>>,
 ) {
-    #[inline(always)]
     #[target_feature(enable = "aes")]
     unsafe fn par_round<ParBlocks: ArraySize>(
         key: uint8x16_t,
