@@ -1840,4 +1840,3 @@ fn inv_bitslice_one<W: Word>(block: &mut Block, state: &State<W>) {
     let out = W::inv_bitslice(state);
     block.copy_from_slice(out[0].as_slice());
 }
-
