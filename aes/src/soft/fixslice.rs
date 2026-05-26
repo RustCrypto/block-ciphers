@@ -1740,7 +1740,7 @@ pub(crate) mod hazmat {
             let res = W::inv_bitslice(&state);
 
             for i in 0..blocks_per_batch {
-                chunk[i] = res[i].clone();
+                chunk[i] = res[i];
                 xor_in_place(&mut chunk[i], &keys[i]);
             }
         }
@@ -1776,7 +1776,7 @@ pub(crate) mod hazmat {
             let res = W::inv_bitslice(&state);
 
             for i in 0..blocks_per_batch {
-                chunk[i] = res[i].clone();
+                chunk[i] = res[i];
                 xor_in_place(&mut chunk[i], &keys[i]);
             }
         }
