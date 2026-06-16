@@ -106,6 +106,8 @@ jobs:
 
   # Tests for the VAES AVX backend
   vaes256:
+    # Disabled until installation of Intel SDE is fixed
+    if: false
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -144,6 +146,8 @@ jobs:
 
   # Tests for the VAES AVX512 backend
   vaes512:
+    # Disabled until installation of Intel SDE is fixed
+    if: false
     runs-on: ubuntu-latest
     strategy:
       matrix:
