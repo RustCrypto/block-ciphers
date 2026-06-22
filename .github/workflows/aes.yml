@@ -16,9 +16,7 @@ defaults:
 env:
   CARGO_INCREMENTAL: 0
   RUSTFLAGS: "-Dwarnings"
-  # NOTE: The mirror number changes with each version so keep these in sync
-  SDE_FULL_VERSION_MIRROR: "859732"
-  SDE_FULL_VERSION: "9.58.0-2025-06-16"
+  SDE_FULL_VERSION: "10.8.0-2026-03-15"
 
 # Cancels CI jobs when new commits are pushed to a PR branch
 concurrency:
@@ -106,8 +104,6 @@ jobs:
 
   # Tests for the VAES AVX backend
   vaes256:
-    # Disabled until installation of Intel SDE is fixed
-    if: false
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -120,12 +116,9 @@ jobs:
       RUSTFLAGS: ${{ matrix.RUSTFLAGS }}
     steps:
       - uses: actions/checkout@v6
-      - name: Install Intel SDE
-        run: |
-          curl -JLO "https://downloadmirror.intel.com/${{ env.SDE_FULL_VERSION_MIRROR }}/sde-external-${{ env.SDE_FULL_VERSION }}-lin.tar.xz"
-          tar xvf sde-external-${{ env.SDE_FULL_VERSION }}-lin.tar.xz -C /opt
-          echo "/opt/sde-external-${{ env.SDE_FULL_VERSION }}-lin" >> $GITHUB_PATH
-      - uses: RustCrypto/actions/cargo-cache@master
+      - uses: RustCrypto/actions/intel-sde-install@master
+        with:
+          sde-full-version: ${{ env.SDE_FULL_VERSION }}
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
@@ -146,8 +139,6 @@ jobs:
 
   # Tests for the VAES AVX512 backend
   vaes512:
-    # Disabled until installation of Intel SDE is fixed
-    if: false
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -160,11 +151,9 @@ jobs:
       RUSTFLAGS: ${{ matrix.RUSTFLAGS }}
     steps:
       - uses: actions/checkout@v6
-      - name: Install Intel SDE
-        run: |
-          curl -JLO "https://downloadmirror.intel.com/${{ env.SDE_FULL_VERSION_MIRROR }}/sde-external-${{ env.SDE_FULL_VERSION }}-lin.tar.xz"
-          tar xvf sde-external-${{ env.SDE_FULL_VERSION }}-lin.tar.xz -C /opt
-          echo "/opt/sde-external-${{ env.SDE_FULL_VERSION }}-lin" >> $GITHUB_PATH
+      - uses: RustCrypto/actions/intel-sde-install@master
+        with:
+          sde-full-version: ${{ env.SDE_FULL_VERSION }}
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
