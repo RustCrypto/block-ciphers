@@ -16,7 +16,6 @@ defaults:
 env:
   CARGO_INCREMENTAL: 0
   RUSTFLAGS: "-Dwarnings"
-  SDE_FULL_VERSION: "10.8.0-2026-03-15"
 
 # Cancels CI jobs when new commits are pushed to a PR branch
 concurrency:
@@ -117,8 +116,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: RustCrypto/actions/intel-sde-install@master
-        with:
-          sde-full-version: ${{ env.SDE_FULL_VERSION }}
+      - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
@@ -152,8 +150,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: RustCrypto/actions/intel-sde-install@master
-        with:
-          sde-full-version: ${{ env.SDE_FULL_VERSION }}
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
