@@ -18,6 +18,7 @@ on:
       'rc5-v*',
       'rc6-v*',
       'serpent-v*',
+      'simon-cipher-v*',
       'sm4-v*',
       'speck-cipher-v*',
       'threefish-v*',
