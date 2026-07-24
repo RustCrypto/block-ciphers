@@ -196,7 +196,9 @@ cfg_if! {
     }
 }
 
-/// Returns `true` if hardware acceleration is avialble.
+/// Returns `true` if this crate can use AES hardware acceleration on the current machine.
+///
+/// This is a runtime check performed on the machine where the code is executed.
 pub fn hardware_accelerated() -> bool {
     cfg_if! {
         if #[cfg(aes_backend = "soft")] {
