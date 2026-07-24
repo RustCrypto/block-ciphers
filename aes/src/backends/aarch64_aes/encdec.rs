@@ -13,6 +13,7 @@ use core::{arch::aarch64::*, mem};
 
 /// Perform AES encryption using the given expanded keys.
 #[target_feature(enable = "aes")]
+#[inline]
 pub(super) unsafe fn encrypt<const KEYS: usize>(
     keys: &[uint8x16_t; KEYS],
     block: InOut<'_, '_, Block>,
@@ -38,6 +39,7 @@ pub(super) unsafe fn encrypt<const KEYS: usize>(
 
 /// Perform AES decryption using the given expanded keys.
 #[target_feature(enable = "aes")]
+#[inline]
 pub(super) unsafe fn decrypt<const KEYS: usize>(
     keys: &[uint8x16_t; KEYS],
     block: InOut<'_, '_, Block>,
@@ -64,6 +66,7 @@ pub(super) unsafe fn decrypt<const KEYS: usize>(
 
 /// Perform parallel AES encryption 8-blocks-at-a-time using the given expanded keys.
 #[target_feature(enable = "aes")]
+#[inline]
 pub(super) unsafe fn encrypt_par<const KEYS: usize, ParBlocks: ArraySize>(
     keys: &[uint8x16_t; KEYS],
     blocks: InOut<'_, '_, Array<Block, ParBlocks>>,
@@ -122,6 +125,7 @@ pub(super) unsafe fn encrypt_par<const KEYS: usize, ParBlocks: ArraySize>(
 
 /// Perform parallel AES decryption 8-blocks-at-a-time using the given expanded keys.
 #[target_feature(enable = "aes")]
+#[inline]
 pub(super) unsafe fn decrypt_par<const KEYS: usize, ParBlocks: ArraySize>(
     keys: &[uint8x16_t; KEYS],
     blocks: InOut<'_, '_, Array<Block, ParBlocks>>,

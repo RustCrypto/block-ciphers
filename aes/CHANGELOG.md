@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.9.2 (UNRELEASED)
+### Changed
+- Internal implementation of backends ([#560], [#575])
+
+### Fixed
+- Performance regression on x86 targets ([#575])
+
+[#560]: https://github.com/RustCrypto/block-ciphers/pull/560
+[#575]: https://github.com/RustCrypto/block-ciphers/pull/575
+
 ## 0.9.1 (2026-05-27)
 ### Fixed
 - Minimal version of `zeroize` dependency ([#562])

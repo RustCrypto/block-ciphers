@@ -5,9 +5,13 @@
 //! access to the AES round function gated under the `hazmat` crate feature.
 #![allow(unsafe_op_in_unsafe_fn)]
 
-use super::arch::*;
 use crate::hazmat::{Block, Block8};
 use cipher::array::{Array, ArraySize};
+
+#[cfg(target_arch = "x86")]
+use core::arch::x86::*;
+#[cfg(target_arch = "x86_64")]
+use core::arch::x86_64::*;
 
 #[target_feature(enable = "sse2")]
 pub(crate) unsafe fn load<N: ArraySize>(blocks: *const Array<Block, N>) -> Array<__m128i, N> {
