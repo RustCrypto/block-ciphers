@@ -196,6 +196,21 @@ cfg_if! {
     }
 }
 
+/// Returns `true` if hardware acceleration is avialble.
+pub fn hardware_accelerated() -> bool {
+    cfg_if! {
+        if #[cfg(aes_backend = "soft")] {
+            false
+        } else if #[cfg(any(target_arch = "x86_64", target_arch = "x86"))] {
+            features_aes::get()
+        } else if #[cfg(target_arch = "aarch64")] {
+            features_aes::get()
+        } else {
+            false
+        }
+    }
+}
+
 macro_rules! impl_key_init {
     ($name:ident, $soft_name:ident, $key_size:ty, $inner:path) => {
         impl KeySizeUser for $name {
