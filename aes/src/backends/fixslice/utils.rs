@@ -4,7 +4,7 @@ use super::{BatchBlocks, State, Word};
 ///
 /// Used by the key schedules, which conceptually call `bitslice(...)` on the
 /// same input block several times to fill the bitsliced state.
-pub(crate) fn broadcast<W: Word>(block: &[u8]) -> BatchBlocks<W> {
+pub(super) fn broadcast<W: Word>(block: &[u8]) -> BatchBlocks<W> {
     debug_assert_eq!(block.len(), 16);
     let mut out = BatchBlocks::<W>::default();
     for slot in out.iter_mut() {
@@ -14,13 +14,13 @@ pub(crate) fn broadcast<W: Word>(block: &[u8]) -> BatchBlocks<W> {
 }
 
 #[inline]
-fn delta_swap_1<W: Word>(a: &mut W, shift: u32, mask: W) {
+pub(super) fn delta_swap_1<W: Word>(a: &mut W, shift: u32, mask: W) {
     let t = (*a ^ ((*a) >> shift)) & mask;
     *a ^= t ^ (t << shift);
 }
 
 #[inline]
-pub(crate) fn delta_swap_2<W: Word>(a: &mut W, b: &mut W, shift: u32, mask: W) {
+pub(super) fn delta_swap_2<W: Word>(a: &mut W, b: &mut W, shift: u32, mask: W) {
     let t = (*a ^ ((*b) >> shift)) & mask;
     *a ^= t;
     *b ^= t << shift;
@@ -29,7 +29,7 @@ pub(crate) fn delta_swap_2<W: Word>(a: &mut W, b: &mut W, shift: u32, mask: W) {
 /// Applies ShiftRows once on an AES state (or key).
 #[cfg(any(not(aes_backend_soft = "compact"), feature = "hazmat"))]
 #[inline]
-pub(crate) fn shift_rows_1<W: Word>(state: &mut [W]) {
+pub(super) fn shift_rows_1<W: Word>(state: &mut [W]) {
     debug_assert_eq!(state.len(), 8);
     for x in state.iter_mut() {
         delta_swap_1(x, W::HALF_ROW, W::pack_rows(0x00, 0x03, 0x0f, 0x0c));
@@ -39,7 +39,7 @@ pub(crate) fn shift_rows_1<W: Word>(state: &mut [W]) {
 
 /// Applies ShiftRows twice on an AES state (or key).
 #[inline]
-pub(crate) fn shift_rows_2<W: Word>(state: &mut [W]) {
+pub(super) fn shift_rows_2<W: Word>(state: &mut [W]) {
     debug_assert_eq!(state.len(), 8);
     for x in state.iter_mut() {
         delta_swap_1(x, W::HALF_ROW, W::pack_rows(0x00, 0x0f, 0x00, 0x0f));
@@ -48,7 +48,7 @@ pub(crate) fn shift_rows_2<W: Word>(state: &mut [W]) {
 
 /// Applies ShiftRows three times on an AES state (or key).
 #[inline]
-pub(crate) fn shift_rows_3<W: Word>(state: &mut [W]) {
+pub(super) fn shift_rows_3<W: Word>(state: &mut [W]) {
     debug_assert_eq!(state.len(), 8);
     for x in state.iter_mut() {
         delta_swap_1(x, W::HALF_ROW, W::pack_rows(0x00, 0x0c, 0x0f, 0x03));
@@ -57,18 +57,18 @@ pub(crate) fn shift_rows_3<W: Word>(state: &mut [W]) {
 }
 
 #[inline(always)]
-pub(crate) fn inv_shift_rows_1<W: Word>(state: &mut [W]) {
+pub(super) fn inv_shift_rows_1<W: Word>(state: &mut [W]) {
     shift_rows_3(state);
 }
 
 #[inline(always)]
-pub(crate) fn inv_shift_rows_2<W: Word>(state: &mut [W]) {
+pub(super) fn inv_shift_rows_2<W: Word>(state: &mut [W]) {
     shift_rows_2(state);
 }
 
 #[cfg(not(aes_backend_soft = "compact"))]
 #[inline(always)]
-pub(crate) fn inv_shift_rows_3<W: Word>(state: &mut [W]) {
+pub(super) fn inv_shift_rows_3<W: Word>(state: &mut [W]) {
     shift_rows_1(state);
 }
 
@@ -80,7 +80,7 @@ pub(crate) fn inv_shift_rows_3<W: Word>(state: &mut [W]) {
 ///
 /// The `idx_ror` parameter refers to the rotation value, which varies between the
 /// different key schedules.
-pub(crate) fn xor_columns<W: Word>(rkeys: &mut [W], offset: usize, idx_xor: usize, idx_ror: u32) {
+pub(super) fn xor_columns<W: Word>(rkeys: &mut [W], offset: usize, idx_xor: usize, idx_ror: u32) {
     for i in 0..8 {
         let off_i = offset + i;
         let rk = rkeys[off_i - idx_xor] ^ (W::uniform_row(0x03) & rkeys[off_i].ror(idx_ror));
@@ -92,7 +92,7 @@ pub(crate) fn xor_columns<W: Word>(rkeys: &mut [W], offset: usize, idx_xor: usiz
 }
 
 /// Copy 32-bytes within the provided slice to an 8-byte offset.
-pub(crate) fn memshift32<W: Word>(buffer: &mut [W], src_offset: usize) {
+pub(super) fn memshift32<W: Word>(buffer: &mut [W], src_offset: usize) {
     debug_assert_eq!(src_offset % 8, 0);
 
     let dst_offset = src_offset + 8;
@@ -106,7 +106,7 @@ pub(crate) fn memshift32<W: Word>(buffer: &mut [W], src_offset: usize) {
 /// XOR the round key into the internal state. The round keys are expected
 /// to be pre-computed and packed in the fixsliced representation.
 #[inline]
-pub(crate) fn add_round_key<W: Word>(state: &mut State<W>, rkey: &[W]) {
+pub(super) fn add_round_key<W: Word>(state: &mut State<W>, rkey: &[W]) {
     debug_assert_eq!(rkey.len(), 8);
     for (a, b) in state.iter_mut().zip(rkey) {
         *a ^= *b;
@@ -114,6 +114,6 @@ pub(crate) fn add_round_key<W: Word>(state: &mut State<W>, rkey: &[W]) {
 }
 
 #[inline(always)]
-pub(crate) fn add_round_constant_bit<W: Word>(state: &mut [W], bit: usize) {
+pub(super) fn add_round_constant_bit<W: Word>(state: &mut [W], bit: usize) {
     state[bit] ^= W::pack_rows(0x00, 0xc0, 0x00, 0x00);
 }

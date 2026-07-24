@@ -12,7 +12,7 @@ macro_rules! define_mix_columns {
         $second_rotate:path
     ) => {
         #[rustfmt::skip]
-        pub(crate) fn $name<W: Word>(state: &mut State<W>) {
+        pub(super) fn $name<W: Word>(state: &mut State<W>) {
             let (a0, a1, a2, a3, a4, a5, a6, a7) = (
                 state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
             );
@@ -47,7 +47,7 @@ macro_rules! define_mix_columns {
         }
 
         #[rustfmt::skip]
-        pub(crate) fn $name_inv<W: Word>(state: &mut State<W>) {
+        pub(super) fn $name_inv<W: Word>(state: &mut State<W>) {
             let (a0, a1, a2, a3, a4, a5, a6, a7) = (
                 state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]
             );

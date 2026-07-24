@@ -15,9 +15,9 @@
 
 use cipher::array::Array;
 
-pub(crate) mod aes128;
-pub(crate) mod aes192;
-pub(crate) mod aes256;
+pub(super) mod aes128;
+pub(super) mod aes192;
+pub(super) mod aes256;
 #[cfg(feature = "hazmat")]
 pub(crate) mod hazmat;
 
@@ -32,12 +32,12 @@ type State<W> = [W; 8];
 
 cpubits::cpubits! {
     16 | 32 => {
-        pub(crate) type NativeWord = u32;
+        pub(super) type NativeWord = u32;
     }
     64 => {
-        pub(crate) type NativeWord = u64;
+        pub(super) type NativeWord = u64;
     }
 }
 
-pub(crate) type NativeBatchSize = <NativeWord as Word>::Blocks;
-pub(crate) type BatchBlocks<W> = Array<crate::Block, <W as Word>::Blocks>;
+pub(super) type NativeBatchSize = <NativeWord as Word>::Blocks;
+pub(super) type BatchBlocks<W> = Array<crate::Block, <W as Word>::Blocks>;

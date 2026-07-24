@@ -9,6 +9,12 @@ fn xor_in_place(dst: &mut Block, src: &Block) {
     }
 }
 
+#[inline]
+fn inv_bitslice_one<W: Word>(block: &mut Block, state: &State<W>) {
+    let out = W::inv_bitslice(state);
+    block.copy_from_slice(out[0].as_slice());
+}
+
 fn cipher_round_generic<W: Word>(block: &mut Block, round_key: &Block) {
     let mut state = State::<W>::default();
     W::bitslice(&mut state, &broadcast::<W>(block.as_slice()));
@@ -129,10 +135,4 @@ pub(crate) fn mix_columns(block: &mut Block) {
 #[inline]
 pub(crate) fn inv_mix_columns(block: &mut Block) {
     inv_mix_columns_generic::<NativeWord>(block)
-}
-
-#[inline]
-fn inv_bitslice_one<W: Word>(block: &mut Block, state: &State<W>) {
-    let out = W::inv_bitslice(state);
-    block.copy_from_slice(out[0].as_slice());
 }

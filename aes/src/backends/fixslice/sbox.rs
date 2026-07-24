@@ -7,7 +7,7 @@ use super::Word;
 /// See: <http://www.cs.yale.edu/homes/peralta/CircuitStuff/SLP_AES_113.txt>
 ///
 /// Note that the 4 bitwise NOT are moved to the key schedule.
-pub(crate) fn sub_bytes<W: Word>(state: &mut [W]) {
+pub(super) fn sub_bytes<W: Word>(state: &mut [W]) {
     debug_assert_eq!(state.len(), 8);
 
     // Scheduled using https://github.com/Ko-/aes-armcortexm/tree/public/scheduler
@@ -180,7 +180,7 @@ pub(crate) fn sub_bytes<W: Word>(state: &mut [W]) {
 
 /// Note that the 4 bitwise NOT are accounted for here so that it is a true
 /// inverse of `sub_bytes`.
-pub(crate) fn inv_sub_bytes<W: Word>(state: &mut [W]) {
+pub(super) fn inv_sub_bytes<W: Word>(state: &mut [W]) {
     debug_assert_eq!(state.len(), 8);
 
     // Scheduled using https://github.com/Ko-/aes-armcortexm/tree/public/scheduler
@@ -386,7 +386,7 @@ pub(crate) fn inv_sub_bytes<W: Word>(state: &mut [W]) {
 
 /// NOT operations that are omitted in S-box.
 #[inline]
-pub(crate) fn sub_bytes_nots<W: Word>(state: &mut [W]) {
+pub(super) fn sub_bytes_nots<W: Word>(state: &mut [W]) {
     debug_assert_eq!(state.len(), 8);
     state[0] = !state[0];
     state[1] = !state[1];
