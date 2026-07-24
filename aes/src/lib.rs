@@ -390,13 +390,6 @@ macro_rules! impl_from_enc {
 
 macro_rules! common_impls {
     ($name:ident) => {
-        impl Clone for $name {
-            #[inline]
-            fn clone(&self) -> Self {
-                unsafe { core::ptr::read(self) }
-            }
-        }
-
         impl BlockSizeUser for $name {
             type BlockSize = U16;
         }
@@ -440,6 +433,7 @@ macro_rules! define_aes_impl {
         mod $module {
             use crate::backends;
 
+            #[derive(Copy, Clone)]
             pub(super) union Inner {
                 #[cfg(all(
                     any(target_arch = "x86_64", target_arch = "x86"),
@@ -451,6 +445,7 @@ macro_rules! define_aes_impl {
                 pub(super) soft: backends::soft::$name,
             }
 
+            #[derive(Copy, Clone)]
             pub(super) union InnerEnc {
                 #[cfg(all(
                     any(target_arch = "x86_64", target_arch = "x86"),
@@ -462,6 +457,7 @@ macro_rules! define_aes_impl {
                 pub(super) soft: backends::soft::$name,
             }
 
+            #[derive(Copy, Clone)]
             pub(super) union InnerDec {
                 #[cfg(all(
                     any(target_arch = "x86_64", target_arch = "x86"),
@@ -476,6 +472,7 @@ macro_rules! define_aes_impl {
 
         #[doc=$doc]
         #[doc = "block cipher"]
+        #[derive(Clone)]
         pub struct $name {
             inner: $module::Inner,
             #[allow(dead_code, reason = "this field is not used on software-only targets")]
@@ -490,6 +487,7 @@ macro_rules! define_aes_impl {
 
         #[doc=$doc]
         #[doc = "block cipher (encrypt-only)"]
+        #[derive(Clone)]
         pub struct $name_enc {
             inner: $module::InnerEnc,
             #[allow(dead_code, reason = "this field is not used on software-only targets")]
@@ -502,6 +500,7 @@ macro_rules! define_aes_impl {
 
         #[doc=$doc]
         #[doc = "block cipher (decrypt-only)"]
+        #[derive(Clone)]
         pub struct $name_dec {
             inner: $module::InnerDec,
             #[allow(dead_code, reason = "this field is not used on software-only targets")]
