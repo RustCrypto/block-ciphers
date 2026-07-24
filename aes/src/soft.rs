@@ -8,16 +8,7 @@
 
 #![deny(unsafe_code)]
 
-cpubits::cpubits! {
-    16 | 32 => {
-        #[path = "soft/fixslice32.rs"]
-        pub(crate) mod fixslice;
-    }
-    64 => {
-        #[path = "soft/fixslice64.rs"]
-        pub(crate) mod fixslice;
-    }
-}
+pub(crate) mod fixslice;
 
 use crate::Block;
 use cipher::{
