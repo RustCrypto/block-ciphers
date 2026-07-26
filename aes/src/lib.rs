@@ -196,6 +196,31 @@ cfg_if! {
     }
 }
 
+/// Returns `true` if this crate can use AES hardware acceleration on the current machine.
+///
+/// This is a runtime check performed on the machine where the code is executed.
+///
+/// ```
+/// if aes::hardware_accelerated() {
+///     println!("AES hardware acceleration is available");
+/// } else {
+///     println!("WARNING: using software fallback for AES");
+/// }
+/// ```
+pub fn hardware_accelerated() -> bool {
+    cfg_if! {
+        if #[cfg(aes_backend = "soft")] {
+            false
+        } else if #[cfg(any(target_arch = "x86_64", target_arch = "x86"))] {
+            features_aes::get()
+        } else if #[cfg(target_arch = "aarch64")] {
+            features_aes::get()
+        } else {
+            false
+        }
+    }
+}
+
 macro_rules! impl_key_init {
     ($name:ident, $soft_name:ident, $key_size:ty, $inner:path) => {
         impl KeySizeUser for $name {
