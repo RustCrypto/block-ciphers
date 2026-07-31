@@ -21,24 +21,16 @@ pub(crate) struct Aes<'a, const RK: usize> {
 impl<'a, const RK: usize> Aes<'a, RK> {
     #[inline]
     #[target_feature(enable = "vaes")]
-    // TODO(MSRV-1.86): remove `unsafe`
-    pub(crate) unsafe fn encrypt(
-        rk: &'a RoundKeys<RK>,
-        f: impl BlockCipherEncClosure<BlockSize = U16>,
-    ) {
-        let rk2 = unsafe { encdec::broadcast_keys(rk) };
+    pub(crate) fn encrypt(rk: &'a RoundKeys<RK>, f: impl BlockCipherEncClosure<BlockSize = U16>) {
+        let rk2 = encdec::broadcast_keys(rk);
         let backend = Self { rk, rk2 };
         f.call(&backend)
     }
 
     #[inline]
     #[target_feature(enable = "vaes")]
-    // TODO(MSRV-1.86): remove `unsafe`
-    pub(crate) unsafe fn decrypt(
-        rk: &'a RoundKeys<RK>,
-        f: impl BlockCipherDecClosure<BlockSize = U16>,
-    ) {
-        let rk2 = unsafe { encdec::broadcast_keys(rk) };
+    pub(crate) fn decrypt(rk: &'a RoundKeys<RK>, f: impl BlockCipherDecClosure<BlockSize = U16>) {
+        let rk2 = encdec::broadcast_keys(rk);
         let backend = Self { rk, rk2 };
         f.call(&backend)
     }
@@ -61,14 +53,14 @@ impl<const RK: usize> BlockCipherEncBackend for Aes<'_, RK> {
     fn encrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
         // SAFETY: this trait impl is used only by the `Self::encrypt` method marked with
         // `#[target_feature(enable = "vaes")]`
-        unsafe { super::x86_aes::encrypt(&self.rk, block) };
+        unsafe { super::x86_aes::encrypt(self.rk, block) };
     }
 
     #[inline(always)]
     fn encrypt_par_blocks(&self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
         // SAFETY: this trait impl is used only by the `Self::encrypt` method marked with
         // `#[target_feature(enable = "vaes")]`
-        unsafe { encdec::encrypt_par(&self.rk2, blocks) };
+        unsafe { encdec::batch_encrypt(&self.rk2, blocks) };
     }
 }
 
@@ -77,13 +69,13 @@ impl<const RK: usize> BlockCipherDecBackend for Aes<'_, RK> {
     fn decrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
         // SAFETY: this trait impl is used only by the `Self::decrypt` method marked with
         // `#[target_feature(enable = "vaes")]`
-        unsafe { super::x86_aes::decrypt(&self.rk, block) };
+        unsafe { super::x86_aes::decrypt(self.rk, block) };
     }
 
     #[inline(always)]
     fn decrypt_par_blocks(&self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
         // SAFETY: this trait impl is used only by the `Self::decrypt` method marked with
         // `#[target_feature(enable = "vaes")]`
-        unsafe { encdec::decrypt_par(&self.rk2, blocks) };
+        unsafe { encdec::batch_decrypt(&self.rk2, blocks) };
     }
 }

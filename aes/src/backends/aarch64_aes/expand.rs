@@ -1,7 +1,5 @@
 //! AES key expansion support.
-#![allow(unsafe_op_in_unsafe_fn)]
-
-use core::{arch::aarch64::*, mem, slice};
+use core::arch::aarch64::*;
 
 pub(super) type RoundKeys<const RK: usize> = [uint8x16_t; RK];
 
@@ -15,17 +13,18 @@ const WORD_SIZE: usize = 4;
 const ROUND_CONSTS: [u32; 10] = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36];
 
 /// AES key expansion.
-#[inline]
 #[target_feature(enable = "aes")]
-pub unsafe fn expand_key<const N: usize, const RK: usize>(key: &[u8; N]) -> [uint8x16_t; RK] {
+#[inline]
+pub(super) fn expand_key<const N: usize, const RK: usize>(key: &[u8; N]) -> [uint8x16_t; RK] {
     const { assert!(matches!((N, RK), (16, 11) | (24, 13) | (32, 15))) }
 
-    let mut expanded_keys: [uint8x16_t; RK] = mem::zeroed();
+    let mut expanded_keys: [uint8x16_t; RK] = [vdupq_n_u8(0); RK];
 
     // Sanity check, as this is required in order for the subsequent conversion to be sound.
-    const _: () = assert!(mem::align_of::<uint8x16_t>() >= mem::align_of::<u32>());
+    const { assert!(align_of::<uint8x16_t>() >= align_of::<u32>()) }
+
     let keys_ptr: *mut u32 = expanded_keys.as_mut_ptr().cast();
-    let columns = slice::from_raw_parts_mut(keys_ptr, RK * BLOCK_WORDS);
+    let columns = unsafe { core::slice::from_raw_parts_mut(keys_ptr, RK * BLOCK_WORDS) };
 
     for (i, chunk) in key.chunks_exact(WORD_SIZE).enumerate() {
         columns[i] = u32::from_ne_bytes(chunk.try_into().unwrap());
@@ -55,27 +54,25 @@ pub unsafe fn expand_key<const N: usize, const RK: usize>(key: &[u8; N]) -> [uin
 ///
 /// This is the reverse of the encryption keys, with the Inverse Mix Columns
 /// operation applied to all but the first and last expanded key.
-#[inline]
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn inv_expanded_keys<const RK: usize>(
-    keys: &[uint8x16_t; RK],
-) -> [uint8x16_t; RK] {
+#[inline]
+pub(super) fn inv_expanded_keys<const RK: usize>(keys: &[uint8x16_t; RK]) -> [uint8x16_t; RK] {
     const { assert!(matches!(RK, 11 | 13 | 15)) }
 
-    let mut inv_keys: [uint8x16_t; RK] = core::mem::zeroed();
-    inv_keys[0] = keys[RK - 1];
-    for i in 1..RK - 1 {
-        inv_keys[i] = vaesimcq_u8(keys[RK - 1 - i]);
-    }
-    inv_keys[RK - 1] = keys[0];
-
-    inv_keys
+    core::array::from_fn(|i| {
+        let k = keys[RK - 1 - i];
+        if i == 0 || i == RK - 1 {
+            k
+        } else {
+            vaesimcq_u8(k)
+        }
+    })
 }
 
 /// Sub bytes for a single AES word: used for key expansion.
-#[inline]
 #[target_feature(enable = "aes")]
-unsafe fn sub_word(input: u32) -> u32 {
+#[inline]
+fn sub_word(input: u32) -> u32 {
     let input = vreinterpretq_u8_u32(vdupq_n_u32(input));
 
     // AES single round encryption (with a "round" key of all zeros)

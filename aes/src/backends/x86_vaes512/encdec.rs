@@ -10,17 +10,17 @@ use core::arch::x86_64::*;
 
 pub(super) type RoundKeys4<const ROUNDS: usize> = [__m512i; ROUNDS];
 
-type SimdBlocks<ParBlocks> = Array<__m512i, Quot<ParBlocks, U4>>;
+type BatchBlocks<ParBlocks> = Array<__m512i, Quot<ParBlocks, U4>>;
 
 #[inline]
 #[target_feature(enable = "avx512f")]
-pub(crate) unsafe fn broadcast_keys<const RK: usize>(keys: &RoundKeys<RK>) -> RoundKeys4<RK> {
+pub(super) fn broadcast_keys<const RK: usize>(keys: &RoundKeys<RK>) -> RoundKeys4<RK> {
     keys.map(|key| _mm512_broadcast_i32x4(key))
 }
 
 #[inline]
 #[target_feature(enable = "avx512f,vaes")]
-pub(crate) unsafe fn encrypt_par<const RK: usize, ParBlocks>(
+pub(super) fn batch_encrypt<const RK: usize, ParBlocks>(
     keys: &RoundKeys4<RK>,
     mut blocks: InOut<'_, '_, Array<Block, ParBlocks>>,
 ) where
@@ -51,7 +51,7 @@ pub(crate) unsafe fn encrypt_par<const RK: usize, ParBlocks>(
 
 #[inline]
 #[target_feature(enable = "avx512f,vaes")]
-pub(crate) unsafe fn decrypt_par<const RK: usize, ParBlocks>(
+pub(super) fn batch_decrypt<const RK: usize, ParBlocks>(
     keys: &RoundKeys4<RK>,
     mut blocks: InOut<'_, '_, Array<Block, ParBlocks>>,
 ) where
@@ -82,28 +82,30 @@ pub(crate) unsafe fn decrypt_par<const RK: usize, ParBlocks>(
 
 #[inline]
 #[target_feature(enable = "avx512f")]
-fn load<ParBlocks>(blocks: &Array<Block, ParBlocks>) -> SimdBlocks<ParBlocks>
+fn load<ParBlocks>(blocks: &Array<Block, ParBlocks>) -> BatchBlocks<ParBlocks>
 where
     ParBlocks: ArraySize + Div<U4>,
     Quot<ParBlocks, U4>: ArraySize,
 {
     const { assert!(ParBlocks::USIZE % 4 == 0) }
 
-    let in_ptr: *const __m512i = blocks.as_ptr().cast();
-    Array::from_fn(|i| unsafe { _mm512_loadu_si512(in_ptr.add(i)) })
+    let src_ptr: *const __m512i = blocks.as_ptr().cast();
+    // SAFETY: we use unaligned load instruction
+    Array::from_fn(|i| unsafe { _mm512_loadu_si512(src_ptr.add(i)) })
 }
 
 #[inline]
 #[target_feature(enable = "avx512f")]
-fn store<ParBlocks>(dst: &mut Array<Block, ParBlocks>, blocks: SimdBlocks<ParBlocks>)
+fn store<ParBlocks>(dst: &mut Array<Block, ParBlocks>, blocks: BatchBlocks<ParBlocks>)
 where
     ParBlocks: ArraySize + Div<U4>,
     Quot<ParBlocks, U4>: ArraySize,
 {
     const { assert!(ParBlocks::USIZE % 4 == 0) }
 
-    let out_ptr: *mut __m512i = dst.as_mut_ptr().cast();
+    let dst_ptr: *mut __m512i = dst.as_mut_ptr().cast();
     for (i, block) in blocks.into_iter().enumerate() {
-        unsafe { _mm512_storeu_si512(out_ptr.add(i), block) }
+        // SAFETY: we use unaligned store instruction
+        unsafe { _mm512_storeu_si512(dst_ptr.add(i), block) }
     }
 }
