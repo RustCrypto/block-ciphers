@@ -26,8 +26,11 @@ pub(super) fn expand_key<const N: usize, const RK: usize>(key: &[u8; N]) -> [uin
     let keys_ptr: *mut u32 = expanded_keys.as_mut_ptr().cast();
     let columns = unsafe { core::slice::from_raw_parts_mut(keys_ptr, RK * BLOCK_WORDS) };
 
-    for (i, chunk) in key.chunks_exact(WORD_SIZE).enumerate() {
-        columns[i] = u32::from_ne_bytes(chunk.try_into().unwrap());
+    let (chunks, tail) = key.as_chunks::<WORD_SIZE>();
+    assert!(tail.is_empty());
+
+    for (i, chunk) in chunks.iter().enumerate() {
+        columns[i] = u32::from_le_bytes(*chunk);
     }
 
     // From "The Rijndael Block Cipher" Section 4.1:
