@@ -5,7 +5,7 @@ description = "Pure Rust implementation of the Advanced Encryption Standard (a.k
 authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.89"
 readme = "README.md"
 documentation = "https://docs.rs/aes"
 repository = "https://github.com/RustCrypto/block-ciphers"
@@ -31,7 +31,7 @@ hazmat = [] # Expose cryptographically hazardous APIs
 level = "warn"
 check-cfg = [
     'cfg(aes_backend_soft, values("compact"))',
-    'cfg(aes_backend, values("soft", "avx256", "avx512"))',
+    'cfg(aes_backend, values("soft"))',
     'cfg(cpubits, values("16", "32", "64"))'
 ]
 

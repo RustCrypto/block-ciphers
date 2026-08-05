@@ -7,11 +7,11 @@ use cipher::{
 
 mod encdec;
 mod expand;
+mod utils;
 
 #[cfg(feature = "hazmat")]
 pub(crate) mod hazmat;
 
-#[cfg(any(aes_backend = "avx512", aes_backend = "avx256"))]
 pub(crate) use encdec::{decrypt, encrypt};
 pub(crate) use expand::RoundKeys;
 
@@ -38,15 +38,13 @@ pub(crate) struct Aes<const RK: usize> {
 impl<const RK: usize> Aes<RK> {
     #[inline]
     #[target_feature(enable = "aes")]
-    // TODO(MSRV-1.86): remove `unsafe`
-    pub(crate) unsafe fn encrypt(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
+    pub(crate) fn encrypt(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
         f.call(self);
     }
 
     #[inline]
     #[target_feature(enable = "aes")]
-    // TODO(MSRV-1.86): remove `unsafe`
-    pub(crate) unsafe fn decrypt(&self, f: impl BlockCipherDecClosure<BlockSize = U16>) {
+    pub(crate) fn decrypt(&self, f: impl BlockCipherDecClosure<BlockSize = U16>) {
         f.call(self);
     }
 }
@@ -71,7 +69,7 @@ impl<const RK: usize> BlockCipherEncBackend for Aes<RK> {
     fn encrypt_par_blocks(&self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
         // SAFETY: this trait impl is used only by the `Self::encrypt` method marked with
         // `#[target_feature(enable = "aes")]`
-        unsafe { encdec::encrypt_par(&self.enc_rk, blocks) };
+        unsafe { encdec::batch_encrypt(&self.enc_rk, blocks) };
     }
 }
 
@@ -99,27 +97,22 @@ pub(crate) struct AesEnc<const RK: usize> {
 impl<const RK: usize> AesEnc<RK> {
     #[inline]
     #[target_feature(enable = "aes")]
-    // TODO(MSRV-1.86): remove `unsafe`
-    pub(crate) unsafe fn as_encdec(&self) -> Aes<RK> {
+    pub(crate) fn as_encdec(&self) -> Aes<RK> {
         let enc_rk = self.enc_rk;
-        // SAFETY: the is method marked with `#[target_feature(enable = "aes")]`
-        let dec_rk = unsafe { expand::inv_expanded_keys(&enc_rk) };
+        let dec_rk = expand::inv_expanded_keys(&enc_rk);
         Aes { enc_rk, dec_rk }
     }
 
     #[inline]
     #[target_feature(enable = "aes")]
-    // TODO(MSRV-1.86): remove `unsafe`
-    pub(crate) unsafe fn as_dec(&self) -> AesDec<RK> {
-        // SAFETY: the is method marked with `#[target_feature(enable = "aes")]`
-        let dec_rk = unsafe { expand::inv_expanded_keys(&self.enc_rk) };
+    pub(crate) fn as_dec(&self) -> AesDec<RK> {
+        let dec_rk = expand::inv_expanded_keys(&self.enc_rk);
         AesDec { dec_rk }
     }
 
     #[inline]
     #[target_feature(enable = "aes")]
-    // TODO(MSRV-1.86): remove `unsafe`
-    pub(crate) unsafe fn encrypt(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
+    pub(crate) fn encrypt(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
         f.call(self)
     }
 }
@@ -144,7 +137,7 @@ impl<const RK: usize> BlockCipherEncBackend for AesEnc<RK> {
     fn encrypt_par_blocks(&self, blocks: InOut<'_, '_, ParBlocks<Self>>) {
         // SAFETY: this trait impl is used only by the `Self::encrypt` method marked with
         // `#[target_feature(enable = "aes")]`
-        unsafe { encdec::encrypt_par(&self.enc_rk, blocks) };
+        unsafe { encdec::batch_encrypt(&self.enc_rk, blocks) };
     }
 }
 
@@ -156,8 +149,7 @@ pub(crate) struct AesDec<const RK: usize> {
 impl<const RK: usize> AesDec<RK> {
     #[inline]
     #[target_feature(enable = "aes")]
-    // TODO(MSRV-1.86): remove `unsafe`
-    pub(crate) unsafe fn decrypt(&self, f: impl BlockCipherDecClosure<BlockSize = U16>) {
+    pub(crate) fn decrypt(&self, f: impl BlockCipherDecClosure<BlockSize = U16>) {
         f.call(self);
     }
 }
@@ -191,10 +183,9 @@ macro_rules! impl_key_init {
         impl $name {
             #[inline]
             #[target_feature(enable = "aes")]
-            // TODO(MSRV-1.86): remove `unsafe`
-            pub(crate) unsafe fn new(key: &[u8; $key_size]) -> Self {
-                let enc_rk = unsafe { expand::$expand_fn(key) };
-                let dec_rk = unsafe { expand::inv_expanded_keys(&enc_rk) };
+            pub(crate) fn new(key: &[u8; $key_size]) -> Self {
+                let enc_rk = expand::$expand_fn(key);
+                let dec_rk = expand::inv_expanded_keys(&enc_rk);
                 Self { enc_rk, dec_rk }
             }
         }
@@ -202,10 +193,8 @@ macro_rules! impl_key_init {
         impl $name_enc {
             #[inline]
             #[target_feature(enable = "aes")]
-            // TODO(MSRV-1.86): remove `unsafe`
-            pub(crate) unsafe fn new(key: &[u8; $key_size]) -> Self {
-                // SAFETY: the is method marked with `#[target_feature(enable = "aes")]`
-                let enc_rk = unsafe { expand::$expand_fn(key) };
+            pub(crate) fn new(key: &[u8; $key_size]) -> Self {
+                let enc_rk = expand::$expand_fn(key);
                 Self { enc_rk }
             }
         }
@@ -213,10 +202,9 @@ macro_rules! impl_key_init {
         impl $name_dec {
             #[inline]
             #[target_feature(enable = "aes")]
-            // TODO(MSRV-1.86): remove `unsafe`
-            pub(crate) unsafe fn new(key: &[u8; $key_size]) -> Self {
-                let enc_rk = unsafe { expand::$expand_fn(key) };
-                let dec_rk = unsafe { expand::inv_expanded_keys(&enc_rk) };
+            pub(crate) fn new(key: &[u8; $key_size]) -> Self {
+                let enc_rk = expand::$expand_fn(key);
+                let dec_rk = expand::inv_expanded_keys(&enc_rk);
                 Self { dec_rk }
             }
         }

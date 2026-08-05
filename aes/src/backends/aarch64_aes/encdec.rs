@@ -1,183 +1,152 @@
 //! AES encryption support
 //!
 //! Note that `aes` target feature implicitly enables `neon`, see:
-//! https://doc.rust-lang.org/reference/attributes/codegen.html#aarch64
-#![allow(unsafe_op_in_unsafe_fn)]
-
+//! https://doc.rust-lang.org/reference/attributes/codegen.html#r-attributes.codegen.target_feature.aarch64
+use super::utils::{load_block, store_block};
 use crate::Block;
 use cipher::{
     array::{Array, ArraySize},
     inout::InOut,
 };
-use core::{arch::aarch64::*, mem};
+use core::arch::aarch64::*;
 
-/// Perform AES encryption using the given expanded keys.
 #[target_feature(enable = "aes")]
 #[inline]
-pub(super) unsafe fn encrypt<const KEYS: usize>(
-    keys: &[uint8x16_t; KEYS],
-    block: InOut<'_, '_, Block>,
-) {
-    assert!(KEYS == 11 || KEYS == 13 || KEYS == 15);
-    let (in_ptr, out_ptr) = block.into_raw();
-    let mut block = vld1q_u8(in_ptr.cast());
+pub(super) fn encrypt<const RK: usize>(keys: &[uint8x16_t; RK], mut block: InOut<'_, '_, Block>) {
+    const { assert!(matches!(RK, 11 | 13 | 15)) }
 
-    for &key in &keys[..KEYS - 2] {
+    let mut b = load_block(block.get_in());
+
+    for &key in &keys[..RK - 2] {
         // AES single round encryption
-        block = vaeseq_u8(block, key);
+        b = vaeseq_u8(b, key);
         // Mix columns
-        block = vaesmcq_u8(block);
+        b = vaesmcq_u8(b);
     }
 
     // AES single round encryption
-    block = vaeseq_u8(block, keys[KEYS - 2]);
+    b = vaeseq_u8(b, keys[RK - 2]);
     // Final add (bitwise XOR)
-    block = veorq_u8(block, keys[KEYS - 1]);
+    b = veorq_u8(b, keys[RK - 1]);
 
-    vst1q_u8(out_ptr.cast(), block);
+    store_block(block.get_out(), b);
 }
 
-/// Perform AES decryption using the given expanded keys.
 #[target_feature(enable = "aes")]
 #[inline]
-pub(super) unsafe fn decrypt<const KEYS: usize>(
-    keys: &[uint8x16_t; KEYS],
-    block: InOut<'_, '_, Block>,
-) {
-    assert!(KEYS == 11 || KEYS == 13 || KEYS == 15);
+pub(super) fn decrypt<const RK: usize>(keys: &[uint8x16_t; RK], mut block: InOut<'_, '_, Block>) {
+    const { assert!(matches!(RK, 11 | 13 | 15)) }
 
-    let (in_ptr, out_ptr) = block.into_raw();
-    let mut block = vld1q_u8(in_ptr.cast());
+    let mut b = load_block(block.get_in());
 
-    for &key in &keys[..KEYS - 2] {
+    for &key in &keys[..RK - 2] {
         // AES single round decryption
-        block = vaesdq_u8(block, key);
+        b = vaesdq_u8(b, key);
         // Inverse mix columns
-        block = vaesimcq_u8(block);
+        b = vaesimcq_u8(b);
     }
 
     // AES single round decryption
-    block = vaesdq_u8(block, keys[KEYS - 2]);
+    b = vaesdq_u8(b, keys[RK - 2]);
     // Final add (bitwise XOR)
-    block = veorq_u8(block, keys[KEYS - 1]);
+    b = veorq_u8(b, keys[RK - 1]);
 
-    vst1q_u8(out_ptr.cast(), block);
+    store_block(block.get_out(), b);
 }
 
-/// Perform parallel AES encryption 8-blocks-at-a-time using the given expanded keys.
 #[target_feature(enable = "aes")]
 #[inline]
-pub(super) unsafe fn encrypt_par<const KEYS: usize, ParBlocks: ArraySize>(
-    keys: &[uint8x16_t; KEYS],
-    blocks: InOut<'_, '_, Array<Block, ParBlocks>>,
+pub(super) fn batch_encrypt<const RK: usize, ParBlocks: ArraySize>(
+    keys: &[uint8x16_t; RK],
+    mut blocks: InOut<'_, '_, Array<Block, ParBlocks>>,
 ) {
-    #[target_feature(enable = "aes")]
-    unsafe fn par_round<ParBlocks: ArraySize>(
-        key: uint8x16_t,
-        blocks: &mut Array<uint8x16_t, ParBlocks>,
-    ) {
-        for block in blocks {
-            // AES single round encryption and mix columns
-            *block = vaesmcq_u8(vaeseq_u8(*block, key));
-        }
-    }
+    const { assert!(matches!(RK, 11 | 13 | 15)) }
 
-    assert!(KEYS == 11 || KEYS == 13 || KEYS == 15);
-
-    let (in_ptr, out_ptr) = blocks.into_raw();
-    let in_ptr: *const Block = in_ptr.cast();
-    let out_ptr: *mut Block = out_ptr.cast();
-
-    // Load plaintext blocks
-    let mut blocks: Array<uint8x16_t, ParBlocks> = mem::zeroed();
-    for i in 0..ParBlocks::USIZE {
-        blocks[i] = vld1q_u8(in_ptr.add(i).cast());
-    }
+    let mut b = load_batch_blocks(blocks.get_in());
 
     // Loop is intentionally not used here to enforce inlining
-    par_round(keys[0], &mut blocks);
-    par_round(keys[1], &mut blocks);
-    par_round(keys[2], &mut blocks);
-    par_round(keys[3], &mut blocks);
-    par_round(keys[4], &mut blocks);
-    par_round(keys[5], &mut blocks);
-    par_round(keys[6], &mut blocks);
-    par_round(keys[7], &mut blocks);
-    par_round(keys[8], &mut blocks);
-    if KEYS >= 13 {
-        par_round(keys[9], &mut blocks);
-        par_round(keys[10], &mut blocks);
+    batch_enc_round(keys[0], &mut b);
+    batch_enc_round(keys[1], &mut b);
+    batch_enc_round(keys[2], &mut b);
+    batch_enc_round(keys[3], &mut b);
+    batch_enc_round(keys[4], &mut b);
+    batch_enc_round(keys[5], &mut b);
+    batch_enc_round(keys[6], &mut b);
+    batch_enc_round(keys[7], &mut b);
+    batch_enc_round(keys[8], &mut b);
+    if RK >= 13 {
+        batch_enc_round(keys[9], &mut b);
+        batch_enc_round(keys[10], &mut b);
     }
-    if KEYS == 15 {
-        par_round(keys[11], &mut blocks);
-        par_round(keys[12], &mut blocks);
+    if RK == 15 {
+        batch_enc_round(keys[11], &mut b);
+        batch_enc_round(keys[12], &mut b);
     }
 
     for i in 0..ParBlocks::USIZE {
-        // AES single round encryption
-        blocks[i] = vaeseq_u8(blocks[i], keys[KEYS - 2]);
-        // Final add (bitwise XOR)
-        blocks[i] = veorq_u8(blocks[i], keys[KEYS - 1]);
-        // Save encrypted blocks
-        vst1q_u8(out_ptr.add(i).cast(), blocks[i]);
+        b[i] = vaeseq_u8(b[i], keys[RK - 2]);
+        b[i] = veorq_u8(b[i], keys[RK - 1]);
+        store_block(&mut blocks.get_out()[i], b[i]);
     }
 }
 
-/// Perform parallel AES decryption 8-blocks-at-a-time using the given expanded keys.
 #[target_feature(enable = "aes")]
 #[inline]
-pub(super) unsafe fn decrypt_par<const KEYS: usize, ParBlocks: ArraySize>(
-    keys: &[uint8x16_t; KEYS],
-    blocks: InOut<'_, '_, Array<Block, ParBlocks>>,
+pub(super) fn batch_decrypt<const RK: usize, ParBlocks: ArraySize>(
+    keys: &[uint8x16_t; RK],
+    mut blocks: InOut<'_, '_, Array<Block, ParBlocks>>,
 ) {
-    #[target_feature(enable = "aes")]
-    unsafe fn par_round<ParBlocks: ArraySize>(
-        key: uint8x16_t,
-        blocks: &mut Array<uint8x16_t, ParBlocks>,
-    ) {
-        for block in blocks {
-            // AES single round decryption and inverse mix columns
-            *block = vaesimcq_u8(vaesdq_u8(*block, key));
-        }
-    }
+    const { assert!(matches!(RK, 11 | 13 | 15)) }
 
-    assert!(KEYS == 11 || KEYS == 13 || KEYS == 15);
-
-    let (in_ptr, out_ptr) = blocks.into_raw();
-    let in_ptr: *const Block = in_ptr.cast();
-    let out_ptr: *mut Block = out_ptr.cast();
-
-    // Load encrypted blocks
-    let mut blocks: Array<uint8x16_t, ParBlocks> = mem::zeroed();
-    for i in 0..ParBlocks::USIZE {
-        blocks[i] = vld1q_u8(in_ptr.add(i).cast());
-    }
+    let mut b = load_batch_blocks(blocks.get_in());
 
     // Loop is intentionally not used here to enforce inlining
-    par_round(keys[0], &mut blocks);
-    par_round(keys[1], &mut blocks);
-    par_round(keys[2], &mut blocks);
-    par_round(keys[3], &mut blocks);
-    par_round(keys[4], &mut blocks);
-    par_round(keys[5], &mut blocks);
-    par_round(keys[6], &mut blocks);
-    par_round(keys[7], &mut blocks);
-    par_round(keys[8], &mut blocks);
-    if KEYS >= 13 {
-        par_round(keys[9], &mut blocks);
-        par_round(keys[10], &mut blocks);
+    batch_dec_round(keys[0], &mut b);
+    batch_dec_round(keys[1], &mut b);
+    batch_dec_round(keys[2], &mut b);
+    batch_dec_round(keys[3], &mut b);
+    batch_dec_round(keys[4], &mut b);
+    batch_dec_round(keys[5], &mut b);
+    batch_dec_round(keys[6], &mut b);
+    batch_dec_round(keys[7], &mut b);
+    batch_dec_round(keys[8], &mut b);
+    if RK >= 13 {
+        batch_dec_round(keys[9], &mut b);
+        batch_dec_round(keys[10], &mut b);
     }
-    if KEYS == 15 {
-        par_round(keys[11], &mut blocks);
-        par_round(keys[12], &mut blocks);
+    if RK == 15 {
+        batch_dec_round(keys[11], &mut b);
+        batch_dec_round(keys[12], &mut b);
     }
 
     for i in 0..ParBlocks::USIZE {
-        // AES single round decryption
-        blocks[i] = vaesdq_u8(blocks[i], keys[KEYS - 2]);
-        // Final add (bitwise XOR)
-        blocks[i] = veorq_u8(blocks[i], keys[KEYS - 1]);
-        // Save plaintext blocks
-        vst1q_u8(out_ptr.add(i) as *mut u8, blocks[i]);
+        b[i] = vaesdq_u8(b[i], keys[RK - 2]);
+        b[i] = veorq_u8(b[i], keys[RK - 1]);
+        store_block(&mut blocks.get_out()[i], b[i]);
     }
+}
+
+#[target_feature(enable = "aes")]
+fn batch_enc_round<ParBlocks: ArraySize>(
+    key: uint8x16_t,
+    blocks: &mut Array<uint8x16_t, ParBlocks>,
+) {
+    for block in blocks {
+        *block = vaesmcq_u8(vaeseq_u8(*block, key));
+    }
+}
+
+#[target_feature(enable = "aes")]
+fn batch_dec_round<ParBlocks: ArraySize>(
+    key: uint8x16_t,
+    blocks: &mut Array<uint8x16_t, ParBlocks>,
+) {
+    for block in blocks {
+        *block = vaesimcq_u8(vaesdq_u8(*block, key));
+    }
+}
+
+#[target_feature(enable = "neon")]
+fn load_batch_blocks<N: ArraySize>(blocks: &Array<Block, N>) -> Array<uint8x16_t, N> {
+    Array::from_fn(|i| load_block(&blocks[i]))
 }

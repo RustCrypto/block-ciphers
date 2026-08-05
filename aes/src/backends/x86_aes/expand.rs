@@ -1,5 +1,3 @@
-#![allow(unsafe_op_in_unsafe_fn)]
-
 #[cfg(target_arch = "x86")]
 use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
@@ -9,8 +7,9 @@ pub(crate) type RoundKeys<const RK: usize> = [__m128i; RK];
 
 #[inline]
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn aes128_expand_key(key: &[u8; 16]) -> RoundKeys<11> {
-    unsafe fn expand_round<const R: i32>(keys: &mut RoundKeys<11>, pos: usize) {
+pub(super) fn aes128_expand_key(key: &[u8; 16]) -> RoundKeys<11> {
+    #[target_feature(enable = "aes")]
+    fn expand_round<const R: i32>(keys: &mut RoundKeys<11>, pos: usize) {
         let mut t1 = keys[pos - 1];
         let mut t2;
         let mut t3;
@@ -29,8 +28,7 @@ pub(super) unsafe fn aes128_expand_key(key: &[u8; 16]) -> RoundKeys<11> {
     }
 
     let mut keys = [_mm_setzero_si128(); 11];
-    let k = _mm_loadu_si128(key.as_ptr().cast());
-    keys[0] = k;
+    keys[0] = load(key);
 
     let kr = &mut keys;
     expand_round::<0x01>(kr, 1);
@@ -49,14 +47,15 @@ pub(super) unsafe fn aes128_expand_key(key: &[u8; 16]) -> RoundKeys<11> {
 
 #[inline]
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn aes192_expand_key(key: &[u8; 24]) -> RoundKeys<13> {
-    unsafe fn unpack_hilo(a: __m128i, b: __m128i) -> __m128i {
+pub(super) fn aes192_expand_key(key: &[u8; 24]) -> RoundKeys<13> {
+    #[target_feature(enable = "aes")]
+    fn unpack_hilo(a: __m128i, b: __m128i) -> __m128i {
         let a = _mm_shuffle_epi32(a, 0b01_00_11_10);
         _mm_unpacklo_epi64(a, b)
     }
 
     #[target_feature(enable = "aes")]
-    unsafe fn expand_round<const R: i32>(mut t1: __m128i, mut t3: __m128i) -> (__m128i, __m128i) {
+    fn expand_round<const R: i32>(mut t1: __m128i, mut t3: __m128i) -> (__m128i, __m128i) {
         let (mut t2, mut t4);
 
         t2 = _mm_aeskeygenassist_si128(t3, R);
@@ -77,17 +76,9 @@ pub(super) unsafe fn aes192_expand_key(key: &[u8; 24]) -> RoundKeys<13> {
     }
 
     let mut keys = [_mm_setzero_si128(); 13];
-    // We are being extra pedantic here to remove out-of-bound access.
-    // This should be optimized into movups, movsd sequence.
-    let (k0, k1l) = {
-        let mut t = [0u8; 32];
-        t[..key.len()].copy_from_slice(key);
-        (
-            _mm_loadu_si128(t.as_ptr().cast()),
-            _mm_loadu_si128(t.as_ptr().offset(16).cast()),
-        )
-    };
 
+    let k0 = load(&key[..16]);
+    let k1l = load(&key[16..]);
     keys[0] = k0;
 
     let (k1_2, k2r) = expand_round::<0x01>(k0, k1l);
@@ -125,8 +116,9 @@ pub(super) unsafe fn aes192_expand_key(key: &[u8; 24]) -> RoundKeys<13> {
 
 #[inline]
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn aes256_expand_key(key: &[u8; 32]) -> RoundKeys<15> {
-    unsafe fn expand_round<const R: i32>(keys: &mut RoundKeys<15>, pos: usize) {
+pub(super) fn aes256_expand_key(key: &[u8; 32]) -> RoundKeys<15> {
+    #[target_feature(enable = "aes")]
+    fn expand_round<const R: i32>(keys: &mut RoundKeys<15>, pos: usize) {
         let mut t1 = keys[pos - 2];
         let mut t2;
         let mut t3 = keys[pos - 1];
@@ -157,7 +149,8 @@ pub(super) unsafe fn aes256_expand_key(key: &[u8; 32]) -> RoundKeys<15> {
         keys[pos + 1] = t3;
     }
 
-    unsafe fn expand_round_last<const R: i32>(keys: &mut RoundKeys<15>, pos: usize) {
+    #[target_feature(enable = "aes")]
+    fn expand_round_last<const R: i32>(keys: &mut RoundKeys<15>, pos: usize) {
         let mut t1 = keys[pos - 2];
         let mut t2;
         let t3 = keys[pos - 1];
@@ -178,9 +171,8 @@ pub(super) unsafe fn aes256_expand_key(key: &[u8; 32]) -> RoundKeys<15> {
 
     let mut keys = [_mm_setzero_si128(); 15];
 
-    let kp = key.as_ptr().cast::<__m128i>();
-    keys[0] = _mm_loadu_si128(kp);
-    keys[1] = _mm_loadu_si128(kp.add(1));
+    keys[0] = load(&key[..16]);
+    keys[1] = load(&key[16..]);
 
     let k = &mut keys;
     expand_round::<0x01>(k, 2);
@@ -196,7 +188,7 @@ pub(super) unsafe fn aes256_expand_key(key: &[u8; 32]) -> RoundKeys<15> {
 
 #[inline]
 #[target_feature(enable = "aes")]
-pub(super) unsafe fn inv_expanded_keys<const N: usize>(keys: &[__m128i; N]) -> [__m128i; N] {
+pub(super) fn inv_expanded_keys<const N: usize>(keys: &[__m128i; N]) -> [__m128i; N] {
     let mut inv_keys: [__m128i; N] = [_mm_setzero_si128(); N];
     inv_keys[0] = keys[N - 1];
     for i in 1..N - 1 {
@@ -204,4 +196,12 @@ pub(super) unsafe fn inv_expanded_keys<const N: usize>(keys: &[__m128i; N]) -> [
     }
     inv_keys[N - 1] = keys[0];
     inv_keys
+}
+
+#[target_feature(enable = "sse2")]
+fn load(bytes: &[u8]) -> __m128i {
+    assert!(size_of_val(bytes) <= size_of::<__m128i>());
+    let mut t = crate::Block::default();
+    t[..bytes.len()].copy_from_slice(bytes);
+    super::utils::load_block(&t)
 }

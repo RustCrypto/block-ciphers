@@ -1,105 +1,100 @@
 //! Low-level "hazmat" AES functions: ARMv8 Cryptography Extensions support.
 //!
 //! Note: this isn't actually used in the `Aes128`/`Aes192`/`Aes256`
-//! implementations in this crate, but instead provides raw AES-NI accelerated
+//! implementations in this crate, but instead provides raw accelerated
 //! access to the AES round function gated under the `hazmat` crate feature.
-#![allow(unsafe_op_in_unsafe_fn)]
-
+use super::utils::{load_block, store_block};
 use crate::hazmat::{Block, Block8};
 use core::arch::aarch64::*;
 
 /// AES cipher (encrypt) round function.
-#[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
-pub(crate) unsafe fn cipher_round(block: &mut Block, round_key: &Block) {
-    let b = vld1q_u8(block.as_ptr());
-    let k = vld1q_u8(round_key.as_ptr());
+pub(crate) fn cipher_round(block: &mut Block, round_key: &Block) {
+    let mut b = load_block(block);
+    let k = load_block(round_key);
 
     // AES single round encryption (all-zero round key, deferred until the end)
-    let mut state = vaeseq_u8(b, vdupq_n_u8(0));
+    b = vaeseq_u8(b, vdupq_n_u8(0));
 
     // AES mix columns (the `vaeseq_u8` instruction otherwise omits this step)
-    state = vaesmcq_u8(state);
+    b = vaesmcq_u8(b);
 
     // AES add round key (bitwise XOR)
-    state = veorq_u8(state, k);
+    b = veorq_u8(b, k);
 
-    vst1q_u8(block.as_mut_ptr(), state);
+    store_block(block, b);
 }
 
 /// AES cipher (encrypt) round function: parallel version.
-#[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
-pub(crate) unsafe fn cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
+pub(crate) fn cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
     for i in 0..8 {
-        let mut state = vld1q_u8(blocks[i].as_ptr());
+        let mut b = load_block(&blocks[i]);
 
         // AES single round encryption
-        state = vaeseq_u8(state, vdupq_n_u8(0));
+        b = vaeseq_u8(b, vdupq_n_u8(0));
 
         // AES mix columns
-        state = vaesmcq_u8(state);
+        b = vaesmcq_u8(b);
 
         // AES add round key (bitwise XOR)
-        state = veorq_u8(state, vld1q_u8(round_keys[i].as_ptr()));
+        let rk = load_block(&round_keys[i]);
+        b = veorq_u8(b, rk);
 
-        vst1q_u8(blocks[i].as_mut_ptr(), state);
+        store_block(&mut blocks[i], b);
     }
 }
 
 /// AES equivalent inverse cipher (decrypt) round function.
-#[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
-pub(crate) unsafe fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
-    let b = vld1q_u8(block.as_ptr());
-    let k = vld1q_u8(round_key.as_ptr());
+pub(crate) fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
+    let mut b = load_block(block);
+    let k = load_block(round_key);
 
     // AES single round decryption (all-zero round key, deferred until the end)
-    let mut state = vaesdq_u8(b, vdupq_n_u8(0));
+    b = vaesdq_u8(b, vdupq_n_u8(0));
 
     // AES inverse mix columns (the `vaesdq_u8` instruction otherwise omits this step)
-    state = vaesimcq_u8(state);
+    b = vaesimcq_u8(b);
 
     // AES add round key (bitwise XOR)
-    state = veorq_u8(state, k);
+    b = veorq_u8(b, k);
 
-    vst1q_u8(block.as_mut_ptr(), state);
+    store_block(block, b);
 }
 
 /// AES equivalent inverse cipher (decrypt) round function: parallel version.
-#[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
-pub(crate) unsafe fn equiv_inv_cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
+pub(crate) fn equiv_inv_cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
     for i in 0..8 {
-        let mut state = vld1q_u8(blocks[i].as_ptr());
+        let mut b = load_block(&blocks[i]);
 
         // AES single round decryption (all-zero round key, deferred until the end)
-        state = vaesdq_u8(state, vdupq_n_u8(0));
+        b = vaesdq_u8(b, vdupq_n_u8(0));
 
         // AES inverse mix columns (the `vaesdq_u8` instruction otherwise omits this step)
-        state = vaesimcq_u8(state);
+        b = vaesimcq_u8(b);
 
         // AES add round key (bitwise XOR)
-        state = veorq_u8(state, vld1q_u8(round_keys[i].as_ptr()));
+        let rk = load_block(&round_keys[i]);
+        b = veorq_u8(b, rk);
 
-        vst1q_u8(blocks[i].as_mut_ptr(), state);
+        store_block(&mut blocks[i], b);
     }
 }
 
 /// AES mix columns function.
-#[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
-pub(crate) unsafe fn mix_columns(block: &mut Block) {
-    let b = vld1q_u8(block.as_ptr());
+pub(crate) fn mix_columns(block: &mut Block) {
+    let b = load_block(block);
     let out = vaesmcq_u8(b);
-    vst1q_u8(block.as_mut_ptr(), out);
+    store_block(block, out);
 }
 
 /// AES inverse mix columns function.
-#[allow(clippy::cast_ptr_alignment)]
 #[target_feature(enable = "aes")]
-pub(crate) unsafe fn inv_mix_columns(block: &mut Block) {
-    let b = vld1q_u8(block.as_ptr());
+pub(crate) fn inv_mix_columns(block: &mut Block) {
+    let b = load_block(block);
     let out = vaesimcq_u8(b);
-    vst1q_u8(block.as_mut_ptr(), out);
+    store_block(block, out);
 }

@@ -31,6 +31,7 @@ macro_rules! if_intrinsics_available {
             #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
             use crate::backends::x86_aes::hazmat as intrinsics;
 
+            // SAFETY: we checked target feature availability
             unsafe { $body }
             return;
         }

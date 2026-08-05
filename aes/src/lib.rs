@@ -150,17 +150,13 @@ cfg_if! {
         type Token = ();
     } else if #[cfg(any(target_arch = "x86_64", target_arch = "x86"))] {
         cpufeatures::new!(features_aes, "aes");
-        #[cfg(any(aes_backend = "avx256", aes_backend = "avx512"))]
         cpufeatures::new!(features_vaes256, "vaes");
-        #[cfg(aes_backend = "avx512")]
         cpufeatures::new!(features_vaes512, "avx512f", "vaes");
 
         #[derive(Clone, Copy)]
         struct Token {
             aes: features_aes::InitToken,
-            #[cfg(any(aes_backend = "avx256", aes_backend = "avx512"))]
             vaes256: features_vaes256::InitToken,
-            #[cfg(aes_backend = "avx512")]
             vaes512: features_vaes512::InitToken,
         }
 
@@ -168,9 +164,7 @@ cfg_if! {
             fn default() -> Self {
                 Token {
                     aes: features_aes::InitToken::init(),
-                    #[cfg(any(aes_backend = "avx256", aes_backend = "avx512"))]
                     vaes256: features_vaes256::InitToken::init(),
-                    #[cfg(aes_backend = "avx512")]
                     vaes512: features_vaes512::InitToken::init(),
                 }
             }
@@ -269,7 +263,6 @@ macro_rules! impl_encrypt {
                 #[cfg(not(aes_backend = "soft"))]
                 cfg_if! {
                     if #[cfg(any(target_arch = "x86_64", target_arch = "x86"))] {
-                        #[cfg(aes_backend = "avx512")]
                         if self.token.vaes512.get() {
                             // SAFETY: we access correct union variant
                             let enc_rk = unsafe { &self.inner.aes.enc_rk };
@@ -278,7 +271,6 @@ macro_rules! impl_encrypt {
                             return;
                         }
 
-                        #[cfg(any(aes_backend = "avx256", aes_backend = "avx512"))]
                         if self.token.vaes256.get() {
                             // SAFETY: we access correct union variant
                             let enc_rk = unsafe { &self.inner.aes.enc_rk };
@@ -321,7 +313,6 @@ macro_rules! impl_decrypt {
                 #[cfg(not(aes_backend = "soft"))]
                 cfg_if! {
                     if #[cfg(any(target_arch = "x86_64", target_arch = "x86"))] {
-                        #[cfg(aes_backend = "avx512")]
                         if self.token.vaes512.get() {
                             // SAFETY: we access correct union variant
                             let dec_rk = unsafe { &self.inner.aes.dec_rk };
@@ -330,7 +321,6 @@ macro_rules! impl_decrypt {
                             return;
                         }
 
-                        #[cfg(any(aes_backend = "avx256", aes_backend = "avx512"))]
                         if self.token.vaes256.get() {
                             // SAFETY: we access correct union variant
                             let dec_rk = unsafe { &self.inner.aes.dec_rk };
