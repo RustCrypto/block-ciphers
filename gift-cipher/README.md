@@ -49,7 +49,7 @@ dual licensed as above, without any additional terms or conditions.
 [hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260039-block-ciphers
-[build-image]: https://github.com/RustCrypto/block-ciphers/actions/workflows/gift.yml/badge.svg
+[build-image]: https://github.com/RustCrypto/block-ciphers/actions/workflows/gift-cipher.yml/badge.svg
 [build-link]: https://github.com/RustCrypto/block-ciphers/actions/workflows/gift.yml
 
 [//]: # (general links)
