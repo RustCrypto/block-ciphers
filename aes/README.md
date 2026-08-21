@@ -59,13 +59,13 @@ dual licensed as above, without any additional terms or conditions.
 [crate-image]: https://img.shields.io/crates/v/aes.svg
 [crate-link]: https://crates.io/crates/aes
 [docs-image]: https://docs.rs/aes/badge.svg
-[docs-link]: https://docs.rs/aes/
+[docs-link]: https://docs.rs/aes
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.89+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260039-block-ciphers
-[build-image]: https://github.com/RustCrypto/block-ciphers/workflows/aes/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/block-ciphers/actions?query=workflow%3Aaes
+[build-image]: https://github.com/RustCrypto/block-ciphers/actions/workflows/aes.yml/badge.svg?branch=master
+[build-link]: https://github.com/RustCrypto/block-ciphers/actions/workflows/aes.yml
 [downloads-image]: https://img.shields.io/crates/d/aes.svg
 [hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
 [hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md

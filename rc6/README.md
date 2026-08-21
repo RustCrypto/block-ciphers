@@ -56,15 +56,15 @@ dual licensed as above, without any additional terms or conditions.
 [crate-image]: https://img.shields.io/crates/v/rc6.svg
 [crate-link]: https://crates.io/crates/rc6
 [docs-image]: https://docs.rs/rc6/badge.svg
-[docs-link]: https://docs.rs/rc6/
+[docs-link]: https://docs.rs/rc6
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg
-[hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
-[hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
+[rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260039-block-ciphers
-[build-image]: https://github.com/RustCrypto/block-ciphers/actions/workflows/rc6.yml/badge.svg
+[build-image]: https://github.com/RustCrypto/block-ciphers/actions/workflows/rc6.yml/badge.svg?branch=master
 [build-link]: https://github.com/RustCrypto/block-ciphers/actions/workflows/rc6.yml
+[hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
+[hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
 
 [//]: # (general links)
 

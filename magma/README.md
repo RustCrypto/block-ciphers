@@ -42,12 +42,12 @@ dual licensed as above, without any additional terms or conditions.
 [crate-image]: https://img.shields.io/crates/v/magma.svg
 [crate-link]: https://crates.io/crates/magma
 [docs-image]: https://docs.rs/magma/badge.svg
-[docs-link]: https://docs.rs/magma/
+[docs-link]: https://docs.rs/magma
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
-[hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
-[hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260039-block-ciphers
-[build-image]: https://github.com/RustCrypto/block-ciphers/workflows/magma/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/block-ciphers/actions?query=workflow%3Amagma
+[build-image]: https://github.com/RustCrypto/block-ciphers/actions/workflows/magma.yml/badge.svg?branch=master
+[build-link]: https://github.com/RustCrypto/block-ciphers/actions/workflows/magma.yml
+[hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
+[hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md

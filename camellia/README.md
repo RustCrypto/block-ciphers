@@ -42,15 +42,15 @@ dual licensed as above, without any additional terms or conditions.
 [crate-image]: https://img.shields.io/crates/v/camellia.svg
 [crate-link]: https://crates.io/crates/camellia
 [docs-image]: https://docs.rs/camellia/badge.svg
-[docs-link]: https://docs.rs/camellia/
+[docs-link]: https://docs.rs/camellia
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
-[hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
-[hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260039-block-ciphers
-[build-image]: https://github.com/RustCrypto/block-ciphers/workflows/camellia/badge.svg?branch=master&event=push
-[build-link]: https://github.com/RustCrypto/block-ciphers/actions?query=workflow%3Acamellia
+[build-image]: https://github.com/RustCrypto/block-ciphers/actions/workflows/camellia.yml/badge.svg?branch=master
+[build-link]: https://github.com/RustCrypto/block-ciphers/actions/workflows/camellia.yml
+[hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
+[hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
 
 [//]: # (general links)
 
