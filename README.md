@@ -36,7 +36,7 @@ It's generally recommended not to use other cipher implementations in this repos
 
 | Name | Crate name | crates.io | Docs | MSRV |
 |------|------------|-----------|------|------|
-| [AES] (Rijndael) | [`aes`] | [![crates.io](https://img.shields.io/crates/v/aes.svg)](https://crates.io/crates/aes) | [![Documentation](https://docs.rs/aes/badge.svg)](https://docs.rs/aes) | ![MSRV 1.85][msrv-1.85] |
+| [AES] (Rijndael) | [`aes`] | [![crates.io](https://img.shields.io/crates/v/aes.svg)](https://crates.io/crates/aes) | [![Documentation](https://docs.rs/aes/badge.svg)](https://docs.rs/aes) | ![MSRV 1.89][msrv-1.89] |
 | [ARIA] | [`aria`] | [![crates.io](https://img.shields.io/crates/v/aria.svg)](https://crates.io/crates/aria) | [![Documentation](https://docs.rs/aria/badge.svg)](https://docs.rs/aria) | ![MSRV 1.85][msrv-1.85] |
 | [BelT] block cipher | [`belt-block`] | [![crates.io](https://img.shields.io/crates/v/belt-block.svg)](https://crates.io/crates/belt-block) | [![Documentation](https://docs.rs/belt-block/badge.svg)](https://docs.rs/belt-block) | ![MSRV 1.85][msrv-1.85] |
 | [Blowfish] | [`blowfish`] | [![crates.io](https://img.shields.io/crates/v/blowfish.svg)](https://crates.io/crates/blowfish) | [![Documentation](https://docs.rs/blowfish/badge.svg)](https://docs.rs/blowfish) | ![MSRV 1.85][msrv-1.85] |
@@ -83,6 +83,7 @@ dual licensed as above, without any additional terms or conditions.
 [hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
 [hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
 [msrv-1.85]: https://img.shields.io/badge/rustc-1.85.0+-blue.svg
+[msrv-1.89]: https://img.shields.io/badge/rustc-1.89.0+-blue.svg
 
 [//]: # (crates)
 

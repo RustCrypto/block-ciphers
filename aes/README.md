@@ -61,7 +61,7 @@ dual licensed as above, without any additional terms or conditions.
 [docs-image]: https://docs.rs/aes/badge.svg
 [docs-link]: https://docs.rs/aes
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
-[rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.89+-blue.svg
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260039-block-ciphers
 [build-image]: https://github.com/RustCrypto/block-ciphers/actions/workflows/aes.yml/badge.svg?branch=master
