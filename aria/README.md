@@ -42,15 +42,15 @@ dual licensed as above, without any additional terms or conditions.
 [crate-image]: https://img.shields.io/crates/v/aria.svg
 [crate-link]: https://crates.io/crates/aria
 [docs-image]: https://docs.rs/aria/badge.svg
-[docs-link]: https://docs.rs/aria/
+[docs-link]: https://docs.rs/aria
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
 [rustc-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg
-[hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
-[hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
 [chat-image]: https://img.shields.io/badge/zulip-join_chat-blue.svg
 [chat-link]: https://rustcrypto.zulipchat.com/#narrow/stream/260039-block-ciphers
 [build-image]: https://github.com/RustCrypto/block-ciphers/actions/workflows/aria.yml/badge.svg
-[build-link]: https://github.com/RustCrypto/block-ciphers/actions?query=workflow%3Aaria
+[build-link]: https://github.com/RustCrypto/block-ciphers/actions/workflows/aria.yml
+[hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
+[hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
 
 [//]: # (general links)
 
