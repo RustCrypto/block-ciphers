@@ -34,24 +34,24 @@ impl EncKeys {
 
 impl BlockCipherEncrypt for crate::Kuznyechik {
     fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = BlockSize>) {
-        f.call(&mut EncBackend(&self.keys.0));
+        f.call(&EncBackend(&self.keys.0));
     }
 }
 
 impl BlockCipherDecrypt for crate::Kuznyechik {
     fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = BlockSize>) {
-        f.call(&mut DecBackend(&self.keys.0));
+        f.call(&DecBackend(&self.keys.0));
     }
 }
 
 impl BlockCipherEncrypt for crate::KuznyechikEnc {
     fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = BlockSize>) {
-        f.call(&mut EncBackend(&self.keys.0));
+        f.call(&EncBackend(&self.keys.0));
     }
 }
 
 impl BlockCipherDecrypt for crate::KuznyechikDec {
     fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = BlockSize>) {
-        f.call(&mut DecBackend(&self.keys.0));
+        f.call(&DecBackend(&self.keys.0));
     }
 }
