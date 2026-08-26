@@ -5,17 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.9.0 (UNRELEASED)
-### Added
-- Weak key detection in the `KeyInit::weak_key_test` method ([#465], [#469])
+## 0.9.3 (UNRELEASED)
+### Changed
+- MSRV bumped to 1.89 ([#580])
+- VAES-256 and VAES-512 backends on x86 targets are now supported by default ([#580])
 
+### Removed
+- `aes_backend = "avx256"` and `aes_backend = "avx512"` configuration flags ([#580])
+
+[#580]: https://github.com/RustCrypto/block-ciphers/pull/580
+
+## 0.9.2 (2026-07-27)
+### Added
+- `hardware_accelerated` function ([#579])
+
+### Changed
+- Internal implementation of backends ([#560], [#575])
+
+### Fixed
+- Performance regression on x86 targets ([#575])
+
+[#560]: https://github.com/RustCrypto/block-ciphers/pull/560
+[#575]: https://github.com/RustCrypto/block-ciphers/pull/575
+[#579]: https://github.com/RustCrypto/block-ciphers/pull/579
+
+## 0.9.1 (2026-05-27)
+### Fixed
+- Minimal version of `zeroize` dependency ([#562])
+- Build warnings on AArch64 targets ([#562])
+
+[#562]: https://github.com/RustCrypto/block-ciphers/pull/562
+
+## 0.9.0 (2026-04-10) [YANKED]
 ### Changed
 - Bump `cipher` dependency to v0.5
 - Edition changed to 2024 and MSRV bumped to 1.85 ([#472])
-- Refactor ARMv8 expand_key ([#367])
+- Refactor ARMv8 `expand_key` ([#367])
 - Added `#[inline]` attributes for `KeyInit::new` impls ([#386])
 - Rework backends ([#442])
-- Move Block8 to the hazmat module ([#468])
+- Move `Block8` to the hazmat module ([#468])
 - Relax MSRV policy and allow MSRV bumps in patch releases ([#477])
 - Replace inline ASM with ARMv8 intrinsics ([#380])
 - Enable ARMv8 backend by default ([#395])
@@ -25,9 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#386]: https://github.com/RustCrypto/block-ciphers/pull/386
 [#395]: https://github.com/RustCrypto/block-ciphers/pull/395
 [#442]: https://github.com/RustCrypto/block-ciphers/pull/442
-[#465]: https://github.com/RustCrypto/block-ciphers/pull/465
 [#468]: https://github.com/RustCrypto/block-ciphers/pull/468
-[#469]: https://github.com/RustCrypto/block-ciphers/pull/469
 [#472]: https://github.com/RustCrypto/block-ciphers/pull/472
 [#477]: https://github.com/RustCrypto/block-ciphers/pull/477
 

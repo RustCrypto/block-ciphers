@@ -6,6 +6,9 @@ use cipher::{
 };
 use core::{fmt, mem::ManuallyDrop};
 
+#[cfg(feature = "zeroize")]
+use cipher::zeroize::ZeroizeOnDrop;
+
 use crate::armv8::{neon::Sm4 as NeonSm4, sm4e::Sm4 as CryptoExtensionSm4};
 
 cpufeatures::new!(sm4_intrinsics, "sm4");
@@ -105,7 +108,6 @@ impl AlgorithmName for Sm4 {
 
 impl Drop for Sm4 {
     fn drop(&mut self) {
-        #[allow(unsafe_code)]
         if self.token.get() {
             unsafe { ManuallyDrop::drop(&mut self.cipher.sm4) }
         } else {
@@ -113,3 +115,7 @@ impl Drop for Sm4 {
         }
     }
 }
+
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl ZeroizeOnDrop for Sm4 {}

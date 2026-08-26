@@ -49,28 +49,28 @@ pub(super) unsafe fn sm4_process4<T: ParBlocksSizeUser>(
     // SBox
     let sbox_table: [uint8x16x4_t; 4] = [
         uint8x16x4_t(
-            vld1q_u8(SBOX.as_ptr().add(64 * 0 + 16 * 0)),
-            vld1q_u8(SBOX.as_ptr().add(64 * 0 + 16 * 1)),
-            vld1q_u8(SBOX.as_ptr().add(64 * 0 + 16 * 2)),
-            vld1q_u8(SBOX.as_ptr().add(64 * 0 + 16 * 3)),
+            vld1q_u8(SBOX.as_ptr().add(0)),
+            vld1q_u8(SBOX.as_ptr().add(16)),
+            vld1q_u8(SBOX.as_ptr().add(32)),
+            vld1q_u8(SBOX.as_ptr().add(48)),
         ),
         uint8x16x4_t(
-            vld1q_u8(SBOX.as_ptr().add(64 * 1 + 16 * 0)),
-            vld1q_u8(SBOX.as_ptr().add(64 * 1 + 16 * 1)),
-            vld1q_u8(SBOX.as_ptr().add(64 * 1 + 16 * 2)),
-            vld1q_u8(SBOX.as_ptr().add(64 * 1 + 16 * 3)),
+            vld1q_u8(SBOX.as_ptr().add(64)),
+            vld1q_u8(SBOX.as_ptr().add(80)),
+            vld1q_u8(SBOX.as_ptr().add(96)),
+            vld1q_u8(SBOX.as_ptr().add(112)),
         ),
         uint8x16x4_t(
-            vld1q_u8(SBOX.as_ptr().add(64 * 2 + 16 * 0)),
-            vld1q_u8(SBOX.as_ptr().add(64 * 2 + 16 * 1)),
-            vld1q_u8(SBOX.as_ptr().add(64 * 2 + 16 * 2)),
-            vld1q_u8(SBOX.as_ptr().add(64 * 2 + 16 * 3)),
+            vld1q_u8(SBOX.as_ptr().add(128)),
+            vld1q_u8(SBOX.as_ptr().add(144)),
+            vld1q_u8(SBOX.as_ptr().add(160)),
+            vld1q_u8(SBOX.as_ptr().add(176)),
         ),
         uint8x16x4_t(
-            vld1q_u8(SBOX.as_ptr().add(64 * 3 + 16 * 0)),
-            vld1q_u8(SBOX.as_ptr().add(64 * 3 + 16 * 1)),
-            vld1q_u8(SBOX.as_ptr().add(64 * 3 + 16 * 2)),
-            vld1q_u8(SBOX.as_ptr().add(64 * 3 + 16 * 3)),
+            vld1q_u8(SBOX.as_ptr().add(192)),
+            vld1q_u8(SBOX.as_ptr().add(208)),
+            vld1q_u8(SBOX.as_ptr().add(224)),
+            vld1q_u8(SBOX.as_ptr().add(240)),
         ),
     ];
 
@@ -135,12 +135,8 @@ pub(super) unsafe fn sm4_process4<T: ParBlocksSizeUser>(
     }
 
     // Reverse result blocks
-    let b0 = x.0;
-    x.0 = x.3;
-    x.3 = b0;
-    let b1 = x.1;
-    x.1 = x.2;
-    x.2 = b1;
+    core::mem::swap(&mut x.0, &mut x.3);
+    core::mem::swap(&mut x.1, &mut x.2);
 
     // Reverse 8bits in blocks
     x.0 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(x.0)));

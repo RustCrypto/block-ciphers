@@ -36,7 +36,7 @@ It's generally recommended not to use other cipher implementations in this repos
 
 | Name | Crate name | crates.io | Docs | MSRV |
 |------|------------|-----------|------|------|
-| [AES] (Rijndael) | [`aes`] | [![crates.io](https://img.shields.io/crates/v/aes.svg)](https://crates.io/crates/aes) | [![Documentation](https://docs.rs/aes/badge.svg)](https://docs.rs/aes) | ![MSRV 1.85][msrv-1.85] |
+| [AES] (Rijndael) | [`aes`] | [![crates.io](https://img.shields.io/crates/v/aes.svg)](https://crates.io/crates/aes) | [![Documentation](https://docs.rs/aes/badge.svg)](https://docs.rs/aes) | ![MSRV 1.89][msrv-1.89] |
 | [ARIA] | [`aria`] | [![crates.io](https://img.shields.io/crates/v/aria.svg)](https://crates.io/crates/aria) | [![Documentation](https://docs.rs/aria/badge.svg)](https://docs.rs/aria) | ![MSRV 1.85][msrv-1.85] |
 | [BelT] block cipher | [`belt-block`] | [![crates.io](https://img.shields.io/crates/v/belt-block.svg)](https://crates.io/crates/belt-block) | [![Documentation](https://docs.rs/belt-block/badge.svg)](https://docs.rs/belt-block) | ![MSRV 1.85][msrv-1.85] |
 | [Blowfish] | [`blowfish`] | [![crates.io](https://img.shields.io/crates/v/blowfish.svg)](https://crates.io/crates/blowfish) | [![Documentation](https://docs.rs/blowfish/badge.svg)](https://docs.rs/blowfish) | ![MSRV 1.85][msrv-1.85] |
@@ -44,11 +44,13 @@ It's generally recommended not to use other cipher implementations in this repos
 | [CAST5] (CAST-128) | [`cast5`] | [![crates.io](https://img.shields.io/crates/v/cast5.svg)](https://crates.io/crates/cast5) | [![Documentation](https://docs.rs/cast5/badge.svg)](https://docs.rs/cast5) | ![MSRV 1.85][msrv-1.85] |
 | [CAST6] (CAST-256) | [`cast6`] | [![crates.io](https://img.shields.io/crates/v/cast6.svg)](https://crates.io/crates/cast6) | [![Documentation](https://docs.rs/cast6/badge.svg)](https://docs.rs/cast6) | ![MSRV 1.85][msrv-1.85] |
 | [DES] + [3DES] (DEA, 3DEA) | [`des`] | [![crates.io](https://img.shields.io/crates/v/des.svg)](https://crates.io/crates/des) | [![Documentation](https://docs.rs/des/badge.svg)](https://docs.rs/des) | ![MSRV 1.85][msrv-1.85] |
+| [Gift] | [`gift-cipher`] | [![crates.io](https://img.shields.io/crates/v/gift-cipher.svg)](https://crates.io/crates/gift-cipher) | [![Documentation](https://docs.rs/gift-cipher/badge.svg)](https://docs.rs/gift-cipher) | ![MSRV 1.85][msrv-1.85] |
 | [IDEA] | [`idea`] | [![crates.io](https://img.shields.io/crates/v/idea.svg)](https://crates.io/crates/idea) | [![Documentation](https://docs.rs/idea/badge.svg)](https://docs.rs/idea) | ![MSRV 1.85][msrv-1.85] |
 | [Kuznyechik] (GOST R 34.12-2015)  | [`kuznyechik`] | [![crates.io](https://img.shields.io/crates/v/kuznyechik.svg)](https://crates.io/crates/kuznyechik) | [![Documentation](https://docs.rs/kuznyechik/badge.svg)](https://docs.rs/kuznyechik) | ![MSRV 1.85][msrv-1.85] |
 | [Magma] (GOST R 34.12-2015) | [`magma`] | [![crates.io](https://img.shields.io/crates/v/magma.svg)](https://crates.io/crates/magma) | [![Documentation](https://docs.rs/magma/badge.svg)](https://docs.rs/magma) | ![MSRV 1.85][msrv-1.85] |
 | [RC2] (ARC2) | [`rc2`] | [![crates.io](https://img.shields.io/crates/v/rc2.svg)](https://crates.io/crates/rc2) | [![Documentation](https://docs.rs/rc2/badge.svg)](https://docs.rs/rc2) | ![MSRV 1.85][msrv-1.85] |
 | [RC5] | [`rc5`] | [![crates.io](https://img.shields.io/crates/v/rc5.svg)](https://crates.io/crates/rc5) | [![Documentation](https://docs.rs/rc5/badge.svg)](https://docs.rs/rc5) | ![MSRV 1.85][msrv-1.85] |
+| [RC6] | [`rc6`] | [![crates.io](https://img.shields.io/crates/v/rc6.svg)](https://crates.io/crates/rc6) | [![Documentation](https://docs.rs/rc6/badge.svg)](https://docs.rs/rc6) | ![MSRV 1.85][msrv-1.85] |
 | [Serpent] | [`serpent`] | [![crates.io](https://img.shields.io/crates/v/serpent.svg)](https://crates.io/crates/serpent) | [![Documentation](https://docs.rs/serpent/badge.svg)](https://docs.rs/serpent) | ![MSRV 1.85][msrv-1.85] |
 | [SM4] | [`sm4`] | [![crates.io](https://img.shields.io/crates/v/sm4.svg)](https://crates.io/crates/sm4) | [![Documentation](https://docs.rs/sm4/badge.svg)](https://docs.rs/sm4) | ![MSRV 1.85][msrv-1.85] |
 | [Speck] | [`speck-cipher`] | [![crates.io](https://img.shields.io/crates/v/speck-cipher.svg)](https://crates.io/crates/speck-cipher) | [![Documentation](https://docs.rs/speck-cipher/badge.svg)](https://docs.rs/speck-cipher) | ![MSRV 1.85][msrv-1.85] |
@@ -81,6 +83,7 @@ dual licensed as above, without any additional terms or conditions.
 [hazmat-image]: https://img.shields.io/badge/crypto-hazmat%E2%9A%A0-red.svg
 [hazmat-link]: https://github.com/RustCrypto/meta/blob/master/HAZMAT.md
 [msrv-1.85]: https://img.shields.io/badge/rustc-1.85.0+-blue.svg
+[msrv-1.89]: https://img.shields.io/badge/rustc-1.89.0+-blue.svg
 
 [//]: # (crates)
 
@@ -92,14 +95,16 @@ dual licensed as above, without any additional terms or conditions.
 [`cast5`]: ./cast5
 [`cast6`]: ./cast6
 [`des`]: ./des
+[`gift-cipher`]: ./gift-cipher
 [`idea`]: ./idea
 [`kuznyechik`]: ./kuznyechik
 [`magma`]: ./magma
 [`rc2`]: ./rc2
 [`rc5`]: ./rc5
+[`rc6`]: ./rc6
 [`serpent`]: ./serpent
 [`sm4`]: ./sm4
-[`speck-cipher`]: ./speck
+[`speck-cipher`]: ./speck-cipher
 [`threefish`]: ./threefish
 [`twofish`]: ./twofish
 [`xtea`]: ./xtea
@@ -119,11 +124,13 @@ dual licensed as above, without any additional terms or conditions.
 [CAST6]: https://en.wikipedia.org/wiki/CAST-256
 [DES]: https://en.wikipedia.org/wiki/Data_Encryption_Standard
 [3DES]: https://en.wikipedia.org/wiki/Triple_DES
+[Gift]: https://eprint.iacr.org/2017/622.pdf
 [IDEA]: https://simple.wikipedia.org/wiki/International_Data_Encryption_Algorithm
 [Kuznyechik]: https://en.wikipedia.org/wiki/Kuznyechik
 [Magma]: https://en.wikipedia.org/wiki/GOST_(block_cipher)
 [RC2]: https://en.wikipedia.org/wiki/RC2
 [RC5]: https://en.wikipedia.org/wiki/RC5
+[RC6]: https://en.wikipedia.org/wiki/RC6
 [Serpent]: https://en.wikipedia.org/wiki/Serpent_(cipher)
 [SM4]: https://en.wikipedia.org/wiki/SM4_(cipher)
 [Speck]: https://en.wikipedia.org/wiki/Speck_(cipher)

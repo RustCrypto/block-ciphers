@@ -16,9 +16,6 @@ defaults:
 env:
   CARGO_INCREMENTAL: 0
   RUSTFLAGS: "-Dwarnings"
-  # NOTE: The mirror number changes with each version so keep these in sync
-  SDE_FULL_VERSION_MIRROR: "859732"
-  SDE_FULL_VERSION: "9.58.0-2025-06-16"
 
 # Cancels CI jobs when new commits are pushed to a PR branch
 concurrency:
@@ -32,13 +29,13 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.85.0 # MSRV
+          - 1.89.0 # MSRV
           - stable
         target:
           - thumbv7em-none-eabi
           - wasm32-unknown-unknown
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -49,23 +46,22 @@ jobs:
           cargo build --target ${{ matrix.target }}
           cargo build --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
+          RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft"'
         run: |
           cargo build --target ${{ matrix.target }}
           cargo build --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_compact"
+          RUSTFLAGS: '-Dwarnings --cfg aes_backend_soft="compact"'
         run: |
           cargo build --target ${{ matrix.target }}
           cargo build --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft --cfg aes_compact"
+          RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft" --cfg aes_backend_soft="compact"'
         run: |
           cargo build --target ${{ matrix.target }}
           cargo build --target ${{ matrix.target }} --features hazmat
 
   minimal-versions:
-    if: false # TODO: temp disabled due to unpublished prerelease dependencies
     uses: RustCrypto/actions/.github/workflows/minimal-versions.yml@master
     with:
       working-directory: ${{ github.workflow }}
@@ -82,7 +78,7 @@ jobs:
         include:
           # 32-bit Linux
           - target: i686-unknown-linux-gnu
-            rust: 1.85.0 # MSRV
+            rust: 1.89.0 # MSRV
             deps: sudo apt update && sudo apt install gcc-multilib
           - target: i686-unknown-linux-gnu
             rust: stable
@@ -90,11 +86,11 @@ jobs:
 
           # 64-bit Linux
           - target: x86_64-unknown-linux-gnu
-            rust: 1.85.0 # MSRV
+            rust: 1.89.0 # MSRV
           - target: x86_64-unknown-linux-gnu
             rust: stable
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -113,17 +109,13 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             rust: stable
-            RUSTFLAGS: "-Dwarnings --cfg aes_avx256"
+            RUSTFLAGS: '-Dwarnings --cfg aes_backend="avx256"'
     env:
       CARGO_INCREMENTAL: 0
       RUSTFLAGS: ${{ matrix.RUSTFLAGS }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Install Intel SDE
-        run: |
-          curl -JLO "https://downloadmirror.intel.com/${{ env.SDE_FULL_VERSION_MIRROR }}/sde-external-${{ env.SDE_FULL_VERSION }}-lin.tar.xz"
-          tar xvf sde-external-${{ env.SDE_FULL_VERSION }}-lin.tar.xz -C /opt
-          echo "/opt/sde-external-${{ env.SDE_FULL_VERSION }}-lin" >> $GITHUB_PATH
+      - uses: actions/checkout@v7
+      - uses: RustCrypto/actions/intel-sde-install@master
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -151,20 +143,13 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             rust: stable
-            RUSTFLAGS: "-Dwarnings --cfg aes_avx512"
-          - target: x86_64-unknown-linux-gnu
-            rust: stable
-            RUSTFLAGS: "-Dwarnings --cfg aes_avx256 --cfg aes_avx512"
+            RUSTFLAGS: '-Dwarnings --cfg aes_backend="avx512"'
     env:
       CARGO_INCREMENTAL: 0
       RUSTFLAGS: ${{ matrix.RUSTFLAGS }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Install Intel SDE
-        run: |
-          curl -JLO "https://downloadmirror.intel.com/${{ env.SDE_FULL_VERSION_MIRROR }}/sde-external-${{ env.SDE_FULL_VERSION }}-lin.tar.xz"
-          tar xvf sde-external-${{ env.SDE_FULL_VERSION }}-lin.tar.xz -C /opt
-          echo "/opt/sde-external-${{ env.SDE_FULL_VERSION }}-lin" >> $GITHUB_PATH
+      - uses: actions/checkout@v7
+      - uses: RustCrypto/actions/intel-sde-install@master
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -192,7 +177,7 @@ jobs:
         include:
           # 32-bit Linux
           - target: i686-unknown-linux-gnu
-            rust: 1.85.0 # MSRV
+            rust: 1.89.0 # MSRV
             deps: sudo apt update && sudo apt install gcc-multilib
           - target: i686-unknown-linux-gnu
             rust: stable
@@ -200,11 +185,11 @@ jobs:
 
           # 64-bit Linux
           - target: x86_64-unknown-linux-gnu
-            rust: 1.85.0 # MSRV
+            rust: 1.89.0 # MSRV
           - target: x86_64-unknown-linux-gnu
             rust: stable
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -215,17 +200,17 @@ jobs:
       - run: cargo test --target ${{ matrix.target }} --features hazmat
       - run: cargo test --target ${{ matrix.target }} --all-features
 
-  # Tests for the portable software backend (i.e. `aes_force_soft`-only)
+  # Tests for the portable software backend (i.e. `aes_backend="soft"`-only)
   soft:
     runs-on: ubuntu-latest
     env:
-      RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
+      RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft"'
     strategy:
       matrix:
         include:
           # 32-bit Linux
           - target: i686-unknown-linux-gnu
-            rust: 1.85.0 # MSRV
+            rust: 1.89.0 # MSRV
             deps: sudo apt update && sudo apt install gcc-multilib
           - target: i686-unknown-linux-gnu
             rust: stable
@@ -233,11 +218,11 @@ jobs:
 
           # 64-bit Linux
           - target: x86_64-unknown-linux-gnu
-            rust: 1.85.0 # MSRV
+            rust: 1.89.0 # MSRV
           - target: x86_64-unknown-linux-gnu
             rust: stable
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -254,13 +239,13 @@ jobs:
         include:
           # ARM64
           - target: aarch64-unknown-linux-gnu
-            rust: 1.85.0 # MSRV
+            rust: 1.89.0 # MSRV
           - target: aarch64-unknown-linux-gnu
             rust: stable
 
           # PPC32
           - target: powerpc-unknown-linux-gnu
-            rust: 1.85.0 # MSRV
+            rust: 1.89.0 # MSRV
           - target: powerpc-unknown-linux-gnu
             rust: stable
     runs-on: ubuntu-latest
@@ -269,7 +254,7 @@ jobs:
       run:
         working-directory: .
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
@@ -281,17 +266,17 @@ jobs:
           cross test --package aes --target ${{ matrix.target }}
           cross test --package aes --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft"
+          RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft"'
         run: |
           cross test --package aes --target ${{ matrix.target }}
           cross test --package aes --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_compact"
+          RUSTFLAGS: '-Dwarnings --cfg aes_backend_soft="compact"'
         run: |
           cross test --package aes --target ${{ matrix.target }}
           cross test --package aes --target ${{ matrix.target }} --features hazmat
       - env:
-          RUSTFLAGS: "-Dwarnings --cfg aes_force_soft --cfg aes_compact"
+          RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft" --cfg aes_backend_soft="compact"'
         run: |
           cross test --package aes --target ${{ matrix.target }}
           cross test --package aes --target ${{ matrix.target }} --features hazmat
@@ -302,14 +287,14 @@ jobs:
       matrix:
         include:
           - target: aarch64-unknown-linux-gnu
-            rust: 1.85.0 # MSRV
+            rust: 1.89.0 # MSRV
     runs-on: ubuntu-latest
     # Cross mounts only current package, i.e. by default it ignores workspace's Cargo.toml
     defaults:
       run:
         working-directory: .
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: RustCrypto/actions/cargo-cache@master
       - run: ${{ matrix.deps }}
       - uses: dtolnay/rust-toolchain@master
@@ -323,13 +308,13 @@ jobs:
 
   clippy:
     env:
-      RUSTFLAGS: "-Dwarnings --cfg aes_compact"
+      RUSTFLAGS: '-Dwarnings --cfg aes_backend_soft="compact"'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: RustCrypto/actions/cargo-cache@master
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.85.0 # MSRV
+          toolchain: 1.89.0 # MSRV
           components: clippy
       - run: cargo clippy --features hazmat -- -D warnings

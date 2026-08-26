@@ -55,6 +55,9 @@ fn t_prime(val: u32) -> u32 {
 }
 
 /// SM4 block cipher.
+// On `aarch64` the NEON backend is always available and is used as the
+// fallback instead of this type, so it is never constructed there.
+#[cfg_attr(all(target_arch = "aarch64", not(sm4_force_soft)), allow(dead_code))]
 #[derive(Clone)]
 pub struct Sm4 {
     rk: [u32; 32],

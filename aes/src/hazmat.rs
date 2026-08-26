@@ -2,8 +2,8 @@
 //!
 //! # ☢️️ WARNING: HAZARDOUS API ☢️
 //!
-//! This module contains an extremely low-level cryptographic primitive
-//! which is likewise extremely difficult to use correctly.
+//! This module contains an extremely low-level cryptographic primitives
+//! which are likewise extremely difficult to use correctly.
 //!
 //! There are very few valid uses cases for this API. It's intended to be used
 //! for implementing well-reviewed higher-level constructions.
@@ -11,23 +11,11 @@
 //! We do NOT recommend using it to implement any algorithm which has not
 //! received extensive peer review by cryptographers.
 
-use crate::soft::fixslice::hazmat as soft;
+use crate::backends::soft::hazmat as soft;
 
 pub use crate::Block;
 /// Eight 128-bit AES blocks
 pub type Block8 = cipher::array::Array<Block, cipher::consts::U8>;
-
-#[cfg(all(target_arch = "aarch64", not(aes_force_soft)))]
-use crate::armv8::hazmat as intrinsics;
-
-#[cfg(all(any(target_arch = "x86_64", target_arch = "x86"), not(aes_force_soft)))]
-use crate::x86::ni::hazmat as intrinsics;
-
-#[cfg(all(
-    any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"),
-    not(aes_force_soft)
-))]
-cpufeatures::new!(aes_intrinsics, "aes");
 
 /// Execute the provided body if CPU intrinsics are available.
 // TODO(tarcieri): more `cfg-if`-like macro with an else branch?
@@ -35,9 +23,15 @@ macro_rules! if_intrinsics_available {
     ($body:expr) => {{
         #[cfg(all(
             any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"),
-            not(aes_force_soft)
+            not(aes_backend = "soft")
         ))]
-        if aes_intrinsics::get() {
+        if crate::features_aes::get() {
+            #[cfg(target_arch = "aarch64")]
+            use crate::backends::aarch64_aes::hazmat as intrinsics;
+            #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+            use crate::backends::x86_aes::hazmat as intrinsics;
+
+            // SAFETY: we checked target feature availability
             unsafe { $body }
             return;
         }

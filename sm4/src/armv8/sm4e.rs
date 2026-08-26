@@ -77,10 +77,10 @@ unsafe fn bswap_32(b: uint32x4_t) -> uint32x4_t {
 #[inline]
 unsafe fn bqswap_32(b: uint32x4_t) -> uint32x4_t {
     static BSWAP_TBL: [u8; 16] = [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
-    return vreinterpretq_u32_u8(vqtbl1q_u8(
+    vreinterpretq_u32_u8(vqtbl1q_u8(
         vreinterpretq_u8_u32(b),
         vld1q_u8(BSWAP_TBL.as_ptr()),
-    ));
+    ))
 }
 
 macro_rules! sm4_e {
@@ -422,7 +422,7 @@ impl<'a> ParBlocksSizeUser for Sm4Dec<'a> {
     type ParBlocksSize = U8;
 }
 
-pub struct Sm4Dec4;
+struct Sm4Dec4;
 
 impl BlockSizeUser for Sm4Dec4 {
     type BlockSize = U16;

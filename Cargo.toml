@@ -9,15 +9,16 @@ members = [
     "cast5",
     "cast6",
     "des",
-    "gift",
+    "gift-cipher",
     "idea",
     "kuznyechik",
     "magma",
     "rc2",
     "rc5",
+    "rc6",
     "serpent",
     "sm4",
-    "speck",
+    "speck-cipher",
     "twofish",
     "threefish",
     "xtea",
@@ -25,10 +26,3 @@ members = [
 
 [profile.dev]
 opt-level = 2
-
-[patch.crates-io]
-# https://github.com/RustCrypto/traits/pull/1998
-cipher = { git = "https://github.com/RustCrypto/traits" }
-# https://github.com/RustCrypto/utils/pull/1187
-# https://github.com/RustCrypto/utils/pull/1207
-blobby = { git = "https://github.com/RustCrypto/utils" }

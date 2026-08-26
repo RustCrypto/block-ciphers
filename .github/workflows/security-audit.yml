@@ -1,4 +1,5 @@
 name: Security Audit
+
 on:
   pull_request:
     paths:
@@ -15,12 +16,12 @@ jobs:
     name: Security Audit
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Cache cargo bin
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ~/.cargo/bin
-          key: ${{ runner.os }}-cargo-audit-v0.20-ubuntu-24.04
+          key: ${{ runner.os }}-cargo-audit-v0.22.0
       - uses: rustsec/audit-check@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

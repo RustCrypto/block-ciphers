@@ -4,10 +4,12 @@
 
 use cipher::{
     AlgorithmName, BlockCipherDecClosure, BlockCipherDecrypt, BlockCipherEncClosure,
-    BlockCipherEncrypt, BlockSizeUser, Key, KeyInit, KeySizeUser, ParBlocksSizeUser,
-    consts::{U1, U16},
+    BlockCipherEncrypt, BlockSizeUser, Key, KeyInit, KeySizeUser, consts::U16,
 };
 use core::{fmt, mem::ManuallyDrop};
+
+#[cfg(feature = "zeroize")]
+use cipher::zeroize::ZeroizeOnDrop;
 
 cpufeatures::new!(aes_intrinsics, "aes");
 cpufeatures::new!(avx2_intrinsics, "avx2");
@@ -85,10 +87,6 @@ impl BlockSizeUser for Sm4 {
     type BlockSize = U16;
 }
 
-impl ParBlocksSizeUser for Sm4 {
-    type ParBlocksSize = U1;
-}
-
 impl BlockCipherEncrypt for Sm4 {
     #[inline]
     fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
@@ -142,3 +140,7 @@ impl Drop for Sm4 {
         }
     }
 }
+
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl ZeroizeOnDrop for Sm4 {}
