@@ -41,6 +41,9 @@ unsafe fn sbox_table_lookup(
 
 #[inline]
 #[target_feature(enable = "neon")]
+// The `64 * N + 16 * N` table offsets are kept as-is to make the SBox table
+// layout explicit.
+#[allow(clippy::erasing_op, clippy::identity_op)]
 pub(super) unsafe fn sm4_process4<T: ParBlocksSizeUser>(
     blocks: InOut<'_, '_, ParBlocks<T>>,
     rk: &[u32; 32],
@@ -49,28 +52,28 @@ pub(super) unsafe fn sm4_process4<T: ParBlocksSizeUser>(
     // SBox
     let sbox_table: [uint8x16x4_t; 4] = [
         uint8x16x4_t(
-            vld1q_u8(SBOX.as_ptr().add(0)),
-            vld1q_u8(SBOX.as_ptr().add(16)),
-            vld1q_u8(SBOX.as_ptr().add(32)),
-            vld1q_u8(SBOX.as_ptr().add(48)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 0 + 16 * 0)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 0 + 16 * 1)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 0 + 16 * 2)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 0 + 16 * 3)),
         ),
         uint8x16x4_t(
-            vld1q_u8(SBOX.as_ptr().add(64)),
-            vld1q_u8(SBOX.as_ptr().add(80)),
-            vld1q_u8(SBOX.as_ptr().add(96)),
-            vld1q_u8(SBOX.as_ptr().add(112)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 1 + 16 * 0)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 1 + 16 * 1)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 1 + 16 * 2)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 1 + 16 * 3)),
         ),
         uint8x16x4_t(
-            vld1q_u8(SBOX.as_ptr().add(128)),
-            vld1q_u8(SBOX.as_ptr().add(144)),
-            vld1q_u8(SBOX.as_ptr().add(160)),
-            vld1q_u8(SBOX.as_ptr().add(176)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 2 + 16 * 0)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 2 + 16 * 1)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 2 + 16 * 2)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 2 + 16 * 3)),
         ),
         uint8x16x4_t(
-            vld1q_u8(SBOX.as_ptr().add(192)),
-            vld1q_u8(SBOX.as_ptr().add(208)),
-            vld1q_u8(SBOX.as_ptr().add(224)),
-            vld1q_u8(SBOX.as_ptr().add(240)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 3 + 16 * 0)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 3 + 16 * 1)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 3 + 16 * 2)),
+            vld1q_u8(SBOX.as_ptr().add(64 * 3 + 16 * 3)),
         ),
     ];
 
