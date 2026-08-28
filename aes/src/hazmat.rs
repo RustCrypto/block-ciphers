@@ -22,11 +22,15 @@ pub type Block8 = cipher::array::Array<Block, cipher::consts::U8>;
 macro_rules! if_intrinsics_available {
     ($body:expr) => {{
         #[cfg(all(
-            any(target_arch = "x86", target_arch = "x86_64", target_arch = "aarch64"),
+            any(
+                target_arch = "x86",
+                target_arch = "x86_64",
+                all(target_arch = "aarch64", not(miri))
+            ),
             not(aes_backend = "soft")
         ))]
         if crate::features_aes::get() {
-            #[cfg(target_arch = "aarch64")]
+            #[cfg(all(target_arch = "aarch64", not(miri)))]
             use crate::backends::aarch64_aes::hazmat as intrinsics;
             #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
             use crate::backends::x86_aes::hazmat as intrinsics;

@@ -1,5 +1,6 @@
 //! Test vectors are from NESSIE:
 //! https://www.cosic.esat.kuleuven.be/nessie/testvectors/
+#![cfg(not(miri))]
 
 cipher::block_cipher_test!(aes128, aes::Aes128);
 cipher::block_cipher_test!(aes192, aes::Aes192);
