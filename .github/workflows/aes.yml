@@ -318,3 +318,19 @@ jobs:
           toolchain: 1.89.0 # MSRV
           components: clippy
       - run: cargo clippy --features hazmat -- -D warnings
+
+  miri:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: RustCrypto/actions/cargo-cache@master
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: miri
+      - run: ${{ matrix.deps }}
+      - run: cargo miri test --all-features
+      - run: cargo miri test --all-features
+        env:
+          RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft"'
+      - run: cargo miri test --all-features --target aarch64-apple-darwin
