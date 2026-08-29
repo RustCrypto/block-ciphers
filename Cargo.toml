@@ -17,6 +17,7 @@ members = [
     "rc5",
     "rc6",
     "serpent",
+    "simon-cipher",
     "sm4",
     "speck-cipher",
     "twofish",
