@@ -328,8 +328,19 @@ jobs:
         with:
           toolchain: nightly
           components: miri
-      - run: ${{ matrix.deps }}
       - run: cargo miri test --all-features
+      - run: cargo miri test --all-features
+        env:
+          RUSTFLAGS: '-Dwarnings -C target-feature=+aes'
+          RUSTDOCFLAGS: '-Dwarnings -C target-feature=+aes'
+      - run: cargo miri test --all-features
+        env:
+          RUSTFLAGS: '-Dwarnings -C target-feature=+vaes'
+          RUSTDOCFLAGS: '-Dwarnings -C target-feature=+vaes'
+      - run: cargo miri test --all-features
+        env:
+          RUSTFLAGS: '-Dwarnings -C target-feature=+vaes,+avx512f'
+          RUSTDOCFLAGS: '-Dwarnings -C target-feature=+vaes,+avx512f'
       - run: cargo miri test --all-features
         env:
           RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft"'
