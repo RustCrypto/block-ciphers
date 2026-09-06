@@ -1,16 +1,15 @@
 [package]
 name = "gift-cipher"
 version = "0.1.0"
-description = "Pure Rust implementation of the Gift block cipher"
-authors = ["RustCrypto Developers", "Schmid7k"]
-license = "MIT OR Apache-2.0"
+authors = ["RustCrypto Developers"]
 rust-version = "1.85"
 edition = "2024"
-readme = "README.md"
 documentation = "https://docs.rs/gift-cipher"
 repository = "https://github.com/RustCrypto/block-ciphers"
-keywords = ["crypto", "gift", "block-cipher"]
+license = "MIT OR Apache-2.0"
+keywords = ["gift", "block-cipher"]
 categories = ["cryptography", "no-std"]
+description = "Pure Rust implementation of the Gift block cipher"
 
 [dependencies]
 cipher = "0.5"

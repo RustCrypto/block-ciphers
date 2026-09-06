@@ -1,15 +1,15 @@
 [package]
 name = "rc6"
 version = "0.1.0"
-description = "RC6 block cipher"
 authors = ["RustCrypto Developers"]
 edition = "2024"
 rust-version = "1.85"
-license = "MIT OR Apache-2.0"
-readme = "README.md"
+documentation = "https://docs.rs/rc6"
 repository = "https://github.com/RustCrypto/block-ciphers"
-keywords = ["crypto", "rc6", "block-cipher"]
-categories = ["cryptography"]
+license = "MIT OR Apache-2.0"
+keywords = ["rc6", "block-cipher"]
+categories = ["cryptography", "no-std"]
+description = "RC6 block cipher"
 
 [dependencies]
 cipher = { version = "0.5", features = ["zeroize"] }

@@ -1,16 +1,15 @@
 [package]
 name = "blowfish"
 version = "0.10.0"
-description = "Blowfish block cipher"
 authors = ["RustCrypto Developers"]
-license = "MIT OR Apache-2.0"
 edition = "2024"
 rust-version = "1.85"
-readme = "README.md"
 documentation = "https://docs.rs/blowfish"
 repository = "https://github.com/RustCrypto/block-ciphers"
-keywords = ["crypto", "blowfish", "block-cipher"]
+license = "MIT OR Apache-2.0"
+keywords = ["blowfish", "block-cipher"]
 categories = ["cryptography", "no-std"]
+description = "Blowfish block cipher"
 
 [dependencies]
 cipher = "0.5"

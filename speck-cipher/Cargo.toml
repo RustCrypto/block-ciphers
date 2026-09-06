@@ -2,15 +2,14 @@
 name = "speck-cipher"
 version = "0.1.0"
 authors = ["RustCrypto Developers"]
-license = "Apache-2.0 OR MIT"
-description = "Speck block cipher algorithm"
-documentation = "https://docs.rs/speck-cipher"
-repository = "https://github.com/RustCrypto/block-ciphers/tree/master/speck"
-readme = "README.md"
 edition = "2024"
 rust-version = "1.85"
-keywords = ["crypto", "speck", "block-cipher"]
+documentation = "https://docs.rs/speck-cipher"
+repository = "https://github.com/RustCrypto/block-ciphers"
+license = "Apache-2.0 OR MIT"
+keywords = ["speck", "block-cipher"]
 categories = ["cryptography", "no-std"]
+description = "Speck block cipher algorithm"
 
 [dependencies]
 cipher = "0.5"

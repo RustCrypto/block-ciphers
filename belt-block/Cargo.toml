@@ -6,7 +6,6 @@ authors = ["RustCrypto Developers"]
 license = "MIT OR Apache-2.0"
 rust-version = "1.85"
 edition = "2024"
-readme = "README.md"
 documentation = "https://docs.rs/belt-block"
 repository = "https://github.com/RustCrypto/block-ciphers"
 keywords = ["crypto", "belt-block", "belt", "stb"]

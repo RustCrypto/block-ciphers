@@ -1,16 +1,15 @@
 [package]
 name = "idea"
 version = "0.6.0"
-description = "IDEA block cipher"
 authors = ["RustCrypto Developers"]
-license = "MIT OR Apache-2.0"
 edition = "2024"
 rust-version = "1.85"
-readme = "README.md"
 documentation = "https://docs.rs/idea"
 repository = "https://github.com/RustCrypto/block-ciphers"
-keywords = ["crypto", "idea", "block-cipher"]
+license = "MIT OR Apache-2.0"
+keywords = ["idea", "block-cipher"]
 categories = ["cryptography", "no-std"]
+description = "IDEA block cipher"
 
 [dependencies]
 cipher = "0.5"

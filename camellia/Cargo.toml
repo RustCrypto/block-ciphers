@@ -1,16 +1,15 @@
 [package]
 name = "camellia"
 version = "0.2.1"
-description = "Camellia block cipher"
 authors = ["RustCrypto Developers"]
-license = "MIT OR Apache-2.0"
 edition = "2024"
 rust-version = "1.85"
-readme = "README.md"
 documentation = "https://docs.rs/camellia"
 repository = "https://github.com/RustCrypto/block-ciphers"
-keywords = ["crypto", "camellia", "block-cipher"]
+license = "MIT OR Apache-2.0"
+keywords = ["camellia", "block-cipher"]
 categories = ["cryptography", "no-std"]
+description = "Camellia block cipher"
 
 [dependencies]
 cipher = "0.5"

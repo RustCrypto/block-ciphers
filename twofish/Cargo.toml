@@ -1,16 +1,15 @@
 [package]
 name = "twofish"
 version = "0.8.0"
-description = "Twofish block cipher"
 authors = ["RustCrypto Developers"]
-license = "MIT OR Apache-2.0"
 edition = "2024"
 rust-version = "1.85"
-readme = "README.md"
 documentation = "https://docs.rs/twofish"
 repository = "https://github.com/RustCrypto/block-ciphers"
-keywords = ["crypto", "twofish", "block-cipher"]
+license = "MIT OR Apache-2.0"
+keywords = ["twofish", "block-cipher"]
 categories = ["cryptography", "no-std"]
+description = "Twofish block cipher"
 
 [dependencies]
 cipher = "0.5"

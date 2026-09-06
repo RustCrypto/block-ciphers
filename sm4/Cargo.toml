@@ -1,16 +1,15 @@
 [package]
 name = "sm4"
 version = "0.6.0"
-description = "SM4 block cipher algorithm"
 authors = ["RustCrypto Developers"]
-license = "MIT OR Apache-2.0"
 edition = "2024"
 rust-version = "1.85"
-readme = "README.md"
 documentation = "https://docs.rs/sm4"
 repository = "https://github.com/RustCrypto/block-ciphers"
-keywords = ["crypto", "sm4", "block-cipher"]
+license = "MIT OR Apache-2.0"
+keywords = ["sm4", "block-cipher"]
 categories = ["cryptography", "no-std"]
+description = "SM4 block cipher algorithm"
 
 [dependencies]
 cipher = "0.5"

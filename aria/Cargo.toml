@@ -1,16 +1,15 @@
 [package]
 name = "aria"
 version = "0.2.0"
-description = "Pure Rust implementation of the ARIA Encryption Algorithm"
 authors = ["RustCrypto Developers"]
-license = "MIT OR Apache-2.0"
 edition = "2024"
 rust-version = "1.85"
-readme = "README.md"
 documentation = "https://docs.rs/aria"
 repository = "https://github.com/RustCrypto/block-ciphers"
-keywords = ["crypto", "aria", "block-cipher"]
+license = "MIT OR Apache-2.0"
+keywords = ["aria", "block-cipher"]
 categories = ["cryptography", "no-std"]
+description = "Pure Rust implementation of the ARIA Encryption Algorithm"
 
 [dependencies]
 cipher = "0.5"
