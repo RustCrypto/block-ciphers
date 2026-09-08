@@ -247,9 +247,15 @@ macro_rules! impl_key_init {
                     }
                 }
 
-                let soft = backends::soft::$soft_name::new(key);
-                let inner = Inner { soft };
-                Self { inner, token }
+                cfg_if! {
+                    if #[cfg(__enable_aes_soft_backend)] {
+                        let soft = backends::soft::$soft_name::new(key);
+                        let inner = Inner { soft };
+                        return Self { inner, token };
+                    } else {
+                        unreachable!();
+                    }
+                }
             }
         }
     };
@@ -297,9 +303,15 @@ macro_rules! impl_encrypt {
                     }
                 }
 
-                // SAFETY: we access correct union variant
-                let backend = unsafe { &self.inner.soft };
-                f.call(backend);
+                cfg_if! {
+                    if #[cfg(__enable_aes_soft_backend)] {
+                        // SAFETY: we access correct union variant
+                        let backend = unsafe { &self.inner.soft };
+                        f.call(backend);
+                    } else {
+                        unreachable!();
+                    }
+                }
             }
         }
     };
@@ -347,9 +359,15 @@ macro_rules! impl_decrypt {
                     }
                 }
 
-                // SAFETY: we access correct union variant
-                let backend = unsafe { &self.inner.soft };
-                f.call(backend);
+                cfg_if! {
+                    if #[cfg(__enable_aes_soft_backend)] {
+                        // SAFETY: we access correct union variant
+                        let backend = unsafe { &self.inner.soft };
+                        f.call(backend);
+                    } else {
+                        unreachable!();
+                    }
+                }
             }
         }
     };
@@ -387,10 +405,16 @@ macro_rules! impl_from_enc {
                     }
                 }
 
-                // SAFETY: we access correct union variant
-                let soft = unsafe { enc.inner.soft };
-                let inner = Inner { soft };
-                Self { inner, token }
+                cfg_if! {
+                    if #[cfg(__enable_aes_soft_backend)] {
+                        // SAFETY: we access correct union variant
+                        let soft = unsafe { enc.inner.soft };
+                        let inner = Inner { soft };
+                        Self { inner, token }
+                    } else {
+                        unreachable!();
+                    }
+                }
             }
         }
 
@@ -457,6 +481,7 @@ macro_rules! define_aes_impl {
                 pub(super) aes: backends::x86_aes::$name,
                 #[cfg(all(target_arch = "aarch64", not(miri), not(aes_backend = "soft")))]
                 pub(super) aes: backends::aarch64_aes::$name,
+                #[cfg(__enable_aes_soft_backend)]
                 pub(super) soft: backends::soft::$name,
             }
 
@@ -469,6 +494,7 @@ macro_rules! define_aes_impl {
                 pub(super) aes: backends::x86_aes::$name_enc,
                 #[cfg(all(target_arch = "aarch64", not(miri), not(aes_backend = "soft")))]
                 pub(super) aes: backends::aarch64_aes::$name_enc,
+                #[cfg(__enable_aes_soft_backend)]
                 pub(super) soft: backends::soft::$name,
             }
 
@@ -481,6 +507,7 @@ macro_rules! define_aes_impl {
                 pub(super) aes: backends::x86_aes::$name_dec,
                 #[cfg(all(target_arch = "aarch64", not(miri), not(aes_backend = "soft")))]
                 pub(super) aes: backends::aarch64_aes::$name_dec,
+                #[cfg(__enable_aes_soft_backend)]
                 pub(super) soft: backends::soft::$name,
             }
         }

@@ -31,7 +31,8 @@ level = "warn"
 check-cfg = [
     'cfg(aes_backend_soft, values("compact"))',
     'cfg(aes_backend, values("soft"))',
-    'cfg(cpubits, values("16", "32", "64"))'
+    'cfg(cpubits, values("16", "32", "64"))',
+    'cfg(__enable_aes_soft_backend)'
 ]
 
 [package.metadata.docs.rs]

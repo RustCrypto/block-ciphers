@@ -1,3 +1,4 @@
+#[cfg(__enable_aes_soft_backend)]
 pub(crate) mod soft;
 
 cpubits::cfg_if! {

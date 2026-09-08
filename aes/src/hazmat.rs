@@ -11,6 +11,7 @@
 //! We do NOT recommend using it to implement any algorithm which has not
 //! received extensive peer review by cryptographers.
 
+#[cfg(__enable_aes_soft_backend)]
 use crate::backends::soft::hazmat as soft;
 
 pub use crate::Block;
@@ -42,6 +43,17 @@ macro_rules! if_intrinsics_available {
     }};
 }
 
+/// Execute the provided body if the soft backend is available.
+macro_rules! if_soft_backend_available {
+    ($body:expr) => {{
+        #[cfg(__enable_aes_soft_backend)]
+        if true {
+            $body;
+            return;
+        }
+    }};
+}
+
 /// ⚠️ AES cipher (encrypt) round function.
 ///
 /// This API performs the following steps as described in FIPS 197 Appendix C:
@@ -62,7 +74,11 @@ pub fn cipher_round(block: &mut Block, round_key: &Block) {
         intrinsics::cipher_round(block, round_key)
     }
 
-    soft::cipher_round(block, round_key);
+    if_soft_backend_available! {
+        soft::cipher_round(block, round_key)
+    }
+
+    unreachable!();
 }
 
 /// ⚠️ AES cipher (encrypt) round function: parallel version.
@@ -79,7 +95,11 @@ pub fn cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
         intrinsics::cipher_round_par(blocks, round_keys)
     }
 
-    soft::cipher_round_par(blocks, round_keys);
+    if_soft_backend_available! {
+        soft::cipher_round_par(blocks, round_keys)
+    }
+
+    unreachable!();
 }
 
 /// ⚠️ AES equivalent inverse cipher (decrypt) round function.
@@ -102,7 +122,11 @@ pub fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
         intrinsics::equiv_inv_cipher_round(block, round_key)
     }
 
-    soft::equiv_inv_cipher_round(block, round_key);
+    if_soft_backend_available! {
+        soft::equiv_inv_cipher_round(block, round_key)
+    }
+
+    unreachable!();
 }
 
 /// ⚠️ AES equivalent inverse cipher (decrypt) round function: parallel version.
@@ -119,7 +143,11 @@ pub fn equiv_inv_cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
         intrinsics::equiv_inv_cipher_round_par(blocks, round_keys)
     }
 
-    soft::equiv_inv_cipher_round_par(blocks, round_keys);
+    if_soft_backend_available! {
+        soft::equiv_inv_cipher_round_par(blocks, round_keys)
+    }
+
+    unreachable!();
 }
 
 /// ⚠️ AES mix columns function.
@@ -133,7 +161,11 @@ pub fn mix_columns(block: &mut Block) {
         intrinsics::mix_columns(block)
     }
 
-    soft::mix_columns(block);
+    if_soft_backend_available! {
+        soft::mix_columns(block)
+    }
+
+    unreachable!();
 }
 
 /// ⚠️ AES inverse mix columns function.
@@ -149,5 +181,9 @@ pub fn inv_mix_columns(block: &mut Block) {
         intrinsics::inv_mix_columns(block)
     }
 
-    soft::inv_mix_columns(block);
+    if_soft_backend_available! {
+        soft::inv_mix_columns(block)
+    }
+
+    unreachable!();
 }
