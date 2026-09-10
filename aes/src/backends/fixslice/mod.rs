@@ -31,7 +31,10 @@ use word::Word;
 type State<W> = [W; 8];
 
 cpubits::cpubits! {
-    16 | 32 => {
+    16 => {
+        pub(super) type NativeWord = u16;
+    }
+    32 => {
         pub(super) type NativeWord = u32;
     }
     64 => {

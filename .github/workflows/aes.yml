@@ -232,6 +232,26 @@ jobs:
       - run: cargo test --target ${{ matrix.target }}
       - run: cargo test --target ${{ matrix.target }} --all-features
 
+  # Test for the portable software backend with a 16-bit word size
+  soft-16-bit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - rust: 1.89.0 # MSRV
+          - rust: stable
+    env:
+      RUSTFLAGS: '-Dwarnings --cfg aes_backend="soft" --cfg cpubits="16"'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: RustCrypto/actions/cargo-cache@master
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - run: ${{ matrix.deps }}
+      - run: cargo test
+      - run: cargo test --all-features
+
   # Cross-compiled tests
   cross:
     strategy:
