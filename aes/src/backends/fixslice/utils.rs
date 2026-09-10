@@ -83,11 +83,11 @@ pub(super) fn inv_shift_rows_3<W: Word>(state: &mut [W]) {
 pub(super) fn xor_columns<W: Word>(rkeys: &mut [W], offset: usize, idx_xor: usize, idx_ror: u32) {
     for i in 0..8 {
         let off_i = offset + i;
-        let rk = rkeys[off_i - idx_xor] ^ (W::uniform_row(0x03) & rkeys[off_i].ror(idx_ror));
+        let rk = rkeys[off_i - idx_xor] ^ (W::uniform_row(0x1) & rkeys[off_i].ror(idx_ror));
         rkeys[off_i] = rk
-            ^ (W::uniform_row(0xfc) & (rk << W::QUARTER_ROW))
-            ^ (W::uniform_row(0xf0) & (rk << W::HALF_ROW))
-            ^ (W::uniform_row(0xc0) & (rk << (3 * W::QUARTER_ROW)));
+            ^ (W::uniform_row(0xe) & (rk << W::QUARTER_ROW))
+            ^ (W::uniform_row(0xc) & (rk << W::HALF_ROW))
+            ^ (W::uniform_row(0x8) & (rk << (3 * W::QUARTER_ROW)));
     }
 }
 

@@ -16,8 +16,8 @@ pub(crate) fn key_schedule<W: Word>(key: &[u8; 24]) -> RoundKeys<W> {
 
     loop {
         for i in 0..8 {
-            rkeys[rk_off + i] = (W::uniform_row(0x0f) & (tmp[i] >> W::HALF_ROW))
-                | (W::uniform_row(0xf0) & (rkeys[(rk_off - 8) + i] << W::HALF_ROW));
+            rkeys[rk_off + i] = (W::uniform_row(0x3) & (tmp[i] >> W::HALF_ROW))
+                | (W::uniform_row(0xc) & (rkeys[(rk_off - 8) + i] << W::HALF_ROW));
         }
 
         sub_bytes(&mut tmp);
@@ -28,8 +28,8 @@ pub(crate) fn key_schedule<W: Word>(key: &[u8; 24]) -> RoundKeys<W> {
 
         for i in 0..8 {
             let mut ti = rkeys[rk_off + i];
-            ti ^= W::uniform_row(0x30) & tmp[i].ror(W::ror_distance(1, 1));
-            ti ^= W::uniform_row(0xc0) & (ti << W::QUARTER_ROW);
+            ti ^= W::uniform_row(0x4) & tmp[i].ror(W::ror_distance(1, 1));
+            ti ^= W::uniform_row(0x8) & (ti << W::QUARTER_ROW);
             tmp[i] = ti;
         }
         rkeys[rk_off..(rk_off + 8)].copy_from_slice(&tmp);
@@ -37,13 +37,13 @@ pub(crate) fn key_schedule<W: Word>(key: &[u8; 24]) -> RoundKeys<W> {
 
         for i in 0..8 {
             let ui = tmp[i];
-            let mut ti = (W::uniform_row(0x0f) & (rkeys[(rk_off - 16) + i] >> W::HALF_ROW))
-                | (W::uniform_row(0xf0) & (ui << W::HALF_ROW));
-            ti ^= W::uniform_row(0x03) & (ui >> (3 * W::QUARTER_ROW));
+            let mut ti = (W::uniform_row(0x3) & (rkeys[(rk_off - 16) + i] >> W::HALF_ROW))
+                | (W::uniform_row(0xc) & (ui << W::HALF_ROW));
+            ti ^= W::uniform_row(0x1) & (ui >> (3 * W::QUARTER_ROW));
             tmp[i] = ti
-                ^ (W::uniform_row(0xfc) & (ti << W::QUARTER_ROW))
-                ^ (W::uniform_row(0xf0) & (ti << W::HALF_ROW))
-                ^ (W::uniform_row(0xc0) & (ti << (3 * W::QUARTER_ROW)));
+                ^ (W::uniform_row(0xe) & (ti << W::QUARTER_ROW))
+                ^ (W::uniform_row(0xc) & (ti << W::HALF_ROW))
+                ^ (W::uniform_row(0x8) & (ti << (3 * W::QUARTER_ROW)));
         }
         rkeys[rk_off..(rk_off + 8)].copy_from_slice(&tmp);
         rk_off += 8;
@@ -55,13 +55,13 @@ pub(crate) fn key_schedule<W: Word>(key: &[u8; 24]) -> RoundKeys<W> {
         rcon += 1;
 
         for i in 0..8 {
-            let mut ti = (W::uniform_row(0x0f) & (rkeys[(rk_off - 16) + i] >> W::HALF_ROW))
-                | (W::uniform_row(0xf0) & (rkeys[(rk_off - 8) + i] << W::HALF_ROW));
-            ti ^= W::uniform_row(0x03) & tmp[i].ror(W::ror_distance(1, 3));
+            let mut ti = (W::uniform_row(0x3) & (rkeys[(rk_off - 16) + i] >> W::HALF_ROW))
+                | (W::uniform_row(0xc) & (rkeys[(rk_off - 8) + i] << W::HALF_ROW));
+            ti ^= W::uniform_row(0x1) & tmp[i].ror(W::ror_distance(1, 3));
             rkeys[rk_off + i] = ti
-                ^ (W::uniform_row(0xfc) & (ti << W::QUARTER_ROW))
-                ^ (W::uniform_row(0xf0) & (ti << W::HALF_ROW))
-                ^ (W::uniform_row(0xc0) & (ti << (3 * W::QUARTER_ROW)));
+                ^ (W::uniform_row(0xe) & (ti << W::QUARTER_ROW))
+                ^ (W::uniform_row(0xc) & (ti << W::HALF_ROW))
+                ^ (W::uniform_row(0x8) & (ti << (3 * W::QUARTER_ROW)));
         }
         rk_off += 8;
 
@@ -72,8 +72,8 @@ pub(crate) fn key_schedule<W: Word>(key: &[u8; 24]) -> RoundKeys<W> {
         for i in 0..8 {
             let ui = rkeys[(rk_off - 8) + i];
             let mut ti = rkeys[(rk_off - 16) + i];
-            ti ^= W::uniform_row(0x30) & (ui >> W::QUARTER_ROW);
-            ti ^= W::uniform_row(0xc0) & (ti << W::QUARTER_ROW);
+            ti ^= W::uniform_row(0x4) & (ui >> W::QUARTER_ROW);
+            ti ^= W::uniform_row(0x8) & (ti << W::QUARTER_ROW);
             tmp[i] = ti;
         }
     }

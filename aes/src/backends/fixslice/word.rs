@@ -42,7 +42,7 @@ pub(crate) trait Word:
     /// Rotate right by `n` bits.
     fn ror(self, n: u32) -> Self;
 
-    /// Pack the same byte across all 4 rows of the word.
+    /// Pack the same nibble across all 4 rows of the word.
     fn uniform_row(b: u8) -> Self;
 
     /// Place one byte at each of the 4 row positions of the word (row 0 = LSB).
@@ -58,6 +58,51 @@ pub(crate) trait Word:
     fn inv_bitslice(input: &[Self]) -> Array<Block, Self::Blocks>;
 }
 
+/// Expand an 8-bit row pattern to a 16-bit row pattern by doubling each bit:
+/// input bit `i` becomes output bits `2i` and `2i+1`. Branchless SWAR so LLVM
+/// folds it to a single 16-bit immediate when `b` is a constant.
+#[inline(always)]
+const fn double_bits_8_to_16(b: u8) -> u16 {
+    let x = b as u16;
+    // Spread the 8 bits of x to even positions 0,2,4,6,8,10,12,14.
+    let x = (x | (x << 4)) & 0x0f0f;
+    let x = (x | (x << 2)) & 0x3333;
+    let x = (x | (x << 1)) & 0x5555;
+    // Duplicate each spread bit to its adjacent odd position.
+    x | (x << 1)
+}
+
+/// Expand a 16-bit row pattern to a 32-bit row pattern by doubling each bit:
+/// input bit `i` becomes output bits `2i` and `2i+1`. Branchless SWAR so LLVM
+/// folds it to a single 32-bit immediate when `b` is a constant.
+#[inline(always)]
+const fn double_bits_16_to_32(b: u16) -> u32 {
+    let x = b as u32;
+    // Spread the 16 bits of x to even positions 0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30.
+    let x = (x | (x << 8)) & 0x00FF00FF;
+    let x = (x | (x << 4)) & 0x0F0F0F0F;
+    let x = (x | (x << 2)) & 0x33333333;
+    let x = (x | (x << 1)) & 0x55555555;
+    // Duplicate each spread bit to its adjacent odd position.
+    x | (x << 1)
+}
+
+/// Expand a 16-bit row pattern to a 64-bit row pattern by quadrupling each bit:
+/// input bit `i` becomes output bits `4i`, `4i+1`, `4i+2`, and `4i+3`.
+/// Branchless SWAR so LLVM folds it to a single 64-bit immediate when `b` is
+/// a constant.
+#[inline(always)]
+const fn quad_bits_16_to_64(b: u16) -> u64 {
+    let x = b as u64;
+    // Spread the 16 bits of x to positions 0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60.
+    let x = (x | (x << 24)) & 0x000000FF000000FF;
+    let x = (x | (x << 12)) & 0x000F000F000F000F;
+    let x = (x | (x << 6)) & 0x0303030303030303;
+    let x = (x | (x << 3)) & 0x1111111111111111;
+    // Duplicate each spread bit to its adjacent odd position.
+    x | (x << 1) | (x << 2) | (x << 3)
+}
+
 impl Word for u32 {
     type Blocks = U2;
 
@@ -68,7 +113,7 @@ impl Word for u32 {
 
     #[inline(always)]
     fn uniform_row(b: u8) -> u32 {
-        (b as u32) * 0x01010101
+        double_bits_8_to_16(b) as u32 * 0x01010101
     }
 
     #[inline(always)]
@@ -151,20 +196,6 @@ impl Word for u32 {
     }
 }
 
-/// Expand an 8-bit row pattern to a 16-bit row pattern by doubling each bit:
-/// input bit `i` becomes output bits `2i` and `2i+1`. Branchless SWAR so LLVM
-/// folds it to a single 16-bit immediate when `b` is a constant.
-#[inline(always)]
-const fn double_bits(b: u8) -> u16 {
-    let x = b as u16;
-    // Spread the 8 bits of x to even positions 0,2,4,6,8,10,12,14.
-    let x = (x | (x << 4)) & 0x0f0f;
-    let x = (x | (x << 2)) & 0x3333;
-    let x = (x | (x << 1)) & 0x5555;
-    // Duplicate each spread bit to its adjacent odd position.
-    x | (x << 1)
-}
-
 impl Word for u64 {
     type Blocks = U4;
 
@@ -175,15 +206,15 @@ impl Word for u64 {
 
     #[inline(always)]
     fn uniform_row(b: u8) -> u64 {
-        (double_bits(b) as u64) * 0x0001_0001_0001_0001
+        quad_bits_16_to_64(b as u16) * 0x0001_0001_0001_0001
     }
 
     #[inline(always)]
     fn pack_rows(r0: u8, r1: u8, r2: u8, r3: u8) -> u64 {
-        (double_bits(r0) as u64)
-            | ((double_bits(r1) as u64) << 16)
-            | ((double_bits(r2) as u64) << 32)
-            | ((double_bits(r3) as u64) << 48)
+        (double_bits_16_to_32(r0 as u16) as u64)
+            | ((double_bits_16_to_32(r1 as u16) as u64) << 16)
+            | ((double_bits_16_to_32(r2 as u16) as u64) << 32)
+            | ((double_bits_16_to_32(r3 as u16) as u64) << 48)
     }
 
     #[inline(always)]
