@@ -45,7 +45,7 @@ pub(crate) trait Word:
     /// Pack the same nibble across all 4 rows of the word.
     fn uniform_row(b: u8) -> Self;
 
-    /// Place one byte at each of the 4 row positions of the word (row 0 = LSB).
+    /// Place one nibble at each of the 4 row positions of the word (row 0 = LSB).
     fn pack_rows(r0: u8, r1: u8, r2: u8, r3: u8) -> Self;
 
     /// Replicate byte `b` across every byte of the word.
@@ -76,6 +76,7 @@ const fn double_bits_8_to_16(b: u8) -> u16 {
 /// input bit `i` becomes output bits `2i` and `2i+1`. Branchless SWAR so LLVM
 /// folds it to a single 32-bit immediate when `b` is a constant.
 #[inline(always)]
+#[expect(dead_code)] // Will be used in a future commit.
 const fn double_bits_16_to_32(b: u16) -> u32 {
     let x = b as u32;
     // Spread the 16 bits of x to even positions 0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30.
@@ -118,7 +119,10 @@ impl Word for u32 {
 
     #[inline(always)]
     fn pack_rows(r0: u8, r1: u8, r2: u8, r3: u8) -> u32 {
-        (r0 as u32) | ((r1 as u32) << 8) | ((r2 as u32) << 16) | ((r3 as u32) << 24)
+        (double_bits_8_to_16(r0) as u32)
+            | ((double_bits_8_to_16(r1) as u32) << 8)
+            | ((double_bits_8_to_16(r2) as u32) << 16)
+            | ((double_bits_8_to_16(r3) as u32) << 24)
     }
 
     #[inline(always)]
@@ -211,10 +215,10 @@ impl Word for u64 {
 
     #[inline(always)]
     fn pack_rows(r0: u8, r1: u8, r2: u8, r3: u8) -> u64 {
-        (double_bits_16_to_32(r0 as u16) as u64)
-            | ((double_bits_16_to_32(r1 as u16) as u64) << 16)
-            | ((double_bits_16_to_32(r2 as u16) as u64) << 32)
-            | ((double_bits_16_to_32(r3 as u16) as u64) << 48)
+        quad_bits_16_to_64(r0 as u16)
+            | (quad_bits_16_to_64(r1 as u16) << 16)
+            | (quad_bits_16_to_64(r2 as u16) << 32)
+            | (quad_bits_16_to_64(r3 as u16) << 48)
     }
 
     #[inline(always)]

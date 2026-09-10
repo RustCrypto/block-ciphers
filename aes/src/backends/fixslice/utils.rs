@@ -32,8 +32,8 @@ pub(super) fn delta_swap_2<W: Word>(a: &mut W, b: &mut W, shift: u32, mask: W) {
 pub(super) fn shift_rows_1<W: Word>(state: &mut [W]) {
     debug_assert_eq!(state.len(), 8);
     for x in state.iter_mut() {
-        delta_swap_1(x, W::HALF_ROW, W::pack_rows(0x00, 0x03, 0x0f, 0x0c));
-        delta_swap_1(x, W::QUARTER_ROW, W::pack_rows(0x00, 0x33, 0x00, 0x33));
+        delta_swap_1(x, W::HALF_ROW, W::pack_rows(0x0, 0x1, 0x3, 0x2));
+        delta_swap_1(x, W::QUARTER_ROW, W::pack_rows(0x0, 0x5, 0x0, 0x5));
     }
 }
 
@@ -42,7 +42,7 @@ pub(super) fn shift_rows_1<W: Word>(state: &mut [W]) {
 pub(super) fn shift_rows_2<W: Word>(state: &mut [W]) {
     debug_assert_eq!(state.len(), 8);
     for x in state.iter_mut() {
-        delta_swap_1(x, W::HALF_ROW, W::pack_rows(0x00, 0x0f, 0x00, 0x0f));
+        delta_swap_1(x, W::HALF_ROW, W::pack_rows(0x0, 0x3, 0x0, 0x3));
     }
 }
 
@@ -51,8 +51,8 @@ pub(super) fn shift_rows_2<W: Word>(state: &mut [W]) {
 pub(super) fn shift_rows_3<W: Word>(state: &mut [W]) {
     debug_assert_eq!(state.len(), 8);
     for x in state.iter_mut() {
-        delta_swap_1(x, W::HALF_ROW, W::pack_rows(0x00, 0x0c, 0x0f, 0x03));
-        delta_swap_1(x, W::QUARTER_ROW, W::pack_rows(0x00, 0x33, 0x00, 0x33));
+        delta_swap_1(x, W::HALF_ROW, W::pack_rows(0x0, 0x2, 0x3, 0x1));
+        delta_swap_1(x, W::QUARTER_ROW, W::pack_rows(0x0, 0x5, 0x0, 0x5));
     }
 }
 
@@ -115,5 +115,5 @@ pub(super) fn add_round_key<W: Word>(state: &mut State<W>, rkey: &[W]) {
 
 #[inline(always)]
 pub(super) fn add_round_constant_bit<W: Word>(state: &mut [W], bit: usize) {
-    state[bit] ^= W::pack_rows(0x00, 0xc0, 0x00, 0x00);
+    state[bit] ^= W::pack_rows(0x0, 0x8, 0x0, 0x0);
 }
