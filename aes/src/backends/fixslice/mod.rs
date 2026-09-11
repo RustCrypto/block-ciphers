@@ -26,7 +26,7 @@ mod sbox;
 mod utils;
 mod word;
 
-use word::Word;
+pub(super) use word::Word;
 
 type State<W> = [W; 8];
 

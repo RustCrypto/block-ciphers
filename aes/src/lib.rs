@@ -298,8 +298,8 @@ macro_rules! impl_encrypt {
                 }
 
                 // SAFETY: we access correct union variant
-                let backend = unsafe { &self.inner.soft };
-                f.call(backend);
+                let aes = unsafe { &self.inner.soft };
+                aes.encrypt(f);
             }
         }
     };
@@ -348,8 +348,8 @@ macro_rules! impl_decrypt {
                 }
 
                 // SAFETY: we access correct union variant
-                let backend = unsafe { &self.inner.soft };
-                f.call(backend);
+                let aes = unsafe { &self.inner.soft };
+                aes.decrypt(f);
             }
         }
     };

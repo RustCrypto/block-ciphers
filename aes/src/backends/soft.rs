@@ -1,8 +1,8 @@
 #![deny(unsafe_code)]
-use crate::Block;
+use crate::{Block, backends::soft::fixslice::BatchBlocks};
 use cipher::{
-    BlockCipherDecBackend, BlockCipherEncBackend, BlockSizeUser, ParBlocks, ParBlocksSizeUser,
-    consts::U16, inout::InOut,
+    BlockCipherDecBackend, BlockCipherDecClosure, BlockCipherEncBackend, BlockCipherEncClosure,
+    BlockSizeUser, ParBlocks, ParBlocksSizeUser, consts::U16, inout::InOut,
 };
 
 #[path = "fixslice/mod.rs"]
@@ -11,11 +11,12 @@ pub(crate) mod fixslice;
 #[cfg(feature = "hazmat")]
 pub(crate) use fixslice::hazmat;
 
-use fixslice::{BatchBlocks, NativeBatchSize, NativeWord};
+use fixslice::{NativeBatchSize, NativeWord};
 
 macro_rules! impl_backend {
     (
         name = $name:tt,
+        backend = $backend:tt,
         key_size = $key_size:literal,
         module = $module:ident,
         doc = $doc:expr,
@@ -24,53 +25,74 @@ macro_rules! impl_backend {
         #[doc = "block cipher"]
         #[derive(Clone, Copy)]
         pub(crate) struct $name {
-            keys: fixslice::$module::RoundKeys<NativeWord>,
+            rk: fixslice::$module::RoundKeys<NativeWord>,
         }
 
         impl $name {
             #[inline]
             pub(crate) fn new(key: &[u8; $key_size]) -> Self {
-                let keys = fixslice::$module::key_schedule(key);
-                Self { keys }
+                let rk = fixslice::$module::key_schedule(key);
+                Self { rk }
+            }
+
+            #[inline]
+            pub(crate) fn encrypt(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
+                let rk = &self.rk;
+                let backend = $backend { rk };
+                f.call(&backend)
+            }
+
+            #[inline]
+            pub(crate) fn decrypt(&self, f: impl BlockCipherDecClosure<BlockSize = U16>) {
+                let rk = &self.rk;
+                let backend = $backend { rk };
+                f.call(&backend)
             }
         }
 
-        impl BlockSizeUser for $name {
+        #[doc=$doc]
+        #[doc = "block cipher"]
+        #[derive(Clone, Copy)]
+        pub(crate) struct $backend<'a> {
+            rk: &'a fixslice::$module::RoundKeys<NativeWord>,
+        }
+
+        impl BlockSizeUser for $backend<'_> {
             type BlockSize = U16;
         }
 
-        impl ParBlocksSizeUser for $name {
+        impl ParBlocksSizeUser for $backend<'_> {
             type ParBlocksSize = NativeBatchSize;
         }
 
-        impl BlockCipherEncBackend for $name {
+        impl BlockCipherEncBackend for $backend<'_> {
             #[inline(always)]
             fn encrypt_block(&self, mut block: InOut<'_, '_, Block>) {
                 let mut blocks = BatchBlocks::<NativeWord>::default();
                 blocks[0] = block.clone_in().into();
-                let res = fixslice::$module::encrypt(&self.keys, &blocks);
+                let res = fixslice::$module::encrypt(&self.rk, &blocks);
                 *block.get_out() = res[0].into();
             }
 
             #[inline(always)]
             fn encrypt_par_blocks(&self, mut blocks: InOut<'_, '_, ParBlocks<Self>>) {
-                let res = fixslice::$module::encrypt(&self.keys, blocks.get_in());
+                let res = fixslice::$module::encrypt::<NativeWord>(&self.rk, blocks.get_in());
                 *blocks.get_out() = res;
             }
         }
 
-        impl BlockCipherDecBackend for $name {
+        impl BlockCipherDecBackend for $backend<'_> {
             #[inline(always)]
             fn decrypt_block(&self, mut block: InOut<'_, '_, Block>) {
                 let mut blocks = BatchBlocks::<NativeWord>::default();
                 blocks[0] = block.clone_in();
-                let res = fixslice::$module::decrypt(&self.keys, &blocks);
+                let res = fixslice::$module::decrypt(&self.rk, &blocks);
                 *block.get_out() = res[0];
             }
 
             #[inline(always)]
             fn decrypt_par_blocks(&self, mut blocks: InOut<'_, '_, ParBlocks<Self>>) {
-                let res = fixslice::$module::decrypt(&self.keys, blocks.get_in());
+                let res = fixslice::$module::decrypt::<NativeWord>(&self.rk, blocks.get_in());
                 *blocks.get_out() = res;
             }
         }
@@ -79,18 +101,21 @@ macro_rules! impl_backend {
 
 impl_backend!(
     name = Aes128,
+    backend = Aes128Backend,
     key_size = 16,
     module = aes128,
     doc = "AES-128",
 );
 impl_backend!(
     name = Aes192,
+    backend = Aes192Backend,
     key_size = 24,
     module = aes192,
     doc = "AES-192",
 );
 impl_backend!(
     name = Aes256,
+    backend = Aes256Backend,
     key_size = 32,
     module = aes256,
     doc = "AES-256",
