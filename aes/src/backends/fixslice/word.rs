@@ -1,4 +1,4 @@
-use crate::Block;
+use crate::{Block, backends::soft::MinWord};
 use cipher::{
     Array,
     array::ArraySize,
@@ -57,6 +57,9 @@ pub(crate) trait Word:
 
     /// Unpack a bitsliced 8-row state slice into `Self::Blocks` output blocks.
     fn inv_bitslice(input: &[Self]) -> Array<Block, Self::Blocks>;
+
+    /// Broadcast the round key into all lanes.
+    fn broadcast(rkey: MinWord) -> Self;
 }
 
 impl Word for u16 {
@@ -162,6 +165,10 @@ impl Word for u16 {
         //     c1 c0 r1 r0 p2 p1 p0
         output
     }
+
+    fn broadcast(rkey: MinWord) -> u16 {
+        rkey
+    }
 }
 
 /// Expand an 8-bit row pattern to a 16-bit row pattern by doubling each bit:
@@ -182,7 +189,6 @@ const fn double_bits_8_to_16(b: u8) -> u16 {
 /// input bit `i` becomes output bits `2i` and `2i+1`. Branchless SWAR so LLVM
 /// folds it to a single 32-bit immediate when `b` is a constant.
 #[inline(always)]
-#[expect(dead_code)] // Will be used in a future commit.
 const fn double_bits_16_to_32(b: u16) -> u32 {
     let x = b as u32;
     // Spread the 16 bits of x to even positions 0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30.
@@ -303,6 +309,10 @@ impl Word for u32 {
         // Final AES bit index, as desired:
         //     b0 c1 c0 r1 r0 p2 p1 p0
         output
+    }
+
+    fn broadcast(rkey: MinWord) -> Self {
+        double_bits_16_to_32(rkey)
     }
 }
 
@@ -425,6 +435,10 @@ impl Word for u64 {
         // Final AES bit index, as desired:
         //     b1 b0 c1 c0 r1 r0 p2 p1 p0
         output
+    }
+
+    fn broadcast(rkey: MinWord) -> Self {
+        quad_bits_16_to_64(rkey)
     }
 }
 

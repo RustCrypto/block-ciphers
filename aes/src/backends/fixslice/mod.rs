@@ -44,3 +44,4 @@ cpubits::cpubits! {
 
 pub(super) type NativeBatchSize = <NativeWord as Word>::Blocks;
 pub(super) type BatchBlocks<W> = Array<crate::Block, <W as Word>::Blocks>;
+pub(super) type MinWord = u16;

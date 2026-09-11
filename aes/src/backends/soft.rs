@@ -11,7 +11,7 @@ pub(crate) mod fixslice;
 #[cfg(feature = "hazmat")]
 pub(crate) use fixslice::hazmat;
 
-use fixslice::{NativeBatchSize, NativeWord};
+use fixslice::{MinWord, NativeBatchSize, NativeWord, Word};
 
 macro_rules! impl_backend {
     (
@@ -25,7 +25,7 @@ macro_rules! impl_backend {
         #[doc = "block cipher"]
         #[derive(Clone, Copy)]
         pub(crate) struct $name {
-            rk: fixslice::$module::RoundKeys<NativeWord>,
+            rk: fixslice::$module::RoundKeys<MinWord>,
         }
 
         impl $name {
@@ -38,14 +38,16 @@ macro_rules! impl_backend {
             #[inline]
             pub(crate) fn encrypt(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
                 let rk = &self.rk;
-                let backend = $backend { rk };
+                let rk_native = self.rk.map(Word::broadcast);
+                let backend = $backend { rk, rk_native };
                 f.call(&backend)
             }
 
             #[inline]
             pub(crate) fn decrypt(&self, f: impl BlockCipherDecClosure<BlockSize = U16>) {
                 let rk = &self.rk;
-                let backend = $backend { rk };
+                let rk_native = self.rk.map(Word::broadcast);
+                let backend = $backend { rk, rk_native };
                 f.call(&backend)
             }
         }
@@ -54,7 +56,8 @@ macro_rules! impl_backend {
         #[doc = "block cipher"]
         #[derive(Clone, Copy)]
         pub(crate) struct $backend<'a> {
-            rk: &'a fixslice::$module::RoundKeys<NativeWord>,
+            rk: &'a fixslice::$module::RoundKeys<MinWord>,
+            rk_native: fixslice::$module::RoundKeys<NativeWord>,
         }
 
         impl BlockSizeUser for $backend<'_> {
@@ -68,7 +71,7 @@ macro_rules! impl_backend {
         impl BlockCipherEncBackend for $backend<'_> {
             #[inline(always)]
             fn encrypt_block(&self, mut block: InOut<'_, '_, Block>) {
-                let mut blocks = BatchBlocks::<NativeWord>::default();
+                let mut blocks = BatchBlocks::<MinWord>::default();
                 blocks[0] = block.clone_in().into();
                 let res = fixslice::$module::encrypt(&self.rk, &blocks);
                 *block.get_out() = res[0].into();
@@ -76,7 +79,7 @@ macro_rules! impl_backend {
 
             #[inline(always)]
             fn encrypt_par_blocks(&self, mut blocks: InOut<'_, '_, ParBlocks<Self>>) {
-                let res = fixslice::$module::encrypt::<NativeWord>(&self.rk, blocks.get_in());
+                let res = fixslice::$module::encrypt(&self.rk_native, blocks.get_in());
                 *blocks.get_out() = res;
             }
         }
@@ -84,7 +87,7 @@ macro_rules! impl_backend {
         impl BlockCipherDecBackend for $backend<'_> {
             #[inline(always)]
             fn decrypt_block(&self, mut block: InOut<'_, '_, Block>) {
-                let mut blocks = BatchBlocks::<NativeWord>::default();
+                let mut blocks = BatchBlocks::<MinWord>::default();
                 blocks[0] = block.clone_in();
                 let res = fixslice::$module::decrypt(&self.rk, &blocks);
                 *block.get_out() = res[0];
@@ -92,7 +95,7 @@ macro_rules! impl_backend {
 
             #[inline(always)]
             fn decrypt_par_blocks(&self, mut blocks: InOut<'_, '_, ParBlocks<Self>>) {
-                let res = fixslice::$module::decrypt::<NativeWord>(&self.rk, blocks.get_in());
+                let res = fixslice::$module::decrypt(&self.rk_native, blocks.get_in());
                 *blocks.get_out() = res;
             }
         }
