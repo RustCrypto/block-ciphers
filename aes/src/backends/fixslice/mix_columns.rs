@@ -145,30 +145,30 @@ fn rotate_rows_2<W: Word>(x: W) -> W {
 
 #[inline(always)]
 fn rotate_rows_and_columns_1_1<W: Word>(x: W) -> W {
-    let a = x.ror(W::ror_distance(1, 1)) & W::uniform_row(0x3f);
-    let b = x.ror(W::ror_distance(0, 1)) & W::uniform_row(0xc0);
+    let a = x.ror(W::ror_distance(1, 1)) & W::uniform_row(0x7);
+    let b = x.ror(W::ror_distance(0, 1)) & W::uniform_row(0x8);
     a | b
 }
 
 #[cfg(not(aes_backend_soft = "compact"))]
 #[inline(always)]
 fn rotate_rows_and_columns_1_2<W: Word>(x: W) -> W {
-    let a = x.ror(W::ror_distance(1, 2)) & W::uniform_row(0x0f);
-    let b = x.ror(W::ror_distance(0, 2)) & W::uniform_row(0xf0);
+    let a = x.ror(W::ror_distance(1, 2)) & W::uniform_row(0x3);
+    let b = x.ror(W::ror_distance(0, 2)) & W::uniform_row(0xc);
     a | b
 }
 
 #[cfg(not(aes_backend_soft = "compact"))]
 #[inline(always)]
 fn rotate_rows_and_columns_1_3<W: Word>(x: W) -> W {
-    let a = x.ror(W::ror_distance(1, 3)) & W::uniform_row(0x03);
-    let b = x.ror(W::ror_distance(0, 3)) & W::uniform_row(0xfc);
+    let a = x.ror(W::ror_distance(1, 3)) & W::uniform_row(0x1);
+    let b = x.ror(W::ror_distance(0, 3)) & W::uniform_row(0xe);
     a | b
 }
 
 #[inline(always)]
 fn rotate_rows_and_columns_2_2<W: Word>(x: W) -> W {
-    let a = x.ror(W::ror_distance(2, 2)) & W::uniform_row(0x0f);
-    let b = x.ror(W::ror_distance(1, 2)) & W::uniform_row(0xf0);
+    let a = x.ror(W::ror_distance(2, 2)) & W::uniform_row(0x3);
+    let b = x.ror(W::ror_distance(1, 2)) & W::uniform_row(0xc);
     a | b
 }

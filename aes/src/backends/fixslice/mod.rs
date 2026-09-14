@@ -26,12 +26,15 @@ mod sbox;
 mod utils;
 mod word;
 
-use word::Word;
+pub(super) use word::Word;
 
 type State<W> = [W; 8];
 
 cpubits::cpubits! {
-    16 | 32 => {
+    16 => {
+        pub(super) type NativeWord = u16;
+    }
+    32 => {
         pub(super) type NativeWord = u32;
     }
     64 => {
@@ -41,3 +44,4 @@ cpubits::cpubits! {
 
 pub(super) type NativeBatchSize = <NativeWord as Word>::Blocks;
 pub(super) type BatchBlocks<W> = Array<crate::Block, <W as Word>::Blocks>;
+pub(super) type MinWord = u16;

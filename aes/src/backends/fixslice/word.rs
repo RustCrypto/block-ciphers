@@ -1,8 +1,8 @@
-use crate::Block;
+use crate::{Block, backends::soft::MinWord};
 use cipher::{
     Array,
     array::ArraySize,
-    consts::{U2, U4},
+    consts::{U1, U2, U4},
 };
 use core::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not, Shl, Shr};
 
@@ -25,7 +25,8 @@ pub(crate) trait Word:
     /// Number of 128-bit blocks bitsliced together in one state.
     type Blocks: ArraySize;
 
-    /// Width in bits of one row of the bitsliced state (8 for `u32`, 16 for `u64`).
+    /// Width in bits of one row of the bitsliced state (4 for `u16`, 8 for
+    /// `u32`, 16 for `u64`).
     const ROW_BITS: u32 = (size_of::<Self>() * 2) as u32;
 
     /// Half of `ROW_BITS`.
@@ -42,10 +43,10 @@ pub(crate) trait Word:
     /// Rotate right by `n` bits.
     fn ror(self, n: u32) -> Self;
 
-    /// Pack the same byte across all 4 rows of the word.
+    /// Pack the same nibble across all 4 rows of the word.
     fn uniform_row(b: u8) -> Self;
 
-    /// Place one byte at each of the 4 row positions of the word (row 0 = LSB).
+    /// Place one nibble at each of the 4 row positions of the word (row 0 = LSB).
     fn pack_rows(r0: u8, r1: u8, r2: u8, r3: u8) -> Self;
 
     /// Replicate byte `b` across every byte of the word.
@@ -56,6 +57,163 @@ pub(crate) trait Word:
 
     /// Unpack a bitsliced 8-row state slice into `Self::Blocks` output blocks.
     fn inv_bitslice(input: &[Self]) -> Array<Block, Self::Blocks>;
+
+    /// Broadcast the round key into all lanes.
+    fn broadcast(rkey: MinWord) -> Self;
+}
+
+impl Word for u16 {
+    type Blocks = U1;
+
+    #[inline(always)]
+    fn ror(self, n: u32) -> u16 {
+        self.rotate_right(n)
+    }
+
+    #[inline(always)]
+    fn uniform_row(b: u8) -> u16 {
+        (b as u16) * 0x1111
+    }
+
+    #[inline(always)]
+    fn pack_rows(r0: u8, r1: u8, r2: u8, r3: u8) -> u16 {
+        (r0 as u16) | ((r1 as u16) << 4) | ((r2 as u16) << 8) | ((r3 as u16) << 12)
+    }
+
+    #[inline(always)]
+    fn byte_repeat(b: u8) -> u16 {
+        (b as u16) * 0x0101
+    }
+
+    /// Bitslice one 128-bit input block into a 128-bit internal state.
+    fn bitslice(output: &mut [u16], input: &Array<Block, U1>) {
+        debug_assert_eq!(output.len(), 8);
+        let b = input[0].as_slice();
+
+        // Bitslicing is a bit index manipulation. 128 bits of data means each bit is positioned at
+        // a 7-bit index. AES data is a single 4x4 column-major matrix of bytes, so the index is
+        // initially ([c]olumn, [r]ow, [p]osition):
+        //     c1 c0 r1 r0 p2 p1 p0
+        //
+        // The desired bitsliced data groups first by bit position, then row, then column:
+        //     p2 p1 p0 r1 r0 c1 c0
+
+        fn read_reordered(input: &[u8]) -> u16 {
+            (u16::from(input[0x0])) | (u16::from(input[0x2]) << 8)
+        }
+
+        // Reorder each block's bytes on input
+        //     c1 c0 r1 r0 __ __ __ => c1 c0 r0 r1 __ __ __
+        // Reorder by relabeling (note the order of input)
+        //     c1 c0 r0 __ __ __ __ => r0 c1 c0 __ __ __ __
+        let mut t = [
+            read_reordered(&b[0x00..0x03]),
+            read_reordered(&b[0x04..0x07]),
+            read_reordered(&b[0x08..0x0b]),
+            read_reordered(&b[0x0c..0x0f]),
+            read_reordered(&b[0x01..0x04]),
+            read_reordered(&b[0x05..0x08]),
+            read_reordered(&b[0x09..0x0c]),
+            read_reordered(&b[0x0d..0x10]),
+        ];
+
+        bitslice_swaps(&mut t);
+
+        // Final bitsliced bit index, as desired:
+        //     p2 p1 p0 r1 r0 c1 c0
+        output[..8].copy_from_slice(&t);
+    }
+
+    /// Un-bitslice a 128-bit internal state into one 128-bit block.
+    fn inv_bitslice(input: &[u16]) -> Array<Block, U1> {
+        debug_assert_eq!(input.len(), 8);
+
+        // Unbitslicing is a bit index manipulation. 128 bits of data means each bit is positioned
+        // at a 7-bit index. AES data is a single 4x4 column-major matrix of bytes, so the desired
+        // index for the output is ([c]olumn, [r]ow, [p]osition):
+        //     c1 c0 r1 r0 p2 p1 p0
+        //
+        // The initially bitsliced data groups first by bit position, then row, then column:
+        //     p2 p1 p0 r1 r0 c1 c0
+
+        let mut t = [
+            input[0], input[1], input[2], input[3], input[4], input[5], input[6], input[7],
+        ];
+
+        bitslice_swaps(&mut t);
+
+        fn write_reordered(rows: u16, output: &mut [u8]) {
+            output[0x0] = rows as u8;
+            output[0x2] = (rows >> 8) as u8;
+        }
+
+        let mut output = Array::<Block, U1>::default();
+        // Reorder by relabeling (note the order of output)
+        //     r0 c1 c0 __ __ __ __ => c1 c0 r0 __ __ __ __
+        // Reorder each block's bytes on output
+        //     c1 c0 r0 r1 __ __ __ => c1 c0 r1 r0 __ __ __
+        write_reordered(t[0], &mut output[0][0x00..0x03]);
+        write_reordered(t[1], &mut output[0][0x04..0x07]);
+        write_reordered(t[2], &mut output[0][0x08..0x0b]);
+        write_reordered(t[3], &mut output[0][0x0c..0x0f]);
+        write_reordered(t[4], &mut output[0][0x01..0x04]);
+        write_reordered(t[5], &mut output[0][0x05..0x08]);
+        write_reordered(t[6], &mut output[0][0x09..0x0c]);
+        write_reordered(t[7], &mut output[0][0x0d..0x10]);
+
+        // Final AES bit index, as desired:
+        //     c1 c0 r1 r0 p2 p1 p0
+        output
+    }
+
+    fn broadcast(rkey: MinWord) -> u16 {
+        rkey
+    }
+}
+
+/// Expand an 8-bit row pattern to a 16-bit row pattern by doubling each bit:
+/// input bit `i` becomes output bits `2i` and `2i+1`. Branchless SWAR so LLVM
+/// folds it to a single 16-bit immediate when `b` is a constant.
+#[inline(always)]
+const fn double_bits_8_to_16(b: u8) -> u16 {
+    let x = b as u16;
+    // Spread the 8 bits of x to even positions 0,2,4,6,8,10,12,14.
+    let x = (x | (x << 4)) & 0x0f0f;
+    let x = (x | (x << 2)) & 0x3333;
+    let x = (x | (x << 1)) & 0x5555;
+    // Duplicate each spread bit to its adjacent odd position.
+    x | (x << 1)
+}
+
+/// Expand a 16-bit row pattern to a 32-bit row pattern by doubling each bit:
+/// input bit `i` becomes output bits `2i` and `2i+1`. Branchless SWAR so LLVM
+/// folds it to a single 32-bit immediate when `b` is a constant.
+#[inline(always)]
+const fn double_bits_16_to_32(b: u16) -> u32 {
+    let x = b as u32;
+    // Spread the 16 bits of x to even positions 0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30.
+    let x = (x | (x << 8)) & 0x00FF00FF;
+    let x = (x | (x << 4)) & 0x0F0F0F0F;
+    let x = (x | (x << 2)) & 0x33333333;
+    let x = (x | (x << 1)) & 0x55555555;
+    // Duplicate each spread bit to its adjacent odd position.
+    x | (x << 1)
+}
+
+/// Expand a 16-bit row pattern to a 64-bit row pattern by quadrupling each bit:
+/// input bit `i` becomes output bits `4i`, `4i+1`, `4i+2`, and `4i+3`.
+/// Branchless SWAR so LLVM folds it to a single 64-bit immediate when `b` is
+/// a constant.
+#[inline(always)]
+const fn quad_bits_16_to_64(b: u16) -> u64 {
+    let x = b as u64;
+    // Spread the 16 bits of x to positions 0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60.
+    let x = (x | (x << 24)) & 0x000000FF000000FF;
+    let x = (x | (x << 12)) & 0x000F000F000F000F;
+    let x = (x | (x << 6)) & 0x0303030303030303;
+    let x = (x | (x << 3)) & 0x1111111111111111;
+    // Duplicate each spread bit to its adjacent odd position.
+    x | (x << 1) | (x << 2) | (x << 3)
 }
 
 impl Word for u32 {
@@ -68,12 +226,15 @@ impl Word for u32 {
 
     #[inline(always)]
     fn uniform_row(b: u8) -> u32 {
-        (b as u32) * 0x01010101
+        double_bits_8_to_16(b) as u32 * 0x01010101
     }
 
     #[inline(always)]
     fn pack_rows(r0: u8, r1: u8, r2: u8, r3: u8) -> u32 {
-        (r0 as u32) | ((r1 as u32) << 8) | ((r2 as u32) << 16) | ((r3 as u32) << 24)
+        (double_bits_8_to_16(r0) as u32)
+            | ((double_bits_8_to_16(r1) as u32) << 8)
+            | ((double_bits_8_to_16(r2) as u32) << 16)
+            | ((double_bits_8_to_16(r3) as u32) << 24)
     }
 
     #[inline(always)]
@@ -149,20 +310,10 @@ impl Word for u32 {
         //     b0 c1 c0 r1 r0 p2 p1 p0
         output
     }
-}
 
-/// Expand an 8-bit row pattern to a 16-bit row pattern by doubling each bit:
-/// input bit `i` becomes output bits `2i` and `2i+1`. Branchless SWAR so LLVM
-/// folds it to a single 16-bit immediate when `b` is a constant.
-#[inline(always)]
-const fn double_bits(b: u8) -> u16 {
-    let x = b as u16;
-    // Spread the 8 bits of x to even positions 0,2,4,6,8,10,12,14.
-    let x = (x | (x << 4)) & 0x0f0f;
-    let x = (x | (x << 2)) & 0x3333;
-    let x = (x | (x << 1)) & 0x5555;
-    // Duplicate each spread bit to its adjacent odd position.
-    x | (x << 1)
+    fn broadcast(rkey: MinWord) -> Self {
+        double_bits_16_to_32(rkey)
+    }
 }
 
 impl Word for u64 {
@@ -175,15 +326,15 @@ impl Word for u64 {
 
     #[inline(always)]
     fn uniform_row(b: u8) -> u64 {
-        (double_bits(b) as u64) * 0x0001_0001_0001_0001
+        quad_bits_16_to_64(b as u16) * 0x0001_0001_0001_0001
     }
 
     #[inline(always)]
     fn pack_rows(r0: u8, r1: u8, r2: u8, r3: u8) -> u64 {
-        (double_bits(r0) as u64)
-            | ((double_bits(r1) as u64) << 16)
-            | ((double_bits(r2) as u64) << 32)
-            | ((double_bits(r3) as u64) << 48)
+        quad_bits_16_to_64(r0 as u16)
+            | (quad_bits_16_to_64(r1 as u16) << 16)
+            | (quad_bits_16_to_64(r2 as u16) << 32)
+            | (quad_bits_16_to_64(r3 as u16) << 48)
     }
 
     #[inline(always)]
@@ -284,6 +435,10 @@ impl Word for u64 {
         // Final AES bit index, as desired:
         //     b1 b0 c1 c0 r1 r0 p2 p1 p0
         output
+    }
+
+    fn broadcast(rkey: MinWord) -> Self {
+        quad_bits_16_to_64(rkey)
     }
 }
 
