@@ -248,7 +248,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      - run: ${{ matrix.deps }}
       - run: cargo test
       - run: cargo test --all-features
 
