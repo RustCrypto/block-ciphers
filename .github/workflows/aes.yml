@@ -109,7 +109,6 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             rust: stable
-            RUSTFLAGS: '-Dwarnings --cfg aes_backend="avx256"'
     env:
       CARGO_INCREMENTAL: 0
       RUSTFLAGS: ${{ matrix.RUSTFLAGS }}
@@ -122,14 +121,14 @@ jobs:
           toolchain: ${{ matrix.rust }}
           targets: ${{ matrix.target }}
       # NOTE: Write a `.cargo/config.toml` to configure the target for VAES
-      # NOTE: We use intel-sde as the runner since not all GitHub CI hosts support AVX512
+      # NOTE: We use intel-sde (emulating Alder Lake) as the runner since not all GitHub CI hosts support AVX256
       - name: write .cargo/config.toml
         shell: bash
         run: |
           cd ../aes/..
           mkdir -p .cargo
           echo '[target.${{ matrix.target }}]'  > .cargo/config.toml
-          echo 'runner = "sde64 -future --"'   >> .cargo/config.toml
+          echo 'runner = "sde64 -adl --"'   >> .cargo/config.toml
       - run: ${{ matrix.deps }}
       - run: cargo test --target ${{ matrix.target }}
       - run: cargo test --target ${{ matrix.target }} --features hazmat
@@ -143,7 +142,6 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             rust: stable
-            RUSTFLAGS: '-Dwarnings --cfg aes_backend="avx512"'
     env:
       CARGO_INCREMENTAL: 0
       RUSTFLAGS: ${{ matrix.RUSTFLAGS }}
@@ -156,14 +154,14 @@ jobs:
           toolchain: ${{ matrix.rust }}
           targets: ${{ matrix.target }}
       # NOTE: Write a `.cargo/config.toml` to configure the target for VAES
-      # NOTE: We use intel-sde as the runner since not all GitHub CI hosts support AVX512
+      # NOTE: We use intel-sde (emulating Granite Rapids) as the runner since not all GitHub CI hosts support AVX512
       - name: write .cargo/config.toml
         shell: bash
         run: |
           cd ../aes/..
           mkdir -p .cargo
           echo '[target.${{ matrix.target }}]'  > .cargo/config.toml
-          echo 'runner = "sde64 -future --"'   >> .cargo/config.toml
+          echo 'runner = "sde64 -gnr --"'   >> .cargo/config.toml
       - run: ${{ matrix.deps }}
       - run: cargo test --target ${{ matrix.target }}
       - run: cargo test --target ${{ matrix.target }} --features hazmat
