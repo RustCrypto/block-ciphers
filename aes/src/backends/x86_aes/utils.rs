@@ -6,6 +6,7 @@ use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::*;
 
+#[inline]
 #[target_feature(enable = "sse2")]
 pub(super) fn load_block(block: &Block) -> __m128i {
     let p: *const __m128i = block.as_ptr().cast();
@@ -13,6 +14,7 @@ pub(super) fn load_block(block: &Block) -> __m128i {
     unsafe { _mm_loadu_si128(p) }
 }
 
+#[inline]
 #[target_feature(enable = "sse2")]
 pub(super) fn store_block(dst: &mut Block, block: __m128i) {
     let p: *mut __m128i = dst.as_mut_ptr().cast();
@@ -20,11 +22,13 @@ pub(super) fn store_block(dst: &mut Block, block: __m128i) {
     unsafe { _mm_storeu_si128(p, block) }
 }
 
+#[inline]
 #[target_feature(enable = "sse2")]
 pub(super) fn load_batch_blocks<N: ArraySize>(blocks: &Array<Block, N>) -> Array<__m128i, N> {
     Array::from_fn(|i| load_block(&blocks[i]))
 }
 
+#[inline]
 #[target_feature(enable = "sse2")]
 pub(super) fn store_batch_blocks<N: ArraySize>(
     dst: &mut Array<Block, N>,
