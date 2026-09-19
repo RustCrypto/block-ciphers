@@ -45,9 +45,6 @@
 //! used or passing `RUSTFLAGS=-Ctarget-feature=+aes,+avx512f,+ssse3,+vaes`
 //! will ensure that AESNI and VAES are always used.
 //!
-//! Note: Enabling VAES256 or VAES512 still requires specifying `--cfg
-//! aes_backend = "avx256"` or `--cfg aes_backend = "avx512"` explicitly.
-//!
 //! Programs built in this manner will crash with an illegal instruction on
 //! CPUs which do not have AES-NI and VAES enabled.
 //!
@@ -104,8 +101,6 @@
 //!
 //! - `aes_backend`: explicitly select one of the following backends:
 //!   - `soft`: force software backend
-//!   - `avx256`: force AVX2 backend
-//!   - `avx512`: force AVX-512 backend
 //! - `aes_backend_soft`: modify software backend:
 //!   - `compact`: use compact implementation (less performant, but results in a smaller binary)
 //!
