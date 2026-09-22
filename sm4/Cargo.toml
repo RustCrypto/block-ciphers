@@ -13,6 +13,10 @@ description = "SM4 block cipher algorithm"
 
 [dependencies]
 cipher = "0.5"
+cfg-if = "1"
+
+[target.'cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))'.dependencies]
+cpufeatures = "0.3"
 
 [dev-dependencies]
 cipher = { version = "0.5", features = ["dev"] }
@@ -23,3 +27,6 @@ zeroize = ["cipher/zeroize"]
 
 [package.metadata.docs.rs]
 all-features = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(sm4_force_soft)'] }
