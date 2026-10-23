@@ -1,19 +1,25 @@
 #![feature(test)]
 extern crate test;
 
-use cipher::{block_decryptor_bench, block_encryptor_bench};
-use des::{Des, TdesEde3};
+macro_rules! benches {
+    ($name:ident, $cipher:ty) => {
+        mod $name {
+            use cipher::{Key, KeyInit, block_decryptor_bench, block_encryptor_bench};
 
-block_encryptor_bench!(Key: Des, des_encrypt_block, des_encrypt_blocks);
-block_decryptor_bench!(Key: Des, des_decrypt_block, des_decrypt_blocks);
+            block_encryptor_bench!(Key: $cipher, encrypt_block, encrypt_blocks);
+            block_decryptor_bench!(Key: $cipher, decrypt_block, decrypt_blocks);
 
-block_encryptor_bench!(
-    Key: TdesEde3,
-    tdes_ede3_encrypt_block,
-    tdes_ede3_encrypt_blocks,
-);
-block_decryptor_bench!(
-    Key: TdesEde3,
-    tdes_ede3_decrypt_block,
-    tdes_ede3_decrypt_blocks,
-);
+            #[bench]
+            fn key_init(bh: &mut test::Bencher) {
+                let key = Key::<$cipher>::default();
+                bh.iter(|| <$cipher>::new(test::black_box(&key)));
+            }
+        }
+    };
+}
+
+benches!(des, ::des::Des);
+benches!(tdes_ede2, ::des::TdesEde2);
+benches!(tdes_ede3, ::des::TdesEde3);
+benches!(tdes_eee2, ::des::TdesEee2);
+benches!(tdes_eee3, ::des::TdesEee3);
