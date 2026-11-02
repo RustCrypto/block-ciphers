@@ -43,7 +43,7 @@ pub(crate) trait SboxExt: Sbox {
         for i in 0..4 {
             let shift = 8 * i;
             let k = ((a & (0xffu32 << shift)) >> shift) as usize;
-            v += (Self::EXP_SBOX[i][k] as u32) << shift;
+            v += u32::from(Self::EXP_SBOX[i][k]) << shift;
         }
         v
     }
@@ -56,6 +56,7 @@ pub(crate) trait SboxExt: Sbox {
 
 impl<T: Sbox> SboxExt for T {}
 
+#[derive(Clone, Copy, Debug)]
 pub enum Tc26 {}
 
 impl Sbox for Tc26 {
@@ -72,6 +73,7 @@ impl Sbox for Tc26 {
     ];
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum TestSbox {}
 
 impl Sbox for TestSbox {
@@ -88,6 +90,7 @@ impl Sbox for TestSbox {
     ];
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum CryptoProA {}
 
 impl Sbox for CryptoProA {
@@ -104,6 +107,7 @@ impl Sbox for CryptoProA {
     ];
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum CryptoProB {}
 
 impl Sbox for CryptoProB {
@@ -120,6 +124,7 @@ impl Sbox for CryptoProB {
     ];
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum CryptoProC {}
 
 impl Sbox for CryptoProC {
@@ -136,6 +141,7 @@ impl Sbox for CryptoProC {
     ];
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum CryptoProD {}
 
 impl Sbox for CryptoProD {

@@ -3,7 +3,7 @@ name = "xtea"
 version = "0.1.0"
 authors = ["RustCrypto Developers"]
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 documentation = "https://docs.rs/xtea"
 repository = "https://github.com/RustCrypto/block-ciphers"
 license = "MIT OR Apache-2.0"
@@ -22,3 +22,6 @@ zeroize = ["cipher/zeroize"]
 
 [package.metadata.docs.rs]
 all-features = true
+
+[lints]
+workspace = true

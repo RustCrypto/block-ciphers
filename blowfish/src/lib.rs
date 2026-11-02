@@ -15,9 +15,8 @@
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
-#![deny(unsafe_code)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![warn(missing_docs, rust_2018_idioms)]
+#![deny(unsafe_code)]
 
 pub use cipher;
 
@@ -53,7 +52,7 @@ fn next_u32_wrap(buf: &[u8], offset: &mut usize) -> u32 {
         if *offset >= buf.len() {
             *offset = 0;
         }
-        v = (v << 8) | buf[*offset] as u32;
+        v = (v << 8) | u32::from(buf[*offset]);
         *offset += 1;
     }
     v
@@ -128,7 +127,7 @@ impl<T: ByteOrder> KeySizeUser for Blowfish<T> {
 
 impl<T: ByteOrder> KeyInit for Blowfish<T> {
     fn new(key: &Key<Self>) -> Self {
-        Self::new_from_slice(&key[..]).unwrap()
+        Self::new_from_slice(&key[..]).expect("key has correct size")
     }
 
     fn new_from_slice(key: &[u8]) -> Result<Self, InvalidLength> {
@@ -152,7 +151,7 @@ impl<T: ByteOrder> ParBlocksSizeUser for Blowfish<T> {
 impl<T: ByteOrder> BlockCipherEncrypt for Blowfish<T> {
     #[inline]
     fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
-        f.call(self)
+        f.call(self);
     }
 }
 
@@ -169,7 +168,7 @@ impl<T: ByteOrder> BlockCipherEncBackend for Blowfish<T> {
 impl<T: ByteOrder> BlockCipherDecrypt for Blowfish<T> {
     #[inline]
     fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
-        f.call(self)
+        f.call(self);
     }
 }
 
@@ -259,17 +258,19 @@ impl Blowfish<BE> {
     }
 
     /// Init state
+    #[must_use]
     pub fn bc_init_state() -> Blowfish<BE> {
         Blowfish::init_state()
     }
 
     /// Encrypt
+    #[must_use]
     pub fn bc_encrypt(&self, lr: [u32; 2]) -> [u32; 2] {
         self.encrypt(lr)
     }
 
     /// Expand key
     pub fn bc_expand_key(&mut self, key: &[u8]) {
-        self.expand_key(key)
+        self.expand_key(key);
     }
 }

@@ -14,7 +14,6 @@ use core::arch::x86_64::*;
 /// AES cipher (encrypt) round function.
 #[target_feature(enable = "aes")]
 pub(crate) fn cipher_round(block: &mut Block, round_key: &Block) {
-    // Safety: `loadu` and `storeu` support unaligned access
     let b = utils::load_block(block);
     let k = utils::load_block(round_key);
     let b = _mm_aesenc_si128(b, k);
@@ -59,7 +58,6 @@ pub(crate) fn equiv_inv_cipher_round_par(blocks: &mut Block8, round_keys: &Block
 /// AES mix columns function.
 #[target_feature(enable = "aes")]
 pub(crate) fn mix_columns(block: &mut Block) {
-    // Safety: `loadu` and `storeu` support unaligned access
     let mut state = utils::load_block(block);
 
     // Emulate mix columns by performing three inverse mix columns operations
