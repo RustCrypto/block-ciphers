@@ -77,7 +77,7 @@ fn e(block: u64) -> u64 {
 }
 
 /// Swap bits using the P table
-fn p(block: u64) -> u64 {
+const fn p(block: u64) -> u64 {
     let block = block.rotate_left(44);
     let b1 = (block & 0x0000000000200000) << 32;
     let b2 = (block & 0x0000000000480000) << 13;
@@ -132,21 +132,29 @@ pub(crate) fn round(input: u64, key: u64) -> u64 {
     r | ((f(r, key) ^ l) >> 32)
 }
 
-fn f(input: u64, key: u64) -> u64 {
-    let mut val = e(input);
-    val ^= key;
-    val = apply_sboxes(val);
-    p(val)
-}
-
-/// Applies all eight sboxes to the input
-fn apply_sboxes(input: u64) -> u64 {
-    let mut output: u64 = 0;
-
-    for (i, sbox) in SBOXES.iter().enumerate() {
-        let val = (input >> (58 - (i * 6))) & 0x3F;
-        output |= u64::from(sbox[val as usize]) << (60 - (i * 4));
+// Apply P to each possible S-box output at compile time. The eight contributions
+// occupy disjoint bits, so ORing them is equivalent to permuting their union.
+// Store only the significant 32 bits to keep the tables at 2 KiB.
+const SPBOXES: [[u32; 64]; 8] = {
+    let mut tables = [[0; 64]; 8];
+    let mut i = 0;
+    while i < 8 {
+        let mut j = 0;
+        while j < 64 {
+            tables[i][j] = (p((SBOXES[i][j] as u64) << (60 - 4 * i)) >> 32) as u32;
+            j += 1;
+        }
+        i += 1;
     }
+    tables
+};
 
-    output
+fn f(input: u64, key: u64) -> u64 {
+    let input = e(input) ^ key;
+    let mut output = 0;
+    for (i, sbox) in SPBOXES.iter().enumerate() {
+        let val = (input >> (58 - (i * 6))) & 0x3F;
+        output |= sbox[val as usize];
+    }
+    u64::from(output) << 32
 }
