@@ -1,5 +1,5 @@
 //! Test vectors from:
-//! https://github.com/weidai11/cryptopp/blob/master/TestVectors/threefish.txt
+//! <https://github.com/weidai11/cryptopp/blob/master/TestVectors/threefish.txt>
 #![cfg(feature = "cipher")]
 use cipher::{Block, BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 use hex_literal::hex;

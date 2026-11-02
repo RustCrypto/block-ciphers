@@ -1,3 +1,4 @@
+//! Basic tests
 use cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit, array::Array};
 use hex_literal::hex;
 use twofish::Twofish;

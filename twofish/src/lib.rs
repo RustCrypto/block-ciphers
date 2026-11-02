@@ -15,10 +15,8 @@
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
-#![deny(unsafe_code)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![warn(missing_docs, rust_2018_idioms)]
-#![allow(clippy::needless_range_loop, clippy::unreadable_literal)]
+#![deny(unsafe_code)]
 
 pub use cipher;
 
@@ -135,7 +133,7 @@ impl Twofish {
     fn g_func(&self, x: u32) -> u32 {
         let mut result: u32 = 0;
         for y in 0..4 {
-            let mut g = sbox(QORD[y][self.start], (x >> (8 * y)) as u8);
+            let mut g = sbox(QORD[y][self.start], x.to_le_bytes()[y]);
 
             for z in self.start + 1..5 {
                 g ^= self.s[4 * (z - self.start - 1) + y];
@@ -180,7 +178,7 @@ impl KeySizeUser for Twofish {
 impl KeyInit for Twofish {
     #[inline]
     fn new(key: &Key<Self>) -> Self {
-        Self::new_from_slice(key).unwrap()
+        Self::new_from_slice(key).expect("key has correct size")
     }
 
     #[inline]
@@ -210,20 +208,16 @@ impl ParBlocksSizeUser for Twofish {
 impl BlockCipherEncrypt for Twofish {
     #[inline]
     fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
-        f.call(self)
+        f.call(self);
     }
 }
 
 impl BlockCipherEncBackend for Twofish {
     #[inline]
     fn encrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
-        let b = block.get_in();
-        let mut p = [
-            u32::from_le_bytes(b[0..4].try_into().unwrap()),
-            u32::from_le_bytes(b[4..8].try_into().unwrap()),
-            u32::from_le_bytes(b[8..12].try_into().unwrap()),
-            u32::from_le_bytes(b[12..16].try_into().unwrap()),
-        ];
+        let (chunks, tail) = block.get_in().as_chunks();
+        assert!(tail.is_empty());
+        let mut p: [u32; 4] = core::array::from_fn(|i| u32::from_le_bytes(chunks[i]));
 
         // Input whitening
         for i in 0..4 {
@@ -263,19 +257,21 @@ impl BlockCipherEncBackend for Twofish {
 impl BlockCipherDecrypt for Twofish {
     #[inline]
     fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
-        f.call(self)
+        f.call(self);
     }
 }
 
 impl BlockCipherDecBackend for Twofish {
     #[inline]
     fn decrypt_block(&self, mut block: InOut<'_, '_, Block<Self>>) {
-        let b = block.get_in();
+        let (chunks, tail) = block.get_in().as_chunks();
+        assert!(tail.is_empty());
+
         let mut c = [
-            u32::from_le_bytes(b[8..12].try_into().unwrap()) ^ self.k[6],
-            u32::from_le_bytes(b[12..16].try_into().unwrap()) ^ self.k[7],
-            u32::from_le_bytes(b[0..4].try_into().unwrap()) ^ self.k[4],
-            u32::from_le_bytes(b[4..8].try_into().unwrap()) ^ self.k[5],
+            u32::from_le_bytes(chunks[2]) ^ self.k[6],
+            u32::from_le_bytes(chunks[3]) ^ self.k[7],
+            u32::from_le_bytes(chunks[0]) ^ self.k[4],
+            u32::from_le_bytes(chunks[1]) ^ self.k[5],
         ];
 
         for r in (0..8).rev() {

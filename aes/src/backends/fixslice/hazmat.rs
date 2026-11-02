@@ -104,35 +104,35 @@ fn inv_mix_columns_generic<W: Word>(block: &mut Block) {
 /// AES cipher (encrypt) round function.
 #[inline]
 pub(crate) fn cipher_round(block: &mut Block, round_key: &Block) {
-    cipher_round_generic::<NativeWord>(block, round_key)
+    cipher_round_generic::<NativeWord>(block, round_key);
 }
 
 /// AES cipher (encrypt) round function: parallel version.
 #[inline]
 pub(crate) fn cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
-    cipher_round_par_generic::<NativeWord>(blocks, round_keys)
+    cipher_round_par_generic::<NativeWord>(blocks, round_keys);
 }
 
 /// AES cipher (encrypt) inverse round function.
 #[inline]
 pub(crate) fn equiv_inv_cipher_round(block: &mut Block, round_key: &Block) {
-    equiv_inv_cipher_round_generic::<NativeWord>(block, round_key)
+    equiv_inv_cipher_round_generic::<NativeWord>(block, round_key);
 }
 
 /// AES cipher (encrypt) inverse round function: parallel version.
 #[inline]
 pub(crate) fn equiv_inv_cipher_round_par(blocks: &mut Block8, round_keys: &Block8) {
-    equiv_inv_cipher_round_par_generic::<NativeWord>(blocks, round_keys)
+    equiv_inv_cipher_round_par_generic::<NativeWord>(blocks, round_keys);
 }
 
 /// AES mix columns function.
 #[inline]
 pub(crate) fn mix_columns(block: &mut Block) {
-    mix_columns_generic::<NativeWord>(block)
+    mix_columns_generic::<NativeWord>(block);
 }
 
 /// AES inverse mix columns function.
 #[inline]
 pub(crate) fn inv_mix_columns(block: &mut Block) {
-    inv_mix_columns_generic::<NativeWord>(block)
+    inv_mix_columns_generic::<NativeWord>(block);
 }

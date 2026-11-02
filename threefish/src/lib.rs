@@ -15,9 +15,8 @@
     html_logo_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg",
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
-#![deny(unsafe_code)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![warn(missing_docs, rust_2018_idioms)]
+#![deny(unsafe_code)]
 
 #[cfg(feature = "cipher")]
 pub use cipher;
@@ -41,12 +40,12 @@ use zeroize::{Zeroize, ZeroizeOnDrop};
 
 fn mix(r: u8, x: (u64, u64)) -> (u64, u64) {
     let y0 = x.0.wrapping_add(x.1);
-    let y1 = x.1.rotate_left(r as u32) ^ y0;
+    let y1 = x.1.rotate_left(u32::from(r)) ^ y0;
     (y0, y1)
 }
 
 fn inv_mix(r: u8, y: (u64, u64)) -> (u64, u64) {
-    let x1 = (y.0 ^ y.1).rotate_right(r as u32);
+    let x1 = (y.0 ^ y.1).rotate_right(u32::from(r));
     let x0 = y.0.wrapping_sub(x1);
     (x0, x1)
 }

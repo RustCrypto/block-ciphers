@@ -118,7 +118,6 @@
     html_favicon_url = "https://raw.githubusercontent.com/RustCrypto/media/26acc39f/logo.svg"
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-#![warn(missing_docs, rust_2018_idioms)]
 
 pub use cipher;
 
@@ -196,6 +195,7 @@ cfg_if! {
 ///     println!("WARNING: using software fallback for AES");
 /// }
 /// ```
+#[must_use]
 pub fn hardware_accelerated() -> bool {
     cfg_if! {
         if #[cfg(aes_backend = "soft")] {
@@ -420,6 +420,7 @@ macro_rules! common_impls {
             #[inline]
             fn drop(&mut self) {
                 #[cfg(feature = "zeroize")]
+                // SAFETY: the type satisfies the function safety conditions
                 unsafe {
                     zeroize::zeroize_flat_type(self);
                 }

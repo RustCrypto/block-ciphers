@@ -1,3 +1,4 @@
+#![allow(clippy::cast_possible_truncation)]
 use crate::{Block, backends::soft::MinWord};
 use cipher::{
     Array,
@@ -72,17 +73,17 @@ impl Word for u16 {
 
     #[inline(always)]
     fn uniform_row(b: u8) -> u16 {
-        (b as u16) * 0x1111
+        u16::from(b) * 0x1111
     }
 
     #[inline(always)]
     fn pack_rows(r0: u8, r1: u8, r2: u8, r3: u8) -> u16 {
-        (r0 as u16) | ((r1 as u16) << 4) | ((r2 as u16) << 8) | ((r3 as u16) << 12)
+        u16::from(r0) | (u16::from(r1) << 4) | (u16::from(r2) << 8) | (u16::from(r3) << 12)
     }
 
     #[inline(always)]
     fn byte_repeat(b: u8) -> u16 {
-        (b as u16) * 0x0101
+        u16::from(b) * 0x0101
     }
 
     /// Bitslice one 128-bit input block into a 128-bit internal state.
@@ -226,27 +227,29 @@ impl Word for u32 {
 
     #[inline(always)]
     fn uniform_row(b: u8) -> u32 {
-        double_bits_8_to_16(b) as u32 * 0x01010101
+        u32::from(double_bits_8_to_16(b)) * 0x01010101
     }
 
     #[inline(always)]
     fn pack_rows(r0: u8, r1: u8, r2: u8, r3: u8) -> u32 {
-        (double_bits_8_to_16(r0) as u32)
-            | ((double_bits_8_to_16(r1) as u32) << 8)
-            | ((double_bits_8_to_16(r2) as u32) << 16)
-            | ((double_bits_8_to_16(r3) as u32) << 24)
+        u32::from(double_bits_8_to_16(r0))
+            | (u32::from(double_bits_8_to_16(r1)) << 8)
+            | (u32::from(double_bits_8_to_16(r2)) << 16)
+            | (u32::from(double_bits_8_to_16(r3)) << 24)
     }
 
     #[inline(always)]
     fn byte_repeat(b: u8) -> u32 {
-        (b as u32) * 0x01010101
+        u32::from(b) * 0x01010101
     }
 
     /// Bitslice two 128-bit input blocks into a 256-bit internal state.
     fn bitslice(output: &mut [u32], input: &Array<Block, U2>) {
         debug_assert_eq!(output.len(), 8);
-        let input0 = input[0].as_slice();
-        let input1 = input[1].as_slice();
+        let (input0, tail) = input[0].as_chunks();
+        assert!(tail.is_empty());
+        let (input1, tail) = input[1].as_chunks();
+        assert!(tail.is_empty());
 
         // Bitslicing is a bit index manipulation. 256 bits of data means each bit is positioned at
         // an 8-bit index. AES data is 2 blocks, each one a 4x4 column-major matrix of bytes, so the
@@ -259,14 +262,14 @@ impl Word for u32 {
         // Interleave the columns on input (note the order of input)
         //     b0 c1 c0 __ __ __ __ __ => c1 c0 b0 __ __ __ __ __
         let mut t = [
-            u32::from_le_bytes(input0[0x00..0x04].try_into().unwrap()),
-            u32::from_le_bytes(input1[0x00..0x04].try_into().unwrap()),
-            u32::from_le_bytes(input0[0x04..0x08].try_into().unwrap()),
-            u32::from_le_bytes(input1[0x04..0x08].try_into().unwrap()),
-            u32::from_le_bytes(input0[0x08..0x0c].try_into().unwrap()),
-            u32::from_le_bytes(input1[0x08..0x0c].try_into().unwrap()),
-            u32::from_le_bytes(input0[0x0c..0x10].try_into().unwrap()),
-            u32::from_le_bytes(input1[0x0c..0x10].try_into().unwrap()),
+            u32::from_le_bytes(input0[0]),
+            u32::from_le_bytes(input1[0]),
+            u32::from_le_bytes(input0[1]),
+            u32::from_le_bytes(input1[1]),
+            u32::from_le_bytes(input0[2]),
+            u32::from_le_bytes(input1[2]),
+            u32::from_le_bytes(input0[3]),
+            u32::from_le_bytes(input1[3]),
         ];
 
         bitslice_swaps(&mut t);
@@ -326,20 +329,20 @@ impl Word for u64 {
 
     #[inline(always)]
     fn uniform_row(b: u8) -> u64 {
-        quad_bits_16_to_64(b as u16) * 0x0001_0001_0001_0001
+        quad_bits_16_to_64(u16::from(b)) * 0x0001_0001_0001_0001
     }
 
     #[inline(always)]
     fn pack_rows(r0: u8, r1: u8, r2: u8, r3: u8) -> u64 {
-        quad_bits_16_to_64(r0 as u16)
-            | (quad_bits_16_to_64(r1 as u16) << 16)
-            | (quad_bits_16_to_64(r2 as u16) << 32)
-            | (quad_bits_16_to_64(r3 as u16) << 48)
+        quad_bits_16_to_64(u16::from(r0))
+            | (quad_bits_16_to_64(u16::from(r1)) << 16)
+            | (quad_bits_16_to_64(u16::from(r2)) << 32)
+            | (quad_bits_16_to_64(u16::from(r3)) << 48)
     }
 
     #[inline(always)]
     fn byte_repeat(b: u8) -> u64 {
-        (b as u64) * 0x0101010101010101
+        u64::from(b) * 0x0101010101010101
     }
 
     /// Bitslice four 128-bit input blocks into a 512-bit internal state.

@@ -58,8 +58,10 @@ use core::{fmt, marker::PhantomData};
 use cipher::zeroize::{Zeroize, ZeroizeOnDrop};
 
 mod sboxes;
+mod variants;
 
 pub use sboxes::Sbox;
+pub use variants::*;
 
 use sboxes::SboxExt;
 
@@ -117,7 +119,7 @@ impl<S: Sbox> BlockCipherEncBackend for Gost89<S> {
 impl<S: Sbox> BlockCipherEncrypt for Gost89<S> {
     #[inline]
     fn encrypt_with_backend(&self, f: impl BlockCipherEncClosure<BlockSize = Self::BlockSize>) {
-        f.call(self)
+        f.call(self);
     }
 }
 
@@ -145,7 +147,7 @@ impl<S: Sbox> BlockCipherDecBackend for Gost89<S> {
 impl<S: Sbox> BlockCipherDecrypt for Gost89<S> {
     #[inline]
     fn decrypt_with_backend(&self, f: impl BlockCipherDecClosure<BlockSize = Self::BlockSize>) {
-        f.call(self)
+        f.call(self);
     }
 }
 
@@ -192,20 +194,8 @@ impl<S: Sbox> Drop for Gost89<S> {
 #[cfg(feature = "zeroize")]
 impl<S: Sbox> ZeroizeOnDrop for Gost89<S> {}
 
-/// Block cipher defined in GOST R 34.12-2015 (Magma)
-pub type Magma = Gost89<sboxes::Tc26>;
-/// Block cipher defined in GOST 28147-89 with test S-box
-pub type Gost89Test = Gost89<sboxes::TestSbox>;
-/// Block cipher defined in GOST 28147-89 with CryptoPro S-box version A
-pub type Gost89CryptoProA = Gost89<sboxes::CryptoProA>;
-/// Block cipher defined in GOST 28147-89 with CryptoPro S-box version B
-pub type Gost89CryptoProB = Gost89<sboxes::CryptoProB>;
-/// Block cipher defined in GOST 28147-89 with CryptoPro S-box version C
-pub type Gost89CryptoProC = Gost89<sboxes::CryptoProC>;
-/// Block cipher defined in GOST 28147-89 with CryptoPro S-box version D
-pub type Gost89CryptoProD = Gost89<sboxes::CryptoProD>;
-
 #[inline(always)]
+#[allow(clippy::unwrap_used)]
 fn to_u32(chunk: &[u8]) -> u32 {
     u32::from_be_bytes(chunk.try_into().unwrap())
 }

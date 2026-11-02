@@ -62,7 +62,7 @@ impl<const RK: usize> BlockCipherEncBackend for Aes<RK> {
     fn encrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
         // SAFETY: this trait impl is used only by the `Self::encrypt` method marked with
         // `#[target_feature(enable = "aes")]`
-        unsafe { encdec::encrypt(&self.enc_rk, block) };
+        unsafe { encrypt(&self.enc_rk, block) };
     }
 
     #[inline(always)]
@@ -78,7 +78,7 @@ impl<const RK: usize> BlockCipherDecBackend for Aes<RK> {
     fn decrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
         // SAFETY: this trait impl is used only by the `Self::decrypt` method marked with
         // `#[target_feature(enable = "aes")]`
-        unsafe { encdec::decrypt(&self.dec_rk, block) };
+        unsafe { decrypt(&self.dec_rk, block) };
     }
 
     #[inline(always)]
@@ -113,7 +113,7 @@ impl<const RK: usize> AesEnc<RK> {
     #[inline]
     #[target_feature(enable = "aes")]
     pub(crate) fn encrypt(&self, f: impl BlockCipherEncClosure<BlockSize = U16>) {
-        f.call(self)
+        f.call(self);
     }
 }
 
@@ -130,7 +130,7 @@ impl<const RK: usize> BlockCipherEncBackend for AesEnc<RK> {
     fn encrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
         // SAFETY: this trait impl is used only by the `Self::encrypt` method marked with
         // `#[target_feature(enable = "aes")]`
-        unsafe { encdec::encrypt(&self.enc_rk, block) };
+        unsafe { encrypt(&self.enc_rk, block) };
     }
 
     #[inline(always)]
@@ -167,7 +167,7 @@ impl<const RK: usize> BlockCipherDecBackend for AesDec<RK> {
     fn decrypt_block(&self, block: InOut<'_, '_, Block<Self>>) {
         // SAFETY: this trait impl is used only by the `Self::decrypt` method marked with
         // `#[target_feature(enable = "aes")]`
-        unsafe { encdec::decrypt(&self.dec_rk, block) };
+        unsafe { decrypt(&self.dec_rk, block) };
     }
 
     #[inline(always)]

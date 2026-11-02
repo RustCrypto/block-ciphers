@@ -1,4 +1,5 @@
 #![feature(test)]
+#![allow(missing_docs)]
 extern crate test;
 
 use cipher::{KeyInit, block_decryptor_bench, block_encryptor_bench};

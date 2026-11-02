@@ -24,7 +24,7 @@ impl<'a, const RK: usize> Aes<'a, RK> {
     pub(crate) fn encrypt(rk: &'a RoundKeys<RK>, f: impl BlockCipherEncClosure<BlockSize = U16>) {
         let rk2 = encdec::broadcast_keys(rk);
         let backend = Self { rk, rk2 };
-        f.call(&backend)
+        f.call(&backend);
     }
 
     #[inline]
@@ -32,7 +32,7 @@ impl<'a, const RK: usize> Aes<'a, RK> {
     pub(crate) fn decrypt(rk: &'a RoundKeys<RK>, f: impl BlockCipherDecClosure<BlockSize = U16>) {
         let rk2 = encdec::broadcast_keys(rk);
         let backend = Self { rk, rk2 };
-        f.call(&backend)
+        f.call(&backend);
     }
 }
 

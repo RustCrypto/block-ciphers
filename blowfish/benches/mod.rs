@@ -1,4 +1,5 @@
 #![feature(test)]
+#![allow(missing_docs)]
 extern crate test;
 
 use blowfish::Blowfish;
