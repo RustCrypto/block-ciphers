@@ -145,8 +145,13 @@ cfg_if! {
         type Token = ();
     } else if #[cfg(any(target_arch = "x86_64", target_arch = "x86"))] {
         cpufeatures::new!(features_aes, "aes");
-        cpufeatures::new!(features_vaes256, "vaes");
-        cpufeatures::new!(features_vaes512, "avx512f", "vaes");
+        // The VAES backends read the AES-NI key schedule initialized in
+        // `KeyInit::new` and call the AES-NI single-block routines, so they
+        // must only be selected when AES-NI is available too. Otherwise a CPU
+        // (or hypervisor) reporting VAES without AES-NI would make them read
+        // the `aes` union variant while only `soft` was initialized.
+        cpufeatures::new!(features_vaes256, "aes", "avx2", "vaes");
+        cpufeatures::new!(features_vaes512, "aes", "avx512f", "vaes");
 
         #[derive(Clone, Copy)]
         struct Token {
